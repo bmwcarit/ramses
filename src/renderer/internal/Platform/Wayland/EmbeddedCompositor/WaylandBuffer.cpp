@@ -11,7 +11,7 @@
 #include "internal/Platform/Wayland/EmbeddedCompositor/LinuxDmabuf.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/IEmbeddedCompositor_Wayland.h"
 #include "internal/Platform/Wayland/WaylandEGLExtensionProcs.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "internal/Core/Utils/Warnings.h"
 #include "internal/RendererLib/RendererLogContext.h"
 #include <cassert>
@@ -41,7 +41,7 @@ namespace ramses::internal
 
     void WaylandBuffer::ClientBufferDestroyed(wl_listener* listener, [[maybe_unused]] void* data)
     {
-        LOG_DEBUG(CONTEXT_RENDERER, "WaylandBuffer::ClientBufferDestroyed data: " << data);
+        LOG_DEBUG(CONTEXT_RENDERER, "WaylandBuffer::ClientBufferDestroyed data: {}", data);
 
         WaylandBuffer* buffer(nullptr);
 

@@ -12,6 +12,7 @@
 #include "impl/SerializationContext.h"
 #include "impl/ErrorReporting.h"
 #include "internal/SceneGraph/Scene/ClientScene.h"
+#include "internal/SceneGraph/SceneUtils/DataInstanceHelper.h"
 #include "internal/Core/Math3d/CameraMatrixHelper.h"
 #include <glm/gtc/type_ptr.hpp>
 
@@ -201,14 +202,12 @@ namespace ramses::internal
 
     float CameraNodeImpl::getNearPlane() const
     {
-        const auto nearFarData = getIScene().getDataReference(m_dataInstance, ramses::internal::Camera::FrustumNearFarPlanesField);
-        return getIScene().getDataSingleVector2f(nearFarData, DataFieldHandle{ 0 }).x;
+        return DataInstanceHelper::GetReferencedData<glm::vec2>(getIScene(), m_dataInstance, ramses::internal::Camera::FrustumNearFarPlanesField).x;
     }
 
     float CameraNodeImpl::getFarPlane() const
     {
-        const auto nearFarData = getIScene().getDataReference(m_dataInstance, ramses::internal::Camera::FrustumNearFarPlanesField);
-        return getIScene().getDataSingleVector2f(nearFarData, DataFieldHandle{ 0 }).y;
+        return DataInstanceHelper::GetReferencedData<glm::vec2>(getIScene(), m_dataInstance, ramses::internal::Camera::FrustumNearFarPlanesField).y;
     }
 
     bool CameraNodeImpl::setViewport(int32_t x, int32_t y, uint32_t width, uint32_t height)
@@ -231,50 +230,42 @@ namespace ramses::internal
 
     int32_t CameraNodeImpl::getViewportX() const
     {
-        const auto vpOffsetData = getIScene().getDataReference(m_dataInstance, ramses::internal::Camera::ViewportOffsetField);
-        return getIScene().getDataSingleVector2i(vpOffsetData, DataFieldHandle{ 0 }).x;
+        return DataInstanceHelper::GetReferencedData<glm::ivec2>(getIScene(), m_dataInstance, ramses::internal::Camera::ViewportOffsetField).x;
     }
 
     int32_t CameraNodeImpl::getViewportY() const
     {
-        const auto vpOffsetData = getIScene().getDataReference(m_dataInstance, ramses::internal::Camera::ViewportOffsetField);
-        return getIScene().getDataSingleVector2i(vpOffsetData, DataFieldHandle{ 0 }).y;
+        return DataInstanceHelper::GetReferencedData<glm::ivec2>(getIScene(), m_dataInstance, ramses::internal::Camera::ViewportOffsetField).y;
     }
 
     uint32_t CameraNodeImpl::getViewportWidth() const
     {
-        const auto vpSizeData = getIScene().getDataReference(m_dataInstance, ramses::internal::Camera::ViewportSizeField);
-        return getIScene().getDataSingleVector2i(vpSizeData, DataFieldHandle{ 0 }).x;
+        return DataInstanceHelper::GetReferencedData<glm::ivec2>(getIScene(), m_dataInstance, ramses::internal::Camera::ViewportSizeField).x;
     }
 
     uint32_t CameraNodeImpl::getViewportHeight() const
     {
-        const auto vpSizeData = getIScene().getDataReference(m_dataInstance, ramses::internal::Camera::ViewportSizeField);
-        return getIScene().getDataSingleVector2i(vpSizeData, DataFieldHandle{ 0 }).y;
+        return DataInstanceHelper::GetReferencedData<glm::ivec2>(getIScene(), m_dataInstance, ramses::internal::Camera::ViewportSizeField).y;
     }
 
     float CameraNodeImpl::getLeftPlane() const
     {
-        const auto frustumData = getIScene().getDataReference(m_dataInstance, ramses::internal::Camera::FrustumPlanesField);
-        return getIScene().getDataSingleVector4f(frustumData, DataFieldHandle{ 0 }).x;
+        return DataInstanceHelper::GetReferencedData<glm::vec4>(getIScene(), m_dataInstance, ramses::internal::Camera::FrustumPlanesField).x;
     }
 
     float CameraNodeImpl::getRightPlane() const
     {
-        const auto frustumData = getIScene().getDataReference(m_dataInstance, ramses::internal::Camera::FrustumPlanesField);
-        return getIScene().getDataSingleVector4f(frustumData, DataFieldHandle{ 0 }).y;
+        return DataInstanceHelper::GetReferencedData<glm::vec4>(getIScene(), m_dataInstance, ramses::internal::Camera::FrustumPlanesField).y;
     }
 
     float CameraNodeImpl::getBottomPlane() const
     {
-        const auto frustumData = getIScene().getDataReference(m_dataInstance, ramses::internal::Camera::FrustumPlanesField);
-        return getIScene().getDataSingleVector4f(frustumData, DataFieldHandle{ 0 }).z;
+        return DataInstanceHelper::GetReferencedData<glm::vec4>(getIScene(), m_dataInstance, ramses::internal::Camera::FrustumPlanesField).z;
     }
 
     float CameraNodeImpl::getTopPlane() const
     {
-        const auto frustumData = getIScene().getDataReference(m_dataInstance, ramses::internal::Camera::FrustumPlanesField);
-        return getIScene().getDataSingleVector4f(frustumData, DataFieldHandle{ 0 }).w;
+        return DataInstanceHelper::GetReferencedData<glm::vec4>(getIScene(), m_dataInstance, ramses::internal::Camera::FrustumPlanesField).w;
     }
 
     CameraHandle CameraNodeImpl::getCameraHandle() const
@@ -297,10 +288,8 @@ namespace ramses::internal
 
     ProjectionParams CameraNodeImpl::getProjectionParams() const
     {
-        const auto frustumDataInstance = getIScene().getDataReference(m_dataInstance, ramses::internal::Camera::FrustumPlanesField);
-        const auto& frustumData = getIScene().getDataSingleVector4f(frustumDataInstance, DataFieldHandle{ 0 });
-        const auto nearFarDataInstance = getIScene().getDataReference(m_dataInstance, ramses::internal::Camera::FrustumNearFarPlanesField);
-        const auto& nearFarData = getIScene().getDataSingleVector2f(nearFarDataInstance, DataFieldHandle{ 0 });
+        const auto& frustumData = DataInstanceHelper::GetReferencedData<glm::vec4>(getIScene(), m_dataInstance, ramses::internal::Camera::FrustumPlanesField);
+        const auto& nearFarData = DataInstanceHelper::GetReferencedData<glm::vec2>(getIScene(), m_dataInstance, ramses::internal::Camera::FrustumNearFarPlanesField);
 
         return ProjectionParams::Frustum(
             getIScene().getCamera(m_cameraHandle).projectionType,
@@ -419,12 +408,12 @@ namespace ramses::internal
         return getIScene().getDataReference(m_dataInstance, ramses::internal::Camera::ViewportSizeField);
     }
 
-    DataInstanceHandle CameraNodeImpl::getFrustrumPlanesHandle() const
+    DataInstanceHandle CameraNodeImpl::getFrustumPlanesHandle() const
     {
         return getIScene().getDataReference(m_dataInstance, ramses::internal::Camera::FrustumPlanesField);
     }
 
-    DataInstanceHandle CameraNodeImpl::getFrustrumNearFarPlanesHandle() const
+    DataInstanceHandle CameraNodeImpl::getFrustumNearFarPlanesHandle() const
     {
         return getIScene().getDataReference(m_dataInstance, ramses::internal::Camera::FrustumNearFarPlanesField);
     }

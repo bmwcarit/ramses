@@ -248,7 +248,7 @@ namespace ramses::internal
 
         assert(nullptr != wayland.display);
         egldisplay = eglGetDisplay(static_cast<EGLNativeDisplayType>(wayland.display));
-        LOG_INFO(CONTEXT_RENDERER, "WaylandHandler::setupEGL(): Display: " << egldisplay);
+        LOG_INFO(CONTEXT_RENDERER, "WaylandHandler::setupEGL(): Display: {}", egldisplay);
 
         if (!m_usesSharedDisplay)
         {
@@ -256,13 +256,13 @@ namespace ramses::internal
             EGLint minor = 0;
             if (eglInitialize(egldisplay, &major, &minor) != EGL_TRUE)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::setupEGL(): eglInitialize failed with code :" << eglGetError());
+                LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::setupEGL(): eglInitialize failed with code :{}", eglGetError());
                 return false;
             }
-            LOG_INFO(CONTEXT_RENDERER, "WaylandHandler::setupEGL(): EGL version: " << major << "." << minor);
+            LOG_INFO(CONTEXT_RENDERER, "WaylandHandler::setupEGL(): EGL version: {}.{}", major, minor);
             if (eglBindAPI(EGL_OPENGL_ES_API) != EGL_TRUE)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::setupEGL(): eglBindAPI with code :" << eglGetError());
+                LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::setupEGL(): eglBindAPI with code :{}", eglGetError());
                 return false;
             }
         }
@@ -285,7 +285,7 @@ namespace ramses::internal
 
     void WaylandHandler::registry_handle_global(void *data, struct wl_registry *registry, uint32_t name, const char *interface, uint32_t versionProvidedByCompositor)
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandHandler::registry_handle_global(): binding interface: " << interface << " version: " << versionProvidedByCompositor);
+        LOG_INFO(CONTEXT_RENDERER, "WaylandHandler::registry_handle_global(): binding interface: {} version: {}", interface, versionProvidedByCompositor);
 
         auto* waylandHandler = static_cast<WaylandHandler*>(data);
 
@@ -293,7 +293,7 @@ namespace ramses::internal
         {
             if(waylandHandler->wayland.compositor)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::registry_handle_global(): interface: " << interface << " already bound!");
+                LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::registry_handle_global(): interface: {} already bound!", interface);
                 assert(false);
             }
 
@@ -303,7 +303,7 @@ namespace ramses::internal
         {
             if(waylandHandler->wayland.shell)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::registry_handle_global(): interface: " << interface << " already bound!");
+                LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::registry_handle_global(): interface: {} already bound!", interface);
                 assert(false);
             }
 
@@ -313,7 +313,7 @@ namespace ramses::internal
         {
             if(waylandHandler->wayland.seat)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::registry_handle_global(): interface: " << interface << " already bound!");
+                LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::registry_handle_global(): interface: {} already bound!", interface);
                 assert(false);
             }
 
@@ -323,7 +323,7 @@ namespace ramses::internal
         {
             if(waylandHandler->wayland.ivi_app)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::registry_handle_global(): interface: " << interface << " already bound!");
+                LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::registry_handle_global(): interface: {} already bound!", interface);
                 assert(false);
             }
 
@@ -333,7 +333,7 @@ namespace ramses::internal
         {
             if(waylandHandler->wayland.shm)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::registry_handle_global(): interface: " << interface << " already bound!");
+                LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::registry_handle_global(): interface: {} already bound!", interface);
                 assert(false);
             }
 
@@ -343,7 +343,7 @@ namespace ramses::internal
         {
             if(waylandHandler->wayland.output)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::registry_handle_global(): interface: " << interface << " already bound!");
+                LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::registry_handle_global(): interface: {} already bound!", interface);
                 abort();
             }
 
@@ -352,8 +352,8 @@ namespace ramses::internal
                 const uint32_t maximumExpectedProtocolVersion = 3u;
                 if(versionProvidedByCompositor > maximumExpectedProtocolVersion)
                 {
-                    LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::registry_handle_global(): wl_output version provied by compositor: " << versionProvidedByCompositor
-                              << " while maximum expected version is: " << maximumExpectedProtocolVersion <<"!");
+                    LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::registry_handle_global(): wl_output version provied by compositor: {}"
+                        " while maximum expected version is: {}!", versionProvidedByCompositor, maximumExpectedProtocolVersion);
                     abort();
                 }
 
@@ -369,7 +369,7 @@ namespace ramses::internal
         }
         else
         {
-            LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::registry_handle_global(): unhandled interface: " << interface << " !");
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::registry_handle_global(): unhandled interface: {} !", interface);
             assert(false);
         }
     }
@@ -587,7 +587,7 @@ namespace ramses::internal
             if (iviSurface == nullptr)
             {
                 LOG_ERROR(CONTEXT_RENDERER,
-                          "WaylandHandler::createIVISurface(): Failed to create " << iviSurfaceId);
+                          "WaylandHandler::createIVISurface(): Failed to create {}", iviSurfaceId);
                 assert(false);
             }
             else
@@ -835,7 +835,7 @@ namespace ramses::internal
             wl_output_add_listener(wayland.output, &m_waylandOutputListenerV3, this);
             break;
         default:
-            LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::addWaylandOutputListener: unsupported protocol version :" << m_requiredWaylandOutputVersion);
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::addWaylandOutputListener: unsupported protocol version :{}", m_requiredWaylandOutputVersion);
             abort();
         }
     }
@@ -867,7 +867,7 @@ namespace ramses::internal
         {
             return *i->value;
         }
-        LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::getWindow Window with id: " << surfaceId.getValue() << " not found !");
+        LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::getWindow Window with id: {} not found !", surfaceId.getValue());
         assert(false);
         static TestWaylandWindow dummyWindow;
         return dummyWindow;
@@ -880,7 +880,7 @@ namespace ramses::internal
         {
             return *(i->value);
         }
-        LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::getShellSurface Shell surface with id: " << shellSurfaceId.getValue() << " not found !");
+        LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::getShellSurface Shell surface with id: {} not found !", shellSurfaceId.getValue());
         assert(false);
         wl_shell_surface* nullShellSurface(nullptr);
         return static_cast<wl_shell_surface&>(*nullShellSurface);

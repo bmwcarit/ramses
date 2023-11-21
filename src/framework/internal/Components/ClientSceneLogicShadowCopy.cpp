@@ -40,7 +40,7 @@ namespace ramses::internal
         const auto resourceChangeState = verifyAndGetResourceChanges(sceneUpdate, hasNewActions);
         if (resourceChangeState == ResourceChangeState::MissingResource)
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "ClientSceneLogicShadowCopy::flushSceneActions: At least one resource can't be loaded, "
+            LOG_ERROR(CONTEXT_CLIENT, "ClientSceneLogicShadowCopy::flushSceneActions: At least one resource can't be loaded, "
                         "Scene {} can't be rendered. Consult log and run Scene::validate() for more information", m_scene.getSceneId());
             return false;
         }
@@ -93,7 +93,7 @@ namespace ramses::internal
         {
             if (skipSceneActionSend)
             {
-                LOG_DEBUG(CONTEXT_CLIENT, "ClientSceneLogicShadowCopy::flushSceneActions: skip flush for sceneId " << m_sceneId << ", cnt " << m_flushCounter << " because empty");
+                LOG_DEBUG(CONTEXT_CLIENT, "ClientSceneLogicShadowCopy::flushSceneActions: skip flush for sceneId {}, cnt {} because empty", m_sceneId, m_flushCounter);
                 m_scene.getStatisticCollection().statSceneActionsSentSkipped.incCounter(1);
             }
             else
@@ -127,8 +127,8 @@ namespace ramses::internal
     {
         if (m_flushCounter == 0u || !isPublished())
         {
-            LOG_DEBUG(CONTEXT_CLIENT, "ClientSceneLogic::sendShadowCopySceneToWaitingSubscribers: delay sending of scene " << m_sceneId << " (numWaiting " <<
-                m_subscribersWaitingForScene.size() << ", flushCnt " << m_flushCounter << ", published " << isPublished() << ")");
+            LOG_DEBUG(CONTEXT_CLIENT, "ClientSceneLogic::sendShadowCopySceneToWaitingSubscribers: delay sending of scene {} (numWaiting {}, flushCnt {}, published {})",
+                m_sceneId, m_subscribersWaitingForScene.size(), m_flushCounter, isPublished());
             return;
         }
 

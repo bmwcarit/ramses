@@ -95,14 +95,14 @@ namespace ramses::internal
         ramses::internal::File file(filePath);
         if (!file.exists())
         {
-            LOG_WARN(CONTEXT_RENDERER, "BinaryShaderCacheImpl::loadFromFile: file does not exist: " << filePath);
+            LOG_WARN(CONTEXT_RENDERER, "BinaryShaderCacheImpl::loadFromFile: file does not exist: {}", filePath);
             return false;
         }
 
         BinaryFileInputStream fileInputStream(file);
         if (EStatus::Ok != fileInputStream.getState())
         {
-            LOG_WARN(CONTEXT_RENDERER, "BinaryShaderCacheImpl::loadFromFile: failed to load file: " << filePath << " errorstate: " << fileInputStream.getState());
+            LOG_WARN(CONTEXT_RENDERER, "BinaryShaderCacheImpl::loadFromFile: failed to load file: {} errorstate: {}", filePath, fileInputStream.getState());
             return false;
         }
 
@@ -130,7 +130,7 @@ namespace ramses::internal
         if (fileHeader.transportVersion != RAMSES_TRANSPORT_PROTOCOL_VERSION_MAJOR)
         {
             LOG_WARN(CONTEXT_RENDERER,
-                     "BinaryShaderCacheImpl::loadFromFile: File version " << fileHeader.transportVersion << " did not match the program version " << RAMSES_TRANSPORT_PROTOCOL_VERSION_MAJOR << " - cache needs to be repopulated and saved again");
+                     "BinaryShaderCacheImpl::loadFromFile: File version {} did not match the program version {} - cache needs to be repopulated and saved again", fileHeader.transportVersion, RAMSES_TRANSPORT_PROTOCOL_VERSION_MAJOR);
             return false;
         }
 
@@ -164,7 +164,7 @@ namespace ramses::internal
             ResourceContentHash effectId;
             if (!deserializeBinaryShader(inputStream, effectId, binaryShader.data, binaryShader.format))
             {
-                LOG_WARN(CONTEXT_RENDERER, "BinaryShaderCacheImpl::loadFromFile: Deserialization failed, abort loading at " << index << " of " << numBinaryShaders);
+                LOG_WARN(CONTEXT_RENDERER, "BinaryShaderCacheImpl::loadFromFile: Deserialization failed, abort loading at {} of {}", index, numBinaryShaders);
                 return false;
             }
 
@@ -205,7 +205,7 @@ namespace ramses::internal
         else
         {
             LOG_WARN(CONTEXT_RENDERER,
-                     "BinaryShaderCacheImpl::saveToFile: failed to open " << filePath);
+                     "BinaryShaderCacheImpl::saveToFile: failed to open {}", filePath);
         }
     }
 
@@ -214,7 +214,7 @@ namespace ramses::internal
     {
         if (!success)
         {
-            LOG_WARN(CONTEXT_RENDERER, "BinaryShaderCache: Failed to upload binary shader from cache for effect id: " << effectHash);
+            LOG_WARN(CONTEXT_RENDERER, "BinaryShaderCache: Failed to upload binary shader from cache for effect id: {}", effectHash);
         }
     }
 

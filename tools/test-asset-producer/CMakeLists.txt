@@ -11,7 +11,7 @@ createModule(
     TYPE                    BINARY
     ENABLE_INSTALL          OFF
     SRC_FILES               main.cpp
-    DEPENDENCIES            ramses-shared-lib
+    DEPENDENCIES            ramses-shared-lib-headless
 )
 
 add_custom_target(RL_REGEN_TEST_ASSETS

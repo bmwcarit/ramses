@@ -72,7 +72,7 @@ namespace ramses::internal
                 resource = EffectResource::CreateResourceFromMetadataStream(input, name);
                 break;
             default:
-                LOG_ERROR_P(CONTEXT_FRAMEWORK, "ResourceSerializationHelper::ResourceFromMetadataStream: Failed for unknown resource type {}", resourceType);
+                LOG_ERROR(CONTEXT_FRAMEWORK, "ResourceSerializationHelper::ResourceFromMetadataStream: Failed for unknown resource type {}", resourceType);
             }
 
             DeserializedResourceHeader result;

@@ -293,6 +293,7 @@ int main(int argc, char* argv[])
     const auto meshNode = scene->createMeshNode();
     renderGroup->addMeshNode(*meshNode);
     renderGroup->addRenderGroup(*nestedRenderGroup);
+    auto renderBuffer = scene->createRenderBuffer(16u, 16u, ramses::ERenderBufferFormat::RGBA8, ramses::ERenderBufferAccessMode::ReadWrite, 0u, "renderBuffer");
 
     // create triangle that can actually be visible when rendered
     createTriangle(*scene);
@@ -323,6 +324,7 @@ int main(int argc, char* argv[])
     animConfig.setExposingOfChannelDataAsProperties(true);
     logicEngine.createAnimationNode(animConfig, "animNodeWithDataProperties");
     logicEngine.createTimerNode("timerNode");
+    logicEngine.createRenderBufferBinding(*renderBuffer, "renderBufferBinding");
 
     logicEngine.link(*intf->getOutputs()->getChild("struct")->getChild("floatInput"), *script1->getInputs()->getChild("floatInput"));
     logicEngine.link(*script1->getOutputs()->getChild("floatOutput"), *script2->getInputs()->getChild("floatInput"));
@@ -337,13 +339,21 @@ int main(int argc, char* argv[])
     logicEngine.link(*script1->getOutputs()->getChild("boolOutput"), *nodeBinding->getInputs()->getChild("enabled"));
 
     if (!logicEngine.update())
-        return 1;
+        return EXIT_FAILURE;
 
-    ramses::SaveFileConfig noValidationConfig;
-    noValidationConfig.setValidationEnabled(false);
-    noValidationConfig.setMetadataString("test-asset-producer");
+    ramses::ValidationReport report;
+    scene->validate(report);
+    if (report.hasIssue())
+    {
+        for (const auto& issue : report.getIssues())
+            std::cout << (issue.type == ramses::EIssueType::Error ? "ERROR: " : "Warn: ") << issue.message << std::endl;
+    }
 
-    if (!scene->saveToFile(basePath +  "/" + ramsesFilename, noValidationConfig))
+    ramses::SaveFileConfig saveConfig;
+    saveConfig.setMetadataString("test-asset-producer");
+    const auto filePath = basePath + "/" + ramsesFilename;
+    std::cout << "Saving to " << filePath << std::endl;
+    if (!scene->saveToFile(filePath, saveConfig))
         return EXIT_FAILURE;
 
     return 0;

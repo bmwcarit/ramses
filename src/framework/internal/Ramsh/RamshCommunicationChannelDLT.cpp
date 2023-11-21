@@ -20,8 +20,8 @@ namespace ramses::internal
     {
         std::string incoming{static_cast<const char*>(data), 0, length - 1};//use length to avoid unterminated strings copied to target buffer
 
-        LOG_DEBUG(CONTEXT_RAMSH, "Received dlt injection with service id " << sid << ", length is " << length);
-        LOG_INFO(CONTEXT_RAMSH, "Calling command '" << incoming << "' received from dlt injection");
+        LOG_DEBUG(CONTEXT_RAMSH, "Received dlt injection with service id {}, length is {}", sid, length);
+        LOG_INFO(CONTEXT_RAMSH, "Calling command '{}' received from dlt injection", incoming);
 
         RamshCommunicationChannelDLT::GetInstance().processInput(incoming);
 

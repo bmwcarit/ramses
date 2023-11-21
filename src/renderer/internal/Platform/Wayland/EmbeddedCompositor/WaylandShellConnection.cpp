@@ -11,7 +11,7 @@
 #include "internal/Platform/Wayland/EmbeddedCompositor/IWaylandShellConnection.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/NativeWaylandResource.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/WaylandClient.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include <cassert>
 
 namespace ramses::internal
@@ -19,7 +19,7 @@ namespace ramses::internal
     WaylandShellConnection::WaylandShellConnection(IWaylandClient& client, uint32_t version, uint32_t id)
         : m_clientCredentials(client.getCredentials())
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandShellConnection::WaylandShellConnection Connection created  " << m_clientCredentials);
+        LOG_INFO(CONTEXT_RENDERER, "WaylandShellConnection::WaylandShellConnection Connection created  {}", m_clientCredentials);
 
         m_resource = client.resourceCreate(&wl_shell_interface, static_cast<int>(version), id);
         if (m_resource)
@@ -28,14 +28,14 @@ namespace ramses::internal
         }
         else
         {
-            LOG_ERROR(CONTEXT_RENDERER, "WaylandShellConnection::WaylandShellConnection(): Could not create wayland resource  " << m_clientCredentials);
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandShellConnection::WaylandShellConnection(): Could not create wayland resource  {}", m_clientCredentials);
             client.postNoMemory();
         }
     }
 
     WaylandShellConnection::~WaylandShellConnection()
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandShellConnection::~WaylandShellConnection Connection destroyed  " << m_clientCredentials);
+        LOG_INFO(CONTEXT_RENDERER, "WaylandShellConnection::~WaylandShellConnection Connection destroyed  {}", m_clientCredentials);
 
         if (nullptr != m_resource)
         {

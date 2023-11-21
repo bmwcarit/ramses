@@ -22,6 +22,7 @@ namespace ramses::internal
 
         ESceneResourceAction_CreateRenderBuffer,
         ESceneResourceAction_DestroyRenderBuffer,
+        ESceneResourceAction_UpdateRenderBufferProperties,
 
         ESceneResourceAction_CreateRenderTarget,
         ESceneResourceAction_DestroyRenderTarget,
@@ -69,11 +70,9 @@ namespace ramses::internal
 
     struct ResourceChanges
     {
-        void   clear();
-        [[nodiscard]] bool   empty() const;
-        void   putToSceneAction(SceneActionCollection& action) const;
-        void   getFromSceneAction(SceneActionCollection::SceneActionReader& action);
-        [[nodiscard]] size_t   getPutSizeEstimate() const;
+        void clear();
+        [[nodiscard]] bool empty() const;
+        [[nodiscard]] size_t getPutSizeEstimate() const;
 
         ResourceContentHashVector m_resourcesAdded;
         ResourceContentHashVector m_resourcesRemoved;
@@ -98,6 +97,7 @@ namespace ramses::internal
         "Invalid",
         "CreateRenderBuffer",
         "DestroyRenderBuffer",
+        "UpdateRenderBufferProperties",
         "CreateRenderTarget",
         "DestroyRenderTarget",
         "CreateBlitPass",

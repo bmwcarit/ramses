@@ -18,7 +18,7 @@
 #include "internal/Platform/Wayland/EmbeddedCompositor/LinuxDmabufParams.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/LinuxDmabufBuffer.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/LinuxDmabuf.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "internal/Core/Utils/Warnings.h"
 #include <cassert>
 
@@ -40,20 +40,20 @@ namespace ramses::internal
 
         if (nullptr != m_resource)
         {
-            LOG_INFO(CONTEXT_RENDERER, "LinuxDmabufParams::LinuxDmabufParams(): DMA Params created " << m_clientCredentials);
+            LOG_INFO(CONTEXT_RENDERER, "LinuxDmabufParams::LinuxDmabufParams(): DMA Params created {}", m_clientCredentials);
 
             m_resource->setImplementation(&m_paramsInterface, this, ResourceDestroyedCallback);
         }
         else
         {
-            LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufParams::LinuxDmabufParams(): Could not create wayland resource " << m_clientCredentials);
+            LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufParams::LinuxDmabufParams(): Could not create wayland resource {}", m_clientCredentials);
             client.postNoMemory();
         }
     }
 
     LinuxDmabufParams::~LinuxDmabufParams()
     {
-        LOG_INFO(CONTEXT_RENDERER, "LinuxDmabufParams::~LinuxDmabufParams(): DMA Params destroyed " << m_clientCredentials);
+        LOG_INFO(CONTEXT_RENDERER, "LinuxDmabufParams::~LinuxDmabufParams(): DMA Params destroyed {}", m_clientCredentials);
 
         if (nullptr != m_resource)
         {
@@ -118,9 +118,8 @@ namespace ramses::internal
 
     void LinuxDmabufParams::addPlane(int32_t fd, uint32_t index, uint32_t offset, uint32_t stride, uint32_t modifier_hi, uint32_t modifier_lo)
     {
-        LOG_INFO(CONTEXT_RENDERER, "LinuxDmabufParams::addPlane(): fd : " << fd
-                << ", index :" << index << ", offset :" << offset << ", stride :" << stride << ", modifier_hi :" << modifier_hi << ", modifier_lo :" << modifier_lo
-                << "  " << m_clientCredentials);
+        LOG_INFO(CONTEXT_RENDERER, "LinuxDmabufParams::addPlane(): fd : {}, index :{}, offset: {}, stride :{}, modifier_hi :{}, modifier_lo :{}  {}",
+            fd, index, offset, stride, modifier_hi, modifier_lo, m_clientCredentials);
 
         if (nullptr == m_data)
         {
@@ -133,8 +132,7 @@ namespace ramses::internal
 
         if (index >= LinuxDmabufBufferData::MAX_DMABUF_PLANES)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufParams::addPlane(): failed to add plane data because index [=" << index
-                        << "] is bigger than or equal to max no. of planes [=" << LinuxDmabufBufferData::MAX_DMABUF_PLANES << "]");
+            LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufParams::addPlane(): failed to add plane data because index [={}] is bigger than or equal to max no. of planes [={}]", index, LinuxDmabufBufferData::MAX_DMABUF_PLANES);
 
             StringOutputStream message;
             message << "plane index " << index << " is too high";
@@ -145,7 +143,7 @@ namespace ramses::internal
 
         if (m_data->isPlaneDataSet(index))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufParams::addPlane(): failed to add plane data because plane data is already set [for index :" << index << "]");
+            LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufParams::addPlane(): failed to add plane data because plane data is already set [for index :{}]", index);
 
             StringOutputStream message;
             message << "a dmabuf has already been added for plane " << index;
@@ -181,8 +179,7 @@ namespace ramses::internal
     {
         if (m_data->getNumPlanes() < 1)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufParams::createBuffer(): failed to create buffer [id : " << bufferId
-                    << "] because params has no planes set");
+            LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufParams::createBuffer(): failed to create buffer [id : {}] because params has no planes set", bufferId);
 
             m_resource->postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INCOMPLETE, "no dmabuf has been added to the params");
 
@@ -195,8 +192,8 @@ namespace ramses::internal
         {
             if (!m_data->isPlaneDataSet(i))
             {
-                LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufParams::createBuffer(): failed to create buffer [id : " << bufferId
-                        << "] because plane : " << i << " has no data set");
+                LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufParams::createBuffer(): failed to create buffer [id : {}] because plane : {} has no data set",
+                    bufferId, i);
 
                 StringOutputStream message;
                 message << "no dmabuf has been added for plane " << i;
@@ -215,8 +212,8 @@ namespace ramses::internal
 
         if (width < 1 || height < 1)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufParams::createBuffer(): failed to create buffer [id : " << bufferId
-                    << "] because of invalid width(" << width << ") or height(" << height << ")");
+            LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufParams::createBuffer(): failed to create buffer [id : {}] because of invalid width({}) or height({})",
+                bufferId, width, height);
 
             StringOutputStream message;
             message << "invalid width " << width << " or height " << height;
@@ -235,8 +232,7 @@ namespace ramses::internal
             // Validate internal consistency of user-supplied geometry info
             if (offset + stride > UINT32_MAX)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufParams::createBuffer(): failed to create buffer [id : " << bufferId
-                        << "] because of size overflow of offset+stride for plane :" << i);
+                LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufParams::createBuffer(): failed to create buffer [id : {}] because of size overflow of offset+stride for plane :{}", bufferId, i);
 
                 StringOutputStream message;
                 message << "size overflow for plane " << i;
@@ -249,8 +245,7 @@ namespace ramses::internal
 
             if (i == 0 && offset + stride * m_data->getHeight() > UINT32_MAX)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufParams::createBuffer(): failed to create buffer [id : " << bufferId
-                        << "] because of size overflow for plane :" << i);
+                LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufParams::createBuffer(): failed to create buffer [id : {}] because of size overflow for plane :", bufferId, i);
 
                 StringOutputStream message;
                 message << "size overflow for plane " << i;
@@ -274,8 +269,7 @@ namespace ramses::internal
 
             if (offset >= uSize)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufParams::createBuffer(): failed to create buffer [id : " << bufferId
-                        << "] because of invalid offset for plane :" << i);
+                LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufParams::createBuffer(): failed to create buffer [id : {}] because of invalid offset for plane :{}", bufferId, i);
 
                 StringOutputStream message;
                 message << "invalid offset " << offset << " for plane " << i;
@@ -288,8 +282,7 @@ namespace ramses::internal
 
             if (offset + stride > uSize)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufParams::createBuffer(): failed to create buffer [id : " << bufferId
-                        << "] because of invalid offset+stride for plane :" << i);
+                LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufParams::createBuffer(): failed to create buffer [id : {}] because of invalid offset+stride for plane :{}", bufferId, i);
 
                 StringOutputStream message;
                 message << "invalid stride " << offset << " for plane " << i;
@@ -304,8 +297,7 @@ namespace ramses::internal
             // we can't enforce this generically.
             if (0 == i && offset + stride * m_data->getHeight() > uSize)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufParams::createBuffer(): failed to create buffer [id : " << bufferId
-                        << "] because of invalid stride or height for plane :" << i);
+                LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufParams::createBuffer(): failed to create buffer [id : {}] because of invalid stride or height for plane :{}", bufferId, i);
 
                 StringOutputStream message;
                 message << "invalid buffer stride or height for plane " << i;
@@ -334,7 +326,7 @@ namespace ramses::internal
         bufferWaylandResource->setImplementation(&LinuxDmabufBuffer::m_bufferInterface, m_data, BufferDestroyCallback);
         m_data = nullptr;
 
-        LOG_INFO_P(CONTEXT_RENDERER, "LinuxDmabufParams::createBuffer(): bufferId:{} w:{} h:{} format:{} flags:{} res:{} {}",
+        LOG_INFO(CONTEXT_RENDERER, "LinuxDmabufParams::createBuffer(): bufferId:{} w:{} h:{} format:{} flags:{} res:{} {}",
                    bufferId, width, height, format, flags, static_cast<void*>(bufferNativeWaylandResource), m_clientCredentials);
 
         // Announce the resulting buffer to the client

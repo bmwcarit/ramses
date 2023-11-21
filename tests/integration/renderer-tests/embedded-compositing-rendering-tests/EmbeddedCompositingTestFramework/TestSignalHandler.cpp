@@ -30,7 +30,7 @@ namespace ramses::internal
 
     void TestSignalHandler::HandleSignalCallback(int32_t signal)
     {
-        LOG_ERROR(CONTEXT_RENDERER, "SignalHandler::HandleSignalCallback() Received signal " << PlatformSignal::SignalToString(static_cast<ESignal>(signal)) << " In Process :[" << ProcessName << "]! Sending signal to process group ...");
+        LOG_ERROR(CONTEXT_RENDERER, "SignalHandler::HandleSignalCallback() Received signal {} In Process :[{}]! Sending signal to process group ...", PlatformSignal::SignalToString(static_cast<ESignal>(signal)), ProcessName);
         //send same signal to process group
         kill(0, signal);
     }

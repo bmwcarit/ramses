@@ -103,7 +103,7 @@ namespace ramses::internal
     TEST_F(ANodeBinding, KeepsIdProvidedDuringConstruction)
     {
         NodeBinding& nodeBinding = *m_logicEngine->createNodeBinding(*m_node, ERotationType::Euler_XYZ, "NodeBinding");
-        EXPECT_EQ(nodeBinding.getSceneObjectId().getValue(), 9u);
+        EXPECT_EQ(nodeBinding.getSceneObjectId().getValue(), 10u);
     }
 
     TEST_F(ANodeBinding, ReturnsNullptrForOutputs)
@@ -529,7 +529,7 @@ namespace ramses::internal
 
             EXPECT_EQ(messageType, ELogLevel::Warn);
             EXPECT_EQ(warningMessage,
-                      fmt::format("Initial rotation values for NodeBinding '{}' will not be imported from bound Ramses node due to mismatching rotation type.",
+                      fmt::format("R.main: Initial rotation values for NodeBinding '{}' will not be imported from bound Ramses node due to mismatching rotation type.",
                                   binding->impl().getIdentificationString()));
 
             EXPECT_EQ(*binding->getInputs()->getChild("rotation")->get<vec3f>(), vec3f(0.f, 0.f, 0.f));
@@ -558,7 +558,7 @@ namespace ramses::internal
         EXPECT_EQ(
             warningMessage,
             fmt::format(
-                "Initial rotation values for NodeBinding '{}' will not be imported from bound Ramses node due to mismatching rotation type. Expected Quaternion, got Euler.",
+                "R.main: Initial rotation values for NodeBinding '{}' will not be imported from bound Ramses node due to mismatching rotation type. Expected Quaternion, got Euler.",
                 binding->impl().getIdentificationString()));
 
         EXPECT_EQ(*binding->getInputs()->getChild("rotation")->get<vec4f>(), vec4f(0.f, 0.f, 0.f, 1.f));
@@ -1026,14 +1026,14 @@ namespace ramses::internal
             nodeBinding.getInputs()->getChild("visibility")->set(true);
             nodeBinding.getInputs()->getChild("enabled")->set(true);
             tempEngineForSaving.update();
-            EXPECT_TRUE(saveToFileWithoutValidation("OneBinding.bin"));
+            EXPECT_TRUE(saveToFile("OneBinding.bin"));
         }
         {
             ASSERT_TRUE(recreateFromFile("OneBinding.bin"));
             ASSERT_TRUE(m_logicEngine != nullptr);
             const auto& nodeBinding = *m_logicEngine->findObject<NodeBinding>("NodeBinding");
             EXPECT_EQ("NodeBinding", nodeBinding.getName());
-            EXPECT_EQ(nodeBinding.getSceneObjectId().getValue(), 9u);
+            EXPECT_EQ(nodeBinding.getSceneObjectId().getValue(), 10u);
 
             const auto& inputs = nodeBinding.getInputs();
             ASSERT_EQ(inputs->getChildCount(), 5u);
@@ -1084,7 +1084,7 @@ namespace ramses::internal
         {
             LogicEngine& tempEngineForSaving = *m_logicEngine;
             tempEngineForSaving.createNodeBinding(*m_node, ERotationType::Euler_XYZ, "NodeBinding");
-            EXPECT_TRUE(saveToFileWithoutValidation("OneBinding.bin"));
+            EXPECT_TRUE(saveToFile("OneBinding.bin"));
         }
         {
             ASSERT_TRUE(recreateFromFile("OneBinding.bin"));
@@ -1099,7 +1099,7 @@ namespace ramses::internal
         {
             LogicEngine& tempEngineForSaving = *m_logicEngine;
             tempEngineForSaving.createNodeBinding(*m_node, ERotationType::Euler_XYZ, "NodeBinding");
-            EXPECT_TRUE(saveToFileWithoutValidation("NoValuesSet.bin"));
+            EXPECT_TRUE(saveToFile("NoValuesSet.bin"));
         }
         {
             ASSERT_TRUE(recreateFromFile("NoValuesSet.bin"));
@@ -1131,7 +1131,7 @@ namespace ramses::internal
             m_node->setScaling({100.f, 100.f, 100.f});
             m_node->setVisibility(EVisibilityMode::Invisible);
 
-            EXPECT_TRUE(saveToFileWithoutValidation("AllValuesSet.bin"));
+            EXPECT_TRUE(saveToFile("AllValuesSet.bin"));
         }
 
         {
@@ -1190,7 +1190,7 @@ namespace ramses::internal
             ASSERT_TRUE(tempEngineForSaving.link(*script->getOutputs()->getChild("visibility"), *nodeBinding.getInputs()->getChild("visibility")));
 
             tempEngineForSaving.update();
-            EXPECT_TRUE(saveToFileWithoutValidation("SomeInputsLinked.bin"));
+            EXPECT_TRUE(saveToFile("SomeInputsLinked.bin"));
         }
 
         // Modify 'linked' properties before loading to check if logic will overwrite them after load + update
@@ -1246,9 +1246,7 @@ namespace ramses::internal
                     EXPECT_EQ(*prop_enabled->get<bool>(), enabled);
                     EXPECT_EQ(*prop_visibility->get<bool>(), visibility);
 
-                    SaveFileConfig saveConfig;
-                    saveConfig.setValidationEnabled(false);
-                    EXPECT_TRUE(scene->saveToFile("visibility.ramses", saveConfig));
+                    EXPECT_TRUE(scene->saveToFile("visibility.ramses", {}));
                     m_ramses.destroyScene(*scene);
                 }
 

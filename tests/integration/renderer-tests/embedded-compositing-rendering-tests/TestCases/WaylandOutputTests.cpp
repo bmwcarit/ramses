@@ -128,22 +128,22 @@ namespace ramses::internal
 
         if(modeActuallyReceived != expectMode)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "WaylandOutputTests::CheckWaylandOutputParams: expected mode received :" << expectMode
-                      << ", actual mode received :" << modeActuallyReceived);
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandOutputTests::CheckWaylandOutputParams: expected mode received :{}, actual mode received :{}",
+                expectMode, modeActuallyReceived);
             success = false;
         }
 
         if(scaleActuallyReceived != expectScale)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "WaylandOutputTests::CheckWaylandOutputParams: expected scale received :" << expectScale
-                      << ", actual scale received :" << scaleActuallyReceived);
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandOutputTests::CheckWaylandOutputParams: expected scale received :{}, actual scale received :{}",
+                expectScale, scaleActuallyReceived);
             success = false;
         }
 
         if(doneActuallyReceived != expectDone)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "WaylandOutputTests::CheckWaylandOutputParams: expected done received :" << expectDone
-                      << ", actual done received :" << doneActuallyReceived);
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandOutputTests::CheckWaylandOutputParams: expected done received :{}, actual done received :{}",
+                expectDone, doneActuallyReceived);
             success = false;
         }
 
@@ -174,13 +174,19 @@ namespace ramses::internal
             || waylandOutputParams.subpixel != subpixelExpected || waylandOutputParams.transform != transformExpected)
         {
             LOG_ERROR(CONTEXT_RENDERER, "WaylandOutputTests::CheckWaylandOutputParams: wrong values received"
-                      << ": x = "               << waylandOutputParams.x                << " (expected = " << xExpected << ")"
-                      << ", y = "               << waylandOutputParams.y                << " (expected = " << yExpected << ")"
-                      << ", physical_width = "  << waylandOutputParams.physicalWidth    << " (expected = " << physicalWidthExpected << ")"
-                      << ", physical_height = " << waylandOutputParams.physicalHeight   << " (expected = " << physicalHeightExpected<< ")"
-                      << ", subpixel format = " << waylandOutputParams.subpixel         << " (expected = " << subpixelExpected<< ")"
-                      << ", transform = "       << waylandOutputParams.transform        << " (expected = " << transformExpected<< ")"
-                      );
+                ": x = {} (expected = {})"
+                ", y = {} (expected = {})"
+                ", physical_width = {} (expected = {})"
+                ", physical_height = {} (expected = {})"
+                ", subpixel format = {} (expected = {})"
+                ", transform = {} (expected = {})",
+                waylandOutputParams.x, xExpected,
+                waylandOutputParams.y, yExpected,
+                waylandOutputParams.physicalWidth, physicalWidthExpected,
+                waylandOutputParams.physicalHeight, physicalHeightExpected,
+                waylandOutputParams.subpixel, subpixelExpected,
+                waylandOutputParams.transform, transformExpected
+            );
 
             return false;
         }
@@ -199,11 +205,15 @@ namespace ramses::internal
             || waylandOutputParams.refreshRate != refreshExpected)
         {
             LOG_ERROR(CONTEXT_RENDERER, "WaylandOutputTests::CheckWaylandOutputParams: wrong values received"
-                      << ": flags = "           << waylandOutputParams.modeFlags            << " (expected = " << flagsExpected << ")"
-                      << ": width = "           << waylandOutputParams.width                << " (expected = " << expectedWidth << ")"
-                      << ": height = "          << waylandOutputParams.height               << " (expected = " << expectedHeight << ")"
-                      << ": refresh = "         << waylandOutputParams.refreshRate          << " (expected = " << refreshExpected << ")"
-                      );
+                ": flags = {} (expected = {})"
+                ": width = {} (expected = {})"
+                ": height = {} (expected = {})"
+                ": refresh = {} (expected = {})",
+                waylandOutputParams.modeFlags, flagsExpected,
+                waylandOutputParams.width, expectedWidth,
+                waylandOutputParams.height, expectedHeight,
+                waylandOutputParams.refreshRate, refreshExpected
+            );
 
             return false;
         }
@@ -218,8 +228,8 @@ namespace ramses::internal
         if(waylandOutputParams.factor != factorExpected)
         {
             LOG_ERROR(CONTEXT_RENDERER, "WaylandOutputTests::CheckWaylandOutputParams: wrong values received"
-                      << ": factor = " << waylandOutputParams.factor << " (expected = " << factorExpected << ")"
-                      );
+                ": factor = {} (expected = {})", waylandOutputParams.factor, factorExpected
+            );
 
             return false;
         }

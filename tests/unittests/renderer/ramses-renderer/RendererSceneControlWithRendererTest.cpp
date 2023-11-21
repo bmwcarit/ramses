@@ -195,7 +195,7 @@ namespace ramses::internal
 
     TEST_P(ARendererSceneControlWithRenderer_TargetToTarget, switchFromTargetStateToTargetStateAtEveryStep)
     {
-        LOG_INFO(CONTEXT_RENDERER, "Testing switch from target state " << EnumToString(GetTargetState1()) << " to target state " << EnumToString(GetTargetState2()) << " at step " << GetStepToSwitchState());
+        LOG_INFO(CONTEXT_RENDERER, "Testing switch from target state {} to target state {} at step {}", EnumToString(GetTargetState1()), EnumToString(GetTargetState2()), GetStepToSwitchState());
 
         ramsesClientRenderer->m_sceneControl.setSceneState(ramsesClientRenderer->m_sceneId, GetTargetState1());
         ramsesClientRenderer->m_sceneControl.flush();
@@ -203,7 +203,7 @@ namespace ramses::internal
         int step = 0;
         for (int i = 0; i < NumLoopsToReachTargetState; ++i)
         {
-            LOG_INFO(CONTEXT_RENDERER, "LOOP: " << i << "  STEP: " << step);
+            LOG_INFO(CONTEXT_RENDERER, "LOOP: {}  STEP: {}", i, step);
             if (step == GetStepToSwitchState())
             {
                 ramsesClientRenderer->m_sceneControl.setSceneState(ramsesClientRenderer->m_sceneId, GetTargetState2());
@@ -212,7 +212,7 @@ namespace ramses::internal
             ramsesClientRenderer->m_renderer.doOneLoop();
             ++step;
 
-            LOG_INFO(CONTEXT_RENDERER, "LOOP: " << i << "  STEP: " << step);
+            LOG_INFO(CONTEXT_RENDERER, "LOOP: {}  STEP: {}", i, step);
             if (step == GetStepToSwitchState())
             {
                 ramsesClientRenderer->m_sceneControl.setSceneState(ramsesClientRenderer->m_sceneId, GetTargetState2());
@@ -265,7 +265,7 @@ namespace ramses::internal
 
     TEST_P(ARendererSceneControlWithRenderer_ReachTargetStateWithUnpublish, unpublishAtEveryStepWhileReachingEveryState)
     {
-        LOG_INFO(CONTEXT_RENDERER, "Testing unpublish from target state " << EnumToString(GetTargetState()) << " at step " << GetStepToUnpublish() << " and re-publish at step " << GetStepToRepublish());
+        LOG_INFO(CONTEXT_RENDERER, "Testing unpublish from target state {} at step {} and re-publish at step {}", EnumToString(GetTargetState()), GetStepToUnpublish(), GetStepToRepublish());
 
         ramsesClientRenderer->m_sceneControl.setSceneState(ramsesClientRenderer->m_sceneId, GetTargetState());
         ramsesClientRenderer->m_sceneControl.flush();
@@ -273,7 +273,7 @@ namespace ramses::internal
         int step = 0;
         for (int i = 0; i < NumLoopsToReachTargetState; ++i)
         {
-            LOG_INFO(CONTEXT_RENDERER, "LOOP: " << i << "  STEP: " << step);
+            LOG_INFO(CONTEXT_RENDERER, "LOOP: {}  STEP: {}", i, step);
             if (step == GetStepToUnpublish())
                 ramsesClientRenderer->m_scene.unpublish();
             if (step == GetStepToRepublish())
@@ -281,7 +281,7 @@ namespace ramses::internal
             ramsesClientRenderer->m_renderer.doOneLoop();
             ++step;
 
-            LOG_INFO(CONTEXT_RENDERER, "LOOP: " << i << "  STEP: " << step);
+            LOG_INFO(CONTEXT_RENDERER, "LOOP: {}  STEP: {}", i, step);
             if (step == GetStepToUnpublish())
                 ramsesClientRenderer->m_scene.unpublish();
             if (step == GetStepToRepublish())

@@ -10,7 +10,7 @@
 #include "internal/Platform/Wayland/EmbeddedCompositor/WaylandClient.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/INativeWaylandResource.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/IEmbeddedCompositor_Wayland.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {
@@ -62,13 +62,12 @@ namespace ramses::internal
 
     void WaylandRegion::regionAdd([[maybe_unused]] IWaylandClient& client, int32_t x, int32_t y, int32_t width, int32_t height)
     {
-        LOG_TRACE(CONTEXT_RENDERER, "WaylandRegion::regionAdd x: " << x << " y: " << y << " width: " << width << " height: " << height);
+        LOG_TRACE(CONTEXT_RENDERER, "WaylandRegion::regionAdd x: {} y: {} width: {} height: {}", x, y, width, height);
     }
 
     void WaylandRegion::regionSubtract([[maybe_unused]] IWaylandClient& client, int32_t x, int32_t y, int32_t width, int32_t height)
     {
-        LOG_TRACE(CONTEXT_RENDERER,
-                  "WaylandRegion::regionSubtract x: " << x << " y: " << y << " width: " << width << " height: " << height);
+        LOG_TRACE(CONTEXT_RENDERER, "WaylandRegion::regionSubtract x: {} y: {} width: {} height: {}", x, y, width, height);
     }
 
     void WaylandRegion::RegionDestroyCallback([[maybe_unused]] wl_client* client, wl_resource* regionResource)

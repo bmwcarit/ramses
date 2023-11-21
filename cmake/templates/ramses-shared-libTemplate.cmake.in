@@ -26,22 +26,11 @@ endif()
 
 set(ramses-shared-lib_INCLUDE_DIRS "@PACKAGE_RAMSES_INSTALL_HEADERS_PATH@")
 
-if(IS_DIRECTORY "${ramses-shared-lib_INCLUDE_DIRS}/glm")
-    add_library(glm::glm INTERFACE IMPORTED)
-    set_target_properties(glm::glm PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${ramses-shared-lib_INCLUDE_DIRS})
-else()
-    find_dependency(glm REQUIRED)
-
-    if(NOT TARGET glm::glm)
-        add_library(glm::glm ALIAS glm)
-    endif()
-endif()
-
 # find library
 IF(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 
     # no shlib versioning support on windows
-    FIND_LIBRARY(ramses-shared-lib_LIBRARIES
+    FIND_LIBRARY(ramses-shared-lib_FULL_LIBRARIES
         NAMES "ramses-shared-lib"
         HINTS @PACKAGE_RAMSES_INSTALL_RUNTIME_PATH@
     )
@@ -49,7 +38,7 @@ IF(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 ELSEIF(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 
     # require exact shlib version
-    FIND_LIBRARY(ramses-shared-lib_LIBRARIES
+    FIND_LIBRARY(ramses-shared-lib_FULL_LIBRARIES
         NAMES "libramses-shared-lib.so.@RAMSES_VERSION_MAJOR@.@RAMSES_VERSION_MINOR@"
         HINTS @PACKAGE_RAMSES_INSTALL_LIBRARY_PATH@
     )
@@ -57,7 +46,7 @@ ELSEIF(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 ELSEIF(${CMAKE_SYSTEM_NAME} STREQUAL "Android")
 
     # no shlib versioning support on Android
-    FIND_LIBRARY(ramses-shared-lib_LIBRARIES
+    FIND_LIBRARY(ramses-shared-lib_FULL_LIBRARIES
         NAMES "libramses-shared-lib"
         HINTS @PACKAGE_RAMSES_INSTALL_LIBRARY_PATH@
         CMAKE_FIND_ROOT_PATH_BOTH
@@ -68,15 +57,21 @@ ELSE()
 ENDIF()
 
 
+# find headless to add as dependency
+find_package(ramses-shared-lib-headless REQUIRED)
+
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(ramses-shared-lib
     FOUND_VAR ramses-shared-lib_FOUND
-    REQUIRED_VARS ramses-shared-lib_LIBRARIES ramses-shared-lib_INCLUDE_DIRS
+    REQUIRED_VARS ramses-shared-lib_FULL_LIBRARIES ramses-shared-lib-headless_LIBRARIES ramses-shared-lib_INCLUDE_DIRS
     VERSION_VAR ramses-shared-lib_VERSION)
 
 set(ramses-sdk_VERSION "@ramses-sdk_VERSION@" CACHE STRING "Ramses version" FORCE)
 
+set(ramses-shared-lib_LIBRARIES ${ramses-shared-lib-headless_LIBRARIES} ${ramses-shared-lib_FULL_LIBRARIES})
+
 message(STATUS "Found ramses-shared-lib libs: ${ramses-shared-lib_LIBRARIES}")
 message(STATUS "Found ramses-shared-lib includes: ${ramses-shared-lib_INCLUDE_DIRS}")
+
 
 MARK_AS_ADVANCED(
     ramses-shared-lib_INCLUDE_DIRS
@@ -87,12 +82,13 @@ MARK_AS_ADVANCED(
 if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.13")
     if (NOT TARGET ramses-ramses-shared-lib)
         add_library(ramses-ramses-shared-lib SHARED IMPORTED GLOBAL)
-        set_target_properties(ramses-ramses-shared-lib PROPERTIES IMPORTED_LOCATION ${ramses-shared-lib_LIBRARIES})
+        set_target_properties(ramses-ramses-shared-lib PROPERTIES IMPORTED_LOCATION ${ramses-shared-lib_FULL_LIBRARIES})
+
         if (MSVC)
-            set_target_properties(ramses-ramses-shared-lib PROPERTIES IMPORTED_IMPLIB ${ramses-shared-lib_LIBRARIES})
+            set_target_properties(ramses-ramses-shared-lib PROPERTIES IMPORTED_IMPLIB ${ramses-shared-lib_FULL_LIBRARIES})
         endif()
         target_include_directories(ramses-ramses-shared-lib INTERFACE ${ramses-shared-lib_INCLUDE_DIRS})
-        target_link_libraries(ramses-ramses-shared-lib INTERFACE glm::glm)
+        target_link_libraries(ramses-ramses-shared-lib INTERFACE ramses::headless)
 
         if (NOT TARGET ramses::ramses)
             add_library(ramses::ramses ALIAS ramses-ramses-shared-lib)

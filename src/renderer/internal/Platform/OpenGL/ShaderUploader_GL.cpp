@@ -11,7 +11,7 @@
 
 #include "internal/SceneGraph/Resource/EffectResource.h"
 #include "internal/Platform/OpenGL/ShaderProgramInfo.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "absl/strings/str_split.h"
 
 namespace ramses::internal
@@ -41,13 +41,13 @@ namespace ramses::internal
 
     bool ShaderUploader_GL::UploadShaderProgramFromSource(const EffectResource& effect, ShaderProgramInfo& programShaderInfoOut, std::string& debugErrorLog)
     {
-        LOG_DEBUG(CONTEXT_RENDERER, "ShaderUploader_GL::UploadShaderProgramFromSource:  compiling shaders for effect " << effect.getName());
+        LOG_DEBUG(CONTEXT_RENDERER, "ShaderUploader_GL::UploadShaderProgramFromSource:  compiling shaders for effect {}", effect.getName());
 
         const GLHandle vertexShaderHandle = CompileShaderStage(effect.getVertexShader(), GL_VERTEX_SHADER, debugErrorLog);
 
         if (InvalidGLHandle == vertexShaderHandle)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "ShaderUploader_GL::UploadShaderProgramFromSource:  vertex shader failed to compile " << debugErrorLog);
+            LOG_ERROR(CONTEXT_RENDERER, "ShaderUploader_GL::UploadShaderProgramFromSource:  vertex shader failed to compile {}", debugErrorLog);
             return false;
         }
 
@@ -55,7 +55,7 @@ namespace ramses::internal
 
         if (InvalidGLHandle == fragmentShaderHandle)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "ShaderUploader_GL::UploadShaderProgramFromSource:  fragment shader failed to compile " << debugErrorLog);
+            LOG_ERROR(CONTEXT_RENDERER, "ShaderUploader_GL::UploadShaderProgramFromSource:  fragment shader failed to compile {}", debugErrorLog);
             glDeleteShader(vertexShaderHandle);
             return false;
         }
@@ -68,7 +68,7 @@ namespace ramses::internal
 
             if (InvalidGLHandle == geometryShaderHandle)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "ShaderUploader_GL::UploadShaderProgramFromSource:  geometry shader failed to compile " << debugErrorLog);
+                LOG_ERROR(CONTEXT_RENDERER, "ShaderUploader_GL::UploadShaderProgramFromSource:  geometry shader failed to compile {}", debugErrorLog);
                 glDeleteShader(vertexShaderHandle);
                 glDeleteShader(fragmentShaderHandle);
                 return false;
@@ -198,7 +198,7 @@ namespace ramses::internal
         uint32_t lineNumber = 1;
         for (const auto& line : absl::StrSplit(source, '\n'))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Device_Base::PrintShaderSourceWithLineNumbers:  L" << lineNumber << ": " << line);
+            LOG_ERROR(CONTEXT_RENDERER, "Device_Base::PrintShaderSourceWithLineNumbers:  L{}: {}", lineNumber, line);
             ++lineNumber;
         }
     }

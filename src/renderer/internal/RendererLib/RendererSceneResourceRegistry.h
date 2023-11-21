@@ -14,6 +14,7 @@
 #include "internal/SceneGraph/SceneAPI/TextureEnums.h"
 #include "internal/SceneGraph/SceneAPI/EDataBufferType.h"
 #include "internal/PlatformAbstraction/Collections/HashMap.h"
+#include "internal/SceneGraph/SceneAPI/RenderBuffer.h"
 
 namespace ramses::internal
 {
@@ -32,27 +33,28 @@ namespace ramses::internal
         RendererSceneResourceRegistry();
         ~RendererSceneResourceRegistry();
 
-        void                            addRenderBuffer             (RenderBufferHandle handle, DeviceResourceHandle deviceHandle, uint32_t size, bool writeOnly);
-        void                            removeRenderBuffer          (RenderBufferHandle handle);
-        [[nodiscard]] DeviceResourceHandle            getRenderBufferDeviceHandle (RenderBufferHandle handle) const;
-        [[nodiscard]] uint32_t                          getRenderBufferByteSize     (RenderBufferHandle handle) const;
-        void                            getAllRenderBuffers         (RenderBufferHandleVector& renderBuffers) const;
+        void                               addRenderBuffer             (RenderBufferHandle handle, DeviceResourceHandle deviceHandle, uint32_t size, const RenderBuffer& properties);
+        void                               removeRenderBuffer          (RenderBufferHandle handle);
+        [[nodiscard]] DeviceResourceHandle getRenderBufferDeviceHandle (RenderBufferHandle handle) const;
+        [[nodiscard]] uint32_t             getRenderBufferByteSize     (RenderBufferHandle handle) const;
+        [[nodiscard]] const RenderBuffer&  getRenderBufferProperties   (RenderBufferHandle handle) const;
+        void                               getAllRenderBuffers         (RenderBufferHandleVector& renderBuffers) const;
 
-        void                            addRenderTarget             (RenderTargetHandle handle, DeviceResourceHandle deviceHandle);
-        void                            removeRenderTarget          (RenderTargetHandle handle);
-        [[nodiscard]] DeviceResourceHandle            getRenderTargetDeviceHandle (RenderTargetHandle handle) const;
-        void                            getAllRenderTargets         (RenderTargetHandleVector& renderTargets) const;
+        void                               addRenderTarget             (RenderTargetHandle handle, DeviceResourceHandle deviceHandle);
+        void                               removeRenderTarget          (RenderTargetHandle handle);
+        [[nodiscard]] DeviceResourceHandle getRenderTargetDeviceHandle (RenderTargetHandle handle) const;
+        void                               getAllRenderTargets         (RenderTargetHandleVector& renderTargets) const;
 
-        void                            addBlitPass                 (BlitPassHandle handle, DeviceResourceHandle srcRenderTargetDeviceHandle, DeviceResourceHandle dstRenderTargetDeviceHandle);
-        void                            removeBlitPass              (BlitPassHandle handle);
-        void                            getBlitPassDeviceHandles    (BlitPassHandle handle, DeviceResourceHandle& srcRenderTargetDeviceHandle, DeviceResourceHandle& dstRenderTargetDeviceHandle) const;
-        void                            getAllBlitPasses            (BlitPassHandleVector& blitPasses) const;
+        void                               addBlitPass                 (BlitPassHandle handle, DeviceResourceHandle srcRenderTargetDeviceHandle, DeviceResourceHandle dstRenderTargetDeviceHandle);
+        void                               removeBlitPass              (BlitPassHandle handle);
+        void                               getBlitPassDeviceHandles    (BlitPassHandle handle, DeviceResourceHandle& srcRenderTargetDeviceHandle, DeviceResourceHandle& dstRenderTargetDeviceHandle) const;
+        void                               getAllBlitPasses            (BlitPassHandleVector& blitPasses) const;
 
-        void                            addDataBuffer               (DataBufferHandle handle, DeviceResourceHandle deviceHandle, EDataBufferType dataBufferType, uint32_t size);
-        void                            removeDataBuffer            (DataBufferHandle handle);
-        [[nodiscard]] DeviceResourceHandle            getDataBufferDeviceHandle   (DataBufferHandle handle) const;
-        [[nodiscard]] EDataBufferType                 getDataBufferType           (DataBufferHandle handle) const;
-        void                            getAllDataBuffers           (DataBufferHandleVector& dataBuffers) const;
+        void                               addDataBuffer               (DataBufferHandle handle, DeviceResourceHandle deviceHandle, EDataBufferType dataBufferType, uint32_t size);
+        void                               removeDataBuffer            (DataBufferHandle handle);
+        [[nodiscard]] DeviceResourceHandle getDataBufferDeviceHandle   (DataBufferHandle handle) const;
+        [[nodiscard]] EDataBufferType      getDataBufferType           (DataBufferHandle handle) const;
+        void                               getAllDataBuffers           (DataBufferHandleVector& dataBuffers) const;
 
         void                               addTextureBuffer            (TextureBufferHandle handle, DeviceResourceHandle deviceHandle, EPixelStorageFormat format, uint32_t size);
         void                               removeTextureBuffer         (TextureBufferHandle handle);
@@ -61,12 +63,12 @@ namespace ramses::internal
         [[nodiscard]] uint32_t             getTextureBufferByteSize    (TextureBufferHandle handle) const;
         void                               getAllTextureBuffers        (TextureBufferHandleVector& textureBuffers) const;
 
-        void                            addVertexArray(RenderableHandle renderableHandle, DeviceResourceHandle deviceHandle);
-        void                            removeVertexArray(RenderableHandle renderableHandle);
-        [[nodiscard]] DeviceResourceHandle            getVertexArrayDeviceHandle(RenderableHandle renderableHandle) const;
-        void                            getAllVertexArrayRenderables(RenderableVector& vertexArrayRenderables) const;
+        void                               addVertexArray(RenderableHandle renderableHandle, DeviceResourceHandle deviceHandle);
+        void                               removeVertexArray(RenderableHandle renderableHandle);
+        [[nodiscard]] DeviceResourceHandle getVertexArrayDeviceHandle(RenderableHandle renderableHandle) const;
+        void                               getAllVertexArrayRenderables(RenderableVector& vertexArrayRenderables) const;
 
-        [[nodiscard]] uint32_t                          getSceneResourceMemoryUsage(ESceneResourceType resourceType) const;
+        [[nodiscard]] uint32_t getSceneResourceMemoryUsage(ESceneResourceType resourceType) const;
 
     private:
         struct TextureBufferEntry
@@ -80,7 +82,7 @@ namespace ramses::internal
         {
             DeviceResourceHandle deviceHandle;
             uint32_t size = 0u;
-            bool writeOnly = false;
+            RenderBuffer renderBufferProperties;
         };
 
         struct BlitPassEntry
@@ -102,7 +104,7 @@ namespace ramses::internal
         using DataBufferMap          = HashMap<DataBufferHandle,     DataBufferEntry>;
         using TextureBufferMap       = HashMap<TextureBufferHandle,  TextureBufferEntry>;
         using TextureSamplerMap      = HashMap<TextureSamplerHandle, DeviceResourceHandle>;
-        using VertexArrayMap         = HashMap<RenderableHandle,   DeviceResourceHandle>;
+        using VertexArrayMap         = HashMap<RenderableHandle,     DeviceResourceHandle>;
 
         RenderBufferMap        m_renderBuffers;
         RenderTargetMap        m_renderTargets;

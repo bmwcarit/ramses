@@ -10,7 +10,7 @@
 #include "internal/RendererLib/RendererScenes.h"
 #include "internal/RendererLib/DataLinkUtils.h"
 #include "internal/SceneGraph/SceneUtils/DataInstanceHelper.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {
@@ -41,7 +41,7 @@ namespace ramses::internal
         const EDataType consumerDataType = DataLinkUtils::GetSlotDataReferenceType(consumerSceneId, consumerSlotHandle, m_scenes);
         if (providerDataType != consumerDataType)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: data types of provider (Scene:" << providerSceneId << ") and consumer (Scene: " << consumerSceneId << ") do not match!");
+            LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: data types of provider (Scene:{}) and consumer (Scene: {}) do not match!", providerSceneId, consumerSceneId);
             return false;
         }
 

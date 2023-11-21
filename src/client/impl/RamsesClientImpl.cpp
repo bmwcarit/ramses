@@ -130,7 +130,7 @@ namespace ramses::internal
     {
         if (!sceneConfig.getSceneId().isValid())
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "RamsesClient::createScene: invalid sceneId");
+            LOG_ERROR(CONTEXT_CLIENT, "RamsesClient::createScene: invalid sceneId");
             return nullptr;
         }
 
@@ -230,20 +230,20 @@ namespace ramses::internal
                                                        ramses::internal::IInputStream& inputStream,
                                                        const SceneConfigImpl& config)
     {
-        LOG_TRACE(ramses::internal::CONTEXT_CLIENT, "RamsesClient::prepareSceneFromInputStream:  start loading scene from input stream");
+        LOG_TRACE(CONTEXT_CLIENT, "RamsesClient::prepareSceneFromInputStream:  start loading scene from input stream");
 
         ramses::internal::SceneCreationInformation createInfo;
         ramses::internal::ScenePersistation::ReadSceneMetadataFromStream(inputStream, createInfo);
         if (config.getSceneId().isValid())
         {
             const auto newSceneId = ramses::internal::SceneId(config.getSceneId().getValue());
-            LOG_INFO_P(ramses::internal::CONTEXT_CLIENT, "RamsesClient::{}: Override stored scene id: {} with user provided scene id: {}", caller, createInfo.m_id, newSceneId);
+            LOG_INFO(CONTEXT_CLIENT, "RamsesClient::{}: Override stored scene id: {} with user provided scene id: {}", caller, createInfo.m_id, newSceneId);
             createInfo.m_id = newSceneId;
         }
         const ramses::internal::SceneSizeInformation& sizeInformation = createInfo.m_sizeInfo;
         const ramses::internal::SceneInfo sceneInfo(createInfo.m_id, createInfo.m_name);
 
-        LOG_DEBUG(ramses::internal::CONTEXT_CLIENT, "RamsesClient::prepareSceneFromInputStream:  scene to be loaded has " << sizeInformation);
+        LOG_DEBUG(CONTEXT_CLIENT, "RamsesClient::prepareSceneFromInputStream:  scene to be loaded has {}", sizeInformation);
 
         ramses::internal::ClientScene* internalScene = nullptr;
         {
@@ -259,30 +259,30 @@ namespace ramses::internal
         // need first to create the pimpl, so that internal framework components know the new scene
         if (config.getPublicationMode() == EScenePublicationMode::LocalOnly)
         {
-            LOG_INFO(ramses::internal::CONTEXT_CLIENT, "RamsesClient::" << caller << ": Mark file loaded from " << filename << " with sceneId " << createInfo.m_id << " as local only");
+            LOG_INFO(CONTEXT_CLIENT, "RamsesClient::{}: Mark file loaded from {} with sceneId {} as local only", caller, filename, createInfo.m_id);
         }
         else
         {
-            LOG_INFO(ramses::internal::CONTEXT_CLIENT, "RamsesClient::" << caller << ": Mark file loaded from " << filename << " with sceneId " << createInfo.m_id << " as local and remote");
+            LOG_INFO(CONTEXT_CLIENT, "RamsesClient::{}: Mark file loaded from {} with sceneId {} as local and remote", caller, filename, createInfo.m_id);
         }
 
         auto impl = std::make_unique<SceneImpl>(*internalScene, config, *m_hlClient);
 
         // now the scene is registered, so it's possible to load the low level content into the scene
-        LOG_TRACE(ramses::internal::CONTEXT_CLIENT, "    Reading low level scene from stream");
+        LOG_TRACE(CONTEXT_CLIENT, "    Reading low level scene from stream");
         ramses::internal::ScenePersistation::ReadSceneFromStream(inputStream, *internalScene);
 
-        LOG_TRACE(ramses::internal::CONTEXT_CLIENT, "    Deserializing high level scene objects from stream");
+        LOG_TRACE(CONTEXT_CLIENT, "    Deserializing high level scene objects from stream");
         DeserializationContext deserializationContext(config);
         SerializationHelper::DeserializeObjectID(inputStream);
         if (!impl->deserialize(inputStream, deserializationContext))
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "    Failed to deserialize high level scene:");
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, m_framework.getErrorReporting().getError().value_or(Issue{}).message);
+            LOG_ERROR(CONTEXT_CLIENT, "    Failed to deserialize high level scene:");
+            LOG_ERROR(CONTEXT_CLIENT, m_framework.getErrorReporting().getError().value_or(Issue{}).message);
             return nullptr;
         }
 
-        LOG_TRACE(ramses::internal::CONTEXT_CLIENT, "    Done with preparing scene from input stream.");
+        LOG_TRACE(CONTEXT_CLIENT, "    Done with preparing scene from input stream.");
 
         return SceneOwningPtr{ new ramses::Scene{ std::move(impl) }, [](ramses::Scene* s) { delete s; } };
     }
@@ -293,13 +293,13 @@ namespace ramses::internal
         ramses::internal::IInputStream& inputStream = cconfig.streamContainer->getStream();
         if (inputStream.getState() != ramses::internal::EStatus::Ok)
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "RamsesClient::" << cconfig.caller << ":  failed to open scene source " << cconfig.dataSource);
+            LOG_ERROR(CONTEXT_CLIENT, "RamsesClient::{}:  failed to open scene source {}", cconfig.caller, cconfig.dataSource);
             return nullptr;
         }
 
         if (!ReadRamsesVersionAndPrintWarningOnMismatch(inputStream, "scene file", getFramework().getFeatureLevel()))
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "RamsesClient::" << cconfig.caller << ": failed to read from scene source " << cconfig.dataSource);
+            LOG_ERROR(CONTEXT_CLIENT, "RamsesClient::{}: failed to read from scene source {}", cconfig.caller, cconfig.dataSource);
             return nullptr;
         }
 
@@ -308,8 +308,8 @@ namespace ramses::internal
         inputStream >> exporter;
         inputStream >> metadataString;
 
-        LOG_INFO_P(CONTEXT_CLIENT, "Metadata: '{}'", metadataString);
-        LOG_INFO_P(CONTEXT_CLIENT, "Exporter version: {}.{}.{} (file format version {})", exporter.major, exporter.minor, exporter.patch, exporter.fileFormat);
+        LOG_INFO(CONTEXT_CLIENT, "Metadata: '{}'", metadataString);
+        LOG_INFO(CONTEXT_CLIENT, "Exporter version: {}.{}.{} (file format version {})", exporter.major, exporter.minor, exporter.patch, exporter.fileFormat);
 
         uint64_t sceneObjectStart = 0;
         uint64_t llResourceStart = 0;
@@ -324,7 +324,7 @@ namespace ramses::internal
 
             if (inputStream.getState() != ramses::internal::EStatus::Ok)
             {
-                LOG_ERROR_P(ramses::internal::CONTEXT_CLIENT, "RamsesClient::{}: Failed reading scene from file: {} ", cconfig.caller, inputStream.getState());
+                LOG_ERROR(CONTEXT_CLIENT, "RamsesClient::{}: Failed reading scene from file: {} ", cconfig.caller, inputStream.getState());
                 return nullptr;
             }
 
@@ -338,7 +338,7 @@ namespace ramses::internal
         }
         if (!scene)
         {
-            LOG_ERROR_P(ramses::internal::CONTEXT_CLIENT, "RamsesClient::{}: scene creation for '{}' failed", cconfig.caller, cconfig.dataSource);
+            LOG_ERROR(CONTEXT_CLIENT, "RamsesClient::{}: scene creation for '{}' failed", cconfig.caller, cconfig.dataSource);
             return nullptr;
         }
 
@@ -349,7 +349,7 @@ namespace ramses::internal
         const ramses::internal::SceneFileHandle fileHandle = m_appLogic.addResourceFile(cconfig.streamContainer, loadedTOC);
         scene->m_impl.setSceneFileHandle(fileHandle);
 
-        LOG_INFO_P(CONTEXT_CLIENT, "RamsesClient::{}: Source '{}' has handle {}", cconfig.caller, cconfig.dataSource, fileHandle);
+        LOG_INFO(CONTEXT_CLIENT, "RamsesClient::{}: Source '{}' has handle {}", cconfig.caller, cconfig.dataSource, fileHandle);
 
         return scene;
     }
@@ -358,7 +358,7 @@ namespace ramses::internal
     {
         if (fileName.empty())
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "RamsesClient::loadSceneFromFile: filename may not be empty");
+            LOG_ERROR(CONTEXT_CLIENT, "RamsesClient::loadSceneFromFile: filename may not be empty");
             return nullptr;
         }
 
@@ -374,12 +374,12 @@ namespace ramses::internal
     {
         if (!data)
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "RamsesClient::loadSceneFromMemory: data may not be null");
+            LOG_ERROR(CONTEXT_CLIENT, "RamsesClient::loadSceneFromMemory: data may not be null");
             return nullptr;
         }
         if (size == 0)
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "RamsesClient::loadSceneFromMemory: size may not be 0");
+            LOG_ERROR(CONTEXT_CLIENT, "RamsesClient::loadSceneFromMemory: size may not be 0");
             return nullptr;
         }
 
@@ -396,12 +396,12 @@ namespace ramses::internal
     {
         if (fd <= 0)
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "RamsesClient::loadSceneFromFileDescriptor: filedescriptor must be valid " << fd);
+            LOG_ERROR(CONTEXT_CLIENT, "RamsesClient::loadSceneFromFileDescriptor: filedescriptor must be valid {}", fd);
             return nullptr;
         }
         if (length == 0)
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "RamsesClient::loadSceneFromFileDescriptor: length may not be 0");
+            LOG_ERROR(CONTEXT_CLIENT, "RamsesClient::loadSceneFromFileDescriptor: length may not be 0");
             return nullptr;
         }
 
@@ -425,7 +425,7 @@ namespace ramses::internal
         finalizeLoadedScene(std::move(scene));
 
         const uint64_t end = ramses::internal::PlatformTime::GetMillisecondsMonotonic();
-        LOG_INFO(ramses::internal::CONTEXT_CLIENT, "RamsesClient::" << cconfig.caller << " ramses::Scene loaded from '" << cconfig.dataSource << "' in " << (end - start) << " ms");
+        LOG_INFO(CONTEXT_CLIENT, "RamsesClient::{} ramses::Scene loaded from '{}' in {} ms", cconfig.caller, cconfig.dataSource, end - start);
 
         return scenePtr;
     }
@@ -447,7 +447,7 @@ namespace ramses::internal
         ramses::internal::RamsesVersion::VersionInfo readVersion;
         if (!ramses::internal::RamsesVersion::ReadFromStream(streamContainer.getStream(), readVersion, detectedFeatureLevel))
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "RamsesClient::GetFeatureLevelFromSceneFile: failed to read RAMSES version and feature level from '" << desc << "'.");
+            LOG_ERROR(CONTEXT_CLIENT, "RamsesClient::GetFeatureLevelFromSceneFile: failed to read RAMSES version and feature level from '{}'.", desc);
             return false;
         }
 
@@ -464,12 +464,12 @@ namespace ramses::internal
     {
         if (fd <= 0)
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "RamsesClient::GetFeatureLevelFromFile: filedescriptor must be valid " << fd);
+            LOG_ERROR(CONTEXT_CLIENT, "RamsesClient::GetFeatureLevelFromFile: filedescriptor must be valid {}", fd);
             return false;
         }
         if (length == 0u)
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "RamsesClient::GetFeatureLevelFromFile: length may not be 0");
+            LOG_ERROR(CONTEXT_CLIENT, "RamsesClient::GetFeatureLevelFromFile: length may not be 0");
             return false;
         }
 
@@ -484,22 +484,22 @@ namespace ramses::internal
         EFeatureLevel featureLevelFromFile = EFeatureLevel_01;
         if (!ramses::internal::RamsesVersion::ReadFromStream(inputStream, readVersion, featureLevelFromFile))
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "RamsesClient::ReadRamsesVersionAndPrintWarningOnMismatch: failed to read RAMSES version for " << verboseFileName << ", file probably corrupt. Loading aborted.");
+            LOG_ERROR(CONTEXT_CLIENT, "RamsesClient::ReadRamsesVersionAndPrintWarningOnMismatch: failed to read RAMSES version for {}, file probably corrupt. Loading aborted.", verboseFileName);
             return false;
         }
-        LOG_INFO(ramses::internal::CONTEXT_CLIENT, "RAMSES version in file '" << verboseFileName << "': [" << readVersion.versionString << "]; GitHash: [" << readVersion.gitHash << "]; FeatureLevel: [" << featureLevelFromFile << "];");
+        LOG_INFO(CONTEXT_CLIENT, "RAMSES version in file '{}': [{}]; GitHash: [{}]; FeatureLevel: [{}];", verboseFileName, readVersion.versionString, readVersion.gitHash, featureLevelFromFile);
 
         if (!ramses::internal::RamsesVersion::MatchesMajorMinor(::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_MAJOR_INT, ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_MINOR_INT, readVersion))
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "RamsesClient::ReadRamsesVersionAndPrintWarningOnMismatch: Version of file " << verboseFileName << " does not match MAJOR.MINOR of this build. Cannot load the file.");
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "SDK version of loader: [" << ::ramses_sdk::RAMSES_SDK_RAMSES_VERSION << "]; GitHash: [" << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH << "]");
+            LOG_ERROR(CONTEXT_CLIENT, "RamsesClient::ReadRamsesVersionAndPrintWarningOnMismatch: Version of file {} does not match MAJOR.MINOR of this build. Cannot load the file.", verboseFileName);
+            LOG_ERROR(CONTEXT_CLIENT, "SDK version of loader: [{}]; GitHash: [{}]", ::ramses_sdk::RAMSES_SDK_RAMSES_VERSION, ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH);
             return false;
         }
 
         if (featureLevelFromFile != featureLevel)
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "RamsesClient::ReadRamsesVersionAndPrintWarningOnMismatch: Feature level of file '" << verboseFileName
-                << "' is " << featureLevelFromFile << " which does not match feature level of this Ramses instance (" << featureLevel << "). Cannot load the file.");
+            LOG_ERROR(CONTEXT_CLIENT, "RamsesClient::ReadRamsesVersionAndPrintWarningOnMismatch: Feature level of file '{}' is {} which does not match feature level of this Ramses instance({}).Cannot load the file.",
+                verboseFileName, featureLevelFromFile, featureLevel);
             return false;
         }
 
@@ -556,14 +556,14 @@ namespace ramses::internal
                 const uint64_t start = ramses::internal::PlatformTime::GetMillisecondsMonotonic();
                 finalizeLoadedScene(std::move(sceneStatus.scene));
                 const uint64_t end = ramses::internal::PlatformTime::GetMillisecondsMonotonic();
-                LOG_INFO(ramses::internal::CONTEXT_CLIENT, "RamsesClient::dispatchEvents(sceneFileLoadSucceeded): Synchronous postprocessing of scene loaded from '" <<
-                         sceneStatus.sceneFilename << "' (sceneName: " << scene->getName() << ", sceneId " << scene->getSceneId() << ") in " << (end - start) << " ms");
+                LOG_INFO(CONTEXT_CLIENT, "RamsesClient::dispatchEvents(sceneFileLoadSucceeded): Synchronous postprocessing of scene loaded from '{}' (sceneName: {}, sceneId {}) in {} ms",
+                    sceneStatus.sceneFilename, scene->getName(), scene->getSceneId(), end - start);
 
                 clientEventHandler.sceneFileLoadSucceeded(sceneStatus.sceneFilename.c_str(), scene);
             }
             else
             {
-                LOG_INFO(ramses::internal::CONTEXT_CLIENT, "RamsesClient::dispatchEvents(sceneFileLoadFailed): " << sceneStatus.sceneFilename);
+                LOG_INFO(CONTEXT_CLIENT, "RamsesClient::dispatchEvents(sceneFileLoadFailed): {}", sceneStatus.sceneFilename);
                 clientEventHandler.sceneFileLoadFailed(sceneStatus.sceneFilename.c_str());
             }
         }
@@ -578,17 +578,16 @@ namespace ramses::internal
                 auto sr = findSceneReference(sceneId_t{ rendererEvent.masterSceneId.getValue() }, sceneId_t{ rendererEvent.referencedScene.getValue() });
                 if (sr)
                 {
-                    LOG_INFO(CONTEXT_CLIENT, "RamsesClient::dispatchEvents master:reference scene state changed: "
-                        << rendererEvent.masterSceneId << ":" << rendererEvent.referencedScene << " " << ramses::internal::EnumToString(rendererEvent.sceneState));
+                    LOG_INFO(CONTEXT_CLIENT, "RamsesClient::dispatchEvents master:reference scene state changed: {}:{} {}",
+                        rendererEvent.masterSceneId, rendererEvent.referencedScene, ramses::internal::EnumToString(rendererEvent.sceneState));
 
                     sr->impl().setReportedState(rendererEvent.sceneState);
                     clientEventHandler.sceneReferenceStateChanged(*sr, rendererEvent.sceneState);
                 }
                 else
                 {
-                    LOG_WARN(CONTEXT_CLIENT,
-                             "RamsesClientImpl::dispatchEvents: did not find SceneReference for a SceneStateChanged event: "
-                                 << rendererEvent.masterSceneId << " " << rendererEvent.referencedScene << " " << ramses::internal::EnumToString(rendererEvent.sceneState));
+                    LOG_WARN(CONTEXT_CLIENT, "RamsesClientImpl::dispatchEvents: did not find SceneReference for a SceneStateChanged event: {} {} {}",
+                        rendererEvent.masterSceneId, rendererEvent.referencedScene, ramses::internal::EnumToString(rendererEvent.sceneState));
                 }
                 break;
             }
@@ -601,9 +600,8 @@ namespace ramses::internal
                 }
                 else
                 {
-                    LOG_WARN(CONTEXT_CLIENT,
-                             "RamsesClientImpl::dispatchEvents: did not find SceneReference for a SceneFlushed event: "
-                                 << rendererEvent.masterSceneId << " " << rendererEvent.referencedScene << " " << rendererEvent.tag);
+                    LOG_WARN(CONTEXT_CLIENT, "RamsesClientImpl::dispatchEvents: did not find SceneReference for a SceneFlushed event: {} {} {}",
+                        rendererEvent.masterSceneId, rendererEvent.referencedScene, rendererEvent.tag);
                 }
                 break;
             }
@@ -634,8 +632,8 @@ namespace ramses::internal
 
         if (scene)
         {
-            LOG_INFO(ramses::internal::CONTEXT_CLIENT, "RamsesClient::loadSceneFromFileAsync: ramses::Scene loaded from '" << m_cconfig.dataSource <<
-                     "' (sceneName: " << scene->getName() << ", sceneId " << scene->getSceneId() << ") in " << (end - start) << " ms");
+            LOG_INFO(CONTEXT_CLIENT, "RamsesClient::loadSceneFromFileAsync: ramses::Scene loaded from '{}' (sceneName: {}, sceneId {}) in {} ms",
+                m_cconfig.dataSource, scene->getName(), scene->getSceneId(), end - start);
         }
 
         ramses::internal::PlatformGuard g(m_client.m_clientLock);
@@ -705,7 +703,7 @@ namespace ramses::internal
     ramses::internal::ManagedResource RamsesClientImpl::manageResource(const ramses::internal::IResource* res)
     {
         ramses::internal::ManagedResource managedRes = m_appLogic.addResource(res);
-        LOG_HL_CLIENT_API_STR("Created resource with internal hash " << managedRes->getHash() << ", name: " << managedRes->getName());
+        LOG_HL_CLIENT_API_STR("Created resource with internal hash {}, name: {}", managedRes->getHash(), managedRes->getName());
 
         return managedRes;
     }
@@ -745,7 +743,7 @@ namespace ramses::internal
     {
         if (0u == numElements || nullptr == arrayData)
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "RamsesClientImpl::createManagedArrayResource Array resource must have element count > 0 and data must not be nullptr!");
+            LOG_ERROR(CONTEXT_CLIENT, "RamsesClientImpl::createManagedArrayResource Array resource must have element count > 0 and data must not be nullptr!");
             return {};
         }
 
@@ -765,13 +763,13 @@ namespace ramses::internal
     {
         if (!TextureUtils::TextureParametersValid(width, height, depth, static_cast<uint32_t>(mipLevelData.size())) || !TextureUtils::MipDataValid(width, height, depth, mipLevelData, format))
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "RamsesClient::createTexture: invalid parameters");
+            LOG_ERROR(CONTEXT_CLIENT, "RamsesClient::createTexture: invalid parameters");
             return {};
         }
 
         if (generateMipChain && (!FormatSupportsMipChainGeneration(format) || (mipLevelData.size() > 1)))
         {
-            LOG_WARN(ramses::internal::CONTEXT_CLIENT, "RamsesClient::createTexture: cannot auto generate mipmaps when custom mipmap data provided or unsupported format used");
+            LOG_WARN(CONTEXT_CLIENT, "RamsesClient::createTexture: cannot auto generate mipmaps when custom mipmap data provided or unsupported format used");
             generateMipChain = false;
         }
 
@@ -810,7 +808,7 @@ namespace ramses::internal
         if (!effectResource)
         {
             errorMessages = effectBlock.getEffectErrorMessages();
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "RamsesClient::createEffect  Failed to create effect resource (name: '" << name << "') :\n    " << effectBlock.getEffectErrorMessages());
+            LOG_ERROR(CONTEXT_CLIENT, "RamsesClient::createEffect  Failed to create effect resource (name: '{}') :\n    {}", name, effectBlock.getEffectErrorMessages());
             return {};
         }
         return manageResource(effectResource);

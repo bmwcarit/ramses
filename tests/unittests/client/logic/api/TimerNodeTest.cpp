@@ -56,7 +56,7 @@ namespace ramses::internal
 
         auto& otherEngine = *m_scene->createLogicEngine();
         EXPECT_FALSE(otherEngine.destroy(*timerNode));
-        EXPECT_EQ("Failed to destroy object 'timerNode [LogicObject ScnObjId=9]', cannot find it in this LogicEngine instance.", getLastErrorMessage());
+        EXPECT_EQ("Failed to destroy object 'timerNode [LogicObject ScnObjId=10]', cannot find it in this LogicEngine instance.", getLastErrorMessage());
     }
 
     TEST_F(ATimerNode, ChangesName)
@@ -186,7 +186,7 @@ namespace ramses::internal
         {
             auto& otherEngine = *m_logicEngine;
             otherEngine.createTimerNode("timerNode");
-            ASSERT_TRUE(saveToFileWithoutValidation("logic_timerNode.bin"));
+            ASSERT_TRUE(saveToFile("logic_timerNode.bin"));
         }
 
         ASSERT_TRUE(recreateFromFile("logic_timerNode.bin"));

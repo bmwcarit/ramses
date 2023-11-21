@@ -74,8 +74,8 @@ namespace ramses::internal
 
         [[nodiscard]] DataInstanceHandle getViewportOffsetHandle() const;
         [[nodiscard]] DataInstanceHandle getViewportSizeHandle() const;
-        [[nodiscard]] DataInstanceHandle getFrustrumPlanesHandle() const;
-        [[nodiscard]] DataInstanceHandle getFrustrumNearFarPlanesHandle() const;
+        [[nodiscard]] DataInstanceHandle getFrustumPlanesHandle() const;
+        [[nodiscard]] DataInstanceHandle getFrustumNearFarPlanesHandle() const;
 
     private:
         [[nodiscard]] ProjectionParams getProjectionParams() const;

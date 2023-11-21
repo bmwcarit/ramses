@@ -218,10 +218,10 @@ namespace ramses::internal
         // reserve to all nodes count because it will be used to store all sorted nodes later
         rootNodes.reserve(m_nodeIncomingEdges.size());
 
-        for (const auto& nodeIngoingEdges : m_nodeIncomingEdges)
+        for (const auto& incomingEdge : m_nodeIncomingEdges)
         {
-            if (nodeIngoingEdges.second.empty())
-                rootNodes.push_back(nodeIngoingEdges.first);
+            if (incomingEdge.second.empty())
+                rootNodes.push_back(incomingEdge.first);
         }
 
         return rootNodes;

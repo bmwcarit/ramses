@@ -100,14 +100,14 @@ namespace ramses::internal
         else
         {
             const auto timeSinceLastLog = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_lastTimeLogged.value());
-            LOG_INFO_P(CONTEXT_PERIODIC, "Time since last log: {:.2f} sec", static_cast<float>(timeSinceLastLog.count()) / 1000.f);
+            LOG_INFO(CONTEXT_PERIODIC, "Time since last log: {:.2f} sec", static_cast<float>(timeSinceLastLog.count()) / 1000.f);
         }
         m_lastTimeLogged = now;
     }
 
     void LogicNodeUpdateStatistics::logUpdateExecutionTime()
     {
-        LOG_INFO_P(CONTEXT_PERIODIC, "Update Execution time (min/max/avg): {}/{}/{} [u]sec",
+        LOG_INFO(CONTEXT_PERIODIC, "Update Execution time (min/max/avg): {}/{}/{} [u]sec",
             m_updateExecutionTime.min,
             m_updateExecutionTime.max,
             m_updateExecutionTime.acc / m_currentStatisticsFrame);
@@ -117,11 +117,11 @@ namespace ramses::internal
     {
         if (m_currentStatisticsFrame == 1)
         {
-            LOG_INFO_P(CONTEXT_PERIODIC, "Time between Update calls cannot be measured with loggingRate = 1");
+            LOG_INFO(CONTEXT_PERIODIC, "Time between Update calls cannot be measured with loggingRate = 1");
         }
         else
         {
-            LOG_INFO_P(CONTEXT_PERIODIC, "Time between Update calls (min/max/avg): {:.2f}/{:.2f}/{:.2f} [m]sec",
+            LOG_INFO(CONTEXT_PERIODIC, "Time between Update calls (min/max/avg): {:.2f}/{:.2f}/{:.2f} [m]sec",
                 static_cast<float>(m_timeSinceLastUpdate.min) / 1000.f,
                 static_cast<float>(m_timeSinceLastUpdate.max) / 1000.f,
                 (static_cast<float>(m_timeSinceLastUpdate.acc) / static_cast<float>(m_currentStatisticsFrame - 1)) / 1000.f);
@@ -131,7 +131,7 @@ namespace ramses::internal
     void LogicNodeUpdateStatistics::logNodesExecuted()
     {
         const size_t totalNodesNotZero = std::max(size_t(1), m_totalNodesCount);
-        LOG_INFO_P(CONTEXT_PERIODIC, "Nodes Executed (min/max/avg): {}%/{}%/{}% ({}/{}/{}) of {} nodes total",
+        LOG_INFO(CONTEXT_PERIODIC, "Nodes Executed (min/max/avg): {}%/{}%/{}% ({}/{}/{}) of {} nodes total",
             static_cast<size_t>(static_cast<float>(m_nodesExecuted.min) / totalNodesNotZero * 100.f),
             static_cast<size_t>(static_cast<float>(m_nodesExecuted.max) / totalNodesNotZero * 100.f),
             static_cast<size_t>(static_cast<float>(m_nodesExecuted.acc) / m_currentStatisticsFrame / totalNodesNotZero * 100.f),
@@ -143,7 +143,7 @@ namespace ramses::internal
 
     void LogicNodeUpdateStatistics::logActivatedLinks()
     {
-        LOG_INFO_P(CONTEXT_PERIODIC, "Activated links (min/max/avg): {}/{}/{}",
+        LOG_INFO(CONTEXT_PERIODIC, "Activated links (min/max/avg): {}/{}/{}",
             m_activatedLinks.min,
             m_activatedLinks.max,
             m_activatedLinks.acc / m_currentStatisticsFrame);
@@ -160,7 +160,7 @@ namespace ramses::internal
             if (node.first != nullptr)
                 nodes += fmt::format(" [{}:{}]", node.first->getName(), node.second.count());
         }
-        LOG_INFO_P(CONTEXT_PERIODIC, "Slowest nodes [name:time_us]:{}", nodes);
+        LOG_INFO(CONTEXT_PERIODIC, "Slowest nodes [name:time_us]:{}", nodes);
     }
 
     void LogicNodeUpdateStatistics::calculateAndLog()

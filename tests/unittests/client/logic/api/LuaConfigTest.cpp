@@ -120,7 +120,7 @@ namespace ramses::internal
         {
             EXPECT_FALSE(config.addDependency(invalidLabel, *m_module));
 
-            EXPECT_EQ(fmt::format("Failed to add dependency '{}'! The alias name should be a valid Lua label.", invalidLabel), m_errorMessage);
+            EXPECT_EQ(fmt::format("R.main: Failed to add dependency '{}'! The alias name should be a valid Lua label.", invalidLabel), m_errorMessage);
         }
     }
 
@@ -131,7 +131,7 @@ namespace ramses::internal
         ASSERT_TRUE(config.addDependency("module", *m_module));
         EXPECT_FALSE(config.addDependency("module", *m_module));
 
-        EXPECT_EQ("Module dependencies must be uniquely aliased! Alias 'module' is already used!", m_errorMessage);
+        EXPECT_EQ("R.main: Module dependencies must be uniquely aliased! Alias 'module' is already used!", m_errorMessage);
     }
 
     TEST_F(ALuaConfig, ProducesErrorWhenUsingStandardModuleAsAliasName)
@@ -139,13 +139,13 @@ namespace ramses::internal
         LuaConfig config;
 
         EXPECT_FALSE(config.addDependency("math", *m_module));
-        EXPECT_EQ("Failed to add dependency 'math'! The alias collides with a standard library name!", m_errorMessage);
+        EXPECT_EQ("R.main: Failed to add dependency 'math'! The alias collides with a standard library name!", m_errorMessage);
         EXPECT_FALSE(config.addDependency("string", *m_module));
-        EXPECT_EQ("Failed to add dependency 'string'! The alias collides with a standard library name!", m_errorMessage);
+        EXPECT_EQ("R.main: Failed to add dependency 'string'! The alias collides with a standard library name!", m_errorMessage);
         EXPECT_FALSE(config.addDependency("debug", *m_module));
-        EXPECT_EQ("Failed to add dependency 'debug'! The alias collides with a standard library name!", m_errorMessage);
+        EXPECT_EQ("R.main: Failed to add dependency 'debug'! The alias collides with a standard library name!", m_errorMessage);
         EXPECT_FALSE(config.addDependency("table", *m_module));
-        EXPECT_EQ("Failed to add dependency 'table'! The alias collides with a standard library name!", m_errorMessage);
+        EXPECT_EQ("R.main: Failed to add dependency 'table'! The alias collides with a standard library name!", m_errorMessage);
     }
 
     TEST_F(ALuaConfig, CanEnableDebugLogFunctions)

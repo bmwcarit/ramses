@@ -33,7 +33,7 @@ class BuildConfig(common.CommonConfig):
     def cmake_configure(self,
                         disable_default_window_type, enable_x11, enable_android, enable_wayland_ivi, enable_wayland_wl_shell,
                         flatbuf_gen, android_abi, disable_logic, use_imagemagick,
-                        headless, no_full_shared_lib,
+                        no_full_shared_lib,
                         no_examples, no_demos, no_tests, no_tools, generator,
                         enable_dlt, enable_lto, test_coverage, enable_coverage, sanitizer_name,
                         package_name, cpp_std, cmake_modules, enable_luajit):
@@ -69,9 +69,6 @@ class BuildConfig(common.CommonConfig):
 
         if sanitizer_name:
             optional_args.append(f'-Dramses-sdk_ENABLE_SANITIZER={sanitizer_name}')
-
-        if headless:
-            optional_args.append('-Dramses-sdk_BUILD_HEADLESS_SHARED_LIB=1')
 
         if no_full_shared_lib:
             optional_args.append('-Dramses-sdk_BUILD_FULL_SHARED_LIB=0')
@@ -159,7 +156,6 @@ class BuildConfig(common.CommonConfig):
 @click.option('--build-target', default='install', help='What CMake target to build')
 @click.option('--flatbuf-gen', is_flag=True, default=False, help='Generate flatbuffer file headers')
 @click.option('--android-abi', help='Set ABI when building on Android')
-@click.option('--headless', is_flag=True, default=False, help='Build headless shared lib without renderer')
 @click.option('--no-full-shared-lib', is_flag=True, default=False, help='Disable building full shared lib with renderer')
 @click.option('--no-examples', is_flag=True, default=False, help='Dont build examples')
 @click.option('--no-demos', is_flag=True, default=False, help='Dont build demos')

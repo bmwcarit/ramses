@@ -11,6 +11,7 @@
 #include "internal/Core/Utils/LogMessage.h"
 #include "internal/Core/Utils/LogContext.h"
 #include "internal/Core/Utils/RamsesLogger.h"
+#include "internal/PlatformAbstraction/Collections/StringOutputStream.h"
 #include "internal/PlatformAbstraction/FmtBase.h"
 
 namespace ramses::internal
@@ -46,59 +47,30 @@ namespace ramses
     using ramses::internal::CONTEXT_SMOKETEST;
 }
 
-// LOG_* macros for log message in macro
-#define LOG_COMMON(context, logLevel, message)                             \
-    do {                                                                   \
-        if((logLevel) <= (context).getLogLevel())                          \
-        {                                                                  \
-            ramses::internal::StringOutputStream ramses_log_stream(80);   \
-            ramses_log_stream << message; /* NOLINT(bugprone-macro-parentheses) */ \
-            ramses::internal::GetRamsesLogger().log(ramses::internal::LogMessage((context), (logLevel), ramses_log_stream)); \
-        }                                                                  \
-    } while (0)
-
-#define LOG_TRACE(context, message) \
-    LOG_COMMON((context), ramses::ELogLevel::Trace, message)
-
-#define LOG_INFO(context, message) \
-    LOG_COMMON((context), ramses::ELogLevel::Info, message)
-
-#define LOG_DEBUG(context, message) \
-    LOG_COMMON((context), ramses::ELogLevel::Debug, message)
-
-#define LOG_WARN(context, message) \
-    LOG_COMMON((context), ramses::ELogLevel::Warn, message)
-
-#define LOG_ERROR(context, message) \
-    LOG_COMMON((context), ramses::ELogLevel::Error, message)
-
-#define LOG_FATAL(context, message) \
-    LOG_COMMON((context), ramses::ELogLevel::Fatal, message)
-
 // LOG_* macros for log message via printf syntax
-#define LOG_COMMON_P(context, logLevel,  ...)            \
+#define LOG_COMMON(context, logLevel,  ...)            \
     do {                                                                   \
         if((logLevel) <= (context).getLogLevel())                          \
-            ramses::internal::GetRamsesLogger().log(ramses::internal::LogMessage((context), (logLevel), ramses::internal::StringOutputStream(::fmt::format(__VA_ARGS__)))); \
+            ramses::internal::GetRamsesLogger().log(ramses::internal::LogMessage{ (context), (logLevel), ::fmt::format(__VA_ARGS__) }); \
     } while (0)
 
-#define LOG_TRACE_P(context, ...)                                \
-    LOG_COMMON_P((context), ramses::ELogLevel::Trace, __VA_ARGS__)
+#define LOG_TRACE(context, ...)                                \
+    LOG_COMMON((context), ramses::ELogLevel::Trace, __VA_ARGS__)
 
-#define LOG_INFO_P(context, ...)                                 \
-    LOG_COMMON_P((context), ramses::ELogLevel::Info, __VA_ARGS__)
+#define LOG_INFO(context, ...)                                 \
+    LOG_COMMON((context), ramses::ELogLevel::Info, __VA_ARGS__)
 
-#define LOG_DEBUG_P(context, ...)                                \
-    LOG_COMMON_P((context), ramses::ELogLevel::Debug, __VA_ARGS__)
+#define LOG_DEBUG(context, ...)                                \
+    LOG_COMMON((context), ramses::ELogLevel::Debug, __VA_ARGS__)
 
-#define LOG_WARN_P(context, ...)                                 \
-    LOG_COMMON_P((context), ramses::ELogLevel::Warn, __VA_ARGS__)
+#define LOG_WARN(context, ...)                                 \
+    LOG_COMMON((context), ramses::ELogLevel::Warn, __VA_ARGS__)
 
-#define LOG_ERROR_P(context, ...)                                \
-    LOG_COMMON_P((context), ramses::ELogLevel::Error, __VA_ARGS__)
+#define LOG_ERROR(context, ...)                                \
+    LOG_COMMON((context), ramses::ELogLevel::Error, __VA_ARGS__)
 
-#define LOG_FATAL_P(context, ...)                                \
-    LOG_COMMON_P((context), ramses::ELogLevel::Fatal, __VA_ARGS__)
+#define LOG_FATAL(context, ...)                                \
+    LOG_COMMON((context), ramses::ELogLevel::Fatal, __VA_ARGS__)
 
 // LOG_* macros for log message via callable
 #define LOG_COMMON_F(context, logLevel, callable)                          \
@@ -107,7 +79,7 @@ namespace ramses
         {                                                                  \
             ramses::internal::StringOutputStream ramses_log_stream(160);  \
             callable(ramses_log_stream);                                   \
-            ramses::internal::GetRamsesLogger().log(ramses::internal::LogMessage((context), (logLevel), ramses_log_stream)); \
+            ramses::internal::GetRamsesLogger().log(ramses::internal::LogMessage{ (context), (logLevel), ramses_log_stream.release() }); \
         }                                                                  \
     } while (0)
 
@@ -137,7 +109,7 @@ namespace ramses
         {                                                                                                                                                                      \
             fmt::memory_buffer ramses_fmtlib_buffer; \
             callable(ramses_fmtlib_buffer); \
-            ramses::internal::GetRamsesLogger().log(ramses::internal::LogMessage((context), (logLevel), ramses::internal::StringOutputStream(fmt::to_string(ramses_fmtlib_buffer)))); \
+            ramses::internal::GetRamsesLogger().log(ramses::internal::LogMessage{ (context), (logLevel), fmt::to_string(ramses_fmtlib_buffer) });                              \
         }                                                                                                                                                                      \
     } while (0)
 

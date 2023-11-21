@@ -11,8 +11,6 @@
 #include "impl/APILoggingMacros.h"
 #include "internal/PlatformAbstraction/PlatformTime.h"
 
-#include "APILoggingHelper.h"
-
 #include <string>
 
 namespace ramses

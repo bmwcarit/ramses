@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "internal/Platform/Wayland/Window_Wayland.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "internal/Platform/Wayland/WaylandEnvironmentUtils.h"
 #include "internal/RendererLib/DisplayConfig.h"
 #include <poll.h>
@@ -225,7 +225,7 @@ namespace ramses::internal
         pollfd pollFileDescriptor = {m_wlContext.displayFD, POLLIN, 0};
         if (poll(&pollFileDescriptor, 1u, static_cast<int>(pollTime.count())) == -1)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Window_Wayland::dispatchWaylandDisplayEvents: error in poll :" << std::strerror(errno));
+            LOG_ERROR(CONTEXT_RENDERER, "Window_Wayland::dispatchWaylandDisplayEvents: error in poll :{}", std::strerror(errno));
             assert(false);
             return;
         }

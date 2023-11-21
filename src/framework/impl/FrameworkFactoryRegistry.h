@@ -8,12 +8,13 @@
 
 #pragma once
 
+#include "ramses/framework/APIExport.h"
 #include "impl/RamsesObjectFactoryInterfaces.h"
 #include <memory>
 
 namespace ramses::internal
 {
-    class FrameworkFactoryRegistry
+    class RAMSES_IMPL_EXPORT FrameworkFactoryRegistry
     {
     public:
         FrameworkFactoryRegistry(FrameworkFactoryRegistry const&) = delete;
@@ -22,7 +23,7 @@ namespace ramses::internal
         static FrameworkFactoryRegistry& GetInstance();
 
         void registerClientFactory(std::unique_ptr<IClientFactory> factory);
-        void registerRendererFactory(std::unique_ptr<IRendererFactory> factory);
+        void registerRendererFactory(UniquePtrWithDeleter<IRendererFactory> factory);
 
         IClientFactory* getClientFactory();
         IRendererFactory* getRendererFactory();
@@ -31,7 +32,7 @@ namespace ramses::internal
         FrameworkFactoryRegistry() = default;
 
         std::unique_ptr<IClientFactory> m_clientFactory;
-        std::unique_ptr<IRendererFactory> m_rendererFactory;
+        UniquePtrWithDeleter<IRendererFactory> m_rendererFactory;
     };
 }
 

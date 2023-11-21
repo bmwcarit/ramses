@@ -31,12 +31,12 @@ namespace ramses::internal
     TextureSamplerScene::TextureSamplerScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
     {
-        const uint8_t rgb8[] =
+        std::vector<std::byte> rgb8 =
         {
-            0xff,0xff,0xff,  0x00,0x00,0x00,
-            0xff,0x00,0x00,  0x00,0x00,0xff,
+            std::byte{0xff},std::byte{0xff},std::byte{0xff},  std::byte{0x00},std::byte{0x00},std::byte{0x00},
+            std::byte{0xff},std::byte{0x00},std::byte{0x00},  std::byte{0x00},std::byte{0x00},std::byte{0xff}
         };
-        const std::vector<MipLevelData> mipLevelData = { MipLevelData{ sizeof(rgb8), rgb8 } };
+        const std::vector<MipLevelData> mipLevelData = { rgb8 };
 
         if (state == EState::EState_ClientTexture)
         {
@@ -46,7 +46,7 @@ namespace ramses::internal
         else if (state == EState::EState_TextureBuffer)
         {
             ramses::Texture2DBuffer* texture = m_scene.createTexture2DBuffer(ramses::ETextureFormat::RGB8, 2, 2, 1);
-            texture->updateData(0, 0, 0, 2, 2, rgb8);
+            texture->updateData(0, 0, 0, 2, 2, rgb8.data());
             m_sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode::Repeat, ramses::ETextureAddressMode::Repeat, ramses::ETextureSamplingMethod::Nearest, ramses::ETextureSamplingMethod::Nearest, *texture);
         }
 
@@ -93,18 +93,18 @@ namespace ramses::internal
 
     void TextureSamplerScene::setState(uint32_t state)
     {
-        const uint8_t rgb8[] =
+        std::vector<std::byte> rgb8 =
         {
-            0xff,0xff,0xff,  0xff,0x00,0xff,  0x00,0xff,0x00,
-            0x00,0xff,0xff,  0xff,0xff,0x00,  0x00,0x00,0x00,
-            0xff,0x00,0x00,  0xff,0x00,0xff,  0x00,0x00,0xff
+            std::byte{0xff},std::byte{0xff},std::byte{0xff},  std::byte{0xff},std::byte{0x00},std::byte{0xff},  std::byte{0x00},std::byte{0xff},std::byte{0x00},
+            std::byte{0x00},std::byte{0xff},std::byte{0xff},  std::byte{0xff},std::byte{0xff},std::byte{0x00},  std::byte{0x00},std::byte{0x00},std::byte{0x00},
+            std::byte{0xff},std::byte{0x00},std::byte{0x00},  std::byte{0xff},std::byte{0x00},std::byte{0xff},  std::byte{0x00},std::byte{0x00},std::byte{0xff}
         };
 
         switch (state)
         {
         case EState::EState_SetClientTexture:
         {
-            const std::vector<MipLevelData> mipLevelData = { MipLevelData{ sizeof(rgb8), rgb8 } };
+            const std::vector<MipLevelData> mipLevelData = { rgb8 };
             const ramses::Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGB8, 3, 3, mipLevelData, false);
             m_sampler->setTextureData(*texture);
             break;
@@ -112,7 +112,7 @@ namespace ramses::internal
         case EState::EState_SetTextureBuffer:
         {
             ramses::Texture2DBuffer* texture = m_scene.createTexture2DBuffer(ramses::ETextureFormat::RGB8, 3, 3, 1);
-            texture->updateData(0, 0, 0, 3, 3, rgb8);
+            texture->updateData(0, 0, 0, 3, 3, rgb8.data());
             m_sampler->setTextureData(*texture);
             break;
         }
@@ -137,7 +137,7 @@ namespace ramses::internal
 
         case EState_SetTextureSampler:
         {
-            const std::vector<MipLevelData> mipLevelData = { MipLevelData{ sizeof(rgb8), rgb8 } };
+            const std::vector<MipLevelData> mipLevelData = { rgb8 };
 
             const ramses::Texture2D* texture = m_scene.createTexture2D(ramses::ETextureFormat::RGB8, 3, 3, mipLevelData, false);
             m_sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode::Repeat, ramses::ETextureAddressMode::Repeat, ramses::ETextureSamplingMethod::Nearest, ramses::ETextureSamplingMethod::Nearest, *texture);

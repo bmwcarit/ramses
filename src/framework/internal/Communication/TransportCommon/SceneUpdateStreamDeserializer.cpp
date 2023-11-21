@@ -19,13 +19,13 @@ namespace ramses::internal
         // check state + input
         if (m_hasFailed)
         {
-            LOG_ERROR_P(CONTEXT_FRAMEWORK, "SceneUpdateStreamDeserializer::processData: Invalid state due to previous error");
+            LOG_ERROR(CONTEXT_FRAMEWORK, "SceneUpdateStreamDeserializer::processData: Invalid state due to previous error");
             return fail();
         }
 
         if (data.size() < sizeof(uint32_t)*2 + 1)  // must at least be packet header + 'some' data
         {
-            LOG_ERROR_P(CONTEXT_FRAMEWORK, "SceneUpdateStreamDeserializer::processData: Packet too small (size {})", data.size());
+            LOG_ERROR(CONTEXT_FRAMEWORK, "SceneUpdateStreamDeserializer::processData: Packet too small (size {})", data.size());
             return fail();
         }
 
@@ -38,7 +38,7 @@ namespace ramses::internal
 
         if (packetNum != m_nextExpectedPacketNum)
         {
-            LOG_ERROR_P(CONTEXT_FRAMEWORK, "SceneUpdateStreamDeserializer::processData: expected packet {}, got {}", m_nextExpectedPacketNum, packetNum);
+            LOG_ERROR(CONTEXT_FRAMEWORK, "SceneUpdateStreamDeserializer::processData: expected packet {}, got {}", m_nextExpectedPacketNum, packetNum);
             return fail();
         }
 
@@ -52,7 +52,7 @@ namespace ramses::internal
         }
         else
         {
-            LOG_ERROR_P(CONTEXT_FRAMEWORK, "SceneUpdateStreamDeserializer::processData: Corrupted packet, more flag is {}", hasMorePackets);
+            LOG_ERROR(CONTEXT_FRAMEWORK, "SceneUpdateStreamDeserializer::processData: Corrupted packet, more flag is {}", hasMorePackets);
             return fail();
         }
 
@@ -82,7 +82,7 @@ namespace ramses::internal
         {
             if (!m_currentBlock.empty() || m_currentBlockSize != 0)
             {
-                LOG_ERROR_P(CONTEXT_FRAMEWORK, "SceneUpdateStreamDeserializer::processData: Last packet but data left to read (read {}, needed {}, type {})",
+                LOG_ERROR(CONTEXT_FRAMEWORK, "SceneUpdateStreamDeserializer::processData: Last packet but data left to read (read {}, needed {}, type {})",
                             m_currentBlock.size(), m_currentBlockSize, m_blockType);
                 return fail();
             }
@@ -115,7 +115,7 @@ namespace ramses::internal
         // block header is guaranteed continuous
         if (is.getCurrentReadBytes() + sizeof(uint32_t)*2 > dataSize)
         {
-            LOG_ERROR_P(CONTEXT_FRAMEWORK, "SceneUpdateStreamDeserializer::startReadingNewBlock: Could not read header");
+            LOG_ERROR(CONTEXT_FRAMEWORK, "SceneUpdateStreamDeserializer::startReadingNewBlock: Could not read header");
             return false;
         }
 
@@ -147,7 +147,7 @@ namespace ramses::internal
         else
         {
             // only warn on unknown block, no fail
-            LOG_WARN_P(CONTEXT_FRAMEWORK, "SceneUpdateStreamDeserializer::finalizeBlock: Ignore unexpected block type {}", m_blockType);
+            LOG_WARN(CONTEXT_FRAMEWORK, "SceneUpdateStreamDeserializer::finalizeBlock: Ignore unexpected block type {}", m_blockType);
         }
 
         m_currentBlock.clear();
@@ -165,12 +165,12 @@ namespace ramses::internal
     {
         if (m_currentBlock.size() < sizeof(uint32_t)*2)
         {
-            LOG_ERROR_P(CONTEXT_FRAMEWORK, "SceneUpdateStreamDeserializer::handleSceneActionCollection: Block too small ({})", m_currentBlock.size());
+            LOG_ERROR(CONTEXT_FRAMEWORK, "SceneUpdateStreamDeserializer::handleSceneActionCollection: Block too small ({})", m_currentBlock.size());
             return false;
         }
         if (m_currentResult.actions.numberOfActions() != 0)
         {
-            LOG_ERROR_P(CONTEXT_FRAMEWORK, "SceneUpdateStreamDeserializer::handleSceneActionCollection: More than one SceneActionCollection in packet");
+            LOG_ERROR(CONTEXT_FRAMEWORK, "SceneUpdateStreamDeserializer::handleSceneActionCollection: More than one SceneActionCollection in packet");
             return false;
         }
 
@@ -189,7 +189,7 @@ namespace ramses::internal
     {
         if (m_currentBlock.size() < sizeof(uint32_t)*2)
         {
-            LOG_ERROR_P(CONTEXT_FRAMEWORK, "SceneUpdateStreamDeserializer::handleResource: Block to small ({})", m_currentBlock.size());
+            LOG_ERROR(CONTEXT_FRAMEWORK, "SceneUpdateStreamDeserializer::handleResource: Block to small ({})", m_currentBlock.size());
             return false;
         }
 
@@ -209,7 +209,7 @@ namespace ramses::internal
     {
         if (m_currentBlock.size() < sizeof(uint32_t))
         {
-            LOG_ERROR_P(CONTEXT_FRAMEWORK, "SceneUpdateStreamDeserializer::handleFlushInfos: Block to small ({})", m_currentBlock.size());
+            LOG_ERROR(CONTEXT_FRAMEWORK, "SceneUpdateStreamDeserializer::handleFlushInfos: Block to small ({})", m_currentBlock.size());
             return false;
         }
 
@@ -219,7 +219,7 @@ namespace ramses::internal
 
         if (dataSize < FlushInformation::getMinimumSize())
         {
-            LOG_ERROR_P(CONTEXT_FRAMEWORK, "SceneUpdateStreamDeserializer::handleFlushInfos: Block to small for a valid FlushInfo ({})", dataSize);
+            LOG_ERROR(CONTEXT_FRAMEWORK, "SceneUpdateStreamDeserializer::handleFlushInfos: Block to small for a valid FlushInfo ({})", dataSize);
             return false;
         }
 

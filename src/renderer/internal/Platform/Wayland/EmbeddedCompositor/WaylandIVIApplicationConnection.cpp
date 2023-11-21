@@ -10,7 +10,7 @@
 #include "internal/Platform/Wayland/EmbeddedCompositor/WaylandSurface.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/WaylandIVISurface.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/NativeWaylandResource.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include <cassert>
 
 namespace ramses::internal
@@ -27,20 +27,20 @@ namespace ramses::internal
         m_resource = client.resourceCreate(&ivi_application_interface, static_cast<int>(version), id);
         if (m_resource)
         {
-            LOG_INFO(CONTEXT_RENDERER, "WaylandIVIApplicationConnection::WaylandIVIApplicationConnection(): ivi application interface is now provided  " << m_clientCredentials);
+            LOG_INFO(CONTEXT_RENDERER, "WaylandIVIApplicationConnection::WaylandIVIApplicationConnection(): ivi application interface is now provided  {}", m_clientCredentials);
 
             m_resource->setImplementation(&m_iviApplicationInterface, this, ResourceDestroyedCallback);
         }
         else
         {
-            LOG_ERROR(CONTEXT_RENDERER, "WaylandIVIApplicationConnection::WaylandIVIApplicationConnection(): Could not create wayland resource  " << m_clientCredentials);
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandIVIApplicationConnection::WaylandIVIApplicationConnection(): Could not create wayland resource  {}", m_clientCredentials);
             client.postNoMemory();
         }
     }
 
     WaylandIVIApplicationConnection::~WaylandIVIApplicationConnection()
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandIVIApplicationConnection::~WaylandIVIApplicationConnection Connection destroyed  " << m_clientCredentials);
+        LOG_INFO(CONTEXT_RENDERER, "WaylandIVIApplicationConnection::~WaylandIVIApplicationConnection Connection destroyed  {}", m_clientCredentials);
 
         if (m_resource)
         {
@@ -72,7 +72,7 @@ namespace ramses::internal
                                                                          INativeWaylandResource& surfaceResource,
                                                                          uint32_t          id)
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandIVIApplicationConnection::iviApplicationIVISurfaceCreate " << iviId);
+        LOG_INFO(CONTEXT_RENDERER, "WaylandIVIApplicationConnection::iviApplicationIVISurfaceCreate {}", iviId);
 
         auto* clientSurface = reinterpret_cast<WaylandSurface*>(surfaceResource.getUserData());
 
@@ -103,8 +103,7 @@ namespace ramses::internal
         uint32_t     id)
     {
         const WaylandIviSurfaceId iviSurfaceId{iviId};
-        LOG_INFO(CONTEXT_RENDERER,
-                 "WaylandIVIApplicationConnection::IVIApplicationIVISurfaceCreateCallback " << iviSurfaceId << " id:" << id);
+        LOG_INFO(CONTEXT_RENDERER, "WaylandIVIApplicationConnection::IVIApplicationIVISurfaceCreateCallback {} id:{}", iviSurfaceId, id);
         auto* iviApplicationConnection =
             static_cast<WaylandIVIApplicationConnection*>(wl_resource_get_user_data(iviApplicationConnectionResource));
         WaylandClient waylandClient(client);

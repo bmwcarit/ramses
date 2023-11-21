@@ -85,23 +85,23 @@ namespace ramses::internal
     TEST_F(ADltAdapter, canLogOnContext)
     {
         EXPECT_TRUE(adapter->initialize("TEST", "Test application", true, logLevelChangeCallback, {context.get()}, true));
-        StringOutputStream sos(std::string("foo"));
-        LogMessage msg(*context, ELogLevel::Info, sos);
+        std::string s("foo");
+        LogMessage msg{ *context, ELogLevel::Info, s };
         EXPECT_TRUE(adapter->logMessage(msg));
     }
 
     TEST_F(ADltAdapter, logFailsWithoutInit)
     {
-        StringOutputStream sos(std::string("foo"));
-        LogMessage msg(*context, ELogLevel::Info, sos);
+        std::string s("foo");
+        LogMessage msg{ *context, ELogLevel::Info, s };
         EXPECT_FALSE(adapter->logMessage(msg));
     }
 
     TEST_F(ADltAdapter, canLogWithLogLevelOff)
     {
         EXPECT_TRUE(adapter->initialize("TEST", "Test application", true, logLevelChangeCallback, {context.get()}, true));
-        StringOutputStream sos(std::string("foo"));
-        LogMessage msg(*context, ELogLevel::Off, sos);
+        std::string s("foo");
+        LogMessage msg{ *context, ELogLevel::Off, s };
         EXPECT_TRUE(adapter->logMessage(msg));
     }
 
@@ -110,8 +110,8 @@ namespace ramses::internal
         EXPECT_TRUE(adapter->initialize("TEST", "Test application", true, logLevelChangeCallback, {context.get()}, true));
 
         std::unique_ptr<LogContext> otherContext(new LogContext("RYYY", "Other test context"));
-        StringOutputStream sos(std::string("foo"));
-        LogMessage msg(*otherContext, ELogLevel::Info, sos);
+        std::string s("foo");
+        LogMessage msg{ *otherContext, ELogLevel::Info, s };
         EXPECT_FALSE(adapter->logMessage(msg));
     }
 

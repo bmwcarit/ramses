@@ -202,11 +202,6 @@ void CreateAndSaveContent(const std::string &ramsesSceneFile)
 
     /**
      * Save the ramses scene (includes the script, the node binding and the link)
-     *
-     * Note: in this example validation on saving is disabled for simplification, since normally a warning
-     * gets generated for script input that is not linked.
      */
-    ramses::SaveFileConfig saveFileConfig;
-    saveFileConfig.setValidationEnabled(false);
-    [[maybe_unused]] auto status = scene->saveToFile(ramsesSceneFile.c_str(), saveFileConfig);
+    [[maybe_unused]] auto status = scene->saveToFile(ramsesSceneFile.c_str(), {});
 }

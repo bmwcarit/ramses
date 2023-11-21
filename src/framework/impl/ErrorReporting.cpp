@@ -17,11 +17,11 @@ namespace ramses::internal
     {
         if (object)
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "[{}] {}", object->getName(), errorMessage);
+            LOG_ERROR(CONTEXT_CLIENT, "[{}] {}", object->getName(), errorMessage);
         }
         else
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "{}", errorMessage);
+            LOG_ERROR(CONTEXT_CLIENT, "{}", errorMessage);
         }
 
         std::lock_guard<std::recursive_mutex> g{ m_lock };

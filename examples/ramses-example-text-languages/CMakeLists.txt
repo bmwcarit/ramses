@@ -12,5 +12,5 @@ createModule(
     ENABLE_INSTALL          OFF    # disabled installation to save space in release tarball
     SRC_FILES               src/main.cpp
     RESOURCE_FOLDERS        res
-    DEPENDENCIES            ramses::shared-lib-for-examples
+    DEPENDENCIES            ramses-shared-lib-headless
 )

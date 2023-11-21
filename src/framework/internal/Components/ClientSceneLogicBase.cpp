@@ -70,11 +70,11 @@ namespace ramses::internal
     {
         if (contains_c(m_subscribersActive, newSubscriber) || contains_c(m_subscribersWaitingForScene, newSubscriber))
         {
-            LOG_WARN(CONTEXT_CLIENT, "ClientSceneLogic::addSubscriber: already has " << newSubscriber << " for scene " << m_sceneId);
+            LOG_WARN(CONTEXT_CLIENT, "ClientSceneLogic::addSubscriber: already has {} for scene {}", newSubscriber, m_sceneId);
             return;
         }
 
-        LOG_INFO(CONTEXT_CLIENT, "ClientSceneLogic::addSubscriber: add " << newSubscriber << " for scene " << m_sceneId << ", flushCounter " << m_flushCounter);
+        LOG_INFO(CONTEXT_CLIENT, "ClientSceneLogic::addSubscriber: add {} for scene {}, flushCounter {}", newSubscriber, m_sceneId, m_flushCounter);
         m_subscribersWaitingForScene.push_back(newSubscriber);
         postAddSubscriber();
     }
@@ -85,7 +85,7 @@ namespace ramses::internal
         if (it != m_subscribersActive.end())
         {
             m_subscribersActive.erase(it);
-            LOG_INFO(CONTEXT_CLIENT, "ClientSceneLogic::removeSubscriber: remove active subscriber " << subscriber << " from scene " << m_sceneId << ", numRemaining " << m_subscribersActive.size());
+            LOG_INFO(CONTEXT_CLIENT, "ClientSceneLogic::removeSubscriber: remove active subscriber {} from scene {}, numRemaining {}", subscriber, m_sceneId, m_subscribersActive.size());
         }
         else
         {
@@ -93,7 +93,7 @@ namespace ramses::internal
             if (waitingForSceneIter != m_subscribersWaitingForScene.end())
             {
                 m_subscribersWaitingForScene.erase(waitingForSceneIter);
-                LOG_INFO(CONTEXT_CLIENT, "ClientSceneLogic::removeSubscriber: remove waiting subscriber " << subscriber << " from scene " << m_sceneId << ", numRemaining " << m_subscribersWaitingForScene.size());
+                LOG_INFO(CONTEXT_CLIENT, "ClientSceneLogic::removeSubscriber: remove waiting subscriber {} from scene {}, numRemaining {}", subscriber, m_sceneId, m_subscribersWaitingForScene.size());
             }
         }
     }
@@ -109,7 +109,7 @@ namespace ramses::internal
     {
         if (m_subscribersWaitingForScene.empty())
         {
-            LOG_DEBUG(CONTEXT_CLIENT, "ClientSceneLogicBase::sendSceneToWaitingSubscribers: No subscribers waiting for scene " << m_sceneId);
+            LOG_DEBUG(CONTEXT_CLIENT, "ClientSceneLogicBase::sendSceneToWaitingSubscribers: No subscribers waiting for scene {}", m_sceneId);
             return;
         }
 
@@ -128,10 +128,10 @@ namespace ramses::internal
             sceneUpdate.resources = m_resourceComponent.resolveResources(m_resourceChangesSinceLastFlush.m_resourcesAdded);
         assert(sceneUpdate.resources.size() == m_resourceChangesSinceLastFlush.m_resourcesAdded.size());
         sceneUpdate.flushInfos = { m_flushCounter, versionTag, scene.getSceneSizeInformation(), m_resourceChangesSinceLastFlush, {}, flushTimeInfo, true, true };
-        LOG_INFO(CONTEXT_CLIENT, "Sending scene " << scene.getSceneId() << " to " << m_subscribersWaitingForScene.size() << " subscribers, " <<
-            sceneUpdate.actions.numberOfActions() << " scene actions (" << sceneUpdate.actions.collectionData().size() << " bytes)" <<
-            m_resourceChangesSinceLastFlush.m_resourcesAdded.size() << " client resources, " <<
-            m_resourceChangesSinceLastFlush.m_sceneResourceActions.size() << " scene resource actions (" << sceneResourcesSize << " bytes in total used by scene resources)");
+        LOG_INFO(CONTEXT_CLIENT, "Sending scene {} to {} subscribers, {} scene actions ({} bytes), {} client resources, {} scene resource actions ({} bytes in total used by scene resources)",
+            scene.getSceneId(), m_subscribersWaitingForScene.size(), sceneUpdate.actions.numberOfActions(),
+            sceneUpdate.actions.collectionData().size(), m_resourceChangesSinceLastFlush.m_resourcesAdded.size(),
+            m_resourceChangesSinceLastFlush.m_sceneResourceActions.size(), sceneResourcesSize);
 
         assert(m_scenePublicationMode.has_value());
         for(const auto& subscriber : m_subscribersWaitingForScene)

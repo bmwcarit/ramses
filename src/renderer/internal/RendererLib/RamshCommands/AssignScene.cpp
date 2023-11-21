@@ -68,7 +68,7 @@ namespace ramses::internal
 
         if (positionals.size() != 1)
         {
-            LOG_ERROR_P(CONTEXT_RAMSH, "None or too many arguments provided: {}", positionals.size());
+            LOG_ERROR(CONTEXT_RAMSH, "None or too many arguments provided: {}", positionals.size());
             return false;
         }
 
@@ -76,7 +76,7 @@ namespace ramses::internal
         ArgumentConverter<uint64_t>::tryConvert(positionals[0], sceneId.getReference());
         if (!sceneId.isValid())
         {
-            LOG_ERROR_P(CONTEXT_RAMSH, "Invalid SceneId: {}", positionals[0]);
+            LOG_ERROR(CONTEXT_RAMSH, "Invalid SceneId: {}", positionals[0]);
             return false;
         }
         cmdMap.scene = sceneId;

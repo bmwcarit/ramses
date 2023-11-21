@@ -7,7 +7,7 @@
 #  -------------------------------------------------------------------------
 
 createModule(
-    NAME                    ramses-renderer-lib-test
+    NAME                    ramses-renderer-internal-test
     TYPE                    BINARY
     SRC_FILES               RendererFramework/*.cpp
                             RendererFramework/*.h
@@ -20,5 +20,5 @@ createModule(
 )
 
 makeTestFromTarget(
-    TARGET ramses-renderer-lib-test
+    TARGET ramses-renderer-internal-test
     SUFFIX UNITTEST)

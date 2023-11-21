@@ -6,12 +6,6 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-if(ramses-sdk_BUILD_FULL_SHARED_LIB)
-    add_library(ramses::shared-lib-for-examples ALIAS ramses-shared-lib)
-else()
-    add_library(ramses::shared-lib-for-examples ALIAS ramses-shared-lib-headless)
-endif()
-
 add_subdirectory(ramses-example-minimal)
 add_subdirectory(ramses-example-basic-blending)
 add_subdirectory(ramses-example-basic-effect-from-glsl)

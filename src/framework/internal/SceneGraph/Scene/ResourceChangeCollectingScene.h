@@ -43,6 +43,7 @@ namespace ramses::internal
 
         RenderBufferHandle          allocateRenderBuffer(const RenderBuffer& renderBuffer, RenderBufferHandle handle) override;
         void                        releaseRenderBuffer(RenderBufferHandle handle) override;
+        void                        setRenderBufferProperties(RenderBufferHandle handle, uint32_t width, uint32_t height, uint32_t sampleCount) override;
 
         BlitPassHandle              allocateBlitPass(RenderBufferHandle sourceRenderBufferHandle, RenderBufferHandle destinationRenderBufferHandle, BlitPassHandle passHandle) override;
         void                        releaseBlitPass(BlitPassHandle handle) override;

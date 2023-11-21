@@ -22,7 +22,7 @@
 #include "internal/RendererLib/DisplayEventHandler.h"
 #include "internal/RendererLib/SceneExpirationMonitor.h"
 #include "internal/RendererLib/PlatformBase/Platform_Base.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include <algorithm>
 
 namespace ramses::internal
@@ -399,14 +399,14 @@ namespace ramses::internal
                 if (RendererInterruptState::IsInterrupted(interruptState))
                 {
                     m_rendererInterruptState = RendererInterruptState{ displayBuffer, sceneId, interruptState };
-                    LOG_TRACE(CONTEXT_PROFILING, "Renderer::renderToInterruptibleOffscreenBuffers interrupted rendering to OB " << displayBuffer.asMemoryHandle() << ", scene " << sceneId.getValue());
+                    LOG_TRACE(CONTEXT_PROFILING, "Renderer::renderToInterruptibleOffscreenBuffers interrupted rendering to OB {}, scene {}", displayBuffer.asMemoryHandle(), sceneId.getValue());
                     m_statistics.offscreenBufferInterrupted(displayBuffer);
                     break;
                 }
                 m_rendererInterruptState = RendererInterruptState{};
 
                 onSceneWasRendered(scene);
-                LOG_TRACE(CONTEXT_PROFILING, "Renderer::renderToInterruptibleOffscreenBuffers scene fully rendered to interruptible OB " << displayBuffer.asMemoryHandle() << ", scene " << sceneId.getValue());
+                LOG_TRACE(CONTEXT_PROFILING, "Renderer::renderToInterruptibleOffscreenBuffers scene fully rendered to interruptible OB {}, scene {}", displayBuffer.asMemoryHandle(), sceneId.getValue());
             }
 
             if (m_rendererInterruptState.isInterrupted())
@@ -416,7 +416,7 @@ namespace ramses::internal
 
             m_displayController->getRenderBackend().getDevice().swapDoubleBufferedRenderTarget(displayBuffer);
             m_statistics.offscreenBufferSwapped(displayBuffer, true);
-            LOG_TRACE(CONTEXT_PROFILING, "Renderer::renderToInterruptibleOffscreenBuffers interruptible OB " << displayBuffer.asMemoryHandle() << " swapped");
+            LOG_TRACE(CONTEXT_PROFILING, "Renderer::renderToInterruptibleOffscreenBuffers interruptible OB {} swapped", displayBuffer.asMemoryHandle());
 
             //re-render framebuffer in next frame to reflect (finished!) changes in OB
             m_displayBuffersSetup.setDisplayBufferToBeRerendered(m_frameBufferDeviceHandle, true);
@@ -612,7 +612,7 @@ namespace ramses::internal
     {
         assert(hasDisplayController());
         if (m_screenshots.count(renderTargetHandle) != 0u)
-            LOG_WARN(CONTEXT_RENDERER, "Renderer::scheduleScreenshot: will overwrite previous screenshot request that was not executed yet (buffer=" << renderTargetHandle << ")");
+            LOG_WARN(CONTEXT_RENDERER, "Renderer::scheduleScreenshot: will overwrite previous screenshot request that was not executed yet (buffer={})", renderTargetHandle);
 
         m_screenshots[renderTargetHandle] = std::move(screenshot);
 

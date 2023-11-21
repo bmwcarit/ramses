@@ -22,14 +22,14 @@ namespace ramses::internal
     {
         int error = FT_New_Size(m_face, &m_size);
         if (error != 0)
-            LOG_ERROR(CONTEXT_TEXT, "Freetype2FontInstance: Failed to initialize FT size, FT error " << error);
+            LOG_ERROR(CONTEXT_TEXT, "Freetype2FontInstance: Failed to initialize FT size, FT error {}", error);
         assert(0 == error);
 
         activateSize();
 
         error = FT_Set_Pixel_Sizes(m_face, 0, pixelSize);
         if (error != 0)
-            LOG_ERROR(CONTEXT_TEXT, "Freetype2FontInstance: Failed to set pixel sizes, FT error " << error);
+            LOG_ERROR(CONTEXT_TEXT, "Freetype2FontInstance: Failed to set pixel sizes, FT error {}", error);
         assert(0 == error);
 
         m_height = static_cast<int>(m_size->metrics.height / 64);
@@ -142,7 +142,7 @@ namespace ramses::internal
         {
             if (error != 0)
             {
-                LOG_ERROR(CONTEXT_TEXT, "Freetype2FontInstance::extractGlyphBitmapData:  FT_Get_Glyph failed - error: " << error);
+                LOG_ERROR(CONTEXT_TEXT, "Freetype2FontInstance::extractGlyphBitmapData:  FT_Get_Glyph failed - error: {}", error);
                 assert(ftGlyph == nullptr);
                 return nullptr;
             }
@@ -153,7 +153,7 @@ namespace ramses::internal
                 error = FT_Glyph_To_Bitmap(&ftGlyph, FT_RENDER_MODE_NORMAL, nullptr, 1);
                 if (error != 0)
                 {
-                    LOG_ERROR(CONTEXT_TEXT, "Freetype2FontInstance::extractGlyphBitmapData:  FT_Glyph_To_Bitmap failed - error: " << error);
+                    LOG_ERROR(CONTEXT_TEXT, "Freetype2FontInstance::extractGlyphBitmapData:  FT_Glyph_To_Bitmap failed - error: {}", error);
                     FT_Done_Glyph(ftGlyph);
                     return nullptr;
                 }
@@ -177,7 +177,7 @@ namespace ramses::internal
     {
         if (glyphId.getValue() == 0)
         {
-            LOG_ERROR(CONTEXT_TEXT, "Freetype2FontInstance: Failed to load glyph " << glyphId << ", invalid character");
+            LOG_ERROR(CONTEXT_TEXT, "Freetype2FontInstance: Failed to load glyph {}, invalid character", glyphId);
             return false;
         }
 
@@ -191,7 +191,7 @@ namespace ramses::internal
         const uint32_t error = FT_Load_Glyph(m_face, glyphId.getValue(), flags);
         if (error != 0)
         {
-            LOG_ERROR(CONTEXT_TEXT, "Freetype2FontInstance: Failed to load glyph " << glyphId << ", FT error " << error);
+            LOG_ERROR(CONTEXT_TEXT, "Freetype2FontInstance: Failed to load glyph {}, FT error {}", glyphId, error);
             return false;
         }
 
@@ -203,7 +203,7 @@ namespace ramses::internal
         const uint32_t error = FT_Activate_Size(m_size);
         if (error != 0u)
         {
-            LOG_ERROR(CONTEXT_TEXT, "Freetype2FontInstance::activateSize:  FT_Activate_Size failed - error: " << error);
+            LOG_ERROR(CONTEXT_TEXT, "Freetype2FontInstance::activateSize:  FT_Activate_Size failed - error: {}", error);
             assert(false);
         }
     }
@@ -219,7 +219,7 @@ namespace ramses::internal
                 FT_Get_Kerning(m_face, glyphIdentifier1.getValue(), glyphIdentifier2.getValue(), FT_KERNING_DEFAULT, &delta);
                 return static_cast<int32_t>(delta.x / 64);
             }
-            LOG_ERROR(CONTEXT_TEXT, "Freetype2FontInstance::getKerningAdvance: Character not found for kerning; Character codes: " << glyphIdentifier1 << ", " << glyphIdentifier2);
+            LOG_ERROR(CONTEXT_TEXT, "Freetype2FontInstance::getKerningAdvance: Character not found for kerning; Character codes: {}, {}", glyphIdentifier1, glyphIdentifier2);
         }
 
         return 0;

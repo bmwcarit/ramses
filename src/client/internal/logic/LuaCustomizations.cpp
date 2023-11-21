@@ -41,15 +41,15 @@ namespace ramses::internal
     {
         auto rl_logInfo = [](const std::string& msg)
         {
-            LOG_INFO_P(CONTEXT_CLIENT, "LuaDebugLog: {}", msg);
+            LOG_INFO(CONTEXT_CLIENT, "LuaDebugLog: {}", msg);
         };
         auto rl_logWarn = [](const std::string& msg)
         {
-            LOG_WARN_P(CONTEXT_CLIENT, "LuaDebugLog: {}", msg);
+            LOG_WARN(CONTEXT_CLIENT, "LuaDebugLog: {}", msg);
         };
         auto rl_logError = [](const std::string& msg)
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "LuaDebugLog: {}", msg);
+            LOG_ERROR(CONTEXT_CLIENT, "LuaDebugLog: {}", msg);
         };
 
         env["rl_logInfo"] = rl_logInfo;

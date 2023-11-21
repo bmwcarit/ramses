@@ -237,8 +237,7 @@ namespace ramses::internal
         }
         else
         {
-            LOG_ERROR(CONTEXT_RAMSH,"Trying to set default value of argument of type " << typeString() <<
-                      " with value of wrong type " << static_cast<std::string>(TypeName<T>()));
+            LOG_ERROR(CONTEXT_RAMSH, "Trying to set default value of argument of type {} with value of wrong type {}", typeString(), static_cast<std::string>(TypeName<T>()));
         }
     }
 
@@ -453,8 +452,8 @@ namespace ramses::internal
         // validate if a valid argument value is returned
         if(!m_args[index]->getValue(argData,value))
         {
-            LOG_ERROR(CONTEXT_RAMSH,"Missing/Invalid argument " << m_args[index]->keywords() << "!");
-            LOG_ERROR(CONTEXT_RAMSH,"Usage: " << m_args[index]->description());
+            LOG_ERROR(CONTEXT_RAMSH, "Missing/Invalid argument {}!", m_args[index]->keywords());
+            LOG_ERROR(CONTEXT_RAMSH, "Usage: {}", m_args[index]->description());
             return false;
         }
 

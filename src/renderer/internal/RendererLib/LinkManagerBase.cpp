@@ -9,7 +9,7 @@
 #include "internal/RendererLib/LinkManagerBase.h"
 #include "internal/RendererLib/RendererScenes.h"
 #include "internal/RendererLib/DataLinkUtils.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {
@@ -50,13 +50,13 @@ namespace ramses::internal
 
         if (m_sceneLinks.hasLinkedProvider(consumerSceneId, consumerSlotHandle))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "LinkManagerBase::createDataLink failed: consumer slot (Scene: " << consumerSceneId << ") already has a data link assigned!");
+            LOG_ERROR(CONTEXT_RENDERER, "LinkManagerBase::createDataLink failed: consumer slot (Scene: {}) already has a data link assigned!", consumerSceneId);
             return false;
         }
 
         if (!m_dependencyChecker.addDependency(providerSceneId, consumerSceneId))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "LinkManagerBase::createDataLink failed: cyclic link dependency detected! (Provider scene: " << providerSceneId << ", consumer scene: " << consumerSceneId << ")");
+            LOG_ERROR(CONTEXT_RENDERER, "LinkManagerBase::createDataLink failed: cyclic link dependency detected! (Provider scene: {}, consumer scene: {})", providerSceneId, consumerSceneId);
             return false;
         }
 
@@ -73,7 +73,7 @@ namespace ramses::internal
 
         if (!m_sceneLinks.hasLinkedProvider(consumerSceneId, consumerSlotHandle))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "LinkManagerBase::removeDataLink failed: consumer slot is not linked!  (Consumer scene: " << consumerSceneId << ")");
+            LOG_ERROR(CONTEXT_RENDERER, "LinkManagerBase::removeDataLink failed: consumer slot is not linked!  (Consumer scene: {})", consumerSceneId);
             return false;
         }
 

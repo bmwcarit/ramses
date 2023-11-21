@@ -25,12 +25,12 @@ namespace ramses::internal
             ++callbacks;
             if (available)
             {
-                LOG_INFO_P(CONTEXT_RENDERER, "stream available: {}", streamId.getValue());
+                LOG_INFO(CONTEXT_RENDERER, "stream available: {}", streamId.getValue());
                 availableStreams.insert(streamId);
             }
             else
             {
-                LOG_INFO_P(CONTEXT_RENDERER, "stream unavailable: {}", streamId.getValue());
+                LOG_INFO(CONTEXT_RENDERER, "stream unavailable: {}", streamId.getValue());
                 availableStreams.erase(streamId);
             }
         }
@@ -121,7 +121,7 @@ namespace ramses::internal
             testFramework.dispatchRendererEvents(handler, handler);
             if (handler.availableStreams.empty())
             {
-                LOG_ERROR_P(CONTEXT_RENDERER, "Test surface {} is unavailable", surfaceId.getValue());
+                LOG_ERROR(CONTEXT_RENDERER, "Test surface {} is unavailable", surfaceId.getValue());
                 testResultValue = false;
             }
             else
@@ -134,7 +134,7 @@ namespace ramses::internal
                 testFramework.dispatchRendererEvents(handler, handler);
                 if (handler.availableStreams.count(iviSurface) != 1 || handler.callbacks == callbacks)
                 {
-                    LOG_ERROR_P(CONTEXT_RENDERER, "Stream surface {} is unavailable after reattach", surfaceId.getValue());
+                    LOG_ERROR(CONTEXT_RENDERER, "Stream surface {} is unavailable after reattach", surfaceId.getValue());
                     testResultValue = false;
                 }
             }
@@ -634,7 +634,7 @@ namespace ramses::internal
 
         if (numberOfAllocatedSHMBuffer != expectedNumberOfAllocatedSHMBuffer)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "SharedMemoryBufferTests::RenderAndCheckOneSharedMemoryFrame Number of allocated SHM buffers " << numberOfAllocatedSHMBuffer << " does not match expected value " << expectedNumberOfAllocatedSHMBuffer <<"!");
+            LOG_ERROR(CONTEXT_RENDERER, "SharedMemoryBufferTests::RenderAndCheckOneSharedMemoryFrame Number of allocated SHM buffers {} does not match expected value {}!", numberOfAllocatedSHMBuffer, expectedNumberOfAllocatedSHMBuffer);
             return false;
         }
         return true;
@@ -659,7 +659,7 @@ namespace ramses::internal
 
         if (bufferFreeState != expectedBufferFreeState)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "SharedMemoryBufferTests::CheckFreeBufferState Expected buffer free state: " << expectedBufferFreeState << " does not match actual buffer free state: " << bufferFreeState);
+            LOG_ERROR(CONTEXT_RENDERER, "SharedMemoryBufferTests::CheckFreeBufferState Expected buffer free state: {} does not match actual buffer free state: {}", expectedBufferFreeState, bufferFreeState);
             return false;
         }
         return true;

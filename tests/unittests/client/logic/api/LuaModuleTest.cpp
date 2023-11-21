@@ -55,7 +55,7 @@ namespace ramses::internal
         const auto module = m_logicEngine->createLuaModule(m_moduleSourceCode, {}, "mymodule");
         ASSERT_NE(nullptr, module);
         EXPECT_EQ("mymodule", module->getName());
-        EXPECT_EQ(module->getSceneObjectId().getValue(), 9u);
+        EXPECT_EQ(module->getSceneObjectId().getValue(), 10u);
     }
 
     TEST_F(ALuaModule, ChangesName)
@@ -129,14 +129,14 @@ namespace ramses::internal
         {
             LogicEngine& logic = *m_logicEngine;
             logic.createLuaModule(m_moduleSourceCode, {}, "mymodule");
-            EXPECT_TRUE(saveToFileWithoutValidation("module.tmp"));
+            EXPECT_TRUE(saveToFile("module.tmp"));
         }
 
         ASSERT_TRUE(recreateFromFile("module.tmp"));
         const auto module = m_logicEngine->findObject<LuaModule>("mymodule");
         ASSERT_NE(nullptr, module);
         EXPECT_EQ("mymodule", module->getName());
-        EXPECT_EQ(module->getSceneObjectId().getValue(), 9u);
+        EXPECT_EQ(module->getSceneObjectId().getValue(), 10u);
     }
 
     TEST_F(ALuaModule_SerializationLifecycle, StoresDuplicateByteCodeOnce)
@@ -438,7 +438,7 @@ namespace ramses::internal
         {
             LogicEngine& logic = *m_logicEngine;
             logic.createLuaModule(m_moduleSourceCode, {}, "mymodule");
-            EXPECT_TRUE(saveToFileWithoutValidation("module.tmp"));
+            EXPECT_TRUE(saveToFile("module.tmp"));
         }
 
         ASSERT_TRUE(recreateFromFile("module.tmp"));
@@ -473,7 +473,7 @@ namespace ramses::internal
         const auto quadsMod = m_logicEngine->createLuaModule(m_quadsSrc, createDeps({{"mymath", m_mathSrc}}), "quadsMod");
         ASSERT_NE(nullptr, quadsMod);
         EXPECT_EQ("quadsMod", quadsMod->getName());
-        EXPECT_EQ(quadsMod->getSceneObjectId().getValue(), 10u); // module dependency has id 8u
+        EXPECT_EQ(quadsMod->getSceneObjectId().getValue(), 11u);
     }
 
     TEST_F(ALuaModuleWithDependency, HasTwoDependencies)
@@ -599,7 +599,7 @@ namespace ramses::internal
             LuaConfig config;
             config.addDependency("mymath", *logic.createLuaModule(m_mathSrc, {}, "mathMod"));
             logic.createLuaModule(m_quadsSrc, config, "quadsMod");
-            EXPECT_TRUE(saveToFileWithoutValidation("dep_modules.tmp"));
+            EXPECT_TRUE(saveToFile("dep_modules.tmp"));
         }
 
         ASSERT_TRUE(recreateFromFile("dep_modules.tmp"));
@@ -608,8 +608,8 @@ namespace ramses::internal
         auto quadsMod = m_logicEngine->findObject<LuaModule>("quadsMod");
         ASSERT_NE(mathMod, nullptr);
         ASSERT_NE(quadsMod, nullptr);
-        EXPECT_EQ(mathMod->getSceneObjectId().getValue(), 9u);
-        EXPECT_EQ(quadsMod->getSceneObjectId().getValue(), 10u);
+        EXPECT_EQ(mathMod->getSceneObjectId().getValue(), 10u);
+        EXPECT_EQ(quadsMod->getSceneObjectId().getValue(), 11u);
 
         EXPECT_THAT(quadsMod->impl().getDependencies(), ::testing::ElementsAre(std::pair<std::string, const LuaModule*>({"mymath", mathMod})));
     }

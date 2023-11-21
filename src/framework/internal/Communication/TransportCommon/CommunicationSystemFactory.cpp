@@ -41,12 +41,12 @@ namespace ramses::internal
             const bool isDaemon = false;
             const NetworkParticipantAddress participantNetworkAddress(participantIdentifier.getParticipantId(), participantIdentifier.getParticipantName(), config.m_tcpConfig.getIPAddress(), config.m_tcpConfig.getPort(isDaemon));
 
-            LOG_DEBUG(CONTEXT_COMMUNICATION, "ConstructTCPConnectionManager: My Address: " << participantNetworkAddress.getIp() << ":" << participantNetworkAddress.getPort());
+            LOG_DEBUG(CONTEXT_COMMUNICATION, "ConstructTCPConnectionManager: My Address: {}:{}", participantNetworkAddress.getIp(), participantNetworkAddress.getPort());
 
             // daemon address
             const NetworkParticipantAddress daemonNetworkAddress = NetworkParticipantAddress(TCPConnectionSystem::GetDaemonId(), "SM", config.m_tcpConfig.getDaemonIPAddress(), config.m_tcpConfig.getDaemonPort());
 
-            LOG_DEBUG(CONTEXT_COMMUNICATION, "ConstructTCPConnectionManager: Daemon Address: " << daemonNetworkAddress.getIp() << ":" << daemonNetworkAddress.getPort());
+            LOG_DEBUG(CONTEXT_COMMUNICATION, "ConstructTCPConnectionManager: Daemon Address: {}:{}", daemonNetworkAddress.getIp(), daemonNetworkAddress.getPort());
 
             // allocate
             return std::make_unique<TCPConnectionSystem>(participantNetworkAddress, config.getProtocolVersion(), daemonNetworkAddress, false, frameworkLock, statisticCollection, config.m_tcpConfig.getAliveInterval(), config.m_tcpConfig.getAliveTimeout());
@@ -99,7 +99,7 @@ namespace ramses::internal
             return std::make_unique<FakeConnectionSystem>();
         }
         default:
-            LOG_FATAL(CONTEXT_COMMUNICATION, "Unable to construct connection system for given protocol: " << config.getUsedProtocol() << ". Ensure that TCP or the fake connection system is enabled.");
+            LOG_FATAL(CONTEXT_COMMUNICATION, "Unable to construct connection system for given protocol: {}. Ensure that TCP or the fake connection system is enabled.", config.getUsedProtocol());
             assert(false && "Unable to construct connection system for given protocol. Ensure that TCP or the fake connection system is enabled.");
             return nullptr;
         }

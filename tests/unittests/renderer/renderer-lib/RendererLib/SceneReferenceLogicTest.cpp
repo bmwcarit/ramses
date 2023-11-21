@@ -16,7 +16,6 @@
 #include "RendererSceneEventSenderMock.h"
 #include "internal/RendererLib/RendererEventCollector.h"
 #include "SceneAllocateHelper.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
 
 using namespace testing;
 
@@ -29,8 +28,6 @@ namespace ramses::internal
             : m_scenes(m_eventCollector)
             , m_logic(m_scenes, m_sceneLogic, m_sceneUpdater, m_eventSender, m_ownership)
         {
-            // caller is expected to have a display prefix for logs
-            ThreadLocalLog::SetPrefix(1);
         }
 
         void SetUp() override

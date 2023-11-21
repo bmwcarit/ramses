@@ -13,5 +13,5 @@ createModule(
     SRC_FILES               include/*.h
                             src/*.cpp
     RESOURCE_FOLDERS        res
-    DEPENDENCIES            ramses::shared-lib-for-examples
+    DEPENDENCIES            ramses-shared-lib-headless
 )

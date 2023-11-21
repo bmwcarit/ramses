@@ -7,9 +7,9 @@
 //  -------------------------------------------------------------------------
 
 #include "impl/RenderTargetDescriptionImpl.h"
-#include "ramses/client/SceneObjectIterator.h"
 #include "impl/SceneImpl.h"
 #include "impl/RenderBufferImpl.h"
+#include "ramses/client/SceneObjectIterator.h"
 #include "internal/SceneGraph/Scene/ClientScene.h"
 
 namespace ramses::internal

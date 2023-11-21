@@ -155,4 +155,33 @@ namespace ramses::internal
         renderBuffer->validate(report);
         EXPECT_FALSE(report.hasIssue());
     }
+
+    TEST_F(RenderBufferTest, canChangeProperties)
+    {
+        ramses::RenderBuffer* renderBuffer = m_scene.createRenderBuffer(400u, 400u, ERenderBufferFormat::Depth24, ERenderBufferAccessMode::ReadWrite);
+        ASSERT_TRUE(renderBuffer != nullptr);
+
+        EXPECT_TRUE(renderBuffer->impl().setProperties(1u, 2u, 3u));
+        EXPECT_FALSE(framework.getLastError());
+
+        EXPECT_EQ(1u, renderBuffer->getWidth());
+        EXPECT_EQ(2u, renderBuffer->getHeight());
+        EXPECT_EQ(3u, renderBuffer->getSampleCount());
+        EXPECT_EQ(ERenderBufferFormat::Depth24, renderBuffer->getBufferFormat());
+        EXPECT_EQ(ERenderBufferAccessMode::ReadWrite, renderBuffer->getAccessMode());
+    }
+
+    TEST_F(RenderBufferTest, failsToChangePropertiesIfInvalidValue)
+    {
+        ramses::RenderBuffer* renderBuffer = m_scene.createRenderBuffer(400u, 400u, ERenderBufferFormat::Depth24, ERenderBufferAccessMode::ReadWrite);
+        ASSERT_TRUE(renderBuffer != nullptr);
+
+        EXPECT_FALSE(renderBuffer->impl().setProperties(0u, 2u, 3u));
+        EXPECT_FALSE(renderBuffer->impl().setProperties(1u, 0u, 3u));
+        auto err = framework.getLastError();
+        ASSERT_TRUE(err);
+        EXPECT_EQ(renderBuffer, err->object);
+        EXPECT_EQ(EIssueType::Error, err->type);
+        EXPECT_EQ("RenderBuffer::setProperties: width and height cannot be zero", err->message);
+    }
 }

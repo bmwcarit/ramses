@@ -38,13 +38,6 @@ namespace ramses::internal
         CameraBinding& m_cameraBinding{ *m_logicEngine->createCameraBinding(*m_camera) };
     };
 
-    TEST_F(AnAnchorPoint, HasANameAndIdAfterCreation)
-    {
-        const auto& anchorPoint = *m_logicEngine->createAnchorPoint(m_nodeBinding, m_cameraBinding, "anchor");
-        EXPECT_EQ("anchor", anchorPoint.getName());
-        EXPECT_EQ(11u, anchorPoint.getSceneObjectId().getValue());
-    }
-
     TEST_F(AnAnchorPoint, ReferencesBindings)
     {
         auto& anchorPoint = *m_logicEngine->createAnchorPoint(m_nodeBinding, m_cameraBinding, "anchor");

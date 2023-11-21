@@ -23,7 +23,7 @@ namespace ramses::internal
     {
         if (input.size() != 5)
         {
-            LOG_ERROR_P(CONTEXT_RAMSH, "None or too many arguments provided: {}", input.size() - 1);
+            LOG_ERROR(CONTEXT_RAMSH, "None or too many arguments provided: {}", input.size() - 1);
             return false;
         }
         ramses::internal::RendererCommand::CreateOffscreenBuffer cmd{};
@@ -32,12 +32,12 @@ namespace ramses::internal
         cmd.sampleCount            = 0;
         if (!ArgumentConverter<uint32_t>::tryConvert(input[1], cmd.display.asMemoryHandleReference()))
         {
-            LOG_ERROR_P(CONTEXT_RAMSH, "Invalid display id: {}", input[1]);
+            LOG_ERROR(CONTEXT_RAMSH, "Invalid display id: {}", input[1]);
             return false;
         }
         if (!ArgumentConverter<uint32_t>::tryConvert(input[2], cmd.offscreenBuffer.asMemoryHandleReference()))
         {
-            LOG_ERROR_P(CONTEXT_RAMSH, "Invalid buffer id: {}", input[2]);
+            LOG_ERROR(CONTEXT_RAMSH, "Invalid buffer id: {}", input[2]);
             return false;
         }
 

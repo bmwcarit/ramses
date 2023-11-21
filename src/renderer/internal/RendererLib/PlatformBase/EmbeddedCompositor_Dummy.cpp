@@ -10,7 +10,7 @@
 #include "internal/RendererLib/RendererLogContext.h"
 #include "internal/RendererLib/PlatformInterface/ITextureUploadingAdapter.h"
 #include "internal/RendererLib/Types.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {
@@ -26,7 +26,7 @@ namespace ramses::internal
 
     uint32_t EmbeddedCompositor_Dummy::uploadCompositingContentForStreamTexture(WaylandIviSurfaceId streamTextureSourceId, [[maybe_unused]] DeviceResourceHandle textureHandle, [[maybe_unused]] ITextureUploadingAdapter& textureUploadingAdapter)
     {
-        LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Dummy::uploadCompositingContentForStreamTexture: " << streamTextureSourceId.getValue());
+        LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Dummy::uploadCompositingContentForStreamTexture: {}", streamTextureSourceId.getValue());
         return 0;
     }
 
@@ -38,21 +38,21 @@ namespace ramses::internal
 
     bool EmbeddedCompositor_Dummy::isContentAvailableForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const
     {
-        LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Dummy::isContentAvailableForStreamTexture: streamTextureSourceId: " << streamTextureSourceId.getValue());
+        LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Dummy::isContentAvailableForStreamTexture: streamTextureSourceId: {}", streamTextureSourceId.getValue());
         return false;
     }
 
     uint64_t EmbeddedCompositor_Dummy::getNumberOfCommitedFramesForWaylandIviSurfaceSinceBeginningOfTime(WaylandIviSurfaceId waylandSurfaceId) const
     {
-        LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Dummy::getNumberOfCommitedFramesForWaylandIviSurfaceSinceBeginningOfTime: waylandSurfaceId: " << waylandSurfaceId.getValue());
+        LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Dummy::getNumberOfCommitedFramesForWaylandIviSurfaceSinceBeginningOfTime: waylandSurfaceId: {}", waylandSurfaceId.getValue());
         return 0;
     }
 
     bool EmbeddedCompositor_Dummy::isBufferAttachedToWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const
     {
         LOG_TRACE(CONTEXT_RENDERER,
-                  "EmbeddedCompositor_Dummy::isBufferAttachedToWaylandIviSurface: waylandSurfaceId: "
-                      << waylandSurfaceId.getValue());
+                  "EmbeddedCompositor_Dummy::isBufferAttachedToWaylandIviSurface: waylandSurfaceId: {}",
+                  waylandSurfaceId.getValue());
         return false;
     }
 
@@ -64,13 +64,13 @@ namespace ramses::internal
 
     bool EmbeddedCompositor_Dummy::hasSurfaceForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const
     {
-        LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Dummy::hasSurfaceForStreamTexture: streamTextureSourceId: " << streamTextureSourceId.getValue());
+        LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Dummy::hasSurfaceForStreamTexture: streamTextureSourceId: {}", streamTextureSourceId.getValue());
         return false;
     }
 
     std::string EmbeddedCompositor_Dummy::getTitleOfWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const
     {
-        LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Dummy::getTitleOfWaylandIviSurface: streamTextureSourceId: " << waylandSurfaceId.getValue());
+        LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Dummy::getTitleOfWaylandIviSurface: streamTextureSourceId: {}", waylandSurfaceId.getValue());
         return {};
     }
 

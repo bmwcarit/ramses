@@ -43,6 +43,7 @@
 #include "impl/BlitPassImpl.h"
 #include "impl/EffectImpl.h"
 #include "impl/SceneImpl.h"
+#include "impl/logic/LogicEngineImpl.h"
 
 #include "internal/SceneGraph/Scene/ClientScene.h"
 #include "internal/SceneGraph/SceneAPI/Handles.h"
@@ -93,6 +94,7 @@ namespace ramses::internal
     {
         setupMaps();
 
+        markRequiredLogic();
         RenderPassSet requiredRenderPasses = markRequiredScreenRenderPasses();
         while (requiredRenderPasses.size() > 0)
         {
@@ -195,9 +197,9 @@ namespace ramses::internal
             }
             else
             {
-                LOG_ERROR(ramses::internal::CONTEXT_CLIENT,
-                          "SceneDumper::setupRenderBufferSetMap Could not lookup render buffer handle: "
-                              << blitPassData.sourceRenderBuffer << " !!!");
+                LOG_ERROR(CONTEXT_CLIENT,
+                          "SceneDumper::setupRenderBufferSetMap Could not lookup render buffer handle: {}  !!!",
+                          blitPassData.sourceRenderBuffer);
                 assert(false);
             }
         }
@@ -211,6 +213,16 @@ namespace ramses::internal
             return true;
         }
         return false;
+    }
+
+    void SceneDumper::markRequiredLogic()
+    {
+        SceneObjectRegistryIterator objectIterator(m_objectRegistry, ERamsesObjectType::LogicEngine);
+        while (const auto* obj = objectIterator.getNext<ramses::LogicEngine>())
+        {
+            addToRequiredObjects(obj->impl());
+            // Logic objects are not part of the registry
+        }
     }
 
     SceneDumper::RenderPassSet SceneDumper::markRequiredScreenRenderPasses()
@@ -359,9 +371,9 @@ namespace ramses::internal
                         else
                         {
                             LOG_ERROR(
-                                ramses::internal::CONTEXT_CLIENT,
-                                "SceneDumper::markRequiredTextureSampler Could not lookup texture sampler handle: "
-                                    << textureSamplerHandle << " !!!");
+                                CONTEXT_CLIENT,
+                                "SceneDumper::markRequiredTextureSampler Could not lookup texture sampler handle: {} !!!",
+                                textureSamplerHandle);
                             assert(false);
                         }
                     }
@@ -481,9 +493,9 @@ namespace ramses::internal
             }
             else
             {
-                LOG_ERROR(ramses::internal::CONTEXT_CLIENT,
-                          "SceneDumper::markRequiredResourcesFromHash Could not lookup resource content hash: "
-                              << requiredResourceHash << " !!!");
+                LOG_ERROR(CONTEXT_CLIENT,
+                          "SceneDumper::markRequiredResourcesFromHash Could not lookup resource content hash: {}  !!!",
+                          requiredResourceHash);
                 assert(false);
             }
         }
@@ -521,8 +533,8 @@ namespace ramses::internal
                 else
                 {
                     LOG_ERROR(ramses::internal::CONTEXT_CLIENT,
-                              "SceneDumper::getRequiredRenderBuffer Could not lookup render buffer handle: "
-                                  << renderBufferHandle << " !!!");
+                              "SceneDumper::getRequiredRenderBuffer Could not lookup render buffer handle: {}  !!!",
+                              renderBufferHandle);
                     assert(false);
                 }
             }
@@ -552,8 +564,8 @@ namespace ramses::internal
                 else
                 {
                     LOG_ERROR(ramses::internal::CONTEXT_CLIENT,
-                              "SceneDumper::getRequiredTextureBuffers Could not lookup texture buffer handle: "
-                                  << textureBufferHandle << " !!!");
+                              "SceneDumper::getRequiredTextureBuffers Could not lookup texture buffer handle: {}  !!!",
+                              textureBufferHandle);
                     assert(false);
                 }
             }

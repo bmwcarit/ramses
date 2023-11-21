@@ -49,7 +49,7 @@ namespace ramses::internal
         m_drmRenderNodeFD = open(m_renderNode.c_str(), O_RDWR);
         if (m_drmRenderNodeFD < 0)
         {
-            LOG_ERROR_P(CONTEXT_RENDERER, "Device_EGL_Extension::init(): failed to open render node \"{}\"!", m_renderNode);
+            LOG_ERROR(CONTEXT_RENDERER, "Device_EGL_Extension::init(): failed to open render node \"{}\"!", m_renderNode);
             return false;
         }
 
@@ -75,10 +75,10 @@ namespace ramses::internal
         const bool isBufferFormatSupported = (gbm_device_is_format_supported(m_gbmDevice, bufferFormat, bufferUsage) != 0);
         if(!isBufferFormatSupported)
         {
-            LOG_ERROR_P(CONTEXT_RENDERER, "Device_EGL_Extension::createDmaRenderBuffer(): buffer format \"{}\" is not supported! Buffer creation will probably fail!", bufferFormat);
+            LOG_ERROR(CONTEXT_RENDERER, "Device_EGL_Extension::createDmaRenderBuffer(): buffer format \"{}\" is not supported! Buffer creation will probably fail!", bufferFormat);
         }
         else
-            LOG_INFO_P(CONTEXT_RENDERER, "Device_EGL_Extension::createDmaRenderBuffer(): buffer format \"{}\" is supported", bufferFormat);
+            LOG_INFO(CONTEXT_RENDERER, "Device_EGL_Extension::createDmaRenderBuffer(): buffer format \"{}\" is supported", bufferFormat);
 
         const auto gbmBufferObject = gbm_bo_create(m_gbmDevice, width, height, bufferFormat, bufferUsage);
         if(gbmBufferObject == nullptr)
@@ -127,13 +127,13 @@ namespace ramses::internal
         const auto eglImage = m_eglExtensionProcs.eglCreateImageKHR(EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, nullptr, eglImageCreationAttribs.data());
         if (eglImage == EGL_NO_IMAGE)
         {
-            LOG_ERROR_P(CONTEXT_RENDERER, "Device_EGL_Extension::createDmaRenderBuffer(): failed to create EGL Image, EGL error: {}! [width: {}, height: {}, format: {}, usage: {}, modifiers: {}, FD :{}, stride: {}]", eglGetError(), width, height, bufferFormat, bufferUsage, modifiers.getValue(), bufferFD, bufferStride);
+            LOG_ERROR(CONTEXT_RENDERER, "Device_EGL_Extension::createDmaRenderBuffer(): failed to create EGL Image, EGL error: {}! [width: {}, height: {}, format: {}, usage: {}, modifiers: {}, FD :{}, stride: {}]", eglGetError(), width, height, bufferFormat, bufferUsage, modifiers.getValue(), bufferFD, bufferStride);
             close(bufferFD);
             gbm_bo_destroy(gbmBufferObject);
             return {};
         }
 
-        LOG_INFO_P(CONTEXT_RENDERER, "Device_EGL_Extension::createDmaRenderBuffer(): DMA render buffer created succesfully [width: {}, height: {}, stride: {}, format: {}, FD :{}, EGL image :{}]", width, height, bufferStride, bufferFormat, bufferFD, eglImage);
+        LOG_INFO(CONTEXT_RENDERER, "Device_EGL_Extension::createDmaRenderBuffer(): DMA render buffer created succesfully [width: {}, height: {}, stride: {}, format: {}, FD :{}, EGL image :{}]", width, height, bufferStride, bufferFormat, bufferFD, eglImage);
 
         GLuint glTexAddress = 0u;
         glGenTextures(1, &glTexAddress);
@@ -159,7 +159,7 @@ namespace ramses::internal
     {
         const auto& resource = m_resourceMapper.getResourceAs<DmaRenderBufferGpuResource>(handle);
 
-        LOG_INFO_P(CONTEXT_RENDERER, "Device_EGL_Extension::destroyDmaRenderBuffer(): destroy DMA render buffer [FD :{}, EGL image :{}]", resource.getFD(), resource.getEGLImage());
+        LOG_INFO(CONTEXT_RENDERER, "Device_EGL_Extension::destroyDmaRenderBuffer(): destroy DMA render buffer [FD :{}, EGL image :{}]", resource.getFD(), resource.getEGLImage());
         m_eglExtensionProcs.eglDestroyImageKHR(resource.getEGLImage());
         close(resource.getFD());
         gbm_bo_destroy(resource.getGBMBufferObject());

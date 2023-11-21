@@ -15,6 +15,7 @@
 #include "internal/SceneGraph/SceneAPI/EDataType.h"
 #include "internal/SceneGraph/SceneAPI/EDataSlotType.h"
 #include "internal/RendererLib/Types.h"
+#include "internal/RendererLib/RendererCommands.h"
 
 #include <cstdint>
 #include <string_view>
@@ -33,7 +34,7 @@ namespace ramses::internal
     {
     public:
         RendererLogger() = delete;
-        static void LogTopic(const RendererSceneUpdater& updater, ERendererLogTopic topic, bool verbose, NodeHandle nodeHandleFilter = NodeHandle::Invalid());
+        static void LogTopic(const RendererSceneUpdater& updater, const RendererCommand::LogInfo& cmd);
 
     private:
         static void LogSceneStates(const RendererSceneUpdater& updater, RendererLogContext& context);
@@ -47,7 +48,7 @@ namespace ramses::internal
         static void LogLinks(const RendererScenes& scenes, RendererLogContext& context);
         static void LogEmbeddedCompositor(const RendererSceneUpdater& updater, RendererLogContext& context);
         static void LogEventQueue(const RendererSceneUpdater& updater, RendererLogContext& context);
-        static void LogPeriodicInfo(const RendererSceneUpdater& updater);
+        static void LogPeriodicInfo(const RendererSceneUpdater& updater, const RendererCommand::LogInfo& cmd);
         static void LogReferencedScenes(const RendererSceneUpdater& updater, RendererLogContext& context);
 
         static void LogProvider(const RendererScenes& scenes, RendererLogContext& context, const RendererCachedScene& scene, const DataSlotHandle slotHandle, bool asLinked = false);

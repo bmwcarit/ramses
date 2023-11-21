@@ -21,6 +21,7 @@ include "DataArray.fbs";
 include "AnimationNode.fbs";
 include "TimerNode.fbs";
 include "AnchorPoint.fbs";
+include "RenderBufferBinding.fbs";
 
 namespace rlogic_serialization;
 
@@ -41,4 +42,5 @@ table ApiObjects
     renderGroupBindings:[RenderGroupBinding];
     skinBindings:[SkinBinding];
     meshNodeBindings:[MeshNodeBinding];
+    renderBufferBindings:[RenderBufferBinding];
 }

@@ -135,6 +135,21 @@ namespace ramses::internal
         EXPECT_EQ(0u, sceneResourceActions.size());
     }
 
+    TEST_F(AResourceChangeCollectingScene, setRenderBufferPropertiesIsTracked)
+    {
+        const RenderBufferHandle bufferHandle = scene.allocateRenderBuffer({ 1u, 1u, EPixelStorageFormat::R8, ERenderBufferAccessMode::ReadWrite, 0u }, {});
+        scene.resetResourceChanges();
+
+        scene.setRenderBufferProperties(bufferHandle, 1u, 2u, 3u);
+        ASSERT_EQ(1u, sceneResourceActions.size());
+        EXPECT_EQ(bufferHandle, sceneResourceActions[0].handle);
+        EXPECT_EQ(ESceneResourceAction_UpdateRenderBufferProperties, sceneResourceActions[0].action);
+        EXPECT_TRUE(scene.haveResourcesChanged());
+
+        scene.resetResourceChanges();
+        EXPECT_EQ(0u, sceneResourceActions.size());
+    }
+
     TEST_F(AResourceChangeCollectingScene, createdBlitPassIsTracked)
     {
         const BlitPassHandle handle = scene.allocateBlitPass(RenderBufferHandle(0u), RenderBufferHandle(1u), {});

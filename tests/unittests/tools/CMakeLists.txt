@@ -7,5 +7,5 @@
 #  -------------------------------------------------------------------------
 
 if(ramses-sdk_ENABLE_LOGIC)
-    add_subdirectory(ramses-logic-viewer)
+    add_subdirectory(ramses-viewer)
 endif()

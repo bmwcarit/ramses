@@ -23,7 +23,6 @@
 #include "ComponentMocks.h"
 #include "TestSceneHelper.h"
 #include <algorithm>
-#include "internal/Core/Utils/ThreadLocalLog.h"
 
 namespace ramses::internal
 {
@@ -35,9 +34,6 @@ namespace ramses::internal
             , expirationMonitor(rendererScenes, rendererEventCollector, rendererStatistics)
             , renderer(DisplayHandle{ 1u }, rendererScenes, rendererEventCollector, expirationMonitor, rendererStatistics)
         {
-            // caller is expected to have a display prefix for logs
-            ThreadLocalLog::SetPrefix(1);
-
             sceneRenderInterrupted.incrementRenderableIdx();
             sceneRenderInterrupted2.incrementRenderableIdx();
             sceneRenderInterrupted2.incrementRenderableIdx();

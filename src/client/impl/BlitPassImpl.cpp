@@ -13,6 +13,7 @@
 #include "impl/RamsesObjectTypeUtils.h"
 #include "impl/ErrorReporting.h"
 #include "internal/SceneGraph/SceneAPI/BlitPass.h"
+#include "internal/SceneGraph/SceneAPI/PixelRectangle.h"
 #include "internal/SceneGraph/Scene/ClientScene.h"
 
 namespace ramses::internal
@@ -44,30 +45,26 @@ namespace ramses::internal
         m_blitPassHandle = BlitPassHandle::Invalid();
     }
 
+    bool BlitPassImpl::validateBlittingRegions(const PixelRectangle& src, const PixelRectangle& dst) const
+    {
+        const auto& blitPass = getIScene().getBlitPass(m_blitPassHandle);
+        const auto& renderBufferSrc = getIScene().getRenderBuffer(blitPass.sourceRenderBuffer);
+        const auto& renderBufferDst = getIScene().getRenderBuffer(blitPass.destinationRenderBuffer);
+        return
+            src.x + src.width <= renderBufferSrc.width && src.y + src.height <= renderBufferSrc.height &&
+            dst.x + dst.width <= renderBufferDst.width && dst.y + dst.height <= renderBufferDst.height;
+    }
+
     bool BlitPassImpl::setBlittingRegion(uint32_t sourceX, uint32_t sourceY, uint32_t destinationX, uint32_t destinationY, uint32_t width, uint32_t height)
     {
-        const ramses::internal::BlitPass& blitPass = getIScene().getBlitPass(m_blitPassHandle);
-        const ramses::internal::RenderBuffer& renderBufferSrc = getIScene().getRenderBuffer(blitPass.sourceRenderBuffer);
-        const ramses::internal::RenderBuffer& renderBufferDst = getIScene().getRenderBuffer(blitPass.destinationRenderBuffer);
-        if (sourceX + width > renderBufferSrc.width || sourceY + height > renderBufferSrc.height)
+        const PixelRectangle sourceRegion = { sourceX, sourceY, static_cast<int32_t>(width), static_cast<int32_t>(height) };
+        const PixelRectangle destinationRegion = { destinationX, destinationY, static_cast<int32_t>(width), static_cast<int32_t>(height) };
+
+        if (!validateBlittingRegions(sourceRegion, destinationRegion))
         {
-            getErrorReporting().set("BlitPass::setBlittingRegion failed - invalid source region", *this);
+            getErrorReporting().set("BlitPass::setBlittingRegion failed - region out of source or destination buffer size", *this);
             return false;
         }
-
-        if (destinationX + width > renderBufferDst.width || destinationY + height > renderBufferDst.height)
-        {
-            getErrorReporting().set("BlitPass::setBlittingRegion failed - invalid destination region", *this);
-            return false;
-        }
-
-        const PixelRectangle sourceRegion = {
-            sourceX, sourceY, static_cast<int32_t>(width), static_cast<int32_t>(height)
-        };
-
-        const PixelRectangle destinationRegion = {
-            destinationX, destinationY, static_cast<int32_t>(width), static_cast<int32_t>(height)
-        };
 
         getIScene().setBlitPassRegions(m_blitPassHandle, sourceRegion, destinationRegion);
 
@@ -148,11 +145,14 @@ namespace ramses::internal
 
         const ramses::internal::BlitPass& blitPass = getIScene().getBlitPass(m_blitPassHandle);
 
-        if (!getIScene().isRenderBufferAllocated(blitPass.sourceRenderBuffer))
-            report.add(EIssueType::Error, "blitpass references a deleted source render buffer", &getRamsesObject());
-
-        if (!getIScene().isRenderBufferAllocated(blitPass.destinationRenderBuffer))
-            report.add(EIssueType::Error, "blitpass references a deleted destination render buffer", &getRamsesObject());
+        if (!getIScene().isRenderBufferAllocated(blitPass.sourceRenderBuffer) || !getIScene().isRenderBufferAllocated(blitPass.destinationRenderBuffer))
+        {
+            report.add(EIssueType::Error, "blitpass references a deleted source or destination render buffer", &getRamsesObject());
+        }
+        else if (!validateBlittingRegions(blitPass.sourceRegion, blitPass.destinationRegion))
+        {
+            report.add(EIssueType::Error, "blitpass blit region out of source or destination buffer size", &getRamsesObject());
+        }
     }
 
     const ramses::RenderBuffer& BlitPassImpl::getSourceRenderBuffer() const

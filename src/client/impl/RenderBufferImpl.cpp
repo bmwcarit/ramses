@@ -7,9 +7,10 @@
 //  -------------------------------------------------------------------------
 
 #include "impl/RenderBufferImpl.h"
-#include "internal/SceneGraph/Scene/ClientScene.h"
 #include "impl/TextureUtils.h"
 #include "impl/TextureEnumsImpl.h"
+#include "impl/ErrorReporting.h"
+#include "internal/SceneGraph/Scene/ClientScene.h"
 
 namespace ramses::internal
 {
@@ -36,13 +37,11 @@ namespace ramses::internal
 
     uint32_t RenderBufferImpl::getWidth() const
     {
-        assert(m_renderBufferHandle.isValid());
         return getIScene().getRenderBuffer(m_renderBufferHandle).width;
     }
 
     uint32_t RenderBufferImpl::getHeight() const
     {
-        assert(m_renderBufferHandle.isValid());
         return getIScene().getRenderBuffer(m_renderBufferHandle).height;
     }
 
@@ -58,7 +57,6 @@ namespace ramses::internal
 
     uint32_t RenderBufferImpl::getSampleCount() const
     {
-        assert(m_renderBufferHandle.isValid());
         return getIScene().getRenderBuffer(m_renderBufferHandle).sampleCount;
     }
 
@@ -184,5 +182,17 @@ namespace ramses::internal
             rbDesc << " [" << rb.width << "x" << rb.height << "; " << ramses::internal::EnumToString(rb.format) << "; " << EnumToString(rb.accessMode) << "; " << rb.sampleCount << " samples]";
             return report.add(EIssueType::Warning, rbDesc.release(), &getRamsesObject());
         }
+    }
+
+    bool RenderBufferImpl::setProperties(uint32_t width, uint32_t height, uint32_t sampleCount)
+    {
+        if (width == 0 || height == 0)
+        {
+            getErrorReporting().set("RenderBuffer::setProperties: width and height cannot be zero", *this);
+            return false;
+        }
+
+        getIScene().setRenderBufferProperties(m_renderBufferHandle, width, height, sampleCount);
+        return true;
     }
 }

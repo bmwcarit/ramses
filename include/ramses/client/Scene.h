@@ -118,12 +118,14 @@ namespace ramses
 
         /**
         * @brief Saves all scene contents to a file.
+        * @details Note that all #ramses::LogicEngine instances in the scene will be updated (#ramses::LogicEngine::update)
+        * and the scene will be flushed (#flush) before saving.
         *
         * @param[in] fileName File name to save the scene to.
         * @param[in] config optional configuration object with exporter and asset metadata info, see #ramses::SaveFileConfig for details
         * @return true for success, false otherwise (check log or #ramses::RamsesFramework::getLastError for details).
         */
-        [[nodiscard]] bool saveToFile(std::string_view fileName, const SaveFileConfig& config = {}) const;
+        [[nodiscard]] bool saveToFile(std::string_view fileName, const SaveFileConfig& config = {});
 
         /**
         * @brief Creates a #ramses::LogicEngine instance.
@@ -235,8 +237,12 @@ namespace ramses
         bool setExpirationTimestamp(uint64_t ptpExpirationTimestampInMilliseconds);
 
         /**
-        * @brief Commits all changes done to the scene since the last flush or since scene creation. This makes a new
-        *        valid scene state available to all local and remote renderers.
+        * @brief   Commits all changes done to the scene since the last flush or since scene creation.
+        * @details Flush also makes a new valid scene state available to all local and remote renderers.
+        *          Flush will fail if a pending change makes the scene invalid to a degree that renderer would fail
+        *          in attempt to render it, e.g. there is missing resource or a wrong configuration of #ramses::RenderTarget.
+        *          Note that successful flush still does not guarantee a full validity of a scene, see #ramses::RamsesObject::validate
+        *          to make a more thorough check of a scene or a particular object.
         *
         * @param[in] sceneVersionTag updates the version tag of the scene along with the flushed scene updates.
         *            If set to a valid value, a subscribed renderer will generate a sceneFlushed() event when the

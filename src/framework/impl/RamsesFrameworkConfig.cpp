@@ -106,6 +106,11 @@ namespace ramses
         m_impl->setPeriodicLogInterval(interval);
     }
 
+    void RamsesFrameworkConfig::setLoggingInstanceName(std::string_view instanceName)
+    {
+        m_impl->setLoggingInstanceName(instanceName);
+    }
+
     bool RamsesFrameworkConfig::setParticipantGuid(uint64_t guid)
     {
         return m_impl->setParticipantGuid(guid);

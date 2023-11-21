@@ -24,9 +24,9 @@ namespace ramses::internal {
     {
     public:
         APendingSceneResourcesUtils()
-        : rendererScenes(rendererEventCollector)
-        , sceneLinksManager(rendererScenes, rendererEventCollector)
-        , scene(sceneLinksManager, SceneInfo(sceneID))
+            : rendererScenes(rendererEventCollector)
+            , sceneLinksManager(rendererScenes, rendererEventCollector)
+            , scene(sceneLinksManager, SceneInfo(sceneID))
             , allocateHelper(scene)
         {
             allocateHelper.allocateRenderTarget(renderTargetHandle);
@@ -71,7 +71,7 @@ namespace ramses::internal {
     };
 
     static const BasicActionSet ActionSet_RenderTarget{ ESceneResourceAction_CreateRenderTarget, ESceneResourceAction_DestroyRenderTarget };
-    static const BasicActionSet ActionSet_RenderBuffer{ ESceneResourceAction_CreateRenderBuffer, ESceneResourceAction_DestroyRenderBuffer };
+    static const BasicActionSet ActionSet_RenderBuffer{ ESceneResourceAction_CreateRenderBuffer, ESceneResourceAction_DestroyRenderBuffer, ESceneResourceAction_UpdateRenderBufferProperties };
     static const BasicActionSet ActionSet_BlitPass{ ESceneResourceAction_CreateBlitPass, ESceneResourceAction_DestroyBlitPass };
     static const BasicActionSet ActionSet_DataBuffer{ ESceneResourceAction_CreateDataBuffer, ESceneResourceAction_DestroyDataBuffer, ESceneResourceAction_UpdateDataBuffer };
     static const BasicActionSet ActionSet_TextureBuffer{ ESceneResourceAction_CreateTextureBuffer, ESceneResourceAction_DestroyTextureBuffer, ESceneResourceAction_UpdateTextureBuffer };
@@ -88,13 +88,15 @@ namespace ramses::internal {
     static const BasicActionSet TestSceneResourceActions_Buffers[] =
     {
         ActionSet_DataBuffer,
-        ActionSet_TextureBuffer
+        ActionSet_TextureBuffer,
+        ActionSet_RenderBuffer
     };
 
     TEST_F(APendingSceneResourcesUtils, appliesSceneResourceActions)
     {
         SceneResourceActionVector actions;
         actions.push_back(SceneResourceAction(renderBufferHandle.asMemoryHandle(), ESceneResourceAction_CreateRenderBuffer));
+        actions.push_back(SceneResourceAction(renderBufferHandle.asMemoryHandle(), ESceneResourceAction_UpdateRenderBufferProperties));
         actions.push_back(SceneResourceAction(renderTargetHandle.asMemoryHandle(), ESceneResourceAction_CreateRenderTarget));
         actions.push_back(SceneResourceAction(blitPassHandle.asMemoryHandle(), ESceneResourceAction_CreateBlitPass));
         actions.push_back(SceneResourceAction(dataBufferHandle.asMemoryHandle(), ESceneResourceAction_CreateDataBuffer));
@@ -108,6 +110,7 @@ namespace ramses::internal {
 
         InSequence seq;
         EXPECT_CALL(resourceManager, uploadRenderTargetBuffer(renderBufferHandle, sceneID, _));
+        EXPECT_CALL(resourceManager, updateRenderTargetBufferProperties(renderBufferHandle, sceneID, _));
         EXPECT_CALL(resourceManager, uploadRenderTarget(renderTargetHandle, _, sceneID));
         EXPECT_CALL(resourceManager, uploadBlitPassRenderTargets(blitPassHandle, _, _, sceneID));
         EXPECT_CALL(resourceManager, uploadDataBuffer(dataBufferHandle, _, _, _, sceneID));
@@ -277,7 +280,7 @@ namespace ramses::internal {
         }
     }
 
-    TEST_F(APendingSceneResourcesUtils, removesAnyDataBufferUpdateActionsBeforeDestroyDuringConsolidation)
+    TEST_F(APendingSceneResourcesUtils, removesAnyBufferUpdateActionsBeforeDestroyDuringConsolidation)
     {
         for (const auto& bufferAction : TestSceneResourceActions_Buffers)
         {
@@ -298,7 +301,7 @@ namespace ramses::internal {
         }
     }
 
-    TEST_F(APendingSceneResourcesUtils, keepsDataBufferUpdateActionForNewlyCreatedAfterRemovedPreviousUpdatesDueToDestroy)
+    TEST_F(APendingSceneResourcesUtils, consolidatesSequenceOfCreateUpdateDestroyActions)
     {
         for (const auto& bufferAction : TestSceneResourceActions_Buffers)
         {
@@ -360,6 +363,23 @@ namespace ramses::internal {
         EXPECT_CALL(resourceManager, updateTextureBuffer(textureBufferHandle, 0u, Quad{1, 1, 12, 13}, 32, _, sceneID));
         EXPECT_CALL(resourceManager, updateTextureBuffer(textureBufferHandle, 1u, Quad{0, 0, 3, 4}, 16, _, sceneID));
         EXPECT_EQ(actions.size(), 1u);
+        PendingSceneResourcesUtils::ApplySceneResourceActions(actions, scene, resourceManager);
+    }
+
+    TEST_F(APendingSceneResourcesUtils, consolidatesAndAppliesRenderBufferPropertiesUpdate)
+    {
+        SceneResourceActionVector actions;
+        SceneResourceActionVector actionsNew;
+        actionsNew.push_back(SceneResourceAction(renderBufferHandle.asMemoryHandle(), ESceneResourceAction_UpdateRenderBufferProperties));
+        actionsNew.push_back(SceneResourceAction(renderBufferHandle.asMemoryHandle(), ESceneResourceAction_UpdateRenderBufferProperties));
+        actionsNew.push_back(SceneResourceAction(renderBufferHandle.asMemoryHandle(), ESceneResourceAction_UpdateRenderBufferProperties));
+        actionsNew.push_back(SceneResourceAction(renderBufferHandle.asMemoryHandle(), ESceneResourceAction_UpdateRenderBufferProperties));
+        actionsNew.push_back(SceneResourceAction(renderBufferHandle.asMemoryHandle(), ESceneResourceAction_UpdateRenderBufferProperties));
+        PendingSceneResourcesUtils::ConsolidateSceneResourceActions(actionsNew, actions);
+        EXPECT_EQ(actions.size(), 1u);
+
+        const auto& rb = scene.getRenderBuffer(renderBufferHandle);
+        EXPECT_CALL(resourceManager, updateRenderTargetBufferProperties(renderBufferHandle, sceneID, Ref(rb)));
         PendingSceneResourcesUtils::ApplySceneResourceActions(actions, scene, resourceManager);
     }
 }

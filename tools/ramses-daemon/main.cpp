@@ -48,8 +48,8 @@ int main(int argc, const char* argv[])
     ramsh.start();
 
     LOG_INFO(CONTEXT_CLIENT, "Daemon::main  Starting Ramses Daemon");
-    LOG_INFO(CONTEXT_CLIENT, "Daemon::main  Version: " << ::ramses_sdk::RAMSES_SDK_RAMSES_VERSION <<
-             " Hash:" << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH << " Commit:" << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_COUNT);
+    LOG_INFO(CONTEXT_CLIENT, "Daemon::main  Version: {} Hash:{} Commit:{}",
+        ::ramses_sdk::RAMSES_SDK_RAMSES_VERSION, ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH, ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_COUNT);
 
     PlatformLock frameworkLock;
     StatisticCollectionFramework statisticCollection;

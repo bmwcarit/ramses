@@ -25,7 +25,6 @@
 #include "WaylandBufferResourceMock.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/WaylandBuffer.h"
 #include "wayland-client.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
 #include "internal/Platform/EGL/Context_EGL.h"
 #include <pwd.h>
 #include <grp.h>
@@ -158,9 +157,6 @@ namespace ramses::internal
     public:
         bool init(const std::string& ecSocketName, const std::string& ecSocketGroup = "", int ecSocketFD = -1, bool xdgRuntimeDirSet = true, uint32_t ecSocketPermissions = 0)
         {
-            // caller is expected to have a display prefix for logs
-            ThreadLocalLog::SetPrefix(1);
-
             if (xdgRuntimeDirSet)
             {
                 WaylandEnvironmentUtils::SetVariable(WaylandEnvironmentVariable::XDGRuntimeDir, m_initialValueOfXdgRuntimeDir);

@@ -11,7 +11,7 @@
 #include "internal/RendererLib/PlatformInterface/IWindowEventHandler.h"
 #include "internal/RendererLib/Enums/EKeyModifier.h"
 #include "internal/RendererLib/RendererEventCollector.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {
@@ -27,8 +27,8 @@ namespace ramses::internal
 
     void DisplayEventHandler::onKeyEvent(EKeyEvent event, KeyModifiers modifiers, EKeyCode keyCode)
     {
-        LOG_TRACE(CONTEXT_RENDERER, "DisplayController::onKeyEvent: [display: " << m_displayHandle.asMemoryHandle() <<
-            "; eventType: " << EnumToString(event) << "; modifiers: " << KeyModifierToString(modifiers) << "; key: " << EnumToString(keyCode) << "]");
+        LOG_TRACE(CONTEXT_RENDERER, "DisplayController::onKeyEvent: [display: {}; eventType: {}; modifiers: {}; key: {}]",
+            m_displayHandle.asMemoryHandle(), EnumToString(event), KeyModifierToString(modifiers), EnumToString(keyCode));
 
         // collect renderer event
         KeyEvent keyEvent;
@@ -40,8 +40,7 @@ namespace ramses::internal
 
     void DisplayEventHandler::onMouseEvent(EMouseEvent event, int32_t posX, int32_t posY)
     {
-        LOG_TRACE(CONTEXT_RENDERER, "DisplayController::onMouseEvent: [display: " << m_displayHandle.asMemoryHandle() <<
-            "; eventType: " << EnumToString(event) << "; posX: " << posX << "; posY: " << posY << "]");
+        LOG_TRACE(CONTEXT_RENDERER, "DisplayController::onMouseEvent: [display: {}; eventType: {}; posX: {}; posY: {}]", m_displayHandle.asMemoryHandle(), EnumToString(event), posX, posY);
 
         // collect renderer event
         MouseEvent mouseEvent;
@@ -53,7 +52,7 @@ namespace ramses::internal
 
     void DisplayEventHandler::onClose()
     {
-        LOG_TRACE(CONTEXT_RENDERER, "DisplayController::onClose: [displayId: " << m_displayHandle.asMemoryHandle() << "]");
+        LOG_TRACE(CONTEXT_RENDERER, "DisplayController::onClose: [displayId: {}]", m_displayHandle.asMemoryHandle());
         m_eventCollector.addDisplayEvent(ERendererEventType::WindowClosed, m_displayHandle);
     }
 

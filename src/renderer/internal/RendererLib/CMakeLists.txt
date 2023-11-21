@@ -12,36 +12,36 @@ file(GLOB_RECURSE
     *.cpp)
 
 createModule(
-    NAME                    ramses-renderer-lib
+    NAME                    ramses-renderer-internal
     TYPE                    STATIC_LIBRARY
     ENABLE_INSTALL          OFF
 
     INCLUDE_PATHS           ${PROJECT_SOURCE_DIR}/src/renderer
     SRC_FILES               ${RAMSES_RENDERER_LIB_FILES}
     DEPENDENCIES            ramses-api
-                            ramses-framework
+                            ramses-framework-internal
 )
 
 if(ramses-sdk_ENABLE_WINDOW_TYPE_WINDOWS)
-    target_compile_definitions(ramses-renderer-lib PUBLIC ramses_sdk_ENABLE_WINDOW_TYPE_WINDOWS)
+    target_compile_definitions(ramses-renderer-internal PUBLIC ramses_sdk_ENABLE_WINDOW_TYPE_WINDOWS)
 endif()
 
 if(ramses-sdk_ENABLE_WINDOW_TYPE_X11)
-    target_compile_definitions(ramses-renderer-lib PUBLIC ramses_sdk_ENABLE_WINDOW_TYPE_X11)
+    target_compile_definitions(ramses-renderer-internal PUBLIC ramses_sdk_ENABLE_WINDOW_TYPE_X11)
 endif()
 
 if(ramses-sdk_ENABLE_WINDOW_TYPE_ANDROID)
-    target_compile_definitions(ramses-renderer-lib PUBLIC ramses_sdk_ENABLE_WINDOW_TYPE_ANDROID)
+    target_compile_definitions(ramses-renderer-internal PUBLIC ramses_sdk_ENABLE_WINDOW_TYPE_ANDROID)
 endif()
 
 if(ramses-sdk_ENABLE_WINDOW_TYPE_IOS)
-    target_compile_definitions(ramses-renderer-lib PUBLIC ramses_sdk_ENABLE_WINDOW_TYPE_IOS)
+    target_compile_definitions(ramses-renderer-internal PUBLIC ramses_sdk_ENABLE_WINDOW_TYPE_IOS)
 endif()
 
 if(ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_IVI)
-    target_compile_definitions(ramses-renderer-lib PUBLIC ramses_sdk_ENABLE_WINDOW_TYPE_WAYLAND_IVI)
+    target_compile_definitions(ramses-renderer-internal PUBLIC ramses_sdk_ENABLE_WINDOW_TYPE_WAYLAND_IVI)
 endif()
 
 if(ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_WL_SHELL)
-    target_compile_definitions(ramses-renderer-lib PUBLIC ramses_sdk_ENABLE_WINDOW_TYPE_WAYLAND_WL_SHELL)
+    target_compile_definitions(ramses-renderer-internal PUBLIC ramses_sdk_ENABLE_WINDOW_TYPE_WAYLAND_WL_SHELL)
 endif()

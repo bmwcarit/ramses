@@ -38,8 +38,6 @@ namespace ramses::internal
             // Quaternions which are not normalized (ie. not of unit length). Used for tests to check they are normalized correctly
             m_dataVec4 = m_logicEngine->createDataArray(std::vector<vec4f>{ { 2.f, 0.f, 0.f, 0.f }, { 0.f, 2.f, 0.f, 0.f } , { 0.f, 0.f, 2.f, 0.f } });
             m_dataVecVec = m_logicEngine->createDataArray(std::vector<std::vector<float>>{ { 1.f, 2.f, 3.f, 4.f, 5.f }, { 3.f, 4.f, 5.f, 6.f, 7.f }, { 5.f, 6.f, 7.f, 8.f, 9.f } });
-
-            m_saveFileConfigNoValidation.setValidationEnabled(false);
         }
 
     protected:
@@ -155,7 +153,7 @@ namespace ramses::internal
 
         auto& otherEngine = *m_scene->createLogicEngine();
         EXPECT_FALSE(otherEngine.destroy(*animNode));
-        EXPECT_EQ("Failed to destroy object 'animNode [LogicObject ScnObjId=13]', cannot find it in this LogicEngine instance.", getLastErrorMessage());
+        EXPECT_EQ("Failed to destroy object 'animNode [LogicObject ScnObjId=14]', cannot find it in this LogicEngine instance.", getLastErrorMessage());
     }
 
     TEST_P(AnAnimationNode, ChangesName)
@@ -326,7 +324,7 @@ namespace ramses::internal
             otherEngine.createAnimationNode(config1, "animNode1");
             otherEngine.createAnimationNode(config2, "animNode2");
 
-            ASSERT_TRUE(saveToFileWithoutValidation("logic_animNodes.bin"));
+            ASSERT_TRUE(saveToFile("logic_animNodes.bin"));
         }
 
         ASSERT_TRUE(recreateFromFile("logic_animNodes.bin"));
@@ -436,7 +434,7 @@ namespace ramses::internal
             EXPECT_TRUE(otherEngine.update());
             EXPECT_EQ(15, *animNode->getOutputs()->getChild("channel")->get<int32_t>());
 
-            ASSERT_TRUE(saveToFileWithoutValidation("logic_animNodes.bin"));
+            ASSERT_TRUE(saveToFile("logic_animNodes.bin"));
         }
 
         ASSERT_TRUE(recreateFromFile("logic_animNodes.bin"));

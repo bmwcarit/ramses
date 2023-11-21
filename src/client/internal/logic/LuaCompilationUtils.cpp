@@ -59,7 +59,7 @@ namespace ramses::internal
                     return std::nullopt;
                 }
 
-                LOG_WARN_P(CONTEXT_CLIENT, "Performance warning! Error during loading of LuaScript '{}' from pre-compiled byte code, will try to recompile script from source code. Error:\n{}!", name, error.what());
+                LOG_WARN(CONTEXT_CLIENT, "Performance warning! Error during loading of LuaScript '{}' from pre-compiled byte code, will try to recompile script from source code. Error:\n{}!", name, error.what());
                 byteCodeFromPrecompiledScript.clear();
             }
         }
@@ -326,7 +326,7 @@ namespace ramses::internal
                     return std::nullopt;
                 }
 
-                LOG_WARN_P(CONTEXT_CLIENT, "Performance warning! Error during loading of LuaScript '{}' from pre-compiled byte code, will try to recompile script from source code. Error:\n{}!", name, error.what());
+                LOG_WARN(CONTEXT_CLIENT, "Performance warning! Error during loading of LuaScript '{}' from pre-compiled byte code, will try to recompile script from source code. Error:\n{}!", name, error.what());
                 byteCodeFromPrecompiledModule.clear();
             }
         }
@@ -513,7 +513,7 @@ namespace ramses::internal
         if (!scriptFuncResult.valid())
         {
             const sol::error error = scriptFuncResult;
-            LOG_DEBUG_P(CONTEXT_CLIENT, "Lua runtime error while extracting module dependencies, this is ignored for the actual extraction but might affect its result:\n{}", error.what());
+            LOG_DEBUG(CONTEXT_CLIENT, "Lua runtime error while extracting module dependencies, this is ignored for the actual extraction but might affect its result:\n{}", error.what());
         }
 
         if (!success)

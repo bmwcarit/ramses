@@ -14,7 +14,7 @@
 #include "internal/RendererLib/PlatformInterface/IBinaryShaderCache.h"
 #include "internal/RendererLib/PlatformInterface/IDevice.h"
 #include "internal/RendererLib/PlatformInterface/IRenderBackend.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "internal/Core/Utils/TextureMathUtils.h"
 #include "internal/Components/ManagedResource.h"
 #include "internal/RendererLib/ResourceDescriptor.h"
@@ -167,7 +167,7 @@ namespace ramses::internal
 
     DeviceResourceHandle ResourceUploader::queryBinaryShaderCache(IRenderBackend& renderBackend, const EffectResource& effect, ResourceContentHash hash)
     {
-        LOG_TRACE(CONTEXT_RENDERER, "ResourceUploader::queryBinaryShaderCacheAndUploadEffect: effectid:" << effect.getHash());
+        LOG_TRACE(CONTEXT_RENDERER, "ResourceUploader::queryBinaryShaderCacheAndUploadEffect: effectid:{}", effect.getHash());
         IDevice& device = renderBackend.getDevice();
 
         if (!m_binaryShaderCache)
@@ -219,7 +219,7 @@ namespace ramses::internal
                 m_binaryShaderCache->storeBinaryShader(hash, sceneid, &binaryShader.front(), static_cast<uint32_t>(binaryShader.size()), format);
             }
             else
-                LOG_WARN_P(CONTEXT_RENDERER, "ResourceUploader::storeShaderInBinaryShaderCache: failed to retrieve binary shader from device, shader cannot be stored in cache (deviceHandle={} hash={} sceneId={})", deviceHandle, hash, sceneid);
+                LOG_WARN(CONTEXT_RENDERER, "ResourceUploader::storeShaderInBinaryShaderCache: failed to retrieve binary shader from device, shader cannot be stored in cache (deviceHandle={} hash={} sceneId={})", deviceHandle, hash, sceneid);
         }
     }
 

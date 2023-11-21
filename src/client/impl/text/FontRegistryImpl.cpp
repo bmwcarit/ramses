@@ -29,7 +29,7 @@ namespace ramses::internal
             if (error != 0)
             {
                 Ft2Library = nullptr;
-                LOG_ERROR(CONTEXT_TEXT, "SharedFTLibrary: Failed to initialize FreeType with error " << error);
+                LOG_ERROR(CONTEXT_TEXT, "SharedFTLibrary: Failed to initialize FreeType with error {}", error);
             }
         }
         NumRefs++;
@@ -62,11 +62,11 @@ namespace ramses::internal
         // basic checks
         if (fontPath.empty() || !ramses::internal::File(fontPath).exists())
         {
-            LOG_ERROR(CONTEXT_TEXT, "FontRegistry::createFreetype2Font: Font file not found " << fontPath);
+            LOG_ERROR(CONTEXT_TEXT, "FontRegistry::createFreetype2Font: Font file not found {}", fontPath);
             return {};
         }
 
-        LOG_INFO_P(CONTEXT_CLIENT, "FontRegistry::createFreetype2Font: path {}", fontPath);
+        LOG_INFO(CONTEXT_CLIENT, "FontRegistry::createFreetype2Font: path {}", fontPath);
         return createFreetype2FontCommon(std::make_unique<ramses::internal::FreetypeFontFaceFilePath>(fontPath, SharedFTLibrary::Get()));
     }
 
@@ -75,7 +75,7 @@ namespace ramses::internal
         // basic checks
         if (fd <= 0)
         {
-            LOG_ERROR(CONTEXT_CLIENT, "FontRegistry::createFreetype2FontFromFileDescriptor: filedescriptor must be valid " << fd);
+            LOG_ERROR(CONTEXT_CLIENT, "FontRegistry::createFreetype2FontFromFileDescriptor: filedescriptor must be valid {}", fd);
             return {};
         }
         if (length == 0)
@@ -84,7 +84,7 @@ namespace ramses::internal
             return {};
         }
 
-        LOG_INFO_P(CONTEXT_CLIENT, "FontRegistry::createFreetype2FontFromFileDescriptor: fd {}, offset {}, length {}", fd, offset, length);
+        LOG_INFO(CONTEXT_CLIENT, "FontRegistry::createFreetype2FontFromFileDescriptor: fd {}, offset {}, length {}", fd, offset, length);
         return createFreetype2FontCommon(std::make_unique<ramses::internal::FreetypeFontFaceFileDescriptor>(fd, offset, length, SharedFTLibrary::Get()));
     }
 
@@ -106,7 +106,7 @@ namespace ramses::internal
     {
         if (m_fonts.erase(fontId) == 0u)
         {
-            LOG_ERROR(CONTEXT_TEXT, "FontRegistryImpl::deleteFont: Cannot delete font " << fontId << ", no such entry");
+            LOG_ERROR(CONTEXT_TEXT, "FontRegistryImpl::deleteFont: Cannot delete font {}, no such entry", fontId);
             return false;
         }
         return true;
@@ -117,7 +117,7 @@ namespace ramses::internal
         const auto fontIt = m_fonts.find(fontId);
         if (fontIt == m_fonts.cend())
         {
-            LOG_ERROR(CONTEXT_TEXT, "FontRegistry: Failed to create font instance, fontId " << fontId << " does not exist");
+            LOG_ERROR(CONTEXT_TEXT, "FontRegistry: Failed to create font instance, fontId {} does not exist", fontId);
             return {};
         }
 
@@ -132,7 +132,7 @@ namespace ramses::internal
         const auto fontIt = m_fonts.find(fontId);
         if (fontIt == m_fonts.cend())
         {
-            LOG_ERROR(CONTEXT_TEXT, "FontRegistry: Failed to create font instance, fontId " << fontId << " does not exist");
+            LOG_ERROR(CONTEXT_TEXT, "FontRegistry: Failed to create font instance, fontId {} does not exist", fontId);
             return {};
         }
 
@@ -146,7 +146,7 @@ namespace ramses::internal
     {
         if (m_fontInstances.erase(fontInstance) == 0u)
         {
-            LOG_ERROR(CONTEXT_TEXT, "FontRegistryImpl::deleteFontInstance: Cannot delete font instance " << fontInstance << ", no such entry");
+            LOG_ERROR(CONTEXT_TEXT, "FontRegistryImpl::deleteFontInstance: Cannot delete font instance {}, no such entry", fontInstance);
             return false;
         }
         return true;

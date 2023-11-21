@@ -56,8 +56,8 @@ namespace ramses::internal
 
     RamsesFrameworkImpl::~RamsesFrameworkImpl()
     {
-        LOG_INFO(CONTEXT_CLIENT, "RamsesFramework::~RamsesFramework: guid " << m_participantAddress.getParticipantId() << ", wasConnected " << m_connected
-            << ", has Renderer " << !!m_ramsesRenderer << ", number of Clients " << m_ramsesClients.size());
+        LOG_INFO(CONTEXT_CLIENT, "RamsesFramework::~RamsesFramework: guid {}, wasConnected {}, has Renderer {}, number of Clients {}",
+            m_participantAddress.getParticipantId(), m_connected, !!m_ramsesRenderer, m_ramsesClients.size());
 
         if (m_connected)
             disconnect();
@@ -245,7 +245,7 @@ namespace ramses::internal
             m_errorReporting.set("addRamshCommand: command may not be null");
             return false;
         }
-        LOG_INFO_P(CONTEXT_FRAMEWORK, "RamsesFrameworkImpl::addRamshCommand: keyword '{}'", command->keyword());
+        LOG_INFO(CONTEXT_FRAMEWORK, "RamsesFrameworkImpl::addRamshCommand: keyword '{}'", command->keyword());
         auto commandWrapper = std::make_shared<PublicRamshCommand>(command);
         if (!m_ramsh->add(commandWrapper, false))
         {
@@ -263,7 +263,7 @@ namespace ramses::internal
             m_errorReporting.set("executeRamshCommand: command may not be empty");
             return false;
         }
-        LOG_INFO_P(CONTEXT_FRAMEWORK, "RamsesFrameworkImpl::executeRamshCommand: '{}'", input);
+        LOG_INFO(CONTEXT_FRAMEWORK, "RamsesFrameworkImpl::executeRamshCommand: '{}'", input);
         if (!m_ramsh->execute(RamshTools::parseCommandString(input)))
         {
             m_errorReporting.set("executeRamshCommand: executing command failed");
@@ -325,6 +325,7 @@ namespace ramses::internal
 
     std::unique_ptr<RamsesFrameworkImpl> RamsesFrameworkImpl::CreateImpl(const RamsesFrameworkConfig& config)
     {
+        RamsesLogger::SetPrefixes(config.impl().getLoggingInstanceName(), "main");
         GetRamsesLogger().initialize(config.impl().loggerConfig, false, config.impl().getDltApplicationRegistrationEnabled());
 
         Guid myGuid = config.impl().getUserProvidedGuid();
@@ -344,8 +345,8 @@ namespace ramses::internal
         }
         ParticipantIdentifier participantAddress(myGuid, config.impl().getParticipantName());
 
-        LOG_INFO(CONTEXT_FRAMEWORK, "Starting Ramses Client Application: " << participantAddress.getParticipantName() << " guid:" << participantAddress.getParticipantId() <<
-                 " stack: " << config.impl().getUsedProtocol());
+        LOG_INFO(CONTEXT_FRAMEWORK, "Starting Ramses Client Application: {} guid:{} stack: {}",
+            participantAddress.getParticipantName(), participantAddress.getParticipantId(), config.impl().getUsedProtocol());
 
         LogEnvironmentVariableIfSet("XDG_RUNTIME_DIR");
         LogEnvironmentVariableIfSet("LIBGL_DRIVERS_PATH");
@@ -354,18 +355,18 @@ namespace ramses::internal
 
         const auto currentSyncTime = synchronized_clock::now();
         const uint64_t systemClockTime = PlatformTime::GetMicrosecondsAbsolute();
-        LOG_INFO(CONTEXT_FRAMEWORK, "Ramses synchronized time is using " << synchronized_clock::source() <<
-                     ". Currrent sync time " << asMicroseconds(currentSyncTime) << " us, system clock is " << systemClockTime << " us");
+        LOG_INFO(CONTEXT_FRAMEWORK, "Ramses synchronized time is using {}. Currrent sync time {} us, system clock is {} us",
+            synchronized_clock::source(), asMicroseconds(currentSyncTime), systemClockTime);
 
         std::unique_ptr<RamsesFrameworkImpl> impl{ new RamsesFrameworkImpl(config.impl(), participantAddress) };
         if (config.impl().m_periodicLogsEnabled)
         {
-            LOG_INFO_P(CONTEXT_FRAMEWORK, "RamsesFramework: periodic logs enabled with period of {}s", config.impl().periodicLogTimeout);
+            LOG_INFO(CONTEXT_FRAMEWORK, "RamsesFramework: periodic logs enabled with period of {}s", config.impl().periodicLogTimeout);
             impl->m_periodicLogger.startLogging(config.impl().periodicLogTimeout);
         }
         else
         {
-            LOG_INFO_P(CONTEXT_FRAMEWORK, "RamsesFramework: periodic logs disabled");
+            LOG_INFO(CONTEXT_FRAMEWORK, "RamsesFramework: periodic logs disabled");
         }
 
         return impl;
@@ -382,7 +383,7 @@ namespace ramses::internal
         // TODO(tobias) envVarValue.getLength should not be there because empty variable is also set. remove when fixed
         if (PlatformEnvironmentVariables::get(std::string{envVarName}, envVarValue) && !envVarValue.empty())
         {
-            LOG_INFO(CONTEXT_FRAMEWORK, "Environment variable set: " << envVarName << "=" << envVarValue);
+            LOG_INFO(CONTEXT_FRAMEWORK, "Environment variable set: {}={}", envVarName, envVarValue);
         }
     }
 

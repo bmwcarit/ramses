@@ -308,7 +308,7 @@ namespace ramses::internal
             EXPECT_TRUE(m_meshBinding->getInputs()->getChild(size_t(MeshNodeBindingImpl::EInputProperty::IndexOffset))->set(41));
             EXPECT_TRUE(m_meshBinding->getInputs()->getChild(size_t(MeshNodeBindingImpl::EInputProperty::InstanceCount))->set(42));
             EXPECT_TRUE(m_logicEngine->update());
-            ASSERT_TRUE(saveToFileWithoutValidation("binding.bin"));
+            ASSERT_TRUE(saveToFile("binding.bin"));
         }
 
         {
@@ -343,7 +343,7 @@ namespace ramses::internal
     {
         {
             EXPECT_TRUE(m_logicEngine->update());
-            ASSERT_TRUE(saveToFileWithoutValidation("binding.bin"));
+            ASSERT_TRUE(saveToFile("binding.bin"));
         }
 
         {
@@ -405,7 +405,7 @@ namespace ramses::internal
             EXPECT_TRUE(m_logicEngine->update());
             EXPECT_EQ(3u, meshNode->getIndexCount());
 
-            ASSERT_TRUE(saveToFileWithoutValidation("binding.bin"));
+            ASSERT_TRUE(saveToFile("binding.bin"));
         }
 
         ASSERT_TRUE(recreateFromFile("binding.bin"));

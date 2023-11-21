@@ -11,7 +11,7 @@
 #include "internal/Platform/Wayland/EmbeddedCompositor/WaylandClient.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/IWaylandDisplay.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/IWaylandGlobal.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 #include <cassert>
 

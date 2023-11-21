@@ -90,4 +90,26 @@ namespace ramses::internal
 
         return true;
     }
+
+    void RenderTargetImpl::onValidate(ValidationReportImpl& report) const
+    {
+        SceneObjectImpl::onValidate(report);
+
+        const auto& iscene = getIScene();
+        const uint32_t rbCount = iscene.getRenderTargetRenderBufferCount(m_renderTargetHandle);
+        assert(rbCount > 0u);
+        const auto& firstRB = iscene.getRenderBuffer(iscene.getRenderTargetRenderBuffer(m_renderTargetHandle, 0u));
+
+        for (uint32_t i = 1u; i < rbCount; ++i)
+        {
+            const auto& rb = iscene.getRenderBuffer(iscene.getRenderTargetRenderBuffer(m_renderTargetHandle, i));
+            if (firstRB.width != rb.width ||
+                firstRB.height != rb.height ||
+                firstRB.sampleCount != rb.sampleCount)
+            {
+                report.add(EIssueType::Error,
+                    "RenderTarget uses render buffers with mismatching resolution and/or sample count. This RenderTarget cannot be used and attempt to flush scene will fail.", &getRamsesObject());
+            }
+        }
+    }
 }

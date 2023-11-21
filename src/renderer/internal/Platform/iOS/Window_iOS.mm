@@ -8,7 +8,7 @@
 
 #include "internal/Platform/iOS/Window_iOS.h"
 #include "internal/RendererLib/DisplayConfig.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "internal/Core/Utils/Warnings.h"
 
 #include "QuartzCore/CAMetalLayer.h"

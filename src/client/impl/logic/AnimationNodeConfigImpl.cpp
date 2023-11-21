@@ -18,32 +18,32 @@ namespace ramses::internal
     {
         if (!channelData.timeStamps || !channelData.keyframes)
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "AnimationNodeConfig::addChannel: Cannot add channelData data '{}', missing timestamps and/or keyframes.", channelData.name);
+            LOG_ERROR(CONTEXT_CLIENT, "AnimationNodeConfig::addChannel: Cannot add channelData data '{}', missing timestamps and/or keyframes.", channelData.name);
             return false;
         }
 
         if (!CanPropertyTypeBeAnimated(channelData.keyframes->getDataType()))
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "AnimationNodeConfig::addChannel: Cannot add channelData data '{}', keyframes data type cannot be animated.", channelData.name);
+            LOG_ERROR(CONTEXT_CLIENT, "AnimationNodeConfig::addChannel: Cannot add channelData data '{}', keyframes data type cannot be animated.", channelData.name);
             return false;
         }
 
         if (channelData.timeStamps->getDataType() != EPropertyType::Float)
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "AnimationNodeConfig::addChannel: Cannot add channelData data '{}', timestamps must be of type Float.", channelData.name);
+            LOG_ERROR(CONTEXT_CLIENT, "AnimationNodeConfig::addChannel: Cannot add channelData data '{}', timestamps must be of type Float.", channelData.name);
             return false;
         }
 
         if (channelData.timeStamps->getNumElements() != channelData.keyframes->getNumElements())
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "AnimationNodeConfig::addChannel: Cannot add channelData data '{}', number of keyframes must be same as number of timestamps.", channelData.name);
+            LOG_ERROR(CONTEXT_CLIENT, "AnimationNodeConfig::addChannel: Cannot add channelData data '{}', number of keyframes must be same as number of timestamps.", channelData.name);
             return false;
         }
 
         const auto& timestamps = *channelData.timeStamps->getData<float>();
         if (std::adjacent_find(timestamps.cbegin(), timestamps.cend(), std::greater_equal<float>()) != timestamps.cend())
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "AnimationNodeConfig::addChannel: Cannot add channelData data '{}', timestamps have to be strictly in ascending order.", channelData.name);
+            LOG_ERROR(CONTEXT_CLIENT, "AnimationNodeConfig::addChannel: Cannot add channelData data '{}', timestamps have to be strictly in ascending order.", channelData.name);
             return false;
         }
 
@@ -52,7 +52,7 @@ namespace ramses::internal
             const size_t elementArraySize = channelData.keyframes->getData<std::vector<float>>()->front().size();
             if (elementArraySize > MaxArrayPropertySize)
             {
-                LOG_ERROR_P(CONTEXT_CLIENT, "AnimationNodeConfig::addChannel: Cannot add channelData data '{}',"
+                LOG_ERROR(CONTEXT_CLIENT, "AnimationNodeConfig::addChannel: Cannot add channelData data '{}',"
                     " when using elements of data type float array, the float array size ({}) cannot exceed {}.",
                     channelData.name, elementArraySize, MaxArrayPropertySize);
                 return false;
@@ -62,7 +62,7 @@ namespace ramses::internal
         if ((channelData.interpolationType == EInterpolationType::Linear_Quaternions || channelData.interpolationType == EInterpolationType::Cubic_Quaternions) &&
             channelData.keyframes->getDataType() != EPropertyType::Vec4f)
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "AnimationNodeConfig::addChannel: Cannot add channelData data '{}', quaternion animation requires the keyframes to be of type vec4f.", channelData.name);
+            LOG_ERROR(CONTEXT_CLIENT, "AnimationNodeConfig::addChannel: Cannot add channelData data '{}', quaternion animation requires the keyframes to be of type vec4f.", channelData.name);
             return false;
         }
 
@@ -70,19 +70,19 @@ namespace ramses::internal
         {
             if (!channelData.tangentsIn || !channelData.tangentsOut)
             {
-                LOG_ERROR_P(CONTEXT_CLIENT, "AnimationNodeConfig::addChannel: Cannot add channelData data '{}', cubic interpolation requires tangents to be provided.", channelData.name);
+                LOG_ERROR(CONTEXT_CLIENT, "AnimationNodeConfig::addChannel: Cannot add channelData data '{}', cubic interpolation requires tangents to be provided.", channelData.name);
                 return false;
             }
             if (channelData.tangentsIn->getDataType() != channelData.keyframes->getDataType() ||
                 channelData.tangentsOut->getDataType() != channelData.keyframes->getDataType())
             {
-                LOG_ERROR_P(CONTEXT_CLIENT, "AnimationNodeConfig::addChannel: Cannot add channelData data '{}', tangents must be of same data type as keyframes.", channelData.name);
+                LOG_ERROR(CONTEXT_CLIENT, "AnimationNodeConfig::addChannel: Cannot add channelData data '{}', tangents must be of same data type as keyframes.", channelData.name);
                 return false;
             }
             if (channelData.tangentsIn->getNumElements() != channelData.keyframes->getNumElements() ||
                 channelData.tangentsOut->getNumElements() != channelData.keyframes->getNumElements())
             {
-                LOG_ERROR_P(CONTEXT_CLIENT, "AnimationNodeConfig::addChannel: Cannot add channelData data '{}', number of tangents in/out must be same as number of keyframes.", channelData.name);
+                LOG_ERROR(CONTEXT_CLIENT, "AnimationNodeConfig::addChannel: Cannot add channelData data '{}', number of tangents in/out must be same as number of keyframes.", channelData.name);
                 return false;
             }
             if (channelData.keyframes->getDataType() == EPropertyType::Array)
@@ -91,14 +91,14 @@ namespace ramses::internal
                 if (channelData.tangentsIn->getData<std::vector<float>>()->front().size() != elementArraySize ||
                     channelData.tangentsOut->getData<std::vector<float>>()->front().size() != elementArraySize)
                 {
-                    LOG_ERROR_P(CONTEXT_CLIENT, "AnimationNodeConfig::addChannel: Cannot add channelData data '{}', tangents must have same array element size as keyframes.", channelData.name);
+                    LOG_ERROR(CONTEXT_CLIENT, "AnimationNodeConfig::addChannel: Cannot add channelData data '{}', tangents must have same array element size as keyframes.", channelData.name);
                     return false;
                 }
             }
         }
         else if (channelData.tangentsIn || channelData.tangentsOut)
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "AnimationNodeConfig::addChannel: Cannot add channelData data '{}', tangents were provided for other than cubic interpolation type.", channelData.name);
+            LOG_ERROR(CONTEXT_CLIENT, "AnimationNodeConfig::addChannel: Cannot add channelData data '{}', tangents were provided for other than cubic interpolation type.", channelData.name);
             return false;
         }
 
@@ -106,14 +106,14 @@ namespace ramses::internal
         {
             if (channelData.keyframes->getNumElements() > MaxArrayPropertySize)
             {
-                LOG_ERROR_P(CONTEXT_CLIENT, "AnimationNodeConfig::addChannel: Cannot add channelData data '{}', number of keyframes ({}) cannot exceed {} when animation data exposed as properties.",
+                LOG_ERROR(CONTEXT_CLIENT, "AnimationNodeConfig::addChannel: Cannot add channelData data '{}', number of keyframes ({}) cannot exceed {} when animation data exposed as properties.",
                     channelData.name, channelData.keyframes->getNumElements(), MaxArrayPropertySize);
                 return false;
             }
 
             if (channelData.keyframes->getDataType() == EPropertyType::Array)
             {
-                LOG_ERROR_P(CONTEXT_CLIENT, "AnimationNodeConfig::addChannel: Cannot add channelData data '{}', elements of data type float arrays cannot be exposed as properties.", channelData.name);
+                LOG_ERROR(CONTEXT_CLIENT, "AnimationNodeConfig::addChannel: Cannot add channelData data '{}', elements of data type float arrays cannot be exposed as properties.", channelData.name);
                 return false;
             }
         }
@@ -139,7 +139,7 @@ namespace ramses::internal
         {
             if (channelData.keyframes->getNumElements() > MaxArrayPropertySize)
             {
-                LOG_ERROR_P(CONTEXT_CLIENT, "AnimationNodeConfig::setExposingOfChannelDataAsProperties: Cannot enable channel data properties for channel '{}',"
+                LOG_ERROR(CONTEXT_CLIENT, "AnimationNodeConfig::setExposingOfChannelDataAsProperties: Cannot enable channel data properties for channel '{}',"
                     " number of keyframes ({}) cannot exceed {} when animation data exposed as properties.",
                     channelData.name, channelData.keyframes->getNumElements(), MaxArrayPropertySize);
                 return false;
@@ -147,7 +147,7 @@ namespace ramses::internal
 
             if (channelData.keyframes->getDataType() == EPropertyType::Array)
             {
-                LOG_ERROR_P(CONTEXT_CLIENT, "AnimationNodeConfig::setExposingOfChannelDataAsProperties: Cannot enable channel data properties for channel '{}',"
+                LOG_ERROR(CONTEXT_CLIENT, "AnimationNodeConfig::setExposingOfChannelDataAsProperties: Cannot enable channel data properties for channel '{}',"
                     " elements of data type float arrays cannot be exposed as properties.", channelData.name);
                 return false;
             }

@@ -44,7 +44,7 @@ namespace ramses::internal
             {
                 if (::mkfifo(m_pipeName.c_str(), 0666) != 0)
                 {
-                    LOG_ERROR(CONTEXT_RENDERER, "NamedPipe::NamedPipe mkfifo for pipe " << pipeName << " failed with errno: " << getSystemErrorStatus() << "!");
+                    LOG_ERROR(CONTEXT_RENDERER, "NamedPipe::NamedPipe mkfifo for pipe {} failed with errno: {}!", pipeName, getSystemErrorStatus());
                 }
             }
         }
@@ -57,7 +57,7 @@ namespace ramses::internal
 
         ~NamedPipe()
         {
-            LOG_INFO(CONTEXT_RENDERER, "NamedPipe::~NamedPipe closing pipe [name=" << m_pipeName << ", FD=" << m_pipeFileDescriptor << ", createPipe=" << m_createPipe << "]");
+            LOG_INFO(CONTEXT_RENDERER, "NamedPipe::~NamedPipe closing pipe [name={}, FD={}, createPipe={}]", m_pipeName, m_pipeFileDescriptor, m_createPipe);
             if(m_createPipe)
             {
                 ::close(m_pipeFileDescriptor);
@@ -74,7 +74,7 @@ namespace ramses::internal
 
             if (m_pipeFileDescriptor == -1)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "NamedPipe::open open failed for pipe " << m_pipeName << " with errno: " << getSystemErrorStatus() << "!");
+                LOG_ERROR(CONTEXT_RENDERER, "NamedPipe::open open failed for pipe {} with errno: {}!", m_pipeName, getSystemErrorStatus());
             }
         }
 
@@ -90,7 +90,7 @@ namespace ramses::internal
 
                 if(-1 == writtenBytesCount )
                 {
-                    LOG_ERROR(CONTEXT_RENDERER, "NamedPipe::write write failed for pipe " << m_pipeName << " with errno: " << getSystemErrorStatus() << "!");
+                    LOG_ERROR(CONTEXT_RENDERER, "NamedPipe::write write failed for pipe {} with errno: {}!", m_pipeName, getSystemErrorStatus());
                     return false;
                 }
 
@@ -139,7 +139,7 @@ namespace ramses::internal
 
                 if (0 == bytesRead)
                 {
-                    LOG_ERROR(CONTEXT_RENDERER, "NamedPipe::ReadExactBytesFromPipe read failed for pipe " << m_pipeName << " bytesRead: " << bytesRead << " with errno: " << getSystemErrorStatus() << "!");
+                    LOG_ERROR(CONTEXT_RENDERER, "NamedPipe::ReadExactBytesFromPipe read failed for pipe {} bytesRead: {} with errno: {}!", m_pipeName, bytesRead, getSystemErrorStatus());
                     return EReadFromPipeStatus_Closed;
                 }
 
@@ -167,11 +167,11 @@ namespace ramses::internal
                         {
                             continue;
                         }
-                        LOG_ERROR(CONTEXT_RENDERER, "NamedPipe::ReadExactBytesFromPipe read failed for pipe " << m_pipeName << " bytesRead: " << bytesRead << " with errno: " << readErrorStatus << "!");
+                        LOG_ERROR(CONTEXT_RENDERER, "NamedPipe::ReadExactBytesFromPipe read failed for pipe {} bytesRead: {} with errno: {}!", m_pipeName, bytesRead, readErrorStatus);
                         return EReadFromPipeStatus_Empty;
 
                     }
-                    LOG_ERROR(CONTEXT_RENDERER, "NamedPipe::ReadExactBytesFromPipe read failed for pipe " << m_pipeName << " bytesRead: " << bytesRead << " with errno: " << readErrorStatus << "!");
+                    LOG_ERROR(CONTEXT_RENDERER, "NamedPipe::ReadExactBytesFromPipe read failed for pipe {} bytesRead: {} with errno: {}!", m_pipeName, bytesRead, readErrorStatus);
                     return EReadFromPipeStatus_Failure;
                 }
             }

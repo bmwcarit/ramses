@@ -31,7 +31,7 @@ namespace ramses::internal
         m_featureLevel = featureLevel;
         if (!IsFeatureLevel(featureLevel))
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "Unrecognized feature level '0{}' provided, falling back to feature level 01", featureLevel);
+            LOG_ERROR(CONTEXT_CLIENT, "Unrecognized feature level '0{}' provided, falling back to feature level 01", featureLevel);
             m_featureLevel = EFeatureLevel_01;
         }
     }
@@ -42,7 +42,7 @@ namespace ramses::internal
     {
         if (!IsFeatureLevel(featureLevel))
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "RamsesFrameworkConfig::setFeatureLevel: Failed to set unsupported feature level '{}'.", featureLevel);
+            LOG_ERROR(CONTEXT_CLIENT, "RamsesFrameworkConfig::setFeatureLevel: Failed to set unsupported feature level '{}'.", featureLevel);
             return false;
         }
 
@@ -163,12 +163,22 @@ namespace ramses::internal
         m_periodicLogsEnabled = (periodicLogTimeout > 0);
     }
 
+    void RamsesFrameworkConfigImpl::setLoggingInstanceName(std::string_view instanceName)
+    {
+        m_loggingInstanceName = instanceName;
+    }
+
+    const std::string& RamsesFrameworkConfigImpl::getLoggingInstanceName() const
+    {
+        return m_loggingInstanceName;
+    }
+
     bool RamsesFrameworkConfigImpl::setParticipantGuid(uint64_t guid)
     {
         m_userProvidedGuid = Guid(guid);
         if (!m_userProvidedGuid.isValid() || guid < 256)
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "RamsesFrameworkConfig::setParticipantGuid: Failed to set invalid id '{}'.", m_userProvidedGuid);
+            LOG_ERROR(CONTEXT_CLIENT, "RamsesFrameworkConfig::setParticipantGuid: Failed to set invalid id '{}'.", m_userProvidedGuid);
             return false;
         }
         return true;

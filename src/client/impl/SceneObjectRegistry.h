@@ -18,9 +18,8 @@
 #include "impl/RamsesObjectTypeTraits.h"
 #include "impl/RamsesObjectTypeUtils.h"
 
-#include "internal/Core/Utils/MemoryPool.h"
-
 #include <string_view>
+#include <vector>
 #include <array>
 #include <string>
 #include <unordered_map>
@@ -36,9 +35,9 @@ namespace ramses::internal
         T& createAndRegisterObject(std::unique_ptr<ImplT> impl);
         void destroyAndUnregisterObject(SceneObject& object);
 
-        void reserveAdditionalGeneralCapacity(uint32_t additionalCount);
-        void reserveAdditionalObjectCapacity(ERamsesObjectType type, uint32_t additionalCount);
-        [[nodiscard]] uint32_t getNumberOfObjects(ERamsesObjectType type) const;
+        void reserveAdditionalGeneralCapacity(size_t additionalCount);
+        void reserveAdditionalObjectCapacity(ERamsesObjectType type, size_t additionalCount);
+        [[nodiscard]] size_t getNumberOfObjects(ERamsesObjectType type) const;
 
         void getObjectsOfType(SceneObjectVector& objects, ERamsesObjectType ofType) const;
 
@@ -61,8 +60,7 @@ namespace ramses::internal
 
         std::unordered_map<sceneObjectId_t, SceneObject*> m_objectsById;
 
-        using SceneObjectsPool = ramses::internal::MemoryPool<SceneObject *, SceneObjectRegistryHandle>;
-        std::array<SceneObjectsPool, RamsesObjectTypeCount> m_objects;
+        std::array<std::vector<SceneObject*>, RamsesObjectTypeCount> m_objects;
 
         using SceneObjectUniquePtr = std::unique_ptr<SceneObject, std::function<void(SceneObject*)>>;
         std::vector<SceneObjectUniquePtr> m_objectsOwningContainer;
@@ -97,9 +95,9 @@ namespace ramses::internal
                 if (RamsesObjectTypeUtils::IsConcreteType(type) && RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, typeToReturn))
                 {
                     const auto& objs = m_objects[typeIdx];
-                    const auto it = std::find_if(objs.begin(), objs.end(), [name](const auto o) { return (*o.second)->getName() == name; });
+                    const auto it = std::find_if(objs.begin(), objs.end(), [name](const auto o) { return o->getName() == name; });
                     if (it != objs.end())
-                        return (*it->second)->template as<T>();
+                        return (*it)->template as<T>();
                 }
             }
         }
@@ -110,7 +108,7 @@ namespace ramses::internal
             auto& logicEngines = m_objects[static_cast<uint32_t>(ERamsesObjectType::LogicEngine)];
             for (auto& le : logicEngines)
             {
-                auto obj = (*le.second)->as<LogicEngine>()->findObject(name);
+                auto obj = le->as<LogicEngine>()->findObject(name);
                 if (obj)
                     return obj;
             }

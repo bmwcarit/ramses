@@ -33,7 +33,15 @@ namespace ramses::internal
                 wasCanceledOut = RemoveSceneResourceActionIfContained(currentActionsInOut, sceneResourceAction.handle, ESceneResourceAction_CreateRenderTarget);
                 break;
             case ESceneResourceAction_DestroyRenderBuffer:
+                //remove all update actions first
+                while (RemoveSceneResourceActionIfContained(currentActionsInOut, sceneResourceAction.handle, ESceneResourceAction_UpdateRenderBufferProperties))
+                {
+                }
                 wasCanceledOut = RemoveSceneResourceActionIfContained(currentActionsInOut, sceneResourceAction.handle, ESceneResourceAction_CreateRenderBuffer);
+                break;
+            case ESceneResourceAction_UpdateRenderBufferProperties:
+                //add update action if update action does not already exist
+                wasCanceledOut = ContainsSceneResourceAction(currentActionsInOut, sceneResourceAction.handle, ESceneResourceAction_UpdateRenderBufferProperties);
                 break;
             case ESceneResourceAction_DestroyBlitPass:
                 wasCanceledOut = RemoveSceneResourceActionIfContained(currentActionsInOut, sceneResourceAction.handle, ESceneResourceAction_CreateBlitPass);
@@ -97,6 +105,9 @@ namespace ramses::internal
             case ESceneResourceAction_DestroyRenderBuffer:
                 resourceManager.unloadRenderTargetBuffer(RenderBufferHandle(handle), scene.getSceneId());
                 break;
+            case ESceneResourceAction_UpdateRenderBufferProperties:
+                resourceManager.updateRenderTargetBufferProperties(RenderBufferHandle{ handle }, scene.getSceneId(), scene.getRenderBuffer(RenderBufferHandle{ handle }));
+                break;
             case ESceneResourceAction_CreateBlitPass:
                 SceneResourceUploader::UploadBlitPassRenderTargets(scene, BlitPassHandle(handle), resourceManager);
                 break;
@@ -144,14 +155,11 @@ namespace ramses::internal
 
     bool PendingSceneResourcesUtils::RemoveSceneResourceActionIfContained(SceneResourceActionVector& actions, MemoryHandle handle, ESceneResourceAction action)
     {
-        for (auto actionIter = actions.begin(); actionIter != actions.end(); ++actionIter)
+        auto it = std::find(actions.begin(), actions.end(), SceneResourceAction{ handle, action });
+        if (it != actions.end())
         {
-            if (actionIter->handle == handle &&
-                actionIter->action == action)
-            {
-                actions.erase(actionIter);
-                return true;
-            }
+            actions.erase(it);
+            return true;
         }
 
         return false;
@@ -159,15 +167,6 @@ namespace ramses::internal
 
     bool PendingSceneResourcesUtils::ContainsSceneResourceAction(const SceneResourceActionVector& actions, MemoryHandle handle, ESceneResourceAction action)
     {
-        for (const auto& a : actions)
-        {
-            if (a.handle == handle &&
-                a.action == action)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return std::find(actions.cbegin(), actions.cend(), SceneResourceAction{ handle, action }) != actions.cend();
     }
 }

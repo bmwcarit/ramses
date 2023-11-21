@@ -201,12 +201,12 @@ namespace ramses::internal
         ASSERT_NE(nullptr, script);
         EXPECT_TRUE(script->impl().hasDebugLogFunctions());
 
-        EXPECT_FALSE(saveToFileWithoutValidation("willNotSave.tmp"));
-        expectError("Cannot save to file, Lua script 'script [LogicObject ScnObjId=9]' has enabled debug log functions, remove this script before saving.", script);
+        EXPECT_FALSE(saveToFile("willNotSave.tmp"));
+        expectError("Cannot save to file, Lua script 'script [LogicObject ScnObjId=10]' has enabled debug log functions, remove this script before saving.", script);
 
         // can save after removal
         EXPECT_TRUE(m_logicEngine->destroy(*script));
-        EXPECT_TRUE(saveToFileWithoutValidation("willSave.tmp"));
+        EXPECT_TRUE(saveToFile("willSave.tmp"));
     }
 
     TEST_F(ALuaScript_Debug, FailsToSaveToFileIfModuleHasDebugLogFunctions)
@@ -227,11 +227,11 @@ namespace ramses::internal
         ASSERT_NE(nullptr, mod);
         EXPECT_TRUE(mod->impl().hasDebugLogFunctions());
 
-        EXPECT_FALSE(saveToFileWithoutValidation("willNotSave.tmp"));
-        expectError("Cannot save to file, Lua module 'mod [LogicObject ScnObjId=9]' has enabled debug log functions, remove this module before saving.", mod);
+        EXPECT_FALSE(saveToFile("willNotSave.tmp"));
+        expectError("Cannot save to file, Lua module 'mod [LogicObject ScnObjId=10]' has enabled debug log functions, remove this module before saving.", mod);
 
         // can save after removal
         EXPECT_TRUE(m_logicEngine->destroy(*mod));
-        EXPECT_TRUE(saveToFileWithoutValidation("willSave.tmp"));
+        EXPECT_TRUE(saveToFile("willSave.tmp"));
     }
 }

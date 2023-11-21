@@ -11,7 +11,6 @@
 #include "WindowEventHandlerMock.h"
 #include "internal/RendererLib/DisplayConfig.h"
 #include "internal/RendererLib/Enums/EKeyModifier.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
 
 using namespace testing;
 
@@ -23,12 +22,6 @@ namespace ramses::internal
         AWindowWindows()
             : window(config, eventHandlerMock, 0)
         {
-        }
-
-        static void SetUpTestSuite()
-        {
-            // caller is expected to have a display prefix for logs
-            ThreadLocalLog::SetPrefix(1);
         }
 
         virtual void SetUp()
@@ -86,9 +79,6 @@ namespace ramses::internal
 
     TEST(Window_Windows, propagatesResizeEvents)
     {
-        // caller is expected to have a display prefix for logs
-        ThreadLocalLog::SetPrefix(0);
-
         DisplayConfig config;
         config.setResizable(true);
         NiceMock<WindowEventHandlerMock> eventHandlerMock;
@@ -109,9 +99,6 @@ namespace ramses::internal
 
     TEST(Window_Windows, propagatesWindowMoveEvents)
     {
-        // caller is expected to have a display prefix for logs
-        ThreadLocalLog::SetPrefix(1);
-
         DisplayConfig config;
         config.setResizable(true);
         NiceMock<WindowEventHandlerMock> eventHandlerMock;

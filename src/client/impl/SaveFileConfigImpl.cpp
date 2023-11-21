@@ -24,20 +24,6 @@ namespace ramses::internal
         m_exporterVersion.fileFormat = fileFormatVersion;
     }
 
-    void SaveFileConfigImpl::setValidationEnabled(bool validationEnabled)
-    {
-        if (validationEnabled == false)
-        {
-            LOG_INFO_P(CONTEXT_CLIENT, "Validation before saving was disabled during save*() calls! Possible content issues will not yield further warnings.");
-        }
-        m_validationEnabled = validationEnabled;
-    }
-
-    bool SaveFileConfigImpl::getValidationEnabled() const
-    {
-        return m_validationEnabled;
-    }
-
     const SaveFileConfigImpl::ExporterVersion& SaveFileConfigImpl::getExporterVersion() const
     {
         return m_exporterVersion;

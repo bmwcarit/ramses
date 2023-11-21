@@ -33,6 +33,7 @@
 #include "ramses/client/OrthographicCamera.h"
 #include "ramses/client/Appearance.h"
 #include "ramses/client/UniformInput.h"
+#include "ramses/client/RenderBuffer.h"
 #include "ramses/client/ramses-utils.h"
 
 namespace ramses::internal
@@ -46,7 +47,6 @@ namespace ramses::internal
             // make ramses camera valid, needed for anchor points
             m_camera->setFrustum(-1.f, 1.f, -1.f, 1.f, 0.1f, 1.f);
             m_renderGroup->addMeshNode(*m_meshNode);
-            m_saveFileConfigNoValidation.setValidationEnabled(false);
         }
 
         virtual ~ALogicEngineBase() = default;
@@ -82,13 +82,6 @@ namespace ramses::internal
             return m_scene->saveToFile(filename, config);
         }
 
-        bool saveToFileWithoutValidation(std::string_view filename)
-        {
-            SaveFileConfig configNoValidation;
-            configNoValidation.setValidationEnabled(false);
-            return m_scene->saveToFile(filename, configNoValidation);
-        }
-
         virtual bool recreateFromFile(std::string_view filename)
         {
             const auto nodeId = m_node->getSceneObjectId();
@@ -97,19 +90,21 @@ namespace ramses::internal
             const auto renderPassId = m_renderPass->getSceneObjectId();
             const auto renderGroupId = m_renderGroup->getSceneObjectId();
             const auto meshNodeId = m_meshNode->getSceneObjectId();
+            const auto renderBufferId = m_renderBuffer->getSceneObjectId();
             const auto logicEngineId = m_logicEngine->getSceneObjectId();
 
             m_ramses.destroyScene(*m_scene);
             m_scene = m_ramses.getClient().loadSceneFromFile(filename);
             if (!m_scene)
                 throw std::runtime_error("scene not loaded");
-            m_node        = m_scene->findObject<Node>(nodeId);
-            m_camera      = m_scene->findObject<OrthographicCamera>(cameraId);
-            m_appearance  = m_scene->findObject<Appearance>(appearanceId);
+            m_node        = m_scene->findObject<ramses::Node>(nodeId);
+            m_camera      = m_scene->findObject<ramses::OrthographicCamera>(cameraId);
+            m_appearance  = m_scene->findObject<ramses::Appearance>(appearanceId);
             m_renderPass  = m_scene->findObject<ramses::RenderPass>(renderPassId);
             m_renderGroup = m_scene->findObject<ramses::RenderGroup>(renderGroupId);
-            m_meshNode    = m_scene->findObject<MeshNode>(meshNodeId);
-            m_logicEngine = m_scene->findObject<LogicEngine>(logicEngineId);
+            m_meshNode    = m_scene->findObject<ramses::MeshNode>(meshNodeId);
+            m_renderBuffer = m_scene->findObject<ramses::RenderBuffer>(renderBufferId);
+            m_logicEngine = m_scene->findObject<ramses::LogicEngine>(logicEngineId);
             return m_logicEngine != nullptr;
         }
 
@@ -154,6 +149,7 @@ namespace ramses::internal
         ramses::RenderPass* m_renderPass { m_scene->createRenderPass() };
         ramses::RenderGroup* m_renderGroup { m_scene->createRenderGroup() };
         ramses::MeshNode* m_meshNode { m_scene->createMeshNode("meshNode") };
+        ramses::RenderBuffer* m_renderBuffer{ m_scene->createRenderBuffer(1u, 2u, ERenderBufferFormat::R8, ERenderBufferAccessMode::ReadWrite, 3u) };
 
         LogicEngine* m_logicEngine{ m_scene->createLogicEngine("testLogic") };
 
@@ -193,6 +189,7 @@ namespace ramses::internal
             m_renderPass = m_scene->createRenderPass();
             m_renderGroup = m_scene->createRenderGroup();
             m_meshNode = m_scene->createMeshNode();
+            m_renderBuffer = m_scene->createRenderBuffer(1u, 2u, ERenderBufferFormat::R8, ERenderBufferAccessMode::ReadWrite, 3u);
 
             return m_scene->createLogicEngine();
         }

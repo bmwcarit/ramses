@@ -18,7 +18,7 @@
 #include "internal/RendererLib/PlatformInterface/IDisplayController.h"
 #include "internal/RendererLib/RendererEventCollector.h"
 #include "internal/Core/Utils/Image.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {
@@ -43,7 +43,7 @@ namespace ramses::internal
             return !std::holds_alternative<RendererCommand::UpdateScene>(cmd) && !std::holds_alternative<RendererCommand::LogInfo>(cmd);
         });
         if (numCommandsToLog > 0)
-            LOG_INFO_P(CONTEXT_RENDERER, "RendererCommandExecutor executing {} commands, {} commands will be logged, rest is flush/sceneupdate commands", m_tmpCommands.size(), numCommandsToLog);
+            LOG_INFO(CONTEXT_RENDERER, "RendererCommandExecutor executing {} commands, {} commands will be logged, rest is flush/sceneupdate commands", m_tmpCommands.size(), numCommandsToLog);
 
         for (auto& cmd : m_tmpCommands)
             std::visit(*this, cmd);
@@ -51,32 +51,32 @@ namespace ramses::internal
 
     void RendererCommandExecutor::operator()(const RendererCommand::ScenePublished& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_sceneUpdater.handleScenePublished(cmd.scene, cmd.publicationMode);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::SceneUnpublished& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_sceneUpdater.handleSceneUnpublished(cmd.scene);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::ReceiveScene& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_sceneUpdater.handleSceneReceived(cmd.info);
     }
 
     void RendererCommandExecutor::operator()(RendererCommand::UpdateScene& cmd)
     {
         // log debug only to reduce spam
-        LOG_DEBUG(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_DEBUG(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_sceneUpdater.handleSceneUpdate(cmd.scene, std::move(cmd.updateData));
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::SetSceneState& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_sceneControlLogic.setSceneState(cmd.scene, cmd.state);
     }
 
@@ -87,122 +87,122 @@ namespace ramses::internal
 
     void RendererCommandExecutor::operator()(const RendererCommand::SetSceneDisplayBufferAssignment& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_sceneControlLogic.setSceneDisplayBufferAssignment(cmd.scene, cmd.buffer, cmd.renderOrder);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::LinkData& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_sceneUpdater.handleSceneDataLinkRequest(cmd.providerScene, cmd.providerData, cmd.consumerScene, cmd.consumerData);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::LinkOffscreenBuffer& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_sceneUpdater.handleBufferToSceneDataLinkRequest(cmd.providerBuffer, cmd.consumerScene, cmd.consumerData);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::LinkStreamBuffer& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_sceneUpdater.handleBufferToSceneDataLinkRequest(cmd.providerBuffer, cmd.consumerScene, cmd.consumerData);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::LinkExternalBuffer& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_sceneUpdater.handleBufferToSceneDataLinkRequest(cmd.providerBuffer, cmd.consumerScene, cmd.consumerData);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::UnlinkData& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_sceneUpdater.handleDataUnlinkRequest(cmd.consumerScene, cmd.consumerData);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::PickEvent& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_sceneUpdater.handlePickEvent(cmd.scene, cmd.coordsNormalizedToBufferSize);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::CreateDisplay& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_sceneUpdater.createDisplayContext(cmd.config, cmd.binaryShaderCache);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::DestroyDisplay& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_sceneUpdater.destroyDisplayContext();
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::CreateOffscreenBuffer& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_sceneUpdater.handleBufferCreateRequest(cmd.offscreenBuffer, cmd.width, cmd.height, cmd.sampleCount, cmd.interruptible, cmd.depthStencilBufferType);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::CreateDmaOffscreenBuffer& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_sceneUpdater.handleDmaBufferCreateRequest(cmd.offscreenBuffer, cmd.width, cmd.height, cmd.dmaBufferFourccFormat, cmd.dmaBufferUsageFlags, cmd.dmaBufferModifiers);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::DestroyOffscreenBuffer& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         const bool succeeded = m_sceneUpdater.handleBufferDestroyRequest(cmd.offscreenBuffer);
         m_rendererEventCollector.addOBEvent((succeeded ? ERendererEventType::OffscreenBufferDestroyed : ERendererEventType::OffscreenBufferDestroyFailed), cmd.offscreenBuffer, cmd.display, -1, 0u);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::CreateStreamBuffer& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_sceneUpdater.handleBufferCreateRequest(cmd.streamBuffer, cmd.source);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::DestroyStreamBuffer& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_sceneUpdater.handleBufferDestroyRequest(cmd.streamBuffer);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::CreateExternalBuffer& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_sceneUpdater.handleExternalBufferCreateRequest(cmd.externalBuffer);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::DestroyExternalBuffer& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_sceneUpdater.handleExternalBufferDestroyRequest(cmd.externalBuffer);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::SetClearFlags& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_sceneUpdater.handleSetClearFlags(cmd.offscreenBuffer, cmd.clearFlags);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::SetClearColor& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_sceneUpdater.handleSetClearColor(cmd.offscreenBuffer, cmd.clearColor);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::SetExterallyOwnedWindowSize& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_sceneUpdater.handleSetExternallyOwnedWindowSize(cmd.width, cmd.height);
     }
 
     void RendererCommandExecutor::operator()(RendererCommand::ReadPixels& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         ScreenshotInfo screenshot;
         screenshot.rectangle = { cmd.offsetX, cmd.offsetY, cmd.width, cmd.height };
         screenshot.filename = std::move(cmd.filename);
@@ -213,80 +213,80 @@ namespace ramses::internal
 
     void RendererCommandExecutor::operator()(const RendererCommand::SetSkippingOfUnmodifiedBuffers& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_sceneUpdater.setSkippingOfUnmodifiedScenes(cmd.enable);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::LogStatistics& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         LOG_INFO_F(CONTEXT_RENDERER, ([&](StringOutputStream& sos) { m_renderer.getStatistics().writeStatsToStream(sos); }));
         LOG_INFO_F(CONTEXT_RENDERER, ([&](StringOutputStream& sos) { m_renderer.getProfilerStatistics().writeLongestFrameTimingsToStream(sos); }));
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::LogInfo& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
-        m_sceneUpdater.logRendererInfo(cmd.topic, cmd.verbose, cmd.nodeFilter);
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
+        m_sceneUpdater.logRendererInfo(cmd);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::SCListIviSurfaces& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_renderer.systemCompositorListIviSurfaces();
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::SCSetIviSurfaceVisibility& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_renderer.systemCompositorSetIviSurfaceVisibility(cmd.surface, cmd.visibility);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::SCSetIviSurfaceOpacity& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_renderer.systemCompositorSetIviSurfaceOpacity(cmd.surface, cmd.opacity);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::SCSetIviSurfaceDestRectangle& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_renderer.systemCompositorSetIviSurfaceDestRectangle(cmd.surface, cmd.x, cmd.y, cmd.width, cmd.height);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::SCScreenshot& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_renderer.systemCompositorScreenshot(cmd.filename, cmd.screenId);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::SCAddIviSurfaceToIviLayer& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         std::ignore = m_renderer.systemCompositorAddIviSurfaceToIviLayer(cmd.surface, cmd.layer);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::SCSetIviLayerVisibility& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_renderer.systemCompositorSetIviLayerVisibility(cmd.layer, cmd.visibility);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::SCRemoveIviSurfaceFromIviLayer& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_renderer.systemCompositorRemoveIviSurfaceFromIviLayer(cmd.surface, cmd.layer);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::SCDestroyIviSurface& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_renderer.systemCompositorDestroyIviSurface(cmd.surface);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::SetLimits_FrameBudgets& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::SceneResourcesUpload, cmd.limitForSceneResourcesUploadMicrosec);
         m_frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::ResourcesUpload, cmd.limitForResourcesUploadMicrosec);
         m_frameTimer.setSectionTimeBudget(EFrameTimerSectionBudget::OffscreenBufferRender, cmd.limitForOffscreenBufferRenderMicrosec);
@@ -294,19 +294,19 @@ namespace ramses::internal
 
     void RendererCommandExecutor::operator()(const RendererCommand::SetLimits_FlushesForceApply& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_sceneUpdater.setLimitFlushesForceApply(cmd.limitForPendingFlushesForceApply);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::SetLimits_FlushesForceUnsubscribe& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
         m_sceneUpdater.setLimitFlushesForceUnsubscribe(cmd.limitForPendingFlushesForceUnsubscribe);
     }
 
     void RendererCommandExecutor::operator()(const RendererCommand::ConfirmationEcho& cmd)
     {
-        LOG_INFO(CONTEXT_RENDERER, " - executing " << RendererCommandUtils::ToString(cmd));
-        LOG_INFO(CONTEXT_RAMSH, "confirmation: " << cmd.text);
+        LOG_INFO(CONTEXT_RENDERER, " - executing {}", RendererCommandUtils::ToString(cmd));
+        LOG_INFO(CONTEXT_RAMSH, "confirmation: {}", cmd.text);
     }
 }

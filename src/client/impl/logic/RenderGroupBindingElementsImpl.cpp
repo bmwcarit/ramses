@@ -20,21 +20,21 @@ namespace ramses::internal
 
         if (!m_elements.empty() && !m_elements.front().second->impl().isFromTheSameSceneAs(ramsesObject.impl()))
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "RenderGroupBindingElements: Failed to add element, element is from different Scene than those already added.");
+            LOG_ERROR(CONTEXT_CLIENT, "RenderGroupBindingElements: Failed to add element, element is from different Scene than those already added.");
             return false;
         }
 
         std::string name{ elementName.empty() ? ramsesObject.getName() : elementName };
         if (name.empty())
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "RenderGroupBindingElements: Failed to add element, object has no name and provided element name is empty.");
+            LOG_ERROR(CONTEXT_CLIENT, "RenderGroupBindingElements: Failed to add element, object has no name and provided element name is empty.");
             return false;
         }
 
         const auto it = std::find_if(m_elements.cbegin(), m_elements.cend(), [&ramsesObject](const auto& e) { return e.second == &ramsesObject; });
         if (it != m_elements.cend())
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "RenderGroupBindingElements: Failed to add element '{}', it is already contained under name '{}'.", name, it->first);
+            LOG_ERROR(CONTEXT_CLIENT, "RenderGroupBindingElements: Failed to add element '{}', it is already contained under name '{}'.", name, it->first);
             return false;
         }
 

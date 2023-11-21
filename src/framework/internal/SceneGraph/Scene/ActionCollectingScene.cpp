@@ -603,6 +603,12 @@ namespace ramses::internal
         m_creator.releaseRenderBuffer(handle);
     }
 
+    void ActionCollectingScene::setRenderBufferProperties(RenderBufferHandle handle, uint32_t width, uint32_t height, uint32_t sampleCount)
+    {
+        ResourceChangeCollectingScene::setRenderBufferProperties(handle, width, height, sampleCount);
+        m_creator.setRenderBufferProperties(handle, width, height, sampleCount);
+    }
+
     void ActionCollectingScene::addRenderTargetRenderBuffer(RenderTargetHandle targetHandle, RenderBufferHandle bufferHandle)
     {
         ResourceChangeCollectingScene::addRenderTargetRenderBuffer(targetHandle, bufferHandle);

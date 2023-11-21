@@ -88,7 +88,7 @@ namespace ramses::internal
         const ramses::internal::TextureBufferHandle textureBufferHandle = textureBuffer.impl().getTextureBufferHandle();
 
         // update mipLevel = 0
-        EXPECT_TRUE(textureBuffer.updateData(0, 0, 0, 2, 2, std::array<uint32_t, 4>{ {12, 23, 34, 56} }.data()));
+        EXPECT_TRUE(textureBuffer.updateData(0, 0, 0, 2, 2, UnsafeTestMemoryHelpers::ConvertToBytes({12, 23, 34, 56})));
         const std::byte* textureBufferDataMip0 = this->m_scene.impl().getIScene().getTextureBuffer(textureBufferHandle).mipMaps[0].data.data();
 
         EXPECT_EQ(12u, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(textureBufferDataMip0, 0));
@@ -97,7 +97,7 @@ namespace ramses::internal
         EXPECT_EQ(56u, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(textureBufferDataMip0, 3 * 1 + 1));
 
         // update mipLevel = 1
-        EXPECT_TRUE(textureBuffer.updateData(1, 0, 0, 1, 1, std::array<uint32_t, 1>{ {78} }.data()));
+        EXPECT_TRUE(textureBuffer.updateData(1, 0, 0, 1, 1, UnsafeTestMemoryHelpers::ConvertToBytes({78})));
         const std::byte* textureBufferDataMip1 = this->m_scene.impl().getIScene().getTextureBuffer(textureBufferHandle).mipMaps[1].data.data();
         EXPECT_EQ(78u, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(textureBufferDataMip1, 0));
     }
@@ -107,7 +107,7 @@ namespace ramses::internal
         Texture2DBuffer& textureBuffer = *m_scene.createTexture2DBuffer(ETextureFormat::RGBA8, 3, 4, 2);
 
         // update mipLevel = 0
-        EXPECT_TRUE(textureBuffer.updateData(0, 0, 0, 2, 2, std::array<uint32_t, 4>{ {12, 23, 34, 56} }.data()));
+        EXPECT_TRUE(textureBuffer.updateData(0, 0, 0, 2, 2, UnsafeTestMemoryHelpers::ConvertToBytes({12, 23, 34, 56})));
 
         std::array<uint32_t, 12> mipLevel0RetrievedData{};
         textureBuffer.getMipLevelData(0u, mipLevel0RetrievedData.data(), textureBuffer.getMipLevelDataSizeInBytes(0u));
@@ -118,7 +118,7 @@ namespace ramses::internal
         EXPECT_EQ(56u, mipLevel0RetrievedData[3 * 1 + 1]);
 
         // update mipLevel = 1
-        EXPECT_TRUE(textureBuffer.updateData(1, 0, 0, 1, 1, std::array<uint32_t, 1>{ {78} }.data()));
+        EXPECT_TRUE(textureBuffer.updateData(1, 0, 0, 1, 1, UnsafeTestMemoryHelpers::ConvertToBytes({78})));
 
         std::array<uint32_t, 2> mipLevel1RetrievedData{};
         textureBuffer.getMipLevelData(1u, mipLevel1RetrievedData.data(), textureBuffer.getMipLevelDataSizeInBytes(1u));
@@ -130,13 +130,13 @@ namespace ramses::internal
     {
         Texture2DBuffer& textureBuffer = *m_scene.createTexture2DBuffer(ETextureFormat::RGBA8, 3, 4, 2);
 
-        EXPECT_TRUE(textureBuffer.updateData(0, 0, 0, 2, 2, std::array<uint32_t, 4>{ {12, 23, 34, 56} }.data()));
+        EXPECT_TRUE(textureBuffer.updateData(0, 0, 0, 2, 2, UnsafeTestMemoryHelpers::ConvertToBytes({12, 23, 34, 56})));
         std::array<uint32_t, 2> mipLevel0RetrievedData{};
         textureBuffer.getMipLevelData(0u, &mipLevel0RetrievedData, sizeof(uint32_t) * 2u);
         EXPECT_EQ(12u, mipLevel0RetrievedData[0]);
         EXPECT_EQ(23u, mipLevel0RetrievedData[1]);
 
-        EXPECT_TRUE(textureBuffer.updateData(1, 0, 0, 1, 2, std::array<uint32_t, 2>{ {78, 87} }.data()));
+        EXPECT_TRUE(textureBuffer.updateData(1, 0, 0, 1, 2, UnsafeTestMemoryHelpers::ConvertToBytes({78, 87})));
         uint32_t mipLevel1RetrievedData{};
         textureBuffer.getMipLevelData(1u, &mipLevel1RetrievedData, sizeof(uint32_t));
         EXPECT_EQ(78u, mipLevel1RetrievedData);
@@ -146,10 +146,10 @@ namespace ramses::internal
     {
         Texture2DBuffer& textureBuffer = *m_scene.createTexture2DBuffer(ETextureFormat::RGBA8, 3, 4, 2);
 
-        EXPECT_FALSE(textureBuffer.updateData(0, 0, 0, 0, 0, std::array<uint32_t, 14>().data()));
-        EXPECT_FALSE(textureBuffer.updateData(0, 2, 2, 0, 0, std::array<uint32_t, 14>().data()));
-        EXPECT_FALSE(textureBuffer.updateData(1, 0, 0, 0, 0, std::array<uint32_t, 14>().data()));
-        EXPECT_FALSE(textureBuffer.updateData(1, 1, 1, 0, 0, std::array<uint32_t, 14>().data()));
+        EXPECT_FALSE(textureBuffer.updateData(0, 0, 0, 0, 0, std::array<std::byte, 64>().data()));
+        EXPECT_FALSE(textureBuffer.updateData(0, 2, 2, 0, 0, std::array<std::byte, 64>().data()));
+        EXPECT_FALSE(textureBuffer.updateData(1, 0, 0, 0, 0, std::array<std::byte, 64>().data()));
+        EXPECT_FALSE(textureBuffer.updateData(1, 1, 1, 0, 0, std::array<std::byte, 64>().data()));
     }
 
     TEST_F(ATexture2DBuffer, CanNotBeUpdatedWithDataSizeBiggerThanMaximumSize)
@@ -157,26 +157,26 @@ namespace ramses::internal
         Texture2DBuffer& textureBuffer = *m_scene.createTexture2DBuffer(ETextureFormat::RGBA8, 3, 4, 2);
 
         // offset exceeds total size
-        EXPECT_FALSE(textureBuffer.updateData(0, 3, 0, 1, 1, std::array<uint32_t, 14>().data()));
-        EXPECT_FALSE(textureBuffer.updateData(0, 0, 4, 1, 1, std::array<uint32_t, 14>().data()));
+        EXPECT_FALSE(textureBuffer.updateData(0, 3, 0, 1, 1, std::array<std::byte, 64>().data()));
+        EXPECT_FALSE(textureBuffer.updateData(0, 0, 4, 1, 1, std::array<std::byte, 64>().data()));
 
         // width/height exceed total size
-        EXPECT_FALSE(textureBuffer.updateData(0, 0, 0, 3+1, 1, std::array<uint32_t, 14>().data()));
-        EXPECT_FALSE(textureBuffer.updateData(0, 0, 0, 1, 4 + 1, std::array<uint32_t, 14>().data()));
+        EXPECT_FALSE(textureBuffer.updateData(0, 0, 0, 3+1, 1, std::array<std::byte, 64>().data()));
+        EXPECT_FALSE(textureBuffer.updateData(0, 0, 0, 1, 4 + 1, std::array<std::byte, 64>().data()));
 
         // offset + width/height exceed total size
-        EXPECT_FALSE(textureBuffer.updateData(0, 1, 0, 3, 1, std::array<uint32_t, 14>().data()));
-        EXPECT_FALSE(textureBuffer.updateData(0, 0, 1, 1, 4, std::array<uint32_t, 14>().data()));
+        EXPECT_FALSE(textureBuffer.updateData(0, 1, 0, 3, 1, std::array<std::byte, 64>().data()));
+        EXPECT_FALSE(textureBuffer.updateData(0, 0, 1, 1, 4, std::array<std::byte, 64>().data()));
 
         // second mipmap
-        EXPECT_FALSE(textureBuffer.updateData(0, 1, 0, 3, 1, std::array<uint32_t, 14>().data()));
-        EXPECT_FALSE(textureBuffer.updateData(0, 0, 1, 1, 4, std::array<uint32_t, 14>().data()));
+        EXPECT_FALSE(textureBuffer.updateData(0, 1, 0, 3, 1, std::array<std::byte, 64>().data()));
+        EXPECT_FALSE(textureBuffer.updateData(0, 0, 1, 1, 4, std::array<std::byte, 64>().data()));
     }
 
     TEST_F(ATexture2DBuffer, CanNotBeUpdatedForUnexistingMipMapLevel)
     {
         Texture2DBuffer& textureBuffer = *m_scene.createTexture2DBuffer(ETextureFormat::RGBA8, 3, 4, 2);
-        EXPECT_FALSE(textureBuffer.updateData(3, 0, 0, 1, 1, std::array<uint32_t, 4>().data()));
+        EXPECT_FALSE(textureBuffer.updateData(3, 0, 0, 1, 1, std::array<std::byte, 64>().data()));
     }
 
     TEST_F(ATexture2DBuffer, RetrievesMipMapCount)
@@ -216,7 +216,7 @@ namespace ramses::internal
     TEST_F(ATexture2DBuffer, CanBeValidated)
     {
         Texture2DBuffer& textureBuffer = *m_scene.createTexture2DBuffer(ETextureFormat::RGBA8, 4, 4, 1);
-        EXPECT_TRUE(textureBuffer.updateData(0, 0, 0, 2, 2, std::array<uint32_t, 4>{ {12, 23, 34, 56} }.data()));
+        EXPECT_TRUE(textureBuffer.updateData(0, 0, 0, 2, 2, UnsafeTestMemoryHelpers::ConvertToBytes({12, 23, 34, 56})));
         m_scene.createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Linear, ETextureSamplingMethod::Linear, textureBuffer);
         ValidationReport report;
         textureBuffer.validate(report);
@@ -226,7 +226,7 @@ namespace ramses::internal
     TEST_F(ATexture2DBuffer, ReportsWarningIfNotUsedInSampler)
     {
         Texture2DBuffer& textureBuffer = *m_scene.createTexture2DBuffer(ETextureFormat::RGBA8, 4, 4, 1);
-        EXPECT_TRUE(textureBuffer.updateData(0, 0, 0, 2, 2, std::array<uint32_t, 4>{ {12, 23, 34, 56} }.data()));
+        EXPECT_TRUE(textureBuffer.updateData(0, 0, 0, 2, 2, UnsafeTestMemoryHelpers::ConvertToBytes({12, 23, 34, 56})));
         ValidationReport report;
         textureBuffer.validate(report);
         EXPECT_TRUE(report.hasIssue());

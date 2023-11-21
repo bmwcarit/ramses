@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "internal/Platform/Wayland/InputHandling_Wayland.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "internal/Core/Utils/Warnings.h"
 #include <linux/input.h>
 
@@ -161,7 +161,7 @@ namespace ramses::internal
         }
         break;
         default:
-            LOG_WARN(CONTEXT_RENDERER, "unhandled wayland axis event " << axis);
+            LOG_WARN(CONTEXT_RENDERER, "unhandled wayland axis event {}", axis);
         }
     }
 
@@ -226,7 +226,7 @@ namespace ramses::internal
             inputHandling.m_windowEventHandler.onKeyEvent(EKeyEvent::Pressed, inputHandling.m_keyModifiers, ramsesKeyCode);
             break;
         default:
-            LOG_WARN(CONTEXT_RENDERER, "unhandled wayland keyboard handle key event: " << state_w);
+            LOG_WARN(CONTEXT_RENDERER, "unhandled wayland keyboard handle key event: {}", state_w);
         }
     }
 

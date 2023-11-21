@@ -13,6 +13,6 @@ createModule(
     INCLUDE_PATHS           .
     SRC_FILES               *.h
                             *.cpp
-    DEPENDENCIES            ramses-renderer-lib
+    DEPENDENCIES            ramses-renderer-internal
                             framework-test-utils
 )

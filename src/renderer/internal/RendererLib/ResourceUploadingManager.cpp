@@ -15,7 +15,7 @@
 #include "internal/RendererLib/PlatformInterface/IRenderBackend.h"
 #include "internal/RendererLib/PlatformInterface/IEmbeddedCompositingManager.h"
 #include "internal/RendererLib/PlatformInterface/IDevice.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "internal/PlatformAbstraction/PlatformTime.h"
 #include "internal/SceneGraph/Resource/EffectResource.h"
 #include <algorithm>
@@ -101,7 +101,7 @@ namespace ramses::internal
             const auto& hash = e.first;
             if (!m_resources.containsResource(hash))
             {
-                LOG_ERROR(CONTEXT_RENDERER, "ResourceUploadingManager::syncEffects unexpected effect uploaded, will be ignored because it does not exist in resource registry #" << hash);
+                LOG_ERROR(CONTEXT_RENDERER, "ResourceUploadingManager::syncEffects unexpected effect uploaded, will be ignored because it does not exist in resource registry #{}", hash);
                 assert(false);
                 continue;
             }
@@ -109,7 +109,7 @@ namespace ramses::internal
             const auto resourceStatus = m_resources.getResourceStatus(hash);
             if (resourceStatus != EResourceStatus::ScheduledForUpload)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "ResourceUploadingManager::syncEffects unexpected effect uploaded, will be ignored because is not in state scheduled for upload #" << hash << " (status :" << resourceStatus << ")");
+                LOG_ERROR(CONTEXT_RENDERER, "ResourceUploadingManager::syncEffects unexpected effect uploaded, will be ignored because is not in state scheduled for upload #{} (status :{})", hash, resourceStatus);
                 assert(false);
                 continue;
             }
@@ -128,7 +128,7 @@ namespace ramses::internal
             }
             else
             {
-                LOG_ERROR(CONTEXT_RENDERER, "ResourceUploadingManager::syncEffects failed to upload effect #" << hash);
+                LOG_ERROR(CONTEXT_RENDERER, "ResourceUploadingManager::syncEffects failed to upload effect #{}", hash);
                 m_resources.setResourceBroken(hash);
             }
         }
@@ -154,8 +154,8 @@ namespace ramses::internal
             {
                 const auto numUploaded = i + 1;
                 const auto numRemaining = resourcesToUpload.size() - numUploaded;
-                LOG_INFO(CONTEXT_RENDERER, "ResourceUploadingManager::uploadResources: Interrupt: Exceeded time for resource upload (uploaded " << numUploaded << " resources of size " << sizeUploaded
-                         << " B, remaining " << numRemaining << " resources to upload). dt " << sectionDuration.count() << "ms");
+                LOG_INFO(CONTEXT_RENDERER, "ResourceUploadingManager::uploadResources: Interrupt: Exceeded time for resource upload (uploaded {} resources of size {} B, remaining {} resources to upload). dt {}ms",
+                    numUploaded, sizeUploaded, numRemaining, sectionDuration.count());
                 LOG_INFO_F(CONTEXT_RENDERER, [&](StringOutputStream& logger)
                 {
                     logger << "Remaining resources in queue to upload:";
@@ -177,7 +177,7 @@ namespace ramses::internal
     {
         assert(rd.resource);
         assert(!rd.deviceHandle.isValid());
-        LOG_TRACE(CONTEXT_PROFILING, "        ResourceUploadingManager::uploadResource upload resource of type " << EnumToString(rd.type));
+        LOG_TRACE(CONTEXT_PROFILING, "        ResourceUploadingManager::uploadResource upload resource of type {}", EnumToString(rd.type));
 
         const IResource* pResource = rd.resource.get();
         // decompress resource if needed
@@ -199,7 +199,7 @@ namespace ramses::internal
             }
             else
             {
-                LOG_ERROR(CONTEXT_RENDERER, "ResourceUploadingManager::uploadResource failed to upload resource #" << rd.hash << " (" << EnumToString(rd.type) << ")");
+                LOG_ERROR(CONTEXT_RENDERER, "ResourceUploadingManager::uploadResource failed to upload resource #{} ({})", rd.hash, EnumToString(rd.type));
                 m_resources.setResourceBroken(rd.hash);
             }
         }
@@ -219,8 +219,8 @@ namespace ramses::internal
         assert(rd.status == EResourceStatus::Uploaded);
         assert(m_resourceSizes.contains(rd.hash));
 
-        LOG_TRACE(CONTEXT_PROFILING, "        ResourceUploadingManager::unloadResource delete resource of type " << EnumToString(rd.type));
-        LOG_TRACE(CONTEXT_RENDERER, "ResourceUploadingManager::unloadResource Unloading resource #" << rd.hash);
+        LOG_TRACE(CONTEXT_PROFILING, "        ResourceUploadingManager::unloadResource delete resource of type {}", EnumToString(rd.type));
+        LOG_TRACE(CONTEXT_RENDERER, "ResourceUploadingManager::unloadResource Unloading resource #{}", rd.hash);
         m_uploader->unloadResource(m_renderBackend, rd.type, rd.hash, rd.deviceHandle);
 
         auto resSizeIt = m_resourceSizes.find(rd.hash);
@@ -228,7 +228,7 @@ namespace ramses::internal
         m_resourceTotalUploadedSize -= resSizeIt->value;
         m_resourceSizes.remove(resSizeIt);
 
-        LOG_TRACE(CONTEXT_RENDERER, "ResourceUploadingManager::unloadResource Removing resource descriptor for resource #" << rd.hash);
+        LOG_TRACE(CONTEXT_RENDERER, "ResourceUploadingManager::unloadResource Removing resource descriptor for resource #{}", rd.hash);
         m_resources.unregisterResource(rd.hash);
     }
 

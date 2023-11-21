@@ -30,7 +30,7 @@ namespace ramses::internal
     {
         if (PropertyTypeToEnum<T>::TYPE != m_dataType)
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "DataArray::getData failed for '{}', correct template that matches stored data type must be used.", getIdentificationString());
+            LOG_ERROR(CONTEXT_CLIENT, "DataArray::getData failed for '{}', correct template that matches stored data type must be used.", getIdentificationString());
             return nullptr;
         }
 

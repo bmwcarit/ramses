@@ -25,6 +25,7 @@
 #include "ramses/client/Geometry.h"
 #include "ramses/client/Effect.h"
 #include "ramses/client/MeshNode.h"
+#include "ramses/client/RenderBuffer.h"
 #include "ramses/framework/RamsesFramework.h"
 #include "ramses/framework/DataTypes.h"
 
@@ -88,6 +89,8 @@ namespace ramses::internal
 
             renderGroup->addMeshNode(*meshNode);
 
+            renderBuffer = scene->createRenderBuffer(1u, 2u, ramses::ERenderBufferFormat::R16F, ramses::ERenderBufferAccessMode::ReadWrite, 3u, "renderBuffer");
+
             scene->flush();
             scene->publish();
         }
@@ -98,6 +101,7 @@ namespace ramses::internal
         ramses::RenderGroup*       renderGroup;
         ramses::Appearance*        appearance;
         ramses::MeshNode*          meshNode;
+        ramses::RenderBuffer*      renderBuffer;
     };
 
 

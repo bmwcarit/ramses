@@ -100,14 +100,4 @@ namespace ramses::internal
 
         return idString;
     }
-
-    void SceneObjectImpl::setObjectRegistryHandle(SceneObjectRegistryHandle handle)
-    {
-        m_objectRegistryHandle = handle;
-    }
-
-    SceneObjectRegistryHandle SceneObjectImpl::getObjectRegistryHandle() const
-    {
-        return m_objectRegistryHandle;
-    }
 }

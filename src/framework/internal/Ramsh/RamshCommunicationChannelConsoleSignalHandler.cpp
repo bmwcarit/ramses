@@ -52,7 +52,7 @@ namespace ramses::internal
         auto enumSignal = static_cast<ESignal>(sig);
         const auto signal = PlatformSignal::SignalToString(enumSignal);
 
-        LOG_WARN_P(CONTEXT_RAMSH, "Received signal {}", signal);
+        LOG_WARN(CONTEXT_RAMSH, "Received signal {}", signal);
         for (auto c : m_consoles)
         {
             c->stopThread();

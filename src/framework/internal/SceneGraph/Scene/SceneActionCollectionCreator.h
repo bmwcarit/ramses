@@ -170,6 +170,7 @@ namespace ramses::internal
         // Render buffers
         void allocateRenderBuffer(const RenderBuffer& renderBuffer, RenderBufferHandle handle);
         void releaseRenderBuffer(RenderBufferHandle handle);
+        void setRenderBufferProperties(RenderBufferHandle handle, uint32_t width, uint32_t height, uint32_t sampleCount);
 
         // Data buffers
         void allocateDataBuffer(EDataBufferType dataBufferType, EDataType dataType, uint32_t maximumSizeInBytes, DataBufferHandle handle);

@@ -38,6 +38,7 @@ namespace ramses
     class RenderGroup;
     class UniformInput;
     class MeshNode;
+    class RenderBuffer;
 
     class NodeBinding;
     class AppearanceBinding;
@@ -47,6 +48,7 @@ namespace ramses
     class RenderGroupBindingElements;
     class MeshNodeBinding;
     class SkinBinding;
+    class RenderBufferBinding;
     class DataArray;
     class AnimationNode;
     class AnimationNodeConfig;
@@ -92,6 +94,7 @@ namespace ramses::internal
             AppearanceBinding& appearanceBinding,
             const UniformInput& jointMatInput,
             std::string_view name);
+        RenderBufferBinding* createRenderBufferBinding(ramses::RenderBuffer& renderBuffer, std::string_view name);
         template <typename T>
         DataArray* createDataArray(const std::vector<T>& data, std::string_view name);
         AnimationNode* createAnimationNode(const AnimationNodeConfig& config, std::string_view name);

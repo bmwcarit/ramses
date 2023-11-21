@@ -23,7 +23,6 @@
 #include "internal/RendererLib/RendererCommands.h"
 #include "RendererSceneControlEventHandlerMock.h"
 #include "RendererCommandVisitorMock.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
 #include "PlatformFactoryMock.h"
 #include <thread>
 
@@ -41,8 +40,6 @@ namespace ramses::internal
         {
             m_renderer.impl().getDisplayDispatcher().injectPlatformFactory(std::make_unique<PlatformFactoryNiceMock>());
             m_displayId = m_renderer.createDisplay(ramses::DisplayConfig{});
-
-            ThreadLocalLog::SetPrefix(2);
 
             m_renderer.setLoopMode(ELoopMode::UpdateOnly);
         }

@@ -25,7 +25,7 @@ namespace ramses::internal
         m_clientFactory = std::move(factory);
     }
 
-    void FrameworkFactoryRegistry::registerRendererFactory(std::unique_ptr<IRendererFactory> factory)
+    void FrameworkFactoryRegistry::registerRendererFactory(UniquePtrWithDeleter<IRendererFactory> factory)
     {
         if (m_rendererFactory)
             LOG_WARN(CONTEXT_FRAMEWORK, "FrameworkFactoryRegistry::registerRendererFactory called more than once");

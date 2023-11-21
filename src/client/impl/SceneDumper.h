@@ -94,6 +94,7 @@ namespace ramses::internal
 
         bool addToRequiredObjects(const RamsesObjectImpl& object);
 
+        void               markRequiredLogic();
         RenderPassSet      markRequiredScreenRenderPasses();
         RenderPassSet      getRequiredRenderPasses(const RenderBufferSet& requiredRenderBuffers);
         RenderPassSet      getRequiredRenderPasses();

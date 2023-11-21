@@ -184,7 +184,7 @@ namespace ramses::internal
     {
         if (index >= getUniformInputCount())
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "Effect: getUniformInput failed, index out of range!");
+            LOG_ERROR(CONTEXT_CLIENT, "Effect: getUniformInput failed, index out of range!");
             return std::nullopt;
         }
 
@@ -198,7 +198,7 @@ namespace ramses::internal
     {
         if (index >= getAttributeInputCount())
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "Effect: getAttributeInput failed, index out of range!");
+            LOG_ERROR(CONTEXT_CLIENT, "Effect: getAttributeInput failed, index out of range!");
             return std::nullopt;
         }
 
@@ -213,7 +213,7 @@ namespace ramses::internal
         const size_t index = GetEffectInputIndex(m_effectUniformInputs, inputName);
         if (index == InvalidInputIndex)
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "Effect: findUniformInput failed, uniform input '{}' could not be found in effect '{}'", inputName, getName());
+            LOG_ERROR(CONTEXT_CLIENT, "Effect: findUniformInput failed, uniform input '{}' could not be found in effect '{}'", inputName, getName());
             return std::nullopt;
         }
 
@@ -228,7 +228,7 @@ namespace ramses::internal
         const size_t index = GetEffectInputIndex(m_effectAttributeInputs, inputName);
         if (index == InvalidInputIndex)
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "Effect: findAttributeInput failed, attribute input '{}' could not be found in effect '{}'", inputName, getName());
+            LOG_ERROR(CONTEXT_CLIENT, "Effect: findAttributeInput failed, attribute input '{}' could not be found in effect '{}'", inputName, getName());
             return std::nullopt;
         }
 
@@ -243,7 +243,7 @@ namespace ramses::internal
         const size_t index = FindEffectInputIndex(m_effectUniformInputs, EffectInputSemanticUtils::GetEffectInputSemanticInternal(uniformSemantic));
         if (index == InvalidInputIndex)
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "Effect: findUniformInput failed, semantic is not defined in effect!");
+            LOG_ERROR(CONTEXT_CLIENT, "Effect: findUniformInput failed, semantic is not defined in effect!");
             return std::nullopt;
         }
 
@@ -258,7 +258,7 @@ namespace ramses::internal
         const size_t index = FindEffectInputIndex(m_effectAttributeInputs, EffectInputSemanticUtils::GetEffectInputSemanticInternal(attributeSemantic));
         if (index == InvalidInputIndex)
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "Effect: findAttributeInput failed, semantic not defined in effect!");
+            LOG_ERROR(CONTEXT_CLIENT, "Effect: findAttributeInput failed, semantic not defined in effect!");
             return std::nullopt;
         }
 

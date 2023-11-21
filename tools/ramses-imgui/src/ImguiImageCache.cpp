@@ -26,7 +26,7 @@ namespace ramses::internal
         if (it == m_imageBuffers.end())
         {
             const ramses::TextureSwizzle textureSwizzle;
-            std::vector<ramses::MipLevelData> mipLevelData{ramses::MipLevelData(static_cast<uint32_t>(mm.data.size()), mm.data.data())};
+            std::vector<ramses::MipLevelData> mipLevelData{ mm.data };
             auto* texture = m_scene->createTexture2D(TextureUtils::GetTextureFormatFromInternal(format),
                                                      mm.width,
                                                      mm.height,
@@ -75,7 +75,7 @@ namespace ramses::internal
             for (const auto& mipSize : res->getMipDataSizes())
             {
                 assert(data + mipSize <= blob.data() + blob.size());
-                mipLevelData.emplace_back(mipSize, reinterpret_cast<const uint8_t*>(data));
+                mipLevelData.emplace_back(data, data + mipSize);
                 data += mipSize;
             }
 

@@ -23,7 +23,7 @@ namespace ramses::internal
             int fd = open("/dev/ptp0", O_RDONLY);
             if (fd < 0)
             {
-                LOG_WARN(CONTEXT_FRAMEWORK, "PlatformTimePTP::GetClockId: failed to open /dev/ptp0 with error: " << strerror(errno));
+                LOG_WARN(CONTEXT_FRAMEWORK, "PlatformTimePTP::GetClockId: failed to open /dev/ptp0 with error: {}", strerror(errno));
                 return 0;
             }
             const int baseClockFd = 3;
@@ -33,7 +33,7 @@ namespace ramses::internal
             struct timespec dummyTs;
             if (clock_gettime(clockId, &dummyTs) != 0)
             {
-                LOG_WARN(CONTEXT_FRAMEWORK, "PlatformTimePTP::GetClockId: clock_gettime failed (fd:" << fd << ", clockId: " << clockId << ") with error: " << strerror(errno));
+                LOG_WARN(CONTEXT_FRAMEWORK, "PlatformTimePTP::GetClockId: clock_gettime failed (fd:{}, clockId: {}) with error: {}", fd, clockId, strerror(errno));
                 return 0;
             }
             return clockId;

@@ -153,13 +153,13 @@ namespace ramses::internal
         File inFile(fileName);
         if (!inFile.exists())
         {
-            LOG_ERROR(CONTEXT_CLIENT, "EffectDescriptionImpl::ReadFileContentsToString:  could not find file: " << fileName);
+            LOG_ERROR(CONTEXT_CLIENT, "EffectDescriptionImpl::ReadFileContentsToString:  could not find file: {}", fileName);
             return false;
         }
 
         if (!inFile.open(File::Mode::ReadOnlyBinary))
         {
-            LOG_ERROR(CONTEXT_CLIENT, "EffectDescriptionImpl::ReadFileContentsToString:  could not open file: " << fileName);
+            LOG_ERROR(CONTEXT_CLIENT, "EffectDescriptionImpl::ReadFileContentsToString:  could not open file: {}", fileName);
             return false;
         }
 
@@ -167,7 +167,7 @@ namespace ramses::internal
         size_t readBytes = 0;
         if (!inFile.getSizeInBytes(fileSize))
         {
-            LOG_ERROR(CONTEXT_CLIENT, "EffectDescriptionImpl::ReadFileContentsToString:  error reading file info: " << fileName);
+            LOG_ERROR(CONTEXT_CLIENT, "EffectDescriptionImpl::ReadFileContentsToString:  error reading file info: {}", fileName);
             return false;
         }
 
@@ -179,7 +179,7 @@ namespace ramses::internal
             fileContents = &charVector[0];
             return true;
         }
-        LOG_ERROR(CONTEXT_CLIENT, "EffectDescriptionImpl::ReadFileContentsToString:  error reading file contents: " << fileName);
+        LOG_ERROR(CONTEXT_CLIENT, "EffectDescriptionImpl::ReadFileContentsToString:  error reading file contents: {}", fileName);
         return false;
     }
 }

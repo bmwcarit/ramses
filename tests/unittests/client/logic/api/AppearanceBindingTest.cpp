@@ -737,7 +737,7 @@ namespace ramses::internal
     {
         {
             m_logicEngine->createAppearanceBinding(*m_appearance, "AppearanceBinding");
-            ASSERT_TRUE(saveToFileWithoutValidation("appearancebinding.bin"));
+            ASSERT_TRUE(saveToFile("appearancebinding.bin"));
         }
 
         {
@@ -783,7 +783,7 @@ namespace ramses::internal
             inputs->getChild("vec2Array")->getChild(0)->set<vec2f>({ .11f, .12f });
             inputs->getChild("vec2Array")->getChild(1)->set<vec2f>({ .13f, .14f });
             m_logicEngine->update();
-            ASSERT_TRUE(saveToFileWithoutValidation("logic.bin"));
+            ASSERT_TRUE(saveToFile("logic.bin"));
         }
 
         {
@@ -853,7 +853,7 @@ namespace ramses::internal
             auto& rAppearanceBinding = *m_logicEngine->createAppearanceBinding(*m_appearance, "AppearanceBinding");
             rAppearanceBinding.getInputs()->getChild("floatUniform")->set(42.42f);
             m_logicEngine->update();
-            ASSERT_TRUE(saveToFileWithoutValidation("logic.bin"));
+            ASSERT_TRUE(saveToFile("logic.bin"));
         }
 
         {
@@ -882,7 +882,7 @@ namespace ramses::internal
             // Set uniform to a different value than the one set on the ramses binding
             SetUniformValueFloat(appearance, "floatUniform", 100.0f);
 
-            ASSERT_TRUE(saveToFileWithoutValidation("SomeValuesSet.bin"));
+            ASSERT_TRUE(saveToFile("SomeValuesSet.bin"));
         }
 
         {
@@ -935,7 +935,7 @@ namespace ramses::internal
             // or any set() calls to the corresponding AppearanceBinding input
             SetUniformValueFloat(appearance, "floatUniform2", 200.0f);
 
-            ASSERT_TRUE(saveToFileWithoutValidation("SomeValuesLinked.bin"));
+            ASSERT_TRUE(saveToFile("SomeValuesLinked.bin"));
         }
 
         {

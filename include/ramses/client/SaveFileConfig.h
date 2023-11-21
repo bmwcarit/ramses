@@ -53,15 +53,6 @@ namespace ramses
         void setExporterVersion(uint32_t major, uint32_t minor, uint32_t patch, uint32_t fileFormatVersion);
 
         /**
-        * By default, saving to file validates the content and issues warnings (see #ramses::Scene::validate).
-        * This behavior can be disabled here. Calling this with validationEnabled=false will itself cause a INFO log,
-        * but will silence further warnings in the content.
-        *
-        * @param validationEnabled flag to disable/enable validation upon saving to file
-        */
-        void setValidationEnabled(bool validationEnabled);
-
-        /**
         * Sets saving mode for all #ramses::LuaScript and/or #ramses::LuaModule instances.
         * See #ramses::ELuaSavingMode for the available options and their implications.
         * Note that this is just a hint and the export logic will decide what to actually export,

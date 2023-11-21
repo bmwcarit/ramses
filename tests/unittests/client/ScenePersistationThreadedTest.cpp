@@ -46,9 +46,7 @@ namespace ramses::internal
                 Scene* scene = CreateScene(client, sceneId);
                 ASSERT_TRUE(scene != nullptr);
 
-                SaveFileConfig config;
-                config.setValidationEnabled(false);
-                ASSERT_TRUE(scene->saveToFile(sceneFilename, config));
+                ASSERT_TRUE(scene->saveToFile(sceneFilename, {}));
             }
 
         private:

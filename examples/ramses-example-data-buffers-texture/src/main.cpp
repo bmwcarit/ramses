@@ -107,18 +107,18 @@ int main()
     const uint32_t regionDataSizeLevel0 = regionWidthLevel0 * regionHeightLevel0 * numChannels;
     const uint32_t regionDataSizeLevel1 = regionWidthLevel1 * regionHeightLevel1 * numChannels;
 
-    std::array<uint8_t, dataSizeLevel0> textureDataLevel0{};
-    std::array<uint8_t, dataSizeLevel1> textureDataLevel1{};
-    std::array<uint8_t, regionDataSizeLevel0> regionDataLevel0{};
-    std::array<uint8_t, regionDataSizeLevel1> regionDataLevel1{};
+    std::array<std::byte, dataSizeLevel0> textureDataLevel0{};
+    std::array<std::byte, dataSizeLevel1> textureDataLevel1{};
+    std::array<std::byte, regionDataSizeLevel0> regionDataLevel0{};
+    std::array<std::byte, regionDataSizeLevel1> regionDataLevel1{};
 
-    // A helper function to cast and map a float value [0.f, 1.f[ to uint8 [0,255]
-    auto convertToUInt8 = [](float value)->uint8_t
+    // A helper function to cast and map a float value [0.f, 1.f] to byte [0,255]
+    auto convertToByte = [](float value)
     {
         // by substracting the integer part, we just keep
         // the fractional part [0.f,1.f[
         value -= static_cast<float>(static_cast<uint32_t>(value));
-        return static_cast<uint8_t>(value * 255.f);
+        return std::byte{ static_cast<uint8_t>(value * 255.f) };
     };
 
     // Fill the texture mipmap level 0 whith a red-green gradient
@@ -126,9 +126,9 @@ int main()
     for(; !fullTextureIndicesLevel0.isAtEnd(); ++fullTextureIndicesLevel0)
     {
         const uint32_t index = fullTextureIndicesLevel0.getIndexGlobal() * 3;
-        textureDataLevel0.begin()[index+0] =  convertToUInt8(fullTextureIndicesLevel0.getPositionXGlobal());
-        textureDataLevel0.begin()[index+1] =  convertToUInt8(fullTextureIndicesLevel0.getPositionYGlobal());
-        textureDataLevel0.begin()[index+2] =  0;
+        textureDataLevel0.begin()[index+0] = convertToByte(fullTextureIndicesLevel0.getPositionXGlobal());
+        textureDataLevel0.begin()[index+1] = convertToByte(fullTextureIndicesLevel0.getPositionYGlobal());
+        textureDataLevel0.begin()[index+2] = convertToByte(0.f);
     }
 
     // Fill the texture mipmap level 1 with a red-blue gradient
@@ -136,9 +136,9 @@ int main()
     for(; !fullTextureIndicesLevel1.isAtEnd(); ++fullTextureIndicesLevel1)
     {
         const uint32_t index = fullTextureIndicesLevel1.getIndexGlobal() * 3;
-        textureDataLevel1.begin()[index+0] =  convertToUInt8(fullTextureIndicesLevel1.getPositionXGlobal());
-        textureDataLevel1.begin()[index+1] =  0;
-        textureDataLevel1.begin()[index+2] =  convertToUInt8(fullTextureIndicesLevel1.getPositionYGlobal());
+        textureDataLevel1.begin()[index+0] = convertToByte(fullTextureIndicesLevel1.getPositionXGlobal());
+        textureDataLevel1.begin()[index+1] = convertToByte(0.f);
+        textureDataLevel1.begin()[index+2] = convertToByte(fullTextureIndicesLevel1.getPositionYGlobal());
     }
 
     /// [Data Buffer Texture Example create buffer]
@@ -235,18 +235,18 @@ int main()
             // these values can be stored in some new array, which is not necessarily the original
             // data array. This new array has to have the correct dimensions for the updated region
             // (i.e. might be just as small as the region you need to update)
-            regionDataLevel0.begin()[index+0] =  convertToUInt8(regionIndicesLevel0.getPositionXLocal(cycleOffset));
-            regionDataLevel0.begin()[index+1] =  0;
-            regionDataLevel0.begin()[index+2] =  convertToUInt8(regionIndicesLevel0.getPositionYLocal(cycleOffset));
+            regionDataLevel0.begin()[index+0] = convertToByte(regionIndicesLevel0.getPositionXLocal(cycleOffset));
+            regionDataLevel0.begin()[index+1] = convertToByte(0.f);
+            regionDataLevel0.begin()[index+2] = convertToByte(regionIndicesLevel0.getPositionYLocal(cycleOffset));
         }
 
         // iterate over the values you want to update in mipmap level 1
         for(; !regionIndicesLevel1.isAtEnd(); ++regionIndicesLevel1)
         {
             const uint32_t index = regionIndicesLevel1.getIndexLocal() * 3;
-            regionDataLevel1.begin()[index+0] =  0;
-            regionDataLevel1.begin()[index+1] =  convertToUInt8(regionIndicesLevel1.getPositionXLocal(cycleOffset+0.5f));
-            regionDataLevel1.begin()[index+2] =  convertToUInt8(regionIndicesLevel1.getPositionYLocal(cycleOffset+0.3f));
+            regionDataLevel1.begin()[index+0] = convertToByte(0.f);
+            regionDataLevel1.begin()[index+1] = convertToByte(regionIndicesLevel1.getPositionXLocal(cycleOffset+0.5f));
+            regionDataLevel1.begin()[index+2] = convertToByte(regionIndicesLevel1.getPositionYLocal(cycleOffset+0.3f));
         }
 
         // with Texture2DBuffer::setData you can pass the updated array data to the data buffer

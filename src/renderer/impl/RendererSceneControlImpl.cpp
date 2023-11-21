@@ -25,7 +25,7 @@ namespace ramses::internal
 
     bool RendererSceneControlImpl::setSceneState(sceneId_t sceneId, RendererSceneState state)
     {
-        LOG_INFO(CONTEXT_RENDERER, "RendererSceneControl::setSceneState: scene " << sceneId << " " << EnumToString(state));
+        LOG_INFO(CONTEXT_RENDERER, "RendererSceneControl::setSceneState: scene {} {}", sceneId, EnumToString(state));
 
         if (state == RendererSceneState::Unavailable)
         {
@@ -49,7 +49,7 @@ namespace ramses::internal
 
     bool RendererSceneControlImpl::setSceneMapping(sceneId_t sceneId, displayId_t displayId)
     {
-        LOG_INFO(CONTEXT_RENDERER, "RendererSceneControl::setSceneMapping: scene " << sceneId << " display " << displayId);
+        LOG_INFO(CONTEXT_RENDERER, "RendererSceneControl::setSceneMapping: scene {} display {}", sceneId, displayId);
 
         auto& sceneInfo = m_sceneInfos[sceneId];
         if (sceneInfo.currState >= RendererSceneState::Ready || sceneInfo.targetState >= RendererSceneState::Ready)
@@ -69,7 +69,7 @@ namespace ramses::internal
 
     bool RendererSceneControlImpl::setSceneDisplayBufferAssignment(sceneId_t sceneId, displayBufferId_t displayBuffer, int32_t sceneRenderOrder)
     {
-        LOG_INFO(CONTEXT_RENDERER, "RendererSceneControl::setSceneDisplayBufferAssignment: scene " << sceneId << " displayBuffer " << displayBuffer << " renderOrder " << sceneRenderOrder);
+        LOG_INFO(CONTEXT_RENDERER, "RendererSceneControl::setSceneDisplayBufferAssignment: scene {} displayBuffer {} renderOrder {}", sceneId, displayBuffer, sceneRenderOrder);
 
         if (!m_sceneInfos[sceneId].mappingSet)
         {

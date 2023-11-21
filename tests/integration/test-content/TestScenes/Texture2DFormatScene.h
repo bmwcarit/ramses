@@ -61,4 +61,16 @@ namespace ramses::internal
 
         static const std::vector<MipLevelData>& GetTextureFormatAndData(EState state, ramses::ETextureFormat& format, uint32_t& width, uint32_t& height, ramses::TextureSwizzle& swizzle);
     };
+
+    template<typename T>
+    inline std::vector<std::byte> convertToBytes(const T* data, size_t len) {
+        const auto* dataByte = reinterpret_cast<const std::byte*>(data);
+        std::vector<std::byte> bytes(dataByte, dataByte + len * sizeof(T));
+        return bytes;
+    }
+
+    template<typename T>
+    inline std::vector<std::byte> convertToBytes(const std::vector<T>& data) {
+        return convertToBytes(data.data(), data.size());
+    }
 }

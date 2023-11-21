@@ -59,8 +59,7 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, createTextureAndDestroyManually)
     {
-        const uint8_t data[4 * 10 * 12] = {};
-        const std::vector<MipLevelData> mipLevelData{ MipLevelData(sizeof(data), data) };
+        const std::vector<MipLevelData> mipLevelData = { std::vector<std::byte>(4 * 10 * 12) };
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::RGBA8, 10, 12, mipLevelData, false, {}, "name");
         ASSERT_TRUE(nullptr != texture);
         EXPECT_TRUE(m_scene.destroy(*texture));
@@ -68,18 +67,17 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, createTextureWithMipMaps)
     {
-        const uint8_t data[2 * 2 * 4] = {};
+        const std::vector<std::byte> data(2 * 2 * 4);
         std::vector<MipLevelData> mipLevelData;
-        mipLevelData.emplace_back(2 * 2 * 4, data);
-        mipLevelData.emplace_back(1 * 1 * 4, data);
+        mipLevelData.emplace_back(data);
+        mipLevelData.emplace_back(data.begin(), data.begin() + 1 * 1 * 4);
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::RGBA8, 2, 2, mipLevelData, false, {}, "name");
         ASSERT_TRUE(nullptr != texture);
     }
 
     TEST_F(AResourceTestClient, createTextureAndCheckWidthHeight)
     {
-        const uint8_t data[4 * 10 * 12] = {};
-        const std::vector<MipLevelData> mipLevelData{ MipLevelData(sizeof(data), data) };
+        const std::vector<MipLevelData> mipLevelData{ std::vector<std::byte>(4 * 10 * 12) };
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::RGBA8, 10, 12, mipLevelData, false, {}, "name");
         ASSERT_TRUE(nullptr != texture);
         EXPECT_EQ(10u, texture->getWidth());
@@ -88,8 +86,7 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, createTextureAndCheckFormat)
     {
-        const uint8_t data[3 * 10 * 12] = {};
-        const std::vector<MipLevelData> mipLevelData{ MipLevelData(sizeof(data), data) };
+        const std::vector<MipLevelData> mipLevelData{ std::vector<std::byte>(3 * 10 * 12) };
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::RGB8, 10, 12, mipLevelData, false, {}, "name");
         ASSERT_TRUE(nullptr != texture);
         EXPECT_EQ(ETextureFormat::RGB8, texture->getTextureFormat());
@@ -97,8 +94,7 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, createsTextureWithDefaultSwizzle)
     {
-        const uint8_t data[3 * 10 * 12] = {};
-        const std::vector<MipLevelData> mipLevelData{ MipLevelData(sizeof(data), data) };
+        const std::vector<MipLevelData> mipLevelData{ std::vector<std::byte>(3 * 10 * 12) };
         TextureSwizzle swizzle;
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::RGB8, 10, 12, mipLevelData, false, swizzle, "name");
         ASSERT_TRUE(nullptr != texture);
@@ -111,8 +107,7 @@ namespace ramses::internal
     TEST_F(AResourceTestClient, createsTextureWithNonDefaultSwizzle)
     {
         TextureSwizzle swizzle = { ETextureChannelColor::Blue, ETextureChannelColor::Alpha, ETextureChannelColor::Red, ETextureChannelColor::Green };
-        const uint8_t data[3 * 10 * 12] = {};
-        const std::vector<MipLevelData> mipLevelData{ MipLevelData(sizeof(data), data) };
+        const std::vector<MipLevelData> mipLevelData{ std::vector<std::byte>(3 * 10 * 12) };
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::RGB8, 10, 12, mipLevelData, false, swizzle, "name");
         ASSERT_TRUE(nullptr != texture);
         EXPECT_EQ(swizzle.channelRed, texture->getTextureSwizzle().channelRed);
@@ -123,11 +118,11 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, createTextureWithProvidedMipsButNotFullChain)
     {
-        const uint8_t data[4 * 4 * 4] = {};
+        const std::vector<std::byte> data(4 * 4 * 4);
 
         std::vector<MipLevelData> mipLevelData;
-        mipLevelData.emplace_back(static_cast<uint32_t>(sizeof(data)), data);
-        mipLevelData.emplace_back(2 * 2 * 4, data);
+        mipLevelData.emplace_back(data);
+        mipLevelData.emplace_back(data.begin(), data.begin() + 2 * 2 * 4);
 
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::RGBA8, 4u, 4u, mipLevelData, false, {}, "name");
         ASSERT_TRUE(nullptr != texture);
@@ -135,54 +130,29 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, createTextureWithMoreMipsThanExpected)
     {
-        const uint8_t data[1] = {};
+        const std::vector<std::byte> data(1);
 
-        std::vector<MipLevelData> mipLevelData;
-        mipLevelData.emplace_back(static_cast<uint32_t>(sizeof(data)), data);
-        mipLevelData.emplace_back(static_cast<uint32_t>(sizeof(data)), data);
+        std::vector<MipLevelData> mipLevelData{ data, data };
 
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::RGBA8, 1u, 1u, mipLevelData, false, {}, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
-    TEST_F(AResourceTestClient, createTextureWithNullMipMapData)
-    {
-        const uint8_t data[4 * 4 * 4] = {};
-        const uint8_t* dataNullPtr{nullptr};
-
-        std::vector<MipLevelData> mipLevelData;
-        mipLevelData.emplace_back(static_cast<uint32_t>(sizeof(data)), dataNullPtr);
-
-        Texture2D* texture = m_scene.createTexture2D(ETextureFormat::RGBA8, 4u, 4u, mipLevelData, false, {}, "name");
-        EXPECT_EQ(nullptr, texture);
-    }
-
     TEST_F(AResourceTestClient, createTextureWithZeroSizeMipMapData)
     {
-        const uint8_t data[4 * 4 * 4] = {};
-
-        std::vector<MipLevelData> mipLevelData;
-        mipLevelData.emplace_back(0u, data);
+        std::vector<MipLevelData> mipLevelData{ {} };
 
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::RGBA8, 4u, 4u, mipLevelData, false, {}, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
-    TEST_F(AResourceTestClient, createTextureWithNullOrZeroSizeLowerMipMapData)
+    TEST_F(AResourceTestClient, createTextureWithZeroSizeLowerMipMapData)
     {
-        const uint8_t data[2 * 2 * 4] = {};
-        const uint8_t* dataNullPtr{nullptr};
+        const std::vector<std::byte> data(2 * 2 * 4);
         {
             std::vector<MipLevelData> mipLevelData;
-            mipLevelData.emplace_back(static_cast<uint32_t>(sizeof(data)), data);
-            mipLevelData.emplace_back(0u, data);
-            Texture2D* texture = m_scene.createTexture2D(ETextureFormat::RGBA8, 2u, 2u, mipLevelData, false, {}, "name");
-            EXPECT_EQ(nullptr, texture);
-        }
-        {
-            std::vector<MipLevelData> mipLevelData;
-            mipLevelData.emplace_back(static_cast<uint32_t>(sizeof(data)), data);
-            mipLevelData.emplace_back(static_cast<uint32_t>(sizeof(data)), dataNullPtr);
+            mipLevelData.emplace_back(data);
+            mipLevelData.emplace_back(0u);
             Texture2D* texture = m_scene.createTexture2D(ETextureFormat::RGBA8, 2u, 2u, mipLevelData, false, {}, "name");
             EXPECT_EQ(nullptr, texture);
         }
@@ -190,33 +160,31 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, createTextureWithWrongSizeOfLowerMipMapData)
     {
-        const uint8_t data[2 * 2 * 4] = {};
+        const std::vector<std::byte> data(2 * 2 * 4);
         std::vector<MipLevelData> mipLevelData;
-        mipLevelData.emplace_back(2 * 2 * 4, data);
-        mipLevelData.emplace_back(1 * 1 * 2, data);
+        mipLevelData.emplace_back(data);
+        mipLevelData.emplace_back(data.begin(), data.begin() + 1 * 1 * 2);
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::RGBA8, 2u, 2u, mipLevelData, false, {}, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
     TEST_F(AResourceTestClient, createTextureOfZeroSize)
     {
-        const uint8_t data[4 * 10 * 12] = {};
-        const std::vector<MipLevelData> mipLevelData{ MipLevelData(sizeof(data), data) };
+        const std::vector<MipLevelData> mipLevelData{ std::vector<std::byte>(4 * 10 * 12) };
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::RGBA8, 0, 0, mipLevelData, false, {}, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
     TEST_F(AResourceTestClient, createTextureWithNoMipData)
     {
-        std::vector < MipLevelData> mipLevelData;
+        std::vector<MipLevelData> mipLevelData;
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::RGBA8, 1, 1, mipLevelData, false, {}, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
     TEST_F(AResourceTestClient, createTextureWithoutName)
     {
-        const uint8_t data[4 * 10 * 12] = {};
-        const std::vector<MipLevelData> mipLevelData{ MipLevelData(sizeof(data), data) };
+        const std::vector<MipLevelData> mipLevelData{ std::vector<std::byte>(4 * 10 * 12) };
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::RGBA8, 10, 12, mipLevelData, false, {}, {});
         ASSERT_TRUE(nullptr != texture);
         EXPECT_TRUE(texture->getName().empty());
@@ -224,8 +192,7 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, createTextureCheckHashIsValid)
     {
-        const uint8_t data[4 * 10 * 12] = {};
-        const std::vector<MipLevelData> mipLevelData{ MipLevelData(sizeof(data), data) };
+        const std::vector<MipLevelData> mipLevelData{ std::vector<std::byte>(4 * 10 * 12) };
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::RGBA8, 10, 12, mipLevelData, false, {}, "name");
         ASSERT_TRUE(nullptr != texture);
 
@@ -235,16 +202,16 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, createTextureCheckHashIsUnique)
     {
-        uint8_t data[4 * 10 * 12] = {};
-        data[20] = 48;
-        const std::vector<MipLevelData> mipLevelData{ MipLevelData(sizeof(data), data) };
+        std::vector<std::byte> data(4 * 10 * 12);
+        data[20] = std::byte{ 48 };
+        const std::vector<MipLevelData> mipLevelData{ data };
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::RGBA8, 10, 12, mipLevelData, false, {}, "name");
         ASSERT_TRUE(nullptr != texture);
 
         const ramses::internal::ResourceContentHash hash = texture->impl().getLowlevelResourceHash();
-        uint8_t data2[4 * 10 * 12] = {};
-        data[20] = 42;
-        const std::vector<MipLevelData> mipLevelData2{ MipLevelData(sizeof(data2), data2) };
+        std::vector<std::byte> data2(4 * 10 * 12);
+        data[20] = std::byte{ 42 };
+        const std::vector<MipLevelData> mipLevelData2{ data2 };
         Texture2D* texture2 = m_scene.createTexture2D(ETextureFormat::RGBA8, 10, 12, mipLevelData2, false, {}, "name");
         ASSERT_TRUE(nullptr != texture2);
 
@@ -253,15 +220,15 @@ namespace ramses::internal
     }
 
     template <typename... Ts>
-    std::array<std::byte, sizeof...(Ts)> make_byte_array(Ts&&... args) noexcept
+    std::vector<std::byte> make_byte_vector(Ts&&... args) noexcept
     {
         return {std::byte(std::forward<Ts>(args))...};
     }
 
     TEST_F(AResourceTestClient, createTextureRGBA_AndCheckTexels)
     {
-        const auto data = make_byte_array(1, 2, 3, 4, 5, 6, 7, 8);
-        const std::vector<MipLevelData> mipLevelData{ MipLevelData(static_cast<uint32_t>(data.size()), data.data()) };
+        const auto data = make_byte_vector(1, 2, 3, 4, 5, 6, 7, 8);
+        const std::vector<MipLevelData> mipLevelData{ data };
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::RGBA8, 2, 1, mipLevelData, false, {}, {});
         ASSERT_TRUE(nullptr != texture);
         ramses::internal::ManagedResource res = getCreatedResource(texture->impl().getLowlevelResourceHash());
@@ -272,8 +239,8 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, createTextureRGB_AndCheckTexels)
     {
-        const auto data = make_byte_array(1, 2, 3, 4, 5, 6);
-        const std::vector<MipLevelData> mipLevelData{ MipLevelData(static_cast<uint32_t>(data.size()), data.data()) };
+        const auto data = make_byte_vector(1, 2, 3, 4, 5, 6);
+        const std::vector<MipLevelData> mipLevelData{ data };
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::RGB8, 2, 1, mipLevelData, false, {}, {});
         ASSERT_TRUE(nullptr != texture);
 
@@ -285,17 +252,17 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, createTextureRGBWithMips_AndCheckTexels)
     {
-        const auto data0 = make_byte_array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
-        const auto data1 = make_byte_array(13, 14, 15);
-        const std::vector<MipLevelData> mipLevelData = { MipLevelData{ static_cast<uint32_t>(data0.size()), data0.data() }, MipLevelData{ static_cast<uint32_t>(data1.size()), data1.data() } };
+        const auto data0 = make_byte_vector(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
+        const auto data1 = make_byte_vector(13, 14, 15);
+        const std::vector<MipLevelData> mipLevelData = { data0, data1 };
         const Texture2D* texture = m_scene.createTexture2D(ETextureFormat::RGB8, 2, 2, mipLevelData, false, {}, {});
         ASSERT_TRUE(nullptr != texture);
 
         const ramses::internal::ManagedResource res = getCreatedResource(texture->impl().getLowlevelResourceHash());
 
-        ASSERT_EQ(sizeof(data0) + sizeof(data1), res->getDecompressedDataSize());
-        EXPECT_EQ(data0, res->getResourceData().span().subspan(0, sizeof(data0)));
-        EXPECT_EQ(data1, res->getResourceData().span().subspan(sizeof(data0)));
+        ASSERT_EQ(data0.size() + data1.size(), res->getDecompressedDataSize());
+        EXPECT_EQ(data0, res->getResourceData().span().subspan(0, data0.size()));
+        EXPECT_EQ(data1, res->getResourceData().span().subspan(data0.size()));
     }
 
     //##############################################################
@@ -304,8 +271,8 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, createCubeTextureAndDestroyManually)
     {
-        const std::byte data[4 * 10 * 10] = {};
-        std::vector<CubeMipLevelData> mipLevelData = { CubeMipLevelData(sizeof(data), data, data, data, data, data, data) };
+        const std::vector<std::byte> data(4 * 10 * 10);
+        std::vector<CubeMipLevelData> mipLevelData = { { data, data, data, data, data, data } };
         TextureCube* texture = m_scene.createTextureCube(ETextureFormat::RGBA8, 10, mipLevelData, false);
         ASSERT_TRUE(nullptr != texture);
         EXPECT_TRUE(m_scene.destroy(*texture));
@@ -313,18 +280,19 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, createCubeTextureWithMipMaps)
     {
-        const std::byte data[2 * 2 * 4] = {};
+        const std::vector<std::byte> data1(2 * 2 * 4);
+        const std::vector<std::byte> data2(1 * 1 * 4);
         std::vector<CubeMipLevelData> mipLevelData;
-        mipLevelData.emplace_back(2 * 2 * 4, data, data, data, data, data, data);
-        mipLevelData.emplace_back(1 * 1 * 4, data, data, data, data, data, data);
+        mipLevelData.emplace_back(CubeMipLevelData{ data1, data1, data1, data1, data1, data1 });
+        mipLevelData.emplace_back(CubeMipLevelData{ data2, data2, data2, data2, data2, data2 });
         TextureCube* texture = m_scene.createTextureCube(ETextureFormat::RGBA8, 2, mipLevelData, false, {}, "name");
         ASSERT_TRUE(nullptr != texture);
     }
 
     TEST_F(AResourceTestClient, createCubeTextureAndCheckWidthHeight)
     {
-        const std::byte data[4 * 10 * 10] = {};
-        std::vector<CubeMipLevelData> mipLevelData = { CubeMipLevelData(sizeof(data), data, data, data, data, data, data) };
+        const std::vector<std::byte> data(4 * 10 * 10);
+        std::vector<CubeMipLevelData> mipLevelData = { {data, data, data, data, data, data} };
         TextureCube* texture = m_scene.createTextureCube(ETextureFormat::RGBA8, 10, mipLevelData, false, {}, "name");
         ASSERT_TRUE(nullptr != texture);
         EXPECT_EQ(10u, texture->getSize());
@@ -332,8 +300,8 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, createCubeTextureAndCheckFormat)
     {
-        const std::byte data[3 * 10 * 10] = {};
-        std::vector<CubeMipLevelData> mipLevelData = { CubeMipLevelData(sizeof(data), data, data, data, data, data, data) };
+        const std::vector<std::byte> data(4 * 10 * 10);
+        std::vector<CubeMipLevelData> mipLevelData = { {data, data, data, data, data, data} };
         TextureCube* texture = m_scene.createTextureCube(ETextureFormat::RGB8, 10, mipLevelData, false, {}, "name");
         ASSERT_TRUE(nullptr != texture);
         EXPECT_EQ(ETextureFormat::RGB8, texture->getTextureFormat());
@@ -342,8 +310,8 @@ namespace ramses::internal
     TEST_F(AResourceTestClient, createsCubeTextureWithDefaultSwizzle)
     {
         TextureSwizzle swizzle;
-        const std::byte data[4 * 10 * 10] = {};
-        std::vector<CubeMipLevelData> mipLevelData = { CubeMipLevelData(sizeof(data), data, data, data, data, data, data) };
+        const std::vector<std::byte> data(4 * 10 * 10);
+        std::vector<CubeMipLevelData> mipLevelData = { {data, data, data, data, data, data} };
         TextureCube* texture = m_scene.createTextureCube(ETextureFormat::RGBA8, 10, mipLevelData, false, swizzle, "name");
         ASSERT_TRUE(nullptr != texture);
         EXPECT_EQ(ETextureChannelColor::Red, swizzle.channelRed);
@@ -355,8 +323,8 @@ namespace ramses::internal
     TEST_F(AResourceTestClient, createsCubeTextureWithNonDefaultSwizzle)
     {
         TextureSwizzle swizzle = { ETextureChannelColor::Blue, ETextureChannelColor::Alpha, ETextureChannelColor::Red, ETextureChannelColor::Green };
-        const std::byte data[4 * 10 * 10] = {};
-        std::vector<CubeMipLevelData> mipLevelData = { CubeMipLevelData(sizeof(data), data, data, data, data, data, data) };
+        const std::vector<std::byte> data(4 * 10 * 10);
+        std::vector<CubeMipLevelData> mipLevelData = { {data, data, data, data, data, data} };
         TextureCube* texture = m_scene.createTextureCube(ETextureFormat::RGBA8, 10, mipLevelData, false, swizzle, "name");
         ASSERT_TRUE(nullptr != texture);
         EXPECT_EQ(swizzle.channelRed, texture->getTextureSwizzle().channelRed);
@@ -367,17 +335,9 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, createCubeTextureOfZeroSize)
     {
-        const std::byte data[4 * 10 * 10] = {};
-        std::vector<CubeMipLevelData> mipLevelData = { CubeMipLevelData(sizeof(data), data, data, data, data, data, data) };
+        const std::vector<std::byte> data(4 * 10 * 10);
+        std::vector<CubeMipLevelData> mipLevelData = { {data, data, data, data, data, data} };
         TextureCube* texture = m_scene.createTextureCube(ETextureFormat::RGBA8, 0, mipLevelData, false, {}, "name");
-        EXPECT_EQ(nullptr, texture);
-    }
-
-    TEST_F(AResourceTestClient, createCubeTextureOfZeroDataSize)
-    {
-        const std::byte data[4 * 10 * 10] = {};
-        std::vector<CubeMipLevelData> mipLevelData = { CubeMipLevelData(0, data, data, data, data, data, data) };
-        TextureCube* texture = m_scene.createTextureCube(ETextureFormat::RGBA8, 10, mipLevelData, false, {}, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
@@ -390,8 +350,8 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, createCubeTextureWithoutName)
     {
-        const std::byte data[4 * 10 * 10] = {};
-        std::vector<CubeMipLevelData> mipLevelData = { CubeMipLevelData(sizeof(data), data, data, data, data, data, data) };
+        const std::vector<std::byte> data(4 * 10 * 10);
+        std::vector<CubeMipLevelData> mipLevelData = { {data, data, data, data, data, data} };
         TextureCube* texture = m_scene.createTextureCube(ETextureFormat::RGBA8, 10, mipLevelData, false, {}, {});
         ASSERT_TRUE(nullptr != texture);
         EXPECT_TRUE(texture->getName().empty());
@@ -399,51 +359,49 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, createCubeTextureRGBA_AndCheckTexels)
     {
-        const auto dataArray = make_byte_array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
-        const auto* data = dataArray.data();
-        std::vector<CubeMipLevelData> mipLevelData = { CubeMipLevelData(static_cast<uint32_t>(dataArray.size()), data, data, data, data, data, data) };
+        const auto data = make_byte_vector(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
+        std::vector<CubeMipLevelData> mipLevelData = { { data, data, data, data, data, data } };
         TextureCube* texture = m_scene.createTextureCube(ETextureFormat::RGBA8, 2, mipLevelData, false);
         ASSERT_TRUE(nullptr != texture);
         ramses::internal::ManagedResource res = getCreatedResource(texture->impl().getLowlevelResourceHash());
 
-        ASSERT_EQ(dataArray.size() * 6u, res->getDecompressedDataSize());
+        ASSERT_EQ(data.size() * 6u, res->getDecompressedDataSize());
         for (uint32_t i = 0u; i < 6u; ++i)
-            EXPECT_EQ(dataArray, res->getResourceData().span().subspan(i*dataArray.size(), dataArray.size()));
+            EXPECT_EQ(data, res->getResourceData().span().subspan(i* data.size(), data.size()));
     }
 
     TEST_F(AResourceTestClient, createCubeTextureRGB_AndCheckTexels)
     {
-        const auto dataArray = make_byte_array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
-        const auto* data = dataArray.data();
-        std::vector<CubeMipLevelData> mipLevelData = { CubeMipLevelData(static_cast<uint32_t>(dataArray.size()), data, data, data, data, data, data) };
+        const auto data = make_byte_vector(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
+        std::vector<CubeMipLevelData> mipLevelData = { { data, data, data, data, data, data } };
         TextureCube* texture = m_scene.createTextureCube(ETextureFormat::RGB8, 2, mipLevelData, false);
         ASSERT_TRUE(nullptr != texture);
         ramses::internal::ManagedResource res = getCreatedResource(texture->impl().getLowlevelResourceHash());
 
-        ASSERT_EQ(dataArray.size() * 6u, res->getDecompressedDataSize());
+        ASSERT_EQ(data.size() * 6u, res->getDecompressedDataSize());
         for (uint32_t i = 0u; i < 6u; ++i)
-            EXPECT_EQ(dataArray, res->getResourceData().span().subspan(i*dataArray.size(), dataArray.size()));
+            EXPECT_EQ(data, res->getResourceData().span().subspan(i* data.size(), data.size()));
     }
 
     TEST_F(AResourceTestClient, createCubeTextureRGBWithPerFaceDataAndMips_AndCheckTexels)
     {
-        const auto data0px = make_byte_array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
-        const auto data1px = make_byte_array(13, 14, 15);
-        const auto data0nx = make_byte_array(10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120);
-        const auto data1nx = make_byte_array(130, 140, 150);
-        const auto data0py = make_byte_array(11, 21, 31, 41, 51, 61, 71, 81, 91, 101, 111, 121);
-        const auto data1py = make_byte_array(131, 141, 151);
-        const auto data0ny = make_byte_array(12, 22, 32, 42, 52, 62, 72, 82, 92, 102, 112, 122);
-        const auto data1ny = make_byte_array(132, 142, 152);
-        const auto data0pz = make_byte_array(13, 23, 33, 43, 53, 63, 73, 83, 93, 103, 113, 123 );
-        const auto data1pz = make_byte_array(133, 143, 153);
-        const auto data0nz = make_byte_array(14, 24, 34, 44, 54, 64, 74, 84, 94, 104, 114, 124 );
-        const auto data1nz = make_byte_array(134, 144, 154);
+        const auto data0px = make_byte_vector(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
+        const auto data1px = make_byte_vector(13, 14, 15);
+        const auto data0nx = make_byte_vector(10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120);
+        const auto data1nx = make_byte_vector(130, 140, 150);
+        const auto data0py = make_byte_vector(11, 21, 31, 41, 51, 61, 71, 81, 91, 101, 111, 121);
+        const auto data1py = make_byte_vector(131, 141, 151);
+        const auto data0ny = make_byte_vector(12, 22, 32, 42, 52, 62, 72, 82, 92, 102, 112, 122);
+        const auto data1ny = make_byte_vector(132, 142, 152);
+        const auto data0pz = make_byte_vector(13, 23, 33, 43, 53, 63, 73, 83, 93, 103, 113, 123 );
+        const auto data1pz = make_byte_vector(133, 143, 153);
+        const auto data0nz = make_byte_vector(14, 24, 34, 44, 54, 64, 74, 84, 94, 104, 114, 124 );
+        const auto data1nz = make_byte_vector(134, 144, 154);
 
         std::vector<CubeMipLevelData> mipLevelData =
         {
-            CubeMipLevelData{ static_cast<uint32_t>(data0px.size()), data0px.data(), data0nx.data(), data0py.data(), data0ny.data(), data0pz.data(), data0nz.data() },
-            CubeMipLevelData{ static_cast<uint32_t>(data1px.size()), data1px.data(), data1nx.data(), data1py.data(), data1ny.data(), data1pz.data(), data1nz.data() }
+            CubeMipLevelData{ data0px, data0nx, data0py, data0ny, data0pz, data0nz },
+            CubeMipLevelData{ data1px, data1nx, data1py, data1ny, data1pz, data1nz }
         };
         const TextureCube* texture = m_scene.createTextureCube(ETextureFormat::RGB8, 2u, mipLevelData, false, {}, {});
         ASSERT_TRUE(nullptr != texture);
@@ -487,11 +445,12 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, createTextureCubeWithProvidedMipsButNotFullChain)
     {
-        const std::byte data[4 * 4 * 4] = {};
+        const std::vector<std::byte> data1(4 * 4 * 4);
+        const std::vector<std::byte> data2(2 * 2 * 4);
 
         std::vector<CubeMipLevelData> mipLevelData;
-        mipLevelData.emplace_back(static_cast<uint32_t>(sizeof(data)), data, data, data, data, data, data);
-        mipLevelData.emplace_back(2 * 2 * 4, data, data, data, data, data, data);
+        mipLevelData.emplace_back(CubeMipLevelData{ data1, data1, data1, data1, data1, data1 });
+        mipLevelData.emplace_back(CubeMipLevelData{ data2, data2, data2, data2, data2, data2 });
 
         TextureCube* texture = m_scene.createTextureCube(ETextureFormat::RGBA8, 4u, mipLevelData, false, {}, "name");
         EXPECT_NE(nullptr, texture);
@@ -499,22 +458,32 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, createTextureCubeWithMoreMipsThanExpected)
     {
-        const std::byte data[1] = {};
+        const std::vector<std::byte> data(1);
 
         std::vector<CubeMipLevelData> mipLevelData;
-        mipLevelData.emplace_back(static_cast<uint32_t>(sizeof(data)), data, data, data, data, data, data);
-        mipLevelData.emplace_back(static_cast<uint32_t>(sizeof(data)), data, data, data, data, data, data);
+        mipLevelData.emplace_back(CubeMipLevelData{ data, data, data, data, data, data });
+        mipLevelData.emplace_back(CubeMipLevelData{ data, data, data, data, data, data });
 
         TextureCube* texture = m_scene.createTextureCube(ETextureFormat::RGBA8, 1u, mipLevelData, false, {}, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
-    TEST_F(AResourceTestClient, createTextureCubeWithNullMipMapData)
+    TEST_F(AResourceTestClient, createTextureCubeWithEmptyMipMapData)
     {
-        const std::byte data[4 * 4 * 4] = {};
+        const std::vector<std::byte> data(4 * 4 * 4);
 
-        std::vector<CubeMipLevelData> mipLevelData;
-        mipLevelData.emplace_back(static_cast<uint32_t>(sizeof(data)), data, data, nullptr, data, data, data);
+        std::vector<CubeMipLevelData> mipLevelData{ { data, data, {}, data, data, data } };
+
+        TextureCube* texture = m_scene.createTextureCube(ETextureFormat::RGBA8, 4u, mipLevelData, false, {}, "name");
+        EXPECT_EQ(nullptr, texture);
+    }
+
+    TEST_F(AResourceTestClient, createTextureCubeWithMipMapDataOfDiffSize)
+    {
+        const std::vector<std::byte> data(4 * 4 * 4);
+        const std::vector<std::byte> data1(1);
+
+        std::vector<CubeMipLevelData> mipLevelData{ { data, data, data1, data, data, data } };
 
         TextureCube* texture = m_scene.createTextureCube(ETextureFormat::RGBA8, 4u, mipLevelData, false, {}, "name");
         EXPECT_EQ(nullptr, texture);
@@ -522,29 +491,19 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, createTextureCubeWithZeroSizeMipMapData)
     {
-        const std::byte data[4 * 4 * 4] = {};
-
-        std::vector<CubeMipLevelData> mipLevelData;
-        mipLevelData.emplace_back(0u, data, data, data, data, data, data);
+        std::vector<CubeMipLevelData> mipLevelData{ { {}, {}, {}, {}, {}, {} } };
 
         TextureCube* texture = m_scene.createTextureCube(ETextureFormat::RGBA8, 4u, mipLevelData, false, {}, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
-    TEST_F(AResourceTestClient, createTextureCubeWithNullOrZeroSizeLowerMipMapData)
+    TEST_F(AResourceTestClient, createTextureCubeWithZeroSizeLowerMipMapData)
     {
-        const std::byte data[2 * 2 * 4] = {};
+        const std::vector<std::byte> data(2 * 2 * 4);
         {
             std::vector<CubeMipLevelData> mipLevelData;
-            mipLevelData.emplace_back(static_cast<uint32_t>(sizeof(data)), data, data, data, data, data, data);
-            mipLevelData.emplace_back(0u, data, data, data, data, data, data);
-            TextureCube* texture = m_scene.createTextureCube(ETextureFormat::RGBA8, 2u, mipLevelData, false, {}, "name");
-            EXPECT_EQ(nullptr, texture);
-        }
-        {
-            std::vector<CubeMipLevelData> mipLevelData;
-            mipLevelData.emplace_back(static_cast<uint32_t>(sizeof(data)), data, data, data, data, data, data);
-            mipLevelData.emplace_back(static_cast<uint32_t>(sizeof(data)), data, data, data, data, nullptr, data);
+            mipLevelData.emplace_back(CubeMipLevelData{ data, data, data, data, data, data });
+            mipLevelData.emplace_back(CubeMipLevelData{ {}, {}, {}, {}, {}, {} });
             TextureCube* texture = m_scene.createTextureCube(ETextureFormat::RGBA8, 2u, mipLevelData, false, {}, "name");
             EXPECT_EQ(nullptr, texture);
         }
@@ -552,10 +511,11 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, createTextureCubeWithWrongSizeOfLowerMipMapData)
     {
-        const std::byte data[2 * 2 * 4] = {};
+        const std::vector<std::byte> data(2 * 2 * 4);
+        const std::vector<std::byte> data2(1 * 1 * 2);
         std::vector<CubeMipLevelData> mipLevelData;
-        mipLevelData.emplace_back(2 * 2 * 4, data, data, data, data, data, data);
-        mipLevelData.emplace_back(1 * 1 * 2, data, data, data, data, data, data);
+        mipLevelData.emplace_back(CubeMipLevelData{ data, data, data, data, data, data });
+        mipLevelData.emplace_back(CubeMipLevelData{ data2, data2, data2, data2, data2, data2 });
         TextureCube* texture = m_scene.createTextureCube(ETextureFormat::RGBA8, 2u, mipLevelData, false, {}, "name");
         EXPECT_EQ(nullptr, texture);
     }
@@ -566,8 +526,7 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, create3DTextureAndDestroyManually)
     {
-        const uint8_t data[4 * 10 * 12 * 14] = {};
-        const std::vector<MipLevelData> mipLevelData{ MipLevelData(static_cast<uint32_t>(sizeof(data)), data) };
+        const std::vector<MipLevelData> mipLevelData{ std::vector<std::byte>(4 * 10 * 12 * 14) };
         Texture3D* texture = m_scene.createTexture3D(ETextureFormat::RGBA8, 10, 12, 14, mipLevelData, false, "name");
         ASSERT_TRUE(nullptr != texture);
         EXPECT_TRUE(m_scene.destroy(*texture));
@@ -575,18 +534,17 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, create3DTextureWithMipMaps)
     {
-        const uint8_t data[2 * 2 * 2 * 4] = {};
+        const std::vector<std::byte> data(2 * 2 * 2 * 4);
         std::vector<MipLevelData> mipLevelData;
-        mipLevelData.emplace_back(2 * 2 * 2 * 4, data);
-        mipLevelData.emplace_back(1 * 1 * 1 * 4, data);
+        mipLevelData.emplace_back(data);
+        mipLevelData.emplace_back(data.begin(), data.begin() + 1 * 1 * 1 * 4);
         Texture3D* texture = m_scene.createTexture3D(ETextureFormat::RGBA8, 2u, 2u, 2u, mipLevelData, false, "name");
         ASSERT_TRUE(nullptr != texture);
     }
 
     TEST_F(AResourceTestClient, create3DTextureAndCheckWidthHeightDepth)
     {
-        const uint8_t data[4 * 10 * 12 * 14] = {};
-        const std::vector<MipLevelData> mipLevelData{ MipLevelData(static_cast<uint32_t>(sizeof(data)), data) };
+        const std::vector<MipLevelData> mipLevelData{ std::vector<std::byte>(4 * 10 * 12 * 14) };
         Texture3D* texture = m_scene.createTexture3D(ETextureFormat::RGBA8, 10, 12, 14, mipLevelData, false, "name");
         ASSERT_TRUE(nullptr != texture);
         EXPECT_EQ(10u, texture->getWidth());
@@ -596,8 +554,7 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, create3DTextureAndCheckFormat)
     {
-        const uint8_t data[3 * 10 * 12 * 14] = {};
-        const std::vector<MipLevelData> mipLevelData{ MipLevelData(static_cast<uint32_t>(sizeof(data)), data) };
+        const std::vector<MipLevelData> mipLevelData{ std::vector<std::byte>(3 * 10 * 12 * 14) };
         Texture3D* texture = m_scene.createTexture3D(ETextureFormat::RGB8, 10, 12, 14, mipLevelData, false, "name");
         ASSERT_TRUE(nullptr != texture);
         EXPECT_EQ(ETextureFormat::RGB8, texture->getTextureFormat());
@@ -605,8 +562,8 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, create3DTextureOfZeroSize)
     {
-        const uint8_t data[4 * 10 * 12 * 14] = {};
-        const std::vector<MipLevelData> mipLevelData{ MipLevelData(static_cast<uint32_t>(sizeof(data)), data) };
+        const std::vector<std::byte> data(4 * 10 * 12 * 14);
+        const std::vector<MipLevelData> mipLevelData{ data };
         Texture3D* texture = m_scene.createTexture3D(ETextureFormat::RGBA8, 0, 0, 0, mipLevelData, false, "name");
         EXPECT_EQ(nullptr, texture);
     }
@@ -620,8 +577,7 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, create3DTextureWithoutName)
     {
-        const uint8_t data[4 * 10 * 12 * 14] = {};
-        const std::vector<MipLevelData> mipLevelData{ MipLevelData(static_cast<uint32_t>(sizeof(data)), data) };
+        const std::vector<MipLevelData> mipLevelData{ std::vector<std::byte>(4 * 10 * 12 * 14) };
         Texture3D* texture = m_scene.createTexture3D(ETextureFormat::RGBA8, 10, 12, 14, mipLevelData, false, {});
         ASSERT_TRUE(nullptr != texture);
         EXPECT_TRUE(texture->getName().empty());
@@ -629,8 +585,7 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, create3DTextureCheckHashIsValid)
     {
-        const uint8_t data[4 * 10 * 12 * 14] = {};
-        const std::vector<MipLevelData> mipLevelData{ MipLevelData(static_cast<uint32_t>(sizeof(data)), data) };
+        const std::vector<MipLevelData> mipLevelData{ std::vector<std::byte>(4 * 10 * 12 * 14) };
         Texture3D* texture = m_scene.createTexture3D(ETextureFormat::RGBA8, 10, 12, 14, mipLevelData, false, "name");
         ASSERT_TRUE(nullptr != texture);
 
@@ -640,16 +595,16 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, create3DTextureCheckHashIsUnique)
     {
-        uint8_t data[4 * 10 * 12 * 14] = {};
-        data[20] = 48;
-        const std::vector<MipLevelData> mipLevelData1{ MipLevelData(static_cast<uint32_t>(sizeof(data)), data) };
+        std::vector<std::byte> data(4 * 10 * 12 * 14);
+        data[20] = std::byte{ 48 };
+        const std::vector<MipLevelData> mipLevelData1{ data };
         Texture3D* texture = m_scene.createTexture3D(ETextureFormat::RGBA8, 10, 12, 14, mipLevelData1, false, "name");
         ASSERT_TRUE(nullptr != texture);
 
         const ramses::internal::ResourceContentHash hash = texture->impl().getLowlevelResourceHash();
-        uint8_t data2[4 * 10 * 12 * 14] = {};
-        data[20] = 42;
-        const std::vector<MipLevelData> mipLevelData2{ MipLevelData(sizeof(data2), data2) };
+        std::vector<std::byte> data2(4 * 10 * 12 * 14);
+        data[20] = std::byte{ 42 };
+        const std::vector<MipLevelData> mipLevelData2{ data2 };
         Texture3D* texture2 = m_scene.createTexture3D(ETextureFormat::RGBA8, 10, 12, 14, mipLevelData2, false, "name");
         ASSERT_TRUE(nullptr != texture2);
 
@@ -659,8 +614,8 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, create3DTextureRGBA_AndCheckTexels)
     {
-        const auto data = make_byte_array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
-        const std::vector<MipLevelData> mipLevelData{ MipLevelData(static_cast<uint32_t>(data.size()), data.data()) };
+        const auto data = make_byte_vector(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
+        const std::vector<MipLevelData> mipLevelData{ data };
         Texture3D* texture = m_scene.createTexture3D(ETextureFormat::RGBA8, 2, 1, 2, mipLevelData, false, {});
 
         ASSERT_TRUE(nullptr != texture);
@@ -672,8 +627,8 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, create3DTextureRGB_AndCheckTexels)
     {
-        const auto data = make_byte_array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
-        const std::vector<MipLevelData> mipLevelData{ MipLevelData(static_cast<uint32_t>(data.size()), data.data()) };
+        const auto data = make_byte_vector(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
+        const std::vector<MipLevelData> mipLevelData{ MipLevelData(data) };
         Texture3D* texture = m_scene.createTexture3D(ETextureFormat::RGB8, 2, 1, 2, mipLevelData, false, {});
 
         ASSERT_TRUE(nullptr != texture);
@@ -685,9 +640,9 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, create3DTextureRGBWithMips_AndCheckTexels)
     {
-        const auto data0 = make_byte_array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120);
-        const auto data1 = make_byte_array(13, 14, 15);
-        const std::vector<MipLevelData> mipLevelData = { MipLevelData{ static_cast<uint32_t>(data0.size()), data0.data() }, MipLevelData{ static_cast<uint32_t>(data1.size()), data1.data() } };
+        const auto data0 = make_byte_vector(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120);
+        const auto data1 = make_byte_vector(13, 14, 15);
+        const std::vector<MipLevelData> mipLevelData = { data0, data1 };
         const Texture3D* texture = m_scene.createTexture3D(ETextureFormat::RGB8, 2u, 2u, 2u, mipLevelData, false, {});
         ASSERT_TRUE(nullptr != texture);
 
@@ -700,11 +655,11 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, createTexture3DWithProvidedMipsButNotFullChain)
     {
-        const uint8_t data[4 * 4 * 4 * 4] = {};
+        const std::vector<std::byte> data(4 * 4 * 4 * 4);
 
         std::vector<MipLevelData> mipLevelData;
-        mipLevelData.emplace_back(static_cast<uint32_t>(sizeof(data)), data);
-        mipLevelData.emplace_back(2 * 2 * 2 * 4, data);
+        mipLevelData.emplace_back(data);
+        mipLevelData.emplace_back(data.begin(), data.begin() + 2 * 2 * 2 * 4);
 
         Texture3D* texture = m_scene.createTexture3D(ETextureFormat::RGBA8, 4u, 4u, 4u, mipLevelData, false, "name");
         EXPECT_NE(nullptr, texture);
@@ -712,75 +667,42 @@ namespace ramses::internal
 
     TEST_F(AResourceTestClient, createTexture3DWithMoreMipsThanExpected)
     {
-        const uint8_t data[1] = {};
+        const std::vector<std::byte> data(1);
 
         std::vector<MipLevelData> mipLevelData;
-        mipLevelData.emplace_back(static_cast<uint32_t>(sizeof(data)), data);
-        mipLevelData.emplace_back(static_cast<uint32_t>(sizeof(data)), data);
+        mipLevelData.emplace_back(data);
+        mipLevelData.emplace_back(data);
 
         Texture3D* texture = m_scene.createTexture3D(ETextureFormat::RGBA8, 1u, 1u, 1u, mipLevelData, false, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
-    TEST_F(AResourceTestClient, create3DTextureWithNullMipMapData)
-    {
-        const uint8_t data[2 * 2 * 2 * 4] = {};
-        const uint8_t* dataNullPtr{nullptr};
-
-        std::vector<MipLevelData> mipLevelData;
-        mipLevelData.emplace_back(static_cast<uint32_t>(sizeof(data)), dataNullPtr);
-
-        Texture3D* texture = m_scene.createTexture3D(ETextureFormat::RGBA8, 2u, 2u, 2u, mipLevelData, false, "name");
-        EXPECT_EQ(nullptr, texture);
-    }
-
     TEST_F(AResourceTestClient, create3DTextureWithZeroSizeMipMapData)
     {
-        const uint8_t data[2 * 2 * 2 * 4] = {};
-
-        std::vector<MipLevelData> mipLevelData;
-        mipLevelData.emplace_back(0, data);
+        std::vector<MipLevelData> mipLevelData{ {} };
 
         Texture3D* texture = m_scene.createTexture3D(ETextureFormat::RGBA8, 2u, 2u, 2u, mipLevelData, false, "name");
         EXPECT_EQ(nullptr, texture);
     }
 
-    TEST_F(AResourceTestClient, create3DTextureWithNullOrZeroSizeLowerMipMapData)
+    TEST_F(AResourceTestClient, create3DTextureWithZeroSizeLowerMipMapData)
     {
-        const uint8_t data[2 * 2 * 2 * 4] = {};
-        const uint8_t* dataNullPtr{nullptr};
+        const std::vector<std::byte> data(2 * 2 * 2 * 4);
         {
             std::vector<MipLevelData> mipLevelData;
-            mipLevelData.emplace_back(static_cast<uint32_t>(sizeof(data)), data);
-            mipLevelData.emplace_back(0u, data);
+            mipLevelData.emplace_back(data);
+            mipLevelData.emplace_back(0u);
             Texture3D* texture = m_scene.createTexture3D(ETextureFormat::RGBA8, 2u, 2u, 2u, mipLevelData, false, "name");
             EXPECT_EQ(nullptr, texture);
         }
-        {
-            std::vector<MipLevelData> mipLevelData;
-            mipLevelData.emplace_back(static_cast<uint32_t>(sizeof(data)), data);
-            mipLevelData.emplace_back(static_cast<uint32_t>(sizeof(data)), dataNullPtr);
-            Texture3D* texture = m_scene.createTexture3D(ETextureFormat::RGBA8, 2u, 2u, 2u, mipLevelData, false, "name");
-            EXPECT_EQ(nullptr, texture);
-        }
-    }
-
-    TEST_F(AResourceTestClient, create3DTextureWithWrongSizeOfLowerMipMapData)
-    {
-        const uint8_t data[2 * 2 * 2 * 4] = {};
-        std::vector<MipLevelData> mipLevelData;
-        mipLevelData.emplace_back(2 * 2 * 2 * 4, data);
-        mipLevelData.emplace_back(1 * 1 * 1 * 2, data);
-        Texture3D* texture = m_scene.createTexture3D(ETextureFormat::RGBA8, 2u, 2u, 2u, mipLevelData, false, "name");
-        EXPECT_EQ(nullptr, texture);
     }
 
     TEST_F(AResourceTestClient, create3DTextureWithCompressedFormatCanBeCreatedWithArbitraryNonZeroDataSize)
     {
-        const uint8_t data[2 * 2 * 2 * 4] = {};
+        const std::vector<std::byte> data(2 * 2 * 2 * 4);
         std::vector<MipLevelData> mipLevelData;
-        mipLevelData.emplace_back(1, data);
-        mipLevelData.emplace_back(1, data);
+        mipLevelData.emplace_back(data.begin(), data.begin() + 1);
+        mipLevelData.emplace_back(data.begin(), data.begin() + 1);
         Texture3D* texture = m_scene.createTexture3D(ETextureFormat::ASTC_RGBA_4x4, 2u, 2u, 2u, mipLevelData, false, "name");
         EXPECT_TRUE(nullptr != texture);
     }

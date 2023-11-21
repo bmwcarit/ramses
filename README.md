@@ -1,10 +1,10 @@
 <!-- RAMSES -->
 
 # Table of Contents
-* [What is RAMSES](#what-is-ramses)
-* [Obtaining the source code](#obtaining-the-source-code)
-* [Building and testing](#building-and-testing)
-* [License](#license)
+* <project:#what-is-ramses>
+* <project:#obtaining-the-source-code>
+* <project:#build-instructions>
+* <project:#license>
 
 # What is RAMSES
 
@@ -46,7 +46,7 @@ Building RAMSES on Linux with docker:
 We prefer to build RAMSES in Docker because it abstracts the dependency installation
 and the CMake invocations away from the user. Docker is installed slightly differently
 on different distros, check the docker manual for your distro. The instructions below
-are for Ubuntu 18.04 LTS:
+are for Ubuntu 20.04 LTS:
 
 ```
 apt install docker.io

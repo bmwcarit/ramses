@@ -173,6 +173,18 @@ namespace ramses
         void setPeriodicLogInterval(std::chrono::seconds interval);
 
         /**
+        * @brief Sets the logging instance name.
+        * All logs produced by Ramses have this format:
+        *   "$instanceName.$threadName[.$additionalId]: $logMessage"
+        * The instance name can be set to an arbitrary name using this method, this can be useful to distinguish logs
+        * when running multiple instances of Ramses framework in same process, thus sharing the logging system.
+        * Note that this will only work when multiple Ramses framework instances run in separate threads.
+        *
+        * @param[in] instanceName logging instance name, default is "R".
+        */
+        void setLoggingInstanceName(std::string_view instanceName);
+
+        /**
         * @brief Sets the participant identifier
         *
         * The guid identifies the ramses participant in a distributed rendering setup.

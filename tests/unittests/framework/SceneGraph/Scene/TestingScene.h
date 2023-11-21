@@ -138,7 +138,8 @@ namespace ramses::internal
             scene.allocateCamera(ECameraProjectionType::Orthographic, cameraNode, cameraDataInstance, orthographicCamera);
 
             scene.allocateRenderTarget(renderTarget);
-            scene.allocateRenderBuffer({ 23u, 42u, EPixelStorageFormat::RGBA8, ERenderBufferAccessMode::ReadWrite, 3u }, renderBuffer);
+            scene.allocateRenderBuffer({ 1u, 2u, EPixelStorageFormat::RGBA8, ERenderBufferAccessMode::ReadWrite, 0u }, renderBuffer);
+            scene.setRenderBufferProperties(renderBuffer, 23u, 42u, 3u);
             scene.addRenderTargetRenderBuffer(renderTarget, renderBuffer);
 
             scene.allocateRenderGroup(0u, 0u, renderGroup);

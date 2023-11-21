@@ -24,7 +24,7 @@ namespace ramses::internal
 
     IVIControllerScreen::~IVIControllerScreen()
     {
-        LOG_INFO(CONTEXT_RENDERER, "IVIControllerSurface::~IVIControllerSurface screen-id: " << m_screenId);
+        LOG_INFO(CONTEXT_RENDERER, "IVIControllerSurface::~IVIControllerSurface screen-id: {}", m_screenId);
         ivi_controller_screen_destroy(&m_controllerScreen);
     }
 

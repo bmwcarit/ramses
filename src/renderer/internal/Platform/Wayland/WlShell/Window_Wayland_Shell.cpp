@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "internal/Platform/Wayland/WlShell/Window_Wayland_Shell.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {

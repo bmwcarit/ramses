@@ -434,7 +434,7 @@ namespace ramses::internal
             return m_children[index].get();
         }
 
-        LOG_ERROR_P(CONTEXT_CLIENT, "No child property with index '{}' found in '{}'", index, m_typeData.name);
+        LOG_ERROR(CONTEXT_CLIENT, "No child property with index '{}' found in '{}'", index, m_typeData.name);
         return nullptr;
     }
 
@@ -445,7 +445,7 @@ namespace ramses::internal
             return m_children[index].get();
         }
 
-        LOG_ERROR_P(CONTEXT_CLIENT, "No child property with index '{}' found in '{}'", index, m_typeData.name);
+        LOG_ERROR(CONTEXT_CLIENT, "No child property with index '{}' found in '{}'", index, m_typeData.name);
         return nullptr;
     }
 
@@ -464,7 +464,7 @@ namespace ramses::internal
         {
             return it->get();
         }
-        LOG_ERROR_P(CONTEXT_CLIENT, "No child property with name '{}' found in '{}'", name, m_typeData.name);
+        LOG_ERROR(CONTEXT_CLIENT, "No child property with name '{}' found in '{}'", name, m_typeData.name);
         return nullptr;
     }
 
@@ -509,7 +509,7 @@ namespace ramses::internal
             assert(std::holds_alternative<T>(m_value));
             return std::get<T>(m_value);
         }
-        LOG_ERROR_P(CONTEXT_CLIENT, "Invalid type '{}' when accessing property '{}', correct type is '{}'",
+        LOG_ERROR(CONTEXT_CLIENT, "Invalid type '{}' when accessing property '{}', correct type is '{}'",
             GetLuaPrimitiveTypeName(PropertyTypeToEnum<T>::TYPE), m_typeData.name, GetLuaPrimitiveTypeName(m_typeData.type));
         return std::nullopt;
     }
@@ -530,25 +530,25 @@ namespace ramses::internal
     {
         if (m_semantics == EPropertySemantics::ScriptOutput)
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "Cannot set property '{}' which is an output.", m_typeData.name);
+            LOG_ERROR(CONTEXT_CLIENT, "Cannot set property '{}' which is an output.", m_typeData.name);
             return false;
         }
 
         if (m_incomingLink.property != nullptr)
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "Property '{}' is currently linked (to property '{}'). Unlink it first before setting its value!", m_typeData.name, m_incomingLink.property->getName());
+            LOG_ERROR(CONTEXT_CLIENT, "Property '{}' is currently linked (to property '{}'). Unlink it first before setting its value!", m_typeData.name, m_incomingLink.property->getName());
             return false;
         }
 
         if (!TypeUtils::IsPrimitiveType(m_typeData.type))
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "Property '{}' is not a primitive type, can't set its value directly!", m_typeData.name);
+            LOG_ERROR(CONTEXT_CLIENT, "Property '{}' is not a primitive type, can't set its value directly!", m_typeData.name);
             return false;
         }
 
         if (value.index() != m_value.index())
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "Invalid type when setting property '{}', correct type is '{}'", m_typeData.name, GetLuaPrimitiveTypeName(m_typeData.type));
+            LOG_ERROR(CONTEXT_CLIENT, "Invalid type when setting property '{}', correct type is '{}'", m_typeData.name, GetLuaPrimitiveTypeName(m_typeData.type));
             return false;
         }
 
@@ -561,7 +561,7 @@ namespace ramses::internal
             const auto int64Value = std::get<int64_t>(value);
             if (int64Value > maxIntegerAsDouble || int64Value < -maxIntegerAsDouble)
             {
-                LOG_ERROR_P(CONTEXT_CLIENT, "Invalid value when setting property '{}', Lua cannot handle full range of 64-bit integer, trying to set '{}' which is out of this range!",
+                LOG_ERROR(CONTEXT_CLIENT, "Invalid value when setting property '{}', Lua cannot handle full range of 64-bit integer, trying to set '{}' which is out of this range!",
                     m_typeData.name, int64Value);
                 return false;
             }

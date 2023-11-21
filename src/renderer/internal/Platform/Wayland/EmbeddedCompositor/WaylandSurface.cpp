@@ -15,7 +15,7 @@
 #include "internal/Platform/Wayland/EmbeddedCompositor/IWaylandBuffer.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/WaylandCallbackResource.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/WaylandBufferResource.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include <cassert>
 
 namespace ramses::internal
@@ -24,18 +24,18 @@ namespace ramses::internal
     : m_compositor(compositor)
     , m_clientCredentials(client.getCredentials())
     {
-        LOG_DEBUG(CONTEXT_RENDERER, "WaylandSurface::WaylandSurface  " << m_clientCredentials);
+        LOG_DEBUG(CONTEXT_RENDERER, "WaylandSurface::WaylandSurface  {}", m_clientCredentials);
 
         m_surfaceResource = client.resourceCreate(&wl_surface_interface, version, id);
         if (m_surfaceResource != nullptr)
         {
-            LOG_INFO(CONTEXT_RENDERER, "WaylandSurface::WaylandSurface: created successfully  " << m_clientCredentials);
+            LOG_INFO(CONTEXT_RENDERER, "WaylandSurface::WaylandSurface: created successfully  {}", m_clientCredentials);
 
             m_surfaceResource->setImplementation(&m_surfaceInterface, this, ResourceDestroyedCallback);
         }
         else
         {
-            LOG_ERROR(CONTEXT_RENDERER, "WaylandSurface::WaylandSurface Could not create wayland resource  " << m_clientCredentials);
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandSurface::WaylandSurface Could not create wayland resource  {}", m_clientCredentials);
             client.postNoMemory();
         }
 
@@ -44,7 +44,7 @@ namespace ramses::internal
 
     WaylandSurface::~WaylandSurface()
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandSurface::~WaylandSurface: wayland surface destroyed  " << m_clientCredentials);
+        LOG_INFO(CONTEXT_RENDERER, "WaylandSurface::~WaylandSurface: wayland surface destroyed  {}", m_clientCredentials);
 
         unsetBufferFromSurface();
         m_compositor.removeWaylandSurface(*this);
@@ -97,7 +97,7 @@ namespace ramses::internal
             const auto width = res.getWidth();
             const auto height = res.getHeight();
             auto* wlres = res.getLowLevelHandle();
-            LOG_COMMON_RP(CONTEXT_RENDERER, level, "WaylandSurface::surfaceAttach{}: {} shm:{} x:{} y:{} w:{} h:{} res:{}",
+            LOG_COMMON(CONTEXT_RENDERER, level, "WaylandSurface::surfaceAttach{}: {} shm:{} x:{} y:{} w:{} h:{} res:{}",
                           stage, getIviSurfaceId(), isShm, x, y, width, height, static_cast<void*>(wlres));
         }
     }
@@ -207,8 +207,7 @@ namespace ramses::internal
         LOG_TRACE(CONTEXT_RENDERER, "WaylandSurface::surfaceDetach");
 
         LOG_TRACE(CONTEXT_RENDERER,
-                  "WaylandSurface::surfaceAttach: remove current pending buffer from surface with title "
-                      << getSurfaceTitle() << ", " << getIviSurfaceId());
+                  "WaylandSurface::surfaceAttach: remove current pending buffer from surface with title {}, {}", getSurfaceTitle(), getIviSurfaceId());
 
         m_pendingBuffer            = nullptr;
         m_removeBufferOnNextCommit = true;
@@ -253,7 +252,7 @@ namespace ramses::internal
         LOG_TRACE(CONTEXT_RENDERER, "WaylandSurface::surfaceCommit");
 
         LOG_TRACE(CONTEXT_RENDERER,
-                  "WaylandSurface::surfaceCommit: handling commit message for surface " << getIviSurfaceId());
+                  "WaylandSurface::surfaceCommit: handling commit message for surface {}", getIviSurfaceId());
 
         // Transfers pending callbacks to list of frame_callbacks.
         for(const auto& callback : m_pendingCallbacks)
@@ -265,7 +264,7 @@ namespace ramses::internal
         if (m_pendingBuffer)
         {
             LOG_TRACE(CONTEXT_RENDERER,
-                      "WaylandSurface::surfaceCommit: new texture data for surface " << getIviSurfaceId());
+                      "WaylandSurface::surfaceCommit: new texture data for surface {}", getIviSurfaceId());
             setBufferToSurface(*m_pendingBuffer);
             m_pendingBuffer = nullptr;
         }
@@ -275,8 +274,8 @@ namespace ramses::internal
             {
                 LOG_TRACE(
                     CONTEXT_RENDERER,
-                    "WaylandSurface::surfaceCommit: remove buffer from surface " << getIviSurfaceId()
-                        << " because triggered by earlier empty attachsurface");
+                    "WaylandSurface::surfaceCommit: remove buffer from surface {} because triggered by earlier empty attachsurface",
+                    getIviSurfaceId());
                 unsetBufferFromSurface();
             }
         }
@@ -424,7 +423,7 @@ namespace ramses::internal
         else
         {
             LOG_TRACE(CONTEXT_RENDERER,
-                      "WaylandSurface::setBufferToSurface client provides content for surface " << getIviSurfaceId());
+                      "WaylandSurface::setBufferToSurface client provides content for surface {}", getIviSurfaceId());
         }
 
         setWaylandBuffer(&buffer);
@@ -433,7 +432,7 @@ namespace ramses::internal
     void WaylandSurface::unsetBufferFromSurface()
     {
         LOG_TRACE(CONTEXT_RENDERER,
-                  "WaylandSurface::unsetBufferFromSurface: removing buffer used for surface " << getIviSurfaceId());
+                  "WaylandSurface::unsetBufferFromSurface: removing buffer used for surface {}", getIviSurfaceId());
 
         if (m_buffer)
         {
@@ -475,7 +474,7 @@ namespace ramses::internal
         if (m_buffer == &buffer)
         {
             LOG_TRACE(CONTEXT_RENDERER,
-                      "WaylandSurface::bufferDestroyed(): destroying buffer for surface: " << getIviSurfaceId());
+                      "WaylandSurface::bufferDestroyed(): destroying buffer for surface: {}", getIviSurfaceId());
 
             unsetBufferFromSurface();
         }
@@ -483,7 +482,7 @@ namespace ramses::internal
         if (m_pendingBuffer == &buffer)
         {
             LOG_TRACE(CONTEXT_RENDERER,
-                      "WaylandSurface::bufferDestroyed(): destroying pending buffer for surface: " << getIviSurfaceId());
+                      "WaylandSurface::bufferDestroyed(): destroying pending buffer for surface: {}", getIviSurfaceId());
             m_pendingBuffer = nullptr;
         }
     }

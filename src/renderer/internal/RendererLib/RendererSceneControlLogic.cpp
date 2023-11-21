@@ -9,7 +9,7 @@
 #include "internal/RendererLib/RendererSceneControlLogic.h"
 #include "internal/RendererLib/IRendererSceneStateControl.h"
 #include "internal/RendererLib/RendererEvent.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {
@@ -98,7 +98,7 @@ namespace ramses::internal
             case ESceneStateInternal::Mapped:
             case ESceneStateInternal::MappedAndAssigned:
             case ESceneStateInternal::Rendered:
-                LOG_INFO(CONTEXT_RENDERER, "RendererSceneControlLogic initiating subscribe to scene with id: " << sceneId);
+                LOG_INFO(CONTEXT_RENDERER, "RendererSceneControlLogic initiating subscribe to scene with id: {}", sceneId);
                 m_sceneStateControl.handleSceneSubscriptionRequest(sceneId);
                 sceneInfo.lastCommandWaitigForReply = ESceneStateCommand::Subscribe;
                 break;
@@ -116,13 +116,13 @@ namespace ramses::internal
             case ESceneStateInternal::Rendered:
             {
                 assert(m_scenesInfo.count(sceneId) > 0);
-                LOG_INFO(CONTEXT_RENDERER, "RendererSceneControlLogic initiating mapping of scene " << sceneId);
+                LOG_INFO(CONTEXT_RENDERER, "RendererSceneControlLogic initiating mapping of scene {}", sceneId);
                 m_sceneStateControl.handleSceneMappingRequest(sceneId);
                 sceneInfo.lastCommandWaitigForReply = ESceneStateCommand::Map;
                 break;
             }
             case ESceneStateInternal::Published:
-                LOG_INFO(CONTEXT_RENDERER, "RendererSceneControlLogic initiating unsubscribe of scene with id: " << sceneId);
+                LOG_INFO(CONTEXT_RENDERER, "RendererSceneControlLogic initiating unsubscribe of scene with id: {}", sceneId);
                 m_sceneStateControl.handleSceneUnsubscriptionRequest(sceneId, false);
                 sceneInfo.lastCommandWaitigForReply = ESceneStateCommand::Unsubscribe;
                 break;
@@ -140,7 +140,7 @@ namespace ramses::internal
                 break;
             case ESceneStateInternal::Subscribed:
             case ESceneStateInternal::Published:
-                LOG_INFO(CONTEXT_RENDERER, "RendererSceneControlLogic initiating unmap of scene with id: " << sceneId);
+                LOG_INFO(CONTEXT_RENDERER, "RendererSceneControlLogic initiating unmap of scene with id: {}", sceneId);
                 m_sceneStateControl.handleSceneUnmappingRequest(sceneId);
                 sceneInfo.lastCommandWaitigForReply = ESceneStateCommand::Unmap;
                 break;
@@ -154,13 +154,13 @@ namespace ramses::internal
             switch (targetSceneState)
             {
             case ESceneStateInternal::Rendered:
-                LOG_INFO(CONTEXT_RENDERER, "RendererSceneControlLogic initiating show of scene with id: " << sceneId);
+                LOG_INFO(CONTEXT_RENDERER, "RendererSceneControlLogic initiating show of scene with id: {}", sceneId);
                 m_sceneStateControl.handleSceneShowRequest(sceneId);
                 sceneInfo.lastCommandWaitigForReply = ESceneStateCommand::Show;
                 break;
             case ESceneStateInternal::Subscribed:
             case ESceneStateInternal::Published:
-                LOG_INFO(CONTEXT_RENDERER, "RendererSceneControlLogic initiating unmap of scene with id: " << sceneId);
+                LOG_INFO(CONTEXT_RENDERER, "RendererSceneControlLogic initiating unmap of scene with id: {}", sceneId);
                 m_sceneStateControl.handleSceneUnmappingRequest(sceneId);
                 sceneInfo.lastCommandWaitigForReply = ESceneStateCommand::Unmap;
                 break;
@@ -176,7 +176,7 @@ namespace ramses::internal
             case ESceneStateInternal::MappedAndAssigned:
             case ESceneStateInternal::Subscribed:
             case ESceneStateInternal::Published:
-                LOG_INFO(CONTEXT_RENDERER, "RendererSceneControlLogic initiating hide of scene with id: " << sceneId);
+                LOG_INFO(CONTEXT_RENDERER, "RendererSceneControlLogic initiating hide of scene with id: {}", sceneId);
                 m_sceneStateControl.handleSceneHideRequest(sceneId);
                 sceneInfo.lastCommandWaitigForReply = ESceneStateCommand::Hide;
                 break;
@@ -211,7 +211,7 @@ namespace ramses::internal
         const RendererSceneState newState = GetSceneStateFromInternal(state);
         sceneInfo.currentState = state;
 
-        LOG_INFO(CONTEXT_RENDERER, "RendererSceneControlLogic received scene state change: scene " << sceneId << " is in state " << EnumToString(newState) << " (internal " << int(state) << ")");
+        LOG_INFO(CONTEXT_RENDERER, "RendererSceneControlLogic received scene state change: scene {} is in state {} (internal {})", sceneId, EnumToString(newState), int(state));
         if (currState != newState)
         {
             LOG_INFO_F(CONTEXT_RENDERER, ([&](StringOutputStream& sos)
@@ -245,7 +245,7 @@ namespace ramses::internal
         //another request, other than display manager, or broken state
         if (getLastSceneStateCommandWaitingForReply(sceneId) != ESceneStateCommand::Subscribe)
         {
-            LOG_WARN(CONTEXT_RENDERER, "RendererSceneControlLogic - received subscription event but did not ask for one, ignoring unexpected state change event for scene " << sceneId);
+            LOG_WARN(CONTEXT_RENDERER, "RendererSceneControlLogic - received subscription event but did not ask for one, ignoring unexpected state change event for scene {}", sceneId);
             return;
         }
         m_scenesInfo[sceneId].lastCommandWaitigForReply = ESceneStateCommand::None;
@@ -256,7 +256,7 @@ namespace ramses::internal
             setCurrentSceneState(sceneId, ESceneStateInternal::Subscribed);
             break;
         case EventResult::Failed:
-            LOG_ERROR_P(CONTEXT_RENDERER, "RendererSceneControlLogic::sceneSubscribed failed for scene {}, will retry.", sceneId);
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneControlLogic::sceneSubscribed failed for scene {}, will retry.", sceneId);
             break;
         case EventResult::Indirect:
         default:
@@ -273,7 +273,7 @@ namespace ramses::internal
         {
             if (getLastSceneStateCommandWaitingForReply(sceneId) != ESceneStateCommand::Unsubscribe)
             {
-                LOG_WARN(CONTEXT_RENDERER, "RendererSceneControlLogic - received unsubscription event but did not ask for one, ignoring unexpected state change event for scene " << sceneId);
+                LOG_WARN(CONTEXT_RENDERER, "RendererSceneControlLogic - received unsubscription event but did not ask for one, ignoring unexpected state change event for scene {}", sceneId);
                 return;
             }
             m_scenesInfo[sceneId].lastCommandWaitigForReply = ESceneStateCommand::None;
@@ -289,7 +289,7 @@ namespace ramses::internal
             setCurrentSceneState(sceneId, ESceneStateInternal::Published);
             break;
         case EventResult::Failed:
-            LOG_ERROR_P(CONTEXT_RENDERER, "RendererSceneControlLogic::sceneUnsubscribed failed for scene {}, will retry.", sceneId);
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneControlLogic::sceneUnsubscribed failed for scene {}, will retry.", sceneId);
             goToTargetState(sceneId);
             break;
         default:
@@ -302,7 +302,7 @@ namespace ramses::internal
         //another request, other than display manager, or broken state
         if (getLastSceneStateCommandWaitingForReply(sceneId) != ESceneStateCommand::Map)
         {
-            LOG_WARN(CONTEXT_RENDERER, "RendererSceneControlLogic - received map event but did not ask for one, ignoring unexpected state change event for scene " << sceneId);
+            LOG_WARN(CONTEXT_RENDERER, "RendererSceneControlLogic - received map event but did not ask for one, ignoring unexpected state change event for scene {}", sceneId);
             return;
         }
         m_scenesInfo[sceneId].lastCommandWaitigForReply = ESceneStateCommand::None;
@@ -313,7 +313,7 @@ namespace ramses::internal
             setCurrentSceneState(sceneId, ESceneStateInternal::Mapped);
             break;
         case EventResult::Failed:
-            LOG_ERROR_P(CONTEXT_RENDERER, "RendererSceneControlLogic::sceneMapped failed for scene {}, will retry.", sceneId);
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneControlLogic::sceneMapped failed for scene {}, will retry.", sceneId);
             break;
         case EventResult::Indirect:
         default:
@@ -330,7 +330,7 @@ namespace ramses::internal
         {
             if (getLastSceneStateCommandWaitingForReply(sceneId) != ESceneStateCommand::Unmap)
             {
-                LOG_WARN(CONTEXT_RENDERER, "RendererSceneControlLogic - received unmap event but did not ask for one, ignoring unexpected state change event for scene " << sceneId);
+                LOG_WARN(CONTEXT_RENDERER, "RendererSceneControlLogic - received unmap event but did not ask for one, ignoring unexpected state change event for scene {}", sceneId);
                 return;
             }
             m_scenesInfo[sceneId].lastCommandWaitigForReply = ESceneStateCommand::None;
@@ -343,7 +343,7 @@ namespace ramses::internal
             // after unmap, we always need to continue to unsubscribed, before we can continue to a potentially different target state
             if (getLastSceneStateCommandWaitingForReply(sceneId) == ESceneStateCommand::None)
             {
-                LOG_INFO(CONTEXT_RENDERER, "RendererSceneControlLogic continuing to unsubscribe after unmap regardless of target state of scene with id: " << sceneId);
+                LOG_INFO(CONTEXT_RENDERER, "RendererSceneControlLogic continuing to unsubscribe after unmap regardless of target state of scene with id: {}", sceneId);
                 m_sceneStateControl.handleSceneUnsubscriptionRequest(sceneId, false);
                 SceneInfo& sceneInfo = m_scenesInfo[sceneId];
                 sceneInfo.lastCommandWaitigForReply = ESceneStateCommand::Unsubscribe;
@@ -353,7 +353,7 @@ namespace ramses::internal
             setCurrentSceneState(sceneId, ESceneStateInternal::Subscribed);
             break;
         case EventResult::Failed:
-            LOG_ERROR_P(CONTEXT_RENDERER, "RendererSceneControlLogic::sceneUnmapped failed for scene {}, will retry.", sceneId);
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneControlLogic::sceneUnmapped failed for scene {}, will retry.", sceneId);
             goToTargetState(sceneId);
             break;
         default:
@@ -366,7 +366,7 @@ namespace ramses::internal
         //another request, other than display manager, or broken state
         if (getLastSceneStateCommandWaitingForReply(sceneId) != ESceneStateCommand::Show)
         {
-            LOG_WARN(CONTEXT_RENDERER, "RendererSceneControlLogic - received show event but did not ask for one, ignoring unexpected state change event for scene " << sceneId);
+            LOG_WARN(CONTEXT_RENDERER, "RendererSceneControlLogic - received show event but did not ask for one, ignoring unexpected state change event for scene {}", sceneId);
             return;
         }
         m_scenesInfo[sceneId].lastCommandWaitigForReply = ESceneStateCommand::None;
@@ -377,7 +377,7 @@ namespace ramses::internal
             setCurrentSceneState(sceneId, ESceneStateInternal::Rendered);
             break;
         case EventResult::Failed:
-            LOG_ERROR_P(CONTEXT_RENDERER, "RendererSceneControlLogic::sceneShown failed for scene {}, will retry.", sceneId);
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneControlLogic::sceneShown failed for scene {}, will retry.", sceneId);
             break;
         case EventResult::Indirect:
         default:
@@ -394,7 +394,7 @@ namespace ramses::internal
         {
             if (getLastSceneStateCommandWaitingForReply(sceneId) != ESceneStateCommand::Hide)
             {
-                LOG_WARN(CONTEXT_RENDERER, "RendererSceneControlLogic - received hide event but did not ask for one, ignoring unexpected state change event for scene " << sceneId);
+                LOG_WARN(CONTEXT_RENDERER, "RendererSceneControlLogic - received hide event but did not ask for one, ignoring unexpected state change event for scene {}", sceneId);
                 return;
             }
             m_scenesInfo[sceneId].lastCommandWaitigForReply = ESceneStateCommand::None;
@@ -410,7 +410,7 @@ namespace ramses::internal
             setCurrentSceneState(sceneId, ESceneStateInternal::MappedAndAssigned);
             break;
         case EventResult::Failed:
-            LOG_ERROR_P(CONTEXT_RENDERER, "RendererSceneControlLogic::sceneHidden failed for scene {}, will retry.", sceneId);
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneControlLogic::sceneHidden failed for scene {}, will retry.", sceneId);
             goToTargetState(sceneId);
             break;
         default:

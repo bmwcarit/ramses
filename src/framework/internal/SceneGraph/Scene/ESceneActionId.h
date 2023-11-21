@@ -133,6 +133,7 @@ namespace ramses::internal
         AddRenderTargetRenderBuffer,
         AllocateRenderBuffer,
         ReleaseRenderBuffer,
+        SetRenderBufferProperties,
 
         // data links
         AllocateDataSlot,
@@ -323,6 +324,7 @@ case ENUMVALUE: return #ENUMVALUE
             CreateNameForEnumID(ESceneActionId::AddRenderTargetRenderBuffer);
             CreateNameForEnumID(ESceneActionId::AllocateRenderBuffer);
             CreateNameForEnumID(ESceneActionId::ReleaseRenderBuffer);
+            CreateNameForEnumID(ESceneActionId::SetRenderBufferProperties);
 
             // data links
             CreateNameForEnumID(ESceneActionId::AllocateDataSlot);

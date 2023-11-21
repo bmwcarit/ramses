@@ -12,7 +12,7 @@
 #include "internal/RendererLib/RendererEventCollector.h"
 #include "internal/SceneGraph/Scene/SceneActionApplier.h"
 #include "internal/PlatformAbstraction/PlatformTime.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {
@@ -34,7 +34,7 @@ namespace ramses::internal
         {
             if (m_monitoredScenes.count(sceneId) == 0)
             {
-                LOG_INFO_P(CONTEXT_RENDERER, "SceneExpirationMonitor: expiration monitoring for scene {} enabled", sceneId);
+                LOG_INFO(CONTEXT_RENDERER, "SceneExpirationMonitor: expiration monitoring for scene {} enabled", sceneId);
                 m_eventCollector.addSceneExpirationEvent(ERendererEventType::SceneExpirationMonitoringEnabled, sceneId);
             }
 
@@ -45,7 +45,7 @@ namespace ramses::internal
         }
         else if (m_monitoredScenes.count(sceneId) != 0)
         {
-            LOG_INFO_P(CONTEXT_RENDERER, "SceneExpirationMonitor: expiration monitoring for scene {} disabled, last state expired={}", sceneId, m_monitoredScenes[sceneId].inExpiredState);
+            LOG_INFO(CONTEXT_RENDERER, "SceneExpirationMonitor: expiration monitoring for scene {} disabled, last state expired={}", sceneId, m_monitoredScenes[sceneId].inExpiredState);
             m_eventCollector.addSceneExpirationEvent(ERendererEventType::SceneExpirationMonitoringDisabled, sceneId);
             m_monitoredScenes.erase(sceneId);
         }
@@ -102,9 +102,10 @@ namespace ramses::internal
                 if (expDelayRendered > FlushTime::Clock::milliseconds::zero())
                 {
                     const uint64_t expirationTimestamp = std::chrono::duration_cast<std::chrono::milliseconds>(timestamps.expirationTSOfRenderedScene.ts.time_since_epoch()).count();
-                    LOG_ERROR(CONTEXT_RENDERER, "SceneExpirationMonitor: Content of rendered scene " << sceneId << " is expired (version tag of rendered scene " << timestamps.expirationTSOfRenderedScene.tag << "). "
-                        << "Expiration time stamp " << expirationTimestamp << " ms, " << "expired by " << expDelayRendered.count() << " ms. "
-                        << "Internal flush index " << timestamps.expirationTSOfRenderedScene.internalIndex);
+                    LOG_ERROR(CONTEXT_RENDERER, "SceneExpirationMonitor: Content of rendered scene {} is expired (version tag of rendered scene {}). "
+                        "Expiration time stamp {} ms, expired by {} ms. "
+                        "Internal flush index {}",
+                        sceneId, timestamps.expirationTSOfRenderedScene.tag, expirationTimestamp, expDelayRendered.count(), timestamps.expirationTSOfRenderedScene.internalIndex);
                     expired = true;
                 }
             }
@@ -115,9 +116,10 @@ namespace ramses::internal
                 if (expDelayApplied > FlushTime::Clock::milliseconds::zero())
                 {
                     const uint64_t expirationTimestamp = std::chrono::duration_cast<std::chrono::milliseconds>(timestamps.expirationTSOfLastAppliedFlush.ts.time_since_epoch()).count();
-                    LOG_ERROR(CONTEXT_RENDERER, "SceneExpirationMonitor: Flush applied to scene " << sceneId << " is expired (version tag of applied flush " << timestamps.expirationTSOfLastAppliedFlush.tag << "). "
-                        << "Expiration time stamp " << expirationTimestamp << " ms, " << "expired by " << expDelayApplied.count() << " ms."
-                        << "Internal flush index " << timestamps.expirationTSOfLastAppliedFlush.internalIndex);
+                    LOG_ERROR(CONTEXT_RENDERER, "SceneExpirationMonitor: Flush applied to scene {} is expired (version tag of applied flush {}). "
+                        "Expiration time stamp {} ms, expired by {} ms."
+                        "Internal flush index {}",
+                        sceneId, timestamps.expirationTSOfLastAppliedFlush.tag, expirationTimestamp, expDelayApplied.count(), timestamps.expirationTSOfLastAppliedFlush.internalIndex);
                     expired = true;
                 }
             }
@@ -139,20 +141,22 @@ namespace ramses::internal
 
                         if (lastPendingFlushExpired)
                         {
-                            LOG_ERROR(CONTEXT_RENDERER, "SceneExpirationMonitor: Latest pending flush of scene " << sceneId << " is expired (version tag of this flush " << lastPendingFlush.versionTag << "). "
-                                << "Expiration time stamp " << expirationTimestampPendingFlush << " ms, "
-                                << "expired by " << expDelayPending.count() << " ms. "
-                                << "Timestamp of flush creation on client side: " << internalTimestampPendingFlush << " ms. "
-                                << "Internal flush index " << lastPendingFlush.flushIndex << ". "
-                                << "There is " << pendingFlushes.size() << " pending flushes in total, only latest was checked.");
+                            LOG_ERROR(CONTEXT_RENDERER, "SceneExpirationMonitor: Latest pending flush of scene {} is expired (version tag of this flush {}). "
+                                "Expiration time stamp {} ms, "
+                                "expired by {} ms. "
+                                "Timestamp of flush creation on client side: {} ms. "
+                                "Internal flush index {}. "
+                                "There is {} pending flushes in total, only latest was checked.",
+                                sceneId, lastPendingFlush.versionTag, expirationTimestampPendingFlush, expDelayPending.count(), internalTimestampPendingFlush, lastPendingFlush.flushIndex, pendingFlushes.size());
                             expired = true;
                         }
                         else if (expired)
                         {
-                            LOG_ERROR(CONTEXT_RENDERER, "SceneExpirationMonitor: for the expired scene " << sceneId << " there is pending flush which is not expired "
-                                << "Expiration time stamp " << expirationTimestampPendingFlush << " ms, timestamp of flush creation on client side: " << internalTimestampPendingFlush << " ms. "
-                                << "Internal flush index " << timestamps.expirationTSOfLastAppliedFlush.internalIndex << ". "
-                                << "There is " << pendingFlushes.size() << " pending flushes in total, only latest was checked.");
+                            LOG_ERROR(CONTEXT_RENDERER, "SceneExpirationMonitor: for the expired scene {} there is pending flush which is not expired."
+                                "Expiration time stamp {} ms, timestamp of flush creation on client side: {} ms. "
+                                "Internal flush index {}. "
+                                "There is {} pending flushes in total, only latest was checked.",
+                                sceneId, expirationTimestampPendingFlush, internalTimestampPendingFlush, timestamps.expirationTSOfLastAppliedFlush.internalIndex, pendingFlushes.size());
                         }
 
                         LOG_INFO_F(CONTEXT_RENDERER, ([&](StringOutputStream& logStream)
@@ -165,7 +169,7 @@ namespace ramses::internal
                 }
             }
             else if (expired)
-                LOG_ERROR(CONTEXT_RENDERER, "SceneExpirationMonitor: there are no pending flushes for the expired scene " << sceneId);
+                LOG_ERROR(CONTEXT_RENDERER, "SceneExpirationMonitor: there are no pending flushes for the expired scene {}", sceneId);
 
             checkAndTriggerExpirationEvent(sceneId, timestamps, expired);
 
@@ -179,7 +183,7 @@ namespace ramses::internal
     {
         if (m_monitoredScenes.erase(sceneId) != 0)
         {
-            LOG_INFO_P(CONTEXT_RENDERER, "SceneExpirationMonitor: expiration monitoring for scene {} disabled because scene was unsubscribed from renderer", sceneId);
+            LOG_INFO(CONTEXT_RENDERER, "SceneExpirationMonitor: expiration monitoring for scene {} disabled because scene was unsubscribed from renderer", sceneId);
             m_eventCollector.addSceneExpirationEvent(ERendererEventType::SceneExpirationMonitoringDisabled, sceneId);
         }
     }

@@ -118,7 +118,7 @@ namespace ramses
         return m_impl.getSceneId();
     }
 
-    bool Scene::saveToFile(std::string_view fileName, const SaveFileConfig& config) const
+    bool Scene::saveToFile(std::string_view fileName, const SaveFileConfig& config)
     {
         const auto status = m_impl.saveToFile(fileName, config.impl());
         LOG_HL_CLIENT_API2(status, fileName, config.impl());

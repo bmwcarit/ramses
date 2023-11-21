@@ -468,10 +468,8 @@ namespace ramses::internal
     protected:
         static void LogSomeMessage()
         {
-            StringOutputStream stream;
-            stream << "This is some very interesting log message used for testing purpose";
-            LogMessage message(CONTEXT_RAMSH, ELogLevel::Info, stream);
-            GetRamsesLogger().log(message);
+            std::string s = "This is some very interesting log message used for testing purpose";
+            GetRamsesLogger().log(LogMessage{ CONTEXT_RAMSH, ELogLevel::Info, std::move(s) });
         }
     };
 

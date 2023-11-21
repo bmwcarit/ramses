@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "internal/Platform/Wayland/IVI/Window_Wayland_IVI.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "ivi-application-client-protocol.h"
 
 namespace ramses::internal
@@ -46,7 +46,7 @@ namespace ramses::internal
 
     bool Window_Wayland_IVI::createSurface()
     {
-        LOG_INFO(CONTEXT_RENDERER, "Window_Wayland_IVI::createSurface ivi id: " << m_waylandIviSurfaceID.getValue());
+        LOG_INFO(CONTEXT_RENDERER, "Window_Wayland_IVI::createSurface ivi id: {}", m_waylandIviSurfaceID.getValue());
 
         if (m_iviApplicationRegistry == nullptr)
         {

@@ -41,36 +41,29 @@ endif()
 
 set(RENDERER_SOURCES                ${PROJECT_SOURCE_DIR}/src/renderer/impl/*.cpp)
 
+# build shared library without renderer
+createModule(
+    NAME                    ramses-shared-lib-headless
+    TYPE                    ${LIB_TYPE}
+    ENABLE_INSTALL          ON
+    SRC_FILES               ${HEADLESS_SOURCES}
+    )
+
+target_link_libraries(ramses-shared-lib-headless PUBLIC glm::glm)
+target_link_libraries(ramses-shared-lib-headless PRIVATE ramses-client-internal)
+target_link_libraries(ramses-shared-lib-headless INTERFACE ramses-api)
+if(${LIB_TYPE} STREQUAL "SHARED_LIBRARY")
+    target_compile_definitions(ramses-shared-lib-headless PUBLIC RAMSES_LINK_SHARED_EXPORT)
+endif()
+
 if (ramses-sdk_BUILD_FULL_SHARED_LIB)
-    createModuleWithRenderer(
+    createModule(
         NAME                    ramses-shared-lib
         TYPE                    ${LIB_TYPE}
         ENABLE_INSTALL          ON
-        SRC_FILES               ${HEADLESS_SOURCES}
-                                ${RENDERER_SOURCES}
-        DEPENDENCIES            ramses-client
+        SRC_FILES               ${RENDERER_SOURCES}
+        DEPENDENCIES            Platform
     )
 
-    target_link_libraries(ramses-shared-lib PUBLIC glm::glm)
-    if(${LIB_TYPE} STREQUAL "SHARED_LIBRARY")
-        target_compile_definitions(ramses-shared-lib PUBLIC RAMSES_LINK_SHARED_EXPORT)
-    endif()
-endif()
-
-if (ramses-sdk_BUILD_HEADLESS_SHARED_LIB)
-
-    # build shared library without renderer
-    createModule(
-        NAME                    ramses-shared-lib-headless
-        TYPE                    ${LIB_TYPE}
-        ENABLE_INSTALL          ON
-        SRC_FILES               ${HEADLESS_SOURCES}
-        DEPENDENCIES            ramses-client
-        )
-
-    target_link_libraries(ramses-shared-lib-headless PUBLIC glm::glm)
-    target_link_libraries(ramses-shared-lib-headless INTERFACE ramses-api)
-    if(${LIB_TYPE} STREQUAL "SHARED_LIBRARY")
-        target_compile_definitions(ramses-shared-lib-headless PUBLIC RAMSES_LINK_SHARED_EXPORT)
-    endif()
+    target_link_libraries(ramses-shared-lib PUBLIC ramses-shared-lib-headless)
 endif()

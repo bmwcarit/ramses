@@ -29,14 +29,14 @@ namespace ramses::internal
     {
         const unsigned int ret = lodepng::decode(m_data, m_width, m_height, filename);
         if (ret != 0)
-            LOG_ERROR(CONTEXT_FRAMEWORK, "Error while loading PNG file: " << filename << " (error " << ret << ": " << lodepng_error_text(ret) << ")");
+            LOG_ERROR(CONTEXT_FRAMEWORK, "Error while loading PNG file: {} (error {}: {})", filename, ret, lodepng_error_text(ret));
     }
 
     void Image::saveToFilePNG(const std::string& filename) const
     {
         const unsigned int ret = lodepng::encode(filename, m_data, m_width, m_height);
         if (ret != 0)
-            LOG_ERROR(CONTEXT_FRAMEWORK, "Error while saving PNG file: " << filename << " (error " << ret << ": " << lodepng_error_text(ret) << ")");
+            LOG_ERROR(CONTEXT_FRAMEWORK, "Error while saving PNG file: {} (error {}: {})", filename, ret, lodepng_error_text(ret));
     }
 
     bool Image::operator==(const Image& other) const
@@ -174,9 +174,8 @@ namespace ramses::internal
 
         if (overflow)
         {
-            LOG_WARN(CONTEXT_FRAMEWORK,
-                     "Image::getSumOfPixelValues: Overflow of sum of pixel values! The overflown values saturate to max possible positive value for int32_t [="
-                         << std::numeric_limits<int32_t>::max() << "]");
+            LOG_WARN(CONTEXT_FRAMEWORK, "Image::getSumOfPixelValues: Overflow of sum of pixel values! The overflown values saturate to max possible positive value for int32_t [={}]",
+                std::numeric_limits<int32_t>::max());
         }
 
         return result;
@@ -203,5 +202,12 @@ namespace ramses::internal
     const std::vector<uint8_t>& Image::getData() const
     {
         return m_data;
+    }
+
+    std::vector<std::byte> Image::getDataAsByte() const
+    {
+        std::vector<std::byte> data(m_data.size());
+        std::transform(m_data.begin(), m_data.end(), data.begin(), [](uint8_t x) { return static_cast<std::byte>(x); });
+        return data;
     }
 }

@@ -137,7 +137,7 @@ namespace ramses::internal
 
             bis >> surfaceId.getReference() >> width >> height >> swapInterval >> useEGL;
 
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message create surface size " << width << "/" << height << " swap interval " << swapInterval);
+            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message create surface size {}/{} swap interval {}", width, height, swapInterval);
 
             bool bSuccess = m_waylandHandler.createWindow(surfaceId, width, height, swapInterval, useEGL);
             if (!bSuccess)
@@ -154,7 +154,7 @@ namespace ramses::internal
 
             bis >> surfaceId.getReference() >> shellSurfaceId.getReference();
 
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message create shell surface for surface with id " << surfaceId.getValue());
+            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message create shell surface for surface with id {}", surfaceId.getValue());
             m_waylandHandler.createShellSurface(surfaceId, shellSurfaceId);
             return true;
         }
@@ -165,8 +165,8 @@ namespace ramses::internal
             bis >> shellSurfaceId.getReference();
 
             LOG_INFO(CONTEXT_RENDERER,
-                     "TestWaylandApplication::handleIncomingMessages(): received message destroy shell surface with id "
-                         << shellSurfaceId.getValue());
+                     "TestWaylandApplication::handleIncomingMessages(): received message destroy shell surface with id {}",
+                     shellSurfaceId.getValue());
             m_waylandHandler.destroyShellSurface(shellSurfaceId);
             return true;
         }
@@ -177,7 +177,7 @@ namespace ramses::internal
 
             bis >> shellSurfaceId.getReference() >> title;
 
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message set shell surface title for shell surface with id " << shellSurfaceId.getValue() << " title: " << title);
+            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message set shell surface title for shell surface with id {} title: {}", shellSurfaceId.getValue(), title);
             m_waylandHandler.setShellSurfaceTitle(shellSurfaceId, title);
             return true;
         }
@@ -189,8 +189,8 @@ namespace ramses::internal
 
             LOG_INFO(CONTEXT_RENDERER,
                      "TestWaylandApplication::handleIncomingMessages(): received message set shell surface dummy values "
-                     "surface with id "
-                         << surfaceId.getValue());
+                     "surface with id {}",
+                     surfaceId.getValue());
             m_waylandHandler.setShellSurfaceDummyValues(surfaceId, shellSurfaceId);
             return true;
         }
@@ -200,7 +200,7 @@ namespace ramses::internal
 
             bis >> surfaceId.getReference();
 
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message destroy surface with id " << surfaceId.getValue());
+            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message destroy surface with id {}", surfaceId.getValue());
             m_waylandHandler.destroyWindow(surfaceId);
             return true;
         }
@@ -210,7 +210,7 @@ namespace ramses::internal
 
             bis >> surfaceId.getReference();
 
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message destroy ivi-surface for surface with id " << surfaceId.getValue());
+            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message destroy ivi-surface for surface with id {}", surfaceId.getValue());
             m_waylandHandler.destroyIVISurface(surfaceId);
             return true;
         }
@@ -221,7 +221,7 @@ namespace ramses::internal
 
             bis >> surfaceId.getReference() >> surfaceIviId.getReference();
 
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message create ivi-surface for surface with id " << surfaceId.getValue() << " " << surfaceIviId);
+            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message create ivi-surface for surface with id {} {}", surfaceId.getValue(), surfaceIviId);
             m_waylandHandler.createIVISurface(surfaceId, surfaceIviId);
             return true;
         }
@@ -232,7 +232,7 @@ namespace ramses::internal
 
             bis >> surfaceId.getReference() >> useCallback;
 
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message render one frame to egl buffer on surface with id " << surfaceId.getValue());
+            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message render one frame to egl buffer on surface with id {}", surfaceId.getValue());
             renderFrameToEGLBuffer(surfaceId, useCallback);
             return true;
         }
@@ -243,7 +243,7 @@ namespace ramses::internal
 
             bis >> surfaceId.getReference() >> useCallback;
 
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message render one frame to shraed memory buffer on surface with id " << surfaceId.getValue());
+            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message render one frame to shraed memory buffer on surface with id {}", surfaceId.getValue());
             renderFrameToSharedMemoryBuffer(surfaceId, useCallback);
             return true;
         }
@@ -255,9 +255,8 @@ namespace ramses::internal
             bis >> surfaceId.getReference() >> commit;
 
             LOG_INFO(CONTEXT_RENDERER,
-                     "TestWaylandApplication::handleIncomingMessages(): received message attach buffer "
-                     "with id "
-                         << surfaceId.getValue());
+                     "TestWaylandApplication::handleIncomingMessages(): received message attach buffer with id {}",
+                     surfaceId.getValue());
             attachBuffer(surfaceId, commit);
             return true;
         }
@@ -269,9 +268,8 @@ namespace ramses::internal
             bis >> surfaceId.getReference() >> count;
 
             LOG_INFO(CONTEXT_RENDERER,
-                     "TestWaylandApplication::handleIncomingMessages(): received message reattach buffer "
-                     "with id "
-                         << surfaceId.getValue());
+                     "TestWaylandApplication::handleIncomingMessages(): received message reattach buffer with id {}",
+                     surfaceId.getValue());
             reattachBuffer(surfaceId, count);
             return true;
         }
@@ -290,7 +288,7 @@ namespace ramses::internal
 
             bis >> surfaceId.getReference() >> width >> height;
 
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message change size for surface with id  " << surfaceId.getValue() << " to " << width << "*" << height);
+            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message change size for surface with id  {} to {}*{}", surfaceId.getValue(), width, height);
             m_waylandHandler.resizeWindow(surfaceId, width, height);
             return true;
         }
@@ -302,7 +300,7 @@ namespace ramses::internal
 
             setTriangleColor(static_cast<ETriangleColor>(triangleColor));
 
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message set triangle color " <<  static_cast<uint32_t>(triangleColor));
+            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message set triangle color {}", static_cast<uint32_t>(triangleColor));
             return true;
         }
         case ETestWaylandApplicationMessage::AdditionalConnectToEmbeddedCompositor:
@@ -318,7 +316,7 @@ namespace ramses::internal
 
             bis >> surfaceId.getReference();
 
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message detach buffer from surface with id " << surfaceId.getValue());
+            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message detach buffer from surface with id {}", surfaceId.getValue());
             detachBufferFromSurface(surfaceId);
             return true;
         }
@@ -338,7 +336,7 @@ namespace ramses::internal
 
             bis >> surfaceId1.getReference() >> surfaceId2.getReference() >> useCallback;
 
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message render one frame to two surfaces with ivi id's " << surfaceId1.getValue() << ", " << surfaceId2.getValue());
+            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message render one frame to two surfaces with ivi id's {}, {}", surfaceId1.getValue(), surfaceId2.getValue());
             renderFrameToTwoSurfaces(surfaceId1, surfaceId2, useCallback);
             return true;
         }
@@ -354,7 +352,7 @@ namespace ramses::internal
             sendAnswerToTestFramework(isBufferFree);
             if (buffer >= m_waylandHandler.getNumberOfAllocatedSHMBuffer())
             {
-                LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::getIsSHMBufferFree buffer: " << buffer << " does not exist !");
+                LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::getIsSHMBufferFree buffer: {} does not exist !", buffer);
                 return false;
             }
 
@@ -377,7 +375,7 @@ namespace ramses::internal
         {
             uint32_t protocolVersion = 0u;
             bis >> protocolVersion;
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message set required wayland output version :" << protocolVersion);
+            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message set required wayland output version :{}", protocolVersion);
 
             m_waylandHandler.setRequiredWaylandOutputVersion(protocolVersion);
 
@@ -451,7 +449,7 @@ namespace ramses::internal
         uint32_t height = 0;
         m_waylandHandler.getWindowSize(surfaceId, width, height);
         SHMBuffer* buffer = m_waylandHandler.getFreeSHMBuffer(width, height);
-        LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::renderFrameToSharedMemoryBuffer render to SHMBuffer with id  " << buffer->getId());
+        LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::renderFrameToSharedMemoryBuffer render to SHMBuffer with id  {}", buffer->getId());
         SHMTriangleDrawer triangleDrawer(m_triangleColor);
 
         triangleDrawer.draw(buffer);
@@ -471,7 +469,7 @@ namespace ramses::internal
         m_waylandHandler.getWindowSize(surfaceId, width, height);
         SHMBuffer* buffer = m_waylandHandler.getFreeSHMBuffer(width, height);
         LOG_INFO(CONTEXT_RENDERER,
-                 "TestWaylandApplication::attachBuffer: attaching buffer" << buffer->getId());
+                 "TestWaylandApplication::attachBuffer: attaching buffer{}", buffer->getId());
 
         m_waylandHandler.attachBuffer(surfaceId, *buffer, commit);
     }
@@ -483,7 +481,7 @@ namespace ramses::internal
         m_waylandHandler.getWindowSize(surfaceId, width, height);
         SHMBuffer* buffer = m_waylandHandler.getFreeSHMBuffer(width, height);
         LOG_INFO(CONTEXT_RENDERER,
-                 "TestWaylandApplication::reattachBuffer: attaching buffer" << buffer->getId());
+                 "TestWaylandApplication::reattachBuffer: attaching buffer{}", buffer->getId());
 
         m_waylandHandler.reattachBuffer(surfaceId, *buffer, count);
     }
@@ -506,7 +504,7 @@ namespace ramses::internal
         }
 
         SHMBuffer* buffer = m_waylandHandler.getFreeSHMBuffer(width1, height2);
-        LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::renderFrame render to SHMBuffer with id  " << buffer->getId());
+        LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::renderFrame render to SHMBuffer with id  {}", buffer->getId());
         SHMTriangleDrawer triangleDrawer(m_triangleColor);
         triangleDrawer.draw(buffer);
 

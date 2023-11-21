@@ -79,7 +79,7 @@ namespace ramses::internal
                 )");
 
             ASSERT_NE(nullptr, script);
-            EXPECT_TRUE(saveToFileWithoutValidation("script.bin"));
+            EXPECT_TRUE(saveToFile("script.bin"));
         }
         {
             EXPECT_TRUE(recreateFromFile("script.bin"));
@@ -121,7 +121,7 @@ namespace ramses::internal
 
             script->getInputs()->getChild("array")->getChild(0)->set<float>(0.1f);
             script->getInputs()->getChild("array")->getChild(1)->set<float>(0.2f);
-            EXPECT_TRUE(saveToFileWithoutValidation("script.bin"));
+            EXPECT_TRUE(saveToFile("script.bin"));
         }
         {
             recreateFromFile("script.bin");
@@ -165,7 +165,7 @@ namespace ramses::internal
             )", {}, "MyScript");
 
             script->getInputs()->getChild("nested")->getChild("array")->getChild(0)->set<vec3f>({1.1f, 1.2f, 1.3f});
-            EXPECT_TRUE(saveToFileWithoutValidation("arrays.bin"));
+            EXPECT_TRUE(saveToFile("arrays.bin"));
         }
         {
             recreateFromFile("arrays.bin");
@@ -213,7 +213,7 @@ namespace ramses::internal
             )");
 
             ASSERT_NE(nullptr, script);
-            EXPECT_TRUE(saveToFileWithoutValidation("nested_array.bin"));
+            EXPECT_TRUE(saveToFile("nested_array.bin"));
         }
         {
             EXPECT_TRUE(recreateFromFile("nested_array.bin"));
@@ -284,7 +284,7 @@ namespace ramses::internal
 
             ASSERT_NE(nullptr, script);
             script->getInputs()->getChild("arrayOfStructs")->getChild(1)->getChild("nested_struct")->getChild("nested_array")->getChild(0)->set<float>(42.f);
-            EXPECT_TRUE(saveToFileWithoutValidation("array_of_structs.bin"));
+            EXPECT_TRUE(saveToFile("array_of_structs.bin"));
         }
         {
             EXPECT_TRUE(recreateFromFile("array_of_structs.bin"));
@@ -351,7 +351,7 @@ namespace ramses::internal
             auto script = tempLogicEngine.createLuaScript(scriptSrc, {}, "MyScript");
 
             ASSERT_NE(nullptr, script);
-            EXPECT_TRUE(saveToFileWithoutValidation("arrays.bin"));
+            EXPECT_TRUE(saveToFile("arrays.bin"));
         }
         {
             EXPECT_TRUE(recreateFromFile("arrays.bin"));
@@ -410,7 +410,7 @@ namespace ramses::internal
 
             ASSERT_NE(nullptr, script);
             script->getInputs()->getChild("data")->set<int32_t>(42);
-            EXPECT_TRUE(saveToFileWithoutValidation("script.bin"));
+            EXPECT_TRUE(saveToFile("script.bin"));
         }
 
         EXPECT_TRUE(recreateFromFile("script.bin"));

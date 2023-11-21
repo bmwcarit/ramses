@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "internal/RendererLib/PlatformBase/RendererLimits.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {
@@ -90,17 +90,17 @@ namespace ramses::internal
     void RendererLimits::logLimits() const
     {
         LOG_INFO(CONTEXT_RENDERER, "Rendering device features and limits:");
-        LOG_INFO(CONTEXT_RENDERER, "  - maximum number of texture units:            " << m_maximumTextureUnits);
-        LOG_INFO(CONTEXT_RENDERER, "  - maximum number of MSAA samples:             " << m_maximumSamples);
-        LOG_INFO(CONTEXT_RENDERER, "  - maximum number of anisotropy samples:       " << m_maximumAnisotropy);
-        LOG_INFO(CONTEXT_RENDERER, "  - maximum viewport size:                      " << m_maxViewportWidth << " x " << m_maxViewportHeight);
-        LOG_INFO(CONTEXT_RENDERER, "  - maximum number of FBO draw buffers:         " << m_maximumDrawBuffers);
-        LOG_INFO(CONTEXT_RENDERER, "  - external textures supported:                " << m_externalTextureExtensionSupported);
+        LOG_INFO(CONTEXT_RENDERER, "  - maximum number of texture units:            {}", m_maximumTextureUnits);
+        LOG_INFO(CONTEXT_RENDERER, "  - maximum number of MSAA samples:             {}", m_maximumSamples);
+        LOG_INFO(CONTEXT_RENDERER, "  - maximum number of anisotropy samples:       {}", m_maximumAnisotropy);
+        LOG_INFO(CONTEXT_RENDERER, "  - maximum viewport size:                      {} x {}", m_maxViewportWidth, m_maxViewportHeight);
+        LOG_INFO(CONTEXT_RENDERER, "  - maximum number of FBO draw buffers:         {}", m_maximumDrawBuffers);
+        LOG_INFO(CONTEXT_RENDERER, "  - external textures supported:                {}", m_externalTextureExtensionSupported);
 
-        LOG_INFO(CONTEXT_RENDERER, "  - supported texture formats: " << m_availableTextureFormats.size());
+        LOG_INFO(CONTEXT_RENDERER, "  - supported texture formats: {}", m_availableTextureFormats.size());
         for(const auto& texture : m_availableTextureFormats)
         {
-            LOG_DEBUG(CONTEXT_RENDERER, "      " << EnumToString(texture));
+            LOG_DEBUG(CONTEXT_RENDERER, "      {}", EnumToString(texture));
         }
     }
 }

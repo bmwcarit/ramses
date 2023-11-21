@@ -208,8 +208,6 @@ namespace ramses::internal
         collection.beginWriteSceneAction(ESceneActionId::AllocateDataInstance);
         collection.write(layoutHandle);
         collection.write(dataInstanceHandle);
-        collection.write(std::string{});
-        collection.write(uint64_t{});
     }
 
     void SceneActionCollectionCreator::releaseTransform(TransformHandle transform)
@@ -230,8 +228,6 @@ namespace ramses::internal
         collection.beginWriteSceneAction(ESceneActionId::AllocateNode);
         collection.write(childrenCount);
         collection.write(handle);
-        collection.write(std::string{});
-        collection.write(uint64_t{});
     }
 
     void SceneActionCollectionCreator::releaseNode(NodeHandle nodeHandle)
@@ -449,8 +445,6 @@ namespace ramses::internal
         collection.write(renderableCount);
         collection.write(nestedGroupCount);
         collection.write(groupHandle);
-        collection.write(std::string{});
-        collection.write(uint64_t{});
     }
 
     void SceneActionCollectionCreator::releaseRenderGroup(RenderGroupHandle groupHandle)
@@ -494,8 +488,6 @@ namespace ramses::internal
         collection.beginWriteSceneAction(ESceneActionId::AllocateRenderPass);
         collection.write(renderGroupCount);
         collection.write(handle);
-        collection.write(std::string{});
-        collection.write(uint64_t{});
     }
 
     void SceneActionCollectionCreator::releaseRenderPass(RenderPassHandle handle)
@@ -603,8 +595,6 @@ namespace ramses::internal
         collection.write(sourceRenderBufferHandle);
         collection.write(destinationRenderBufferHandle);
         collection.write(passHandle);
-        collection.write(std::string{});
-        collection.write(uint64_t{});
     }
 
     void SceneActionCollectionCreator::releaseBlitPass(BlitPassHandle passHandle)
@@ -676,8 +666,6 @@ namespace ramses::internal
         {
             collection.write(sampler.contentHandle);
         }
-        collection.write(std::string{});
-        collection.write(uint64_t{});
     }
 
     void SceneActionCollectionCreator::releaseTextureSampler(TextureSamplerHandle handle)
@@ -690,8 +678,6 @@ namespace ramses::internal
     {
         collection.beginWriteSceneAction(ESceneActionId::AllocateRenderTarget);
         collection.write(handle);
-        collection.write(std::string{});
-        collection.write(uint64_t{});
     }
 
     void SceneActionCollectionCreator::releaseRenderTarget(RenderTargetHandle handle)
@@ -716,14 +702,21 @@ namespace ramses::internal
         collection.write(static_cast<uint32_t>(renderBuffer.format));
         collection.write(static_cast<uint32_t>(renderBuffer.accessMode));
         collection.write(renderBuffer.sampleCount);
-        collection.write(std::string{});
-        collection.write(uint64_t{});
     }
 
     void SceneActionCollectionCreator::releaseRenderBuffer(RenderBufferHandle handle)
     {
         collection.beginWriteSceneAction(ESceneActionId::ReleaseRenderBuffer);
         collection.write(handle);
+    }
+
+    void SceneActionCollectionCreator::setRenderBufferProperties(RenderBufferHandle handle, uint32_t width, uint32_t height, uint32_t sampleCount)
+    {
+        collection.beginWriteSceneAction(ESceneActionId::SetRenderBufferProperties);
+        collection.write(handle);
+        collection.write(width);
+        collection.write(height);
+        collection.write(sampleCount);
     }
 
     void SceneActionCollectionCreator::allocateDataBuffer(EDataBufferType dataBufferType, EDataType dataType, uint32_t maximumSizeInBytes, DataBufferHandle handle)
@@ -733,8 +726,6 @@ namespace ramses::internal
         collection.write(static_cast<uint32_t>(dataType));
         collection.write(maximumSizeInBytes);
         collection.write(handle);
-        collection.write(std::string{});
-        collection.write(uint64_t{});
     }
 
     void SceneActionCollectionCreator::releaseDataBuffer(DataBufferHandle handle)
@@ -762,8 +753,6 @@ namespace ramses::internal
             collection.write(size.height);
         }
         collection.write(handle);
-        collection.write(std::string{});
-        collection.write(uint64_t{});
     }
 
     void SceneActionCollectionCreator::releaseTextureBuffer(TextureBufferHandle handle)
@@ -814,8 +803,6 @@ namespace ramses::internal
         collection.beginWriteSceneAction(ESceneActionId::AllocateSceneReference);
         collection.write(handle);
         collection.write(sceneId);
-        collection.write(std::string{});
-        collection.write(uint64_t{});
     }
 
     void SceneActionCollectionCreator::releaseSceneReference(SceneReferenceHandle handle)
@@ -941,5 +928,4 @@ namespace ramses::internal
         collection.write(sizeInfo.pickableObjectCount);
         collection.write(sizeInfo.sceneReferenceCount);
     }
-
 }

@@ -22,10 +22,10 @@ namespace ramses::internal
         assert(m_vertexArrays.size() == 0u);
     }
 
-    void RendererSceneResourceRegistry::addRenderBuffer(RenderBufferHandle handle, DeviceResourceHandle deviceHandle, uint32_t size, bool writeOnly)
+    void RendererSceneResourceRegistry::addRenderBuffer(RenderBufferHandle handle, DeviceResourceHandle deviceHandle, uint32_t size, const RenderBuffer& properties)
     {
         assert(!m_renderBuffers.contains(handle));
-        m_renderBuffers.put(handle, { deviceHandle, size, writeOnly });
+        m_renderBuffers.put(handle, { deviceHandle, size, properties });
     }
 
     void RendererSceneResourceRegistry::removeRenderBuffer(RenderBufferHandle handle)
@@ -44,6 +44,12 @@ namespace ramses::internal
     {
         assert(m_renderBuffers.contains(handle));
         return m_renderBuffers.get(handle)->size;
+    }
+
+    const RenderBuffer& RendererSceneResourceRegistry::getRenderBufferProperties(RenderBufferHandle handle) const
+    {
+        assert(m_renderBuffers.contains(handle));
+        return m_renderBuffers.get(handle)->renderBufferProperties;
     }
 
     void RendererSceneResourceRegistry::getAllRenderBuffers(RenderBufferHandleVector& renderBuffers) const
@@ -224,14 +230,14 @@ namespace ramses::internal
         case ESceneResourceType_RenderBuffer_WriteOnly:
             for (const auto& rbEntry : m_renderBuffers)
             {
-                if(rbEntry.value.writeOnly)
+                if(rbEntry.value.renderBufferProperties.accessMode == ERenderBufferAccessMode::WriteOnly)
                     result += rbEntry.value.size;
             }
             break;
         case ESceneResourceType_RenderBuffer_ReadWrite:
             for (const auto& rbEntry : m_renderBuffers)
             {
-                if (!rbEntry.value.writeOnly)
+                if (rbEntry.value.renderBufferProperties.accessMode == ERenderBufferAccessMode::ReadWrite)
                     result += rbEntry.value.size;
             }
             break;

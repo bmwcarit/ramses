@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "internal/Platform/EGL/Context_EGL.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include <array>
 
 namespace
@@ -78,7 +78,7 @@ namespace ramses::internal
         if(nullptr != sharedContext)
         {
             EGLContext contextHandleToShare = sharedContext->m_eglSurfaceData.eglContext;
-            LOG_DEBUG(CONTEXT_RENDERER, "Context_EGL::Context_EGL Sharing new context with existing context: " << contextHandleToShare);
+            LOG_DEBUG(CONTEXT_RENDERER, "Context_EGL::Context_EGL Sharing new context with existing context: {}", contextHandleToShare);
             m_eglSurfaceData.eglSharedContext = contextHandleToShare;
         }
     }
@@ -136,34 +136,34 @@ namespace ramses::internal
             LOG_INFO(CONTEXT_RENDERER, "Context_EGL::~Context_EGL calling eglDestroySurface");
             if (!eglDestroySurface(m_eglSurfaceData.eglDisplay, m_eglSurfaceData.eglSurface))
             {
-                LOG_ERROR(CONTEXT_RENDERER, "Context_EGL::destroy eglDestroySurface failed. Error code: " << eglGetError());
+                LOG_ERROR(CONTEXT_RENDERER, "Context_EGL::destroy eglDestroySurface failed. Error code: {}", eglGetError());
             }
 #else
-            LOG_INFO(CONTEXT_RENDERER, "Context_EGL::~Context_EGL calling eglDestroySurface if !isSharedContext:" << isSharedContext);
+            LOG_INFO(CONTEXT_RENDERER, "Context_EGL::~Context_EGL calling eglDestroySurface if !isSharedContext:{}", isSharedContext);
             if (!isSharedContext && (eglDestroySurface(m_eglSurfaceData.eglDisplay, m_eglSurfaceData.eglSurface) == EGL_FALSE))
             {
-                LOG_ERROR(CONTEXT_RENDERER, "Context_EGL::destroy eglDestroySurface failed. Error code: " << eglGetError());
+                LOG_ERROR(CONTEXT_RENDERER, "Context_EGL::destroy eglDestroySurface failed. Error code: {}", eglGetError());
             }
 #endif
 
             LOG_INFO(CONTEXT_RENDERER, "Context_EGL::~Context_EGL calling eglDestroyContext");
             if (eglDestroyContext(m_eglSurfaceData.eglDisplay, m_eglSurfaceData.eglContext) == EGL_FALSE)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "Context_EGL::destroy eglDestroyContext failed. Error code: " << eglGetError());
+                LOG_ERROR(CONTEXT_RENDERER, "Context_EGL::destroy eglDestroyContext failed. Error code: {}", eglGetError());
             }
 
 #ifdef __ANDROID__
             LOG_INFO(CONTEXT_RENDERER, "Context_EGL::~Context_EGL calling eglReleaseThread");
             if (!eglReleaseThread())
             {
-                LOG_ERROR(CONTEXT_RENDERER, "Context_EGL: eglReleaseThread failed! Error code: " << eglGetError());
+                LOG_ERROR(CONTEXT_RENDERER, "Context_EGL: eglReleaseThread failed! Error code: {}", eglGetError());
             }
 #endif
 
             LOG_DEBUG(CONTEXT_RENDERER, "Context_EGL::~Context_EGL calling eglTerminate");
             if (!isSharedContext && (eglTerminate(m_eglSurfaceData.eglDisplay) == EGL_FALSE))
             {
-                LOG_ERROR(CONTEXT_RENDERER, "Context_EGL::terminateEGLDisplayIfNotUsedAnymore eglTerminate() failed! Error code: " << eglGetError());
+                LOG_ERROR(CONTEXT_RENDERER, "Context_EGL::terminateEGLDisplayIfNotUsedAnymore eglTerminate() failed! Error code: {}", eglGetError());
             }
         }
         else
@@ -189,7 +189,7 @@ namespace ramses::internal
         const auto success = eglMakeCurrent(m_eglSurfaceData.eglDisplay, m_eglSurfaceData.eglSurface, m_eglSurfaceData.eglSurface, m_eglSurfaceData.eglContext);
         if (success != EGL_TRUE)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Context_EGL::enable Error: eglMakeCurrent() failed. Error code: " << eglGetError());
+            LOG_ERROR(CONTEXT_RENDERER, "Context_EGL::enable Error: eglMakeCurrent() failed. Error code: {}", eglGetError());
             return false;
         }
 
@@ -205,7 +205,7 @@ namespace ramses::internal
             const auto success = eglMakeCurrent(m_eglSurfaceData.eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
             if (success != EGL_TRUE)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "Context_EGL::disable Error: eglMakeCurrent() failed. Error code: " << eglGetError());
+                LOG_ERROR(CONTEXT_RENDERER, "Context_EGL::disable Error: eglMakeCurrent() failed. Error code: {}", eglGetError());
                 return false;
             }
         }
@@ -235,7 +235,7 @@ namespace ramses::internal
 
         if (EGL_NO_DISPLAY == m_eglSurfaceData.eglDisplay)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Context_EGL initialization failed at eglGetDisplay with arg: " << m_nativeDisplay << " returned EGL_NO_DISPLAY");
+            LOG_ERROR(CONTEXT_RENDERER, "Context_EGL initialization failed at eglGetDisplay with arg: {} returned EGL_NO_DISPLAY", m_nativeDisplay);
             return false;
         }
 
@@ -255,7 +255,7 @@ namespace ramses::internal
         EGLint iMinorVersion = 0;
         if (eglInitialize(m_eglSurfaceData.eglDisplay, &iMajorVersion, &iMinorVersion) == EGL_FALSE)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Context_EGL initialization failed at eglInitialize() with error code: " << eglGetError());
+            LOG_ERROR(CONTEXT_RENDERER, "Context_EGL initialization failed at eglInitialize() with error code: {}", eglGetError());
             return false;
         }
 
@@ -268,12 +268,12 @@ namespace ramses::internal
 
         if (nullptr != contextExtensionsNativeString)
         {
-            LOG_INFO(CONTEXT_RENDERER, "Context_EGL::init(): EGL extensions: " << contextExtensionsNativeString);
+            LOG_INFO(CONTEXT_RENDERER, "Context_EGL::init(): EGL extensions: {}", contextExtensionsNativeString);
             parseContextExtensions(contextExtensionsNativeString);
         }
         else
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Context_EGL initialization failed: Could not get EGL extensions string. No context extensions are loaded. Error code: " << eglGetError());
+            LOG_ERROR(CONTEXT_RENDERER, "Context_EGL initialization failed: Could not get EGL extensions string. No context extensions are loaded. Error code: {}", eglGetError());
         }
 
         return true;
@@ -283,7 +283,7 @@ namespace ramses::internal
     {
         if (eglBindAPI(EGL_OPENGL_ES_API) == EGL_FALSE)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Context_EGL initialization failed at eglBindAPI() with error code: " << eglGetError());
+            LOG_ERROR(CONTEXT_RENDERER, "Context_EGL initialization failed at eglBindAPI() with error code: {}", eglGetError());
             return false;
         }
 
@@ -302,7 +302,7 @@ namespace ramses::internal
             return;
         }
 
-        LOG_INFO(CONTEXT_RENDERER, "Context_EGL: found: " << configCountResult << " EGL configurations");
+        LOG_INFO(CONTEXT_RENDERER, "Context_EGL: found: {} EGL configurations", configCountResult);
         for(EGLint i = 0; i < configCountResult; ++i)
         {
             EGLint surfaceType = 0;
@@ -327,17 +327,8 @@ namespace ramses::internal
             eglGetConfigAttrib(m_eglSurfaceData.eglDisplay, configsResult[i], EGL_STENCIL_SIZE, &stencilSize);
             eglGetConfigAttrib(m_eglSurfaceData.eglDisplay, configsResult[i], EGL_SAMPLES, &sampleCount);
 
-            LOG_INFO(CONTEXT_RENDERER, "Context_EGL: Config idx: " << i
-                     << ", SURFACE_TYPE: " << surfaceType
-                     << ", RENDERABLE_TYPE: " << renderableType
-                     << ", BUFFER_SIZE: " << bufferSize
-                     << ", RED_SIZE: " << redSize
-                     << ", GREEN_SIZE: " << greenSize
-                     << ", BLUE_SIZE: " << blueSize
-                     << ", ALPHA_SIZE: " << alphaSize
-                     << ", DEPTH_SIZE: " << depthSize
-                     << ", STENCIL_SIZE: " << stencilSize
-                     << ", EGL_SAMPLES: " << sampleCount);
+            LOG_INFO(CONTEXT_RENDERER, "Context_EGL: Config idx: {}, SURFACE_TYPE: {}, RENDERABLE_TYPE: {}, BUFFER_SIZE: {}, RED_SIZE: {}, GREEN_SIZE: {}, BLUE_SIZE: {}, ALPHA_SIZE: {}, DEPTH_SIZE: {}, STENCIL_SIZE: {}, EGL_SAMPLES: {}",
+                i, surfaceType, renderableType, bufferSize, redSize, greenSize, blueSize, alphaSize, depthSize, stencilSize, sampleCount);
         }
     }
 
@@ -375,11 +366,11 @@ namespace ramses::internal
                     const auto name = renderableTypeName(value);
                     if (name != nullptr)
                     {
-                        LOG_ERROR_P(CONTEXT_RENDERER, "There is no EGL configuration that supports EGL_RENDERABLE_TYPE: {} (0x{:x})", name, value);
+                        LOG_ERROR(CONTEXT_RENDERER, "There is no EGL configuration that supports EGL_RENDERABLE_TYPE: {} (0x{:x})", name, value);
                     }
                     else
                     {
-                        LOG_ERROR_P(CONTEXT_RENDERER, "There is no EGL configuration that supports EGL_RENDERABLE_TYPE: 0x{:x}", value);
+                        LOG_ERROR(CONTEXT_RENDERER, "There is no EGL configuration that supports EGL_RENDERABLE_TYPE: 0x{:x}", value);
                     }
                 }
                 break;
@@ -424,11 +415,11 @@ namespace ramses::internal
                     const auto* name = surfaceAttributeName(key);
                     if (name != nullptr)
                     {
-                        LOG_ERROR_P(CONTEXT_RENDERER, "{}(0x{:x}): {}", name, key, value);
+                        LOG_ERROR(CONTEXT_RENDERER, "{}(0x{:x}): {}", name, key, value);
                     }
                     else
                     {
-                        LOG_ERROR_P(CONTEXT_RENDERER, "0x{:x}: {}", key, value);
+                        LOG_ERROR(CONTEXT_RENDERER, "0x{:x}: {}", key, value);
                     }
                     m_surfaceAttributes += 2;
                 }
@@ -438,7 +429,7 @@ namespace ramses::internal
             }
             else
             {
-                LOG_ERROR(CONTEXT_RENDERER, "Context_EGL initialization failed at  eglChooseConfig() with error code: " << eglGetError());
+                LOG_ERROR(CONTEXT_RENDERER, "Context_EGL initialization failed at  eglChooseConfig() with error code: {}", eglGetError());
             }
 
             eglTerminate(m_eglSurfaceData.eglDisplay);
@@ -463,12 +454,13 @@ namespace ramses::internal
             auto logOnFailure = [&](bool condition, const char* paramName){
                 if(!condition)
                 {
-                    LOG_WARN(CONTEXT_RENDERER, "Context_EGL eglChooseConfig(): The chosen config does not have requested value for param: " << *configParamToQuery
-                             << (paramName == nullptr? "" : "[")
-                             << (paramName == nullptr? "" : paramName)
-                             << (paramName == nullptr? "" : "]")
-                             << ", requested value: " << configParamRequestedValue
-                             << ", actual value: " << configParamActualValue);
+                    LOG_WARN(CONTEXT_RENDERER, "Context_EGL eglChooseConfig(): The chosen config does not have requested value for param: {}{}{}{}, requested value: {}, actual value: {}",
+                        *configParamToQuery,
+                        paramName == nullptr ? "" : "[",
+                        paramName == nullptr ? "" : paramName,
+                        paramName == nullptr ? "" : "]",
+                        configParamRequestedValue,
+                        configParamActualValue);
                 }
             };
 
@@ -503,7 +495,7 @@ namespace ramses::internal
 
             if (!m_eglSurfaceData.eglSurface)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "Context_EGL initialization failed at eglCreateWindowSurface() with error code: " << eglGetError());
+                LOG_ERROR(CONTEXT_RENDERER, "Context_EGL initialization failed at eglCreateWindowSurface() with error code: {}", eglGetError());
                 eglTerminate(m_eglSurfaceData.eglDisplay);
                 return false;
             }
@@ -528,7 +520,7 @@ namespace ramses::internal
 
             if (!m_eglSurfaceData.eglSurface)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "Context_EGL initialization failed at eglCreatePbufferSurface() with error code: " << eglGetError());
+                LOG_ERROR(CONTEXT_RENDERER, "Context_EGL initialization failed at eglCreatePbufferSurface() with error code: {}", eglGetError());
                 eglTerminate(m_eglSurfaceData.eglDisplay);
                 return false;
             }
@@ -547,7 +539,7 @@ namespace ramses::internal
 
         if (!m_eglSurfaceData.eglContext)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Context_EGL initialization failed at eglCreateContext() with error code: " << eglGetError());
+            LOG_ERROR(CONTEXT_RENDERER, "Context_EGL initialization failed at eglCreateContext() with error code: {}", eglGetError());
             eglDestroySurface(m_eglSurfaceData.eglDisplay, m_eglSurfaceData.eglSurface);
             eglTerminate(m_eglSurfaceData.eglDisplay);
             return false;

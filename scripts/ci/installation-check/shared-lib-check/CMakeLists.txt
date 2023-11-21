@@ -40,7 +40,7 @@ if (NOT SYSTEM_GLM)
     target_include_directories(${name} PRIVATE ${ramses-shared-lib_INCLUDE_DIRS})
 
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-        get_filename_component(ramses-shared-lib_LIBDIR ${ramses-shared-lib_LIBRARIES} DIRECTORY)
+        get_filename_component(ramses-shared-lib_LIBDIR ${ramses-shared-lib-headless_LIBRARIES} DIRECTORY)
         target_link_libraries(${name} "-Wl,-rpath-link,${ramses-shared-lib_LIBDIR}")
     endif()
 

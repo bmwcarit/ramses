@@ -12,7 +12,6 @@
 #include "internal/RendererLib/RendererScenes.h"
 #include "internal/RendererLib/RendererEventCollector.h"
 #include "SceneAllocateHelper.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
 #include "TestEqualHelper.h"
 #include "glm/gtx/transform.hpp"
 
@@ -41,9 +40,6 @@ namespace ramses::internal
             , providerId(33u)
             , consumerId(44u)
         {
-            // caller is expected to have a display prefix for logs
-            ThreadLocalLog::SetPrefix(1);
-
             providerSceneAllocator.allocateNode(0u, providerNode);
             consumerSceneAllocator.allocateNode(0u, consumerNode);
 

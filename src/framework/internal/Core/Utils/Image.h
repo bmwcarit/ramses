@@ -48,6 +48,7 @@ namespace ramses::internal
         [[nodiscard]] Image createEnlarged(uint32_t width, uint32_t height, std::array<uint8_t, 4> fillValue = {0x0, 0x0, 0x0, 0xff}) const;
 
         [[nodiscard]] const std::vector<uint8_t>& getData() const;
+        [[nodiscard]] std::vector<std::byte> getDataAsByte() const;
 
         bool operator==(const Image& other) const;
         bool operator!=(const Image& other) const;

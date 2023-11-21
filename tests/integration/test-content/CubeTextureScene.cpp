@@ -133,20 +133,13 @@ namespace ramses::internal
             ramses::internal::Image imageNZ;
             imageNZ.loadFromFilePNG("res/ramses-test-client-cube-nz.png");
 
-            const std::vector<CubeMipLevelData> mipLevelData{ CubeMipLevelData(
-                static_cast<uint32_t>(imagePX.getData().size()),
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-                reinterpret_cast<const std::byte*>(imagePX.getData().data()),
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-                reinterpret_cast<const std::byte*>(imageNX.getData().data()),
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-                reinterpret_cast<const std::byte*>(imagePY.getData().data()),
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-                reinterpret_cast<const std::byte*>(imageNY.getData().data()),
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-                reinterpret_cast<const std::byte*>(imagePZ.getData().data()),
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-                reinterpret_cast<const std::byte*>(imageNZ.getData().data())) };
+            const std::vector<CubeMipLevelData> mipLevelData{{
+                imagePX.getDataAsByte(),
+                imageNX.getDataAsByte(),
+                imagePY.getDataAsByte(),
+                imageNY.getDataAsByte(),
+                imagePZ.getDataAsByte(),
+                imageNZ.getDataAsByte()} };
 
             return m_scene.createTextureCube(ramses::ETextureFormat::RGBA8, imageNY.getWidth(), mipLevelData, false);
         }
@@ -166,33 +159,27 @@ namespace ramses::internal
             ramses::internal::Image imageNZ;
             imageNZ.loadFromFilePNG("res/ramses-test-client-cube-nz.png");
 
-            const std::vector<CubeMipLevelData> mipLevelData{ CubeMipLevelData(
-                static_cast<uint32_t>(imagePX.getData().size()),
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-                reinterpret_cast<const std::byte*>(imagePX.getData().data()),
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-                reinterpret_cast<const std::byte*>(imageNX.getData().data()),
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-                reinterpret_cast<const std::byte*>(imagePY.getData().data()),
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-                reinterpret_cast<const std::byte*>(imageNY.getData().data()),
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-                reinterpret_cast<const std::byte*>(imagePZ.getData().data()),
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-                reinterpret_cast<const std::byte*>(imageNZ.getData().data())) };
+            const std::vector<CubeMipLevelData> mipLevelData{ {
+                imagePX.getDataAsByte(),
+                imageNX.getDataAsByte(),
+                imagePY.getDataAsByte(),
+                imageNY.getDataAsByte(),
+                imagePZ.getDataAsByte(),
+                imageNZ.getDataAsByte()} };
 
             return m_scene.createTextureCube(ramses::ETextureFormat::RGBA8, imageNY.getWidth(), mipLevelData, false, bgraSwizzle);
         }
         case EState_Float:
         {
             // 2x2 texture with RGB + white.
-            const float texture[] = {1.0f, 0.0f, 0.0f,
-                                    0.0f, 1.0f, 0.0f,
-                                    0.0f, 0.0f, 1.0f,
-                                    1.0f, 1.0f, 1.0f};
+            const std::array<float, 12> texture = {1.0f, 0.0f, 0.0f,
+                                                  0.0f, 1.0f, 0.0f,
+                                                  0.0f, 0.0f, 1.0f,
+                                                  1.0f, 1.0f, 1.0f};
 
-            const auto* texturePtr = reinterpret_cast<const std::byte*>(texture);
-            const std::vector<CubeMipLevelData> mipLevelData{ CubeMipLevelData(sizeof(texture), texturePtr, texturePtr, texturePtr, texturePtr, texturePtr, texturePtr) };
+            const auto* texturePtr = reinterpret_cast<const std::byte*>(texture.data());
+            std::vector<std::byte> textureBytes(texturePtr, texturePtr + texture.size() * sizeof(texture[0]));
+            const std::vector<CubeMipLevelData> mipLevelData{ {textureBytes, textureBytes, textureBytes, textureBytes, textureBytes, textureBytes} };
 
             return m_scene.createTextureCube(ramses::ETextureFormat::RGB32F, 2, mipLevelData, false);
         }

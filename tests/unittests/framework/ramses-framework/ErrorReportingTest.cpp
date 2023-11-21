@@ -98,8 +98,8 @@ namespace ramses::internal
         m_errorReporting.set("error 2", &object2);
 
         ASSERT_EQ(m_loggedErrors.size(), 2u);
-        EXPECT_EQ(m_loggedErrors[0], "[obj1] error 1");
-        EXPECT_EQ(m_loggedErrors[1], "[obj2] error 2");
+        EXPECT_EQ(m_loggedErrors[0], "R.main: [obj1] error 1");
+        EXPECT_EQ(m_loggedErrors[1], "R.main: [obj2] error 2");
     }
 
     TEST_F(AErrorReporting, ClearsError)

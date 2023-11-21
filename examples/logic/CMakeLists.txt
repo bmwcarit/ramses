@@ -9,11 +9,17 @@
 function(add_example)
     cmake_parse_arguments(
         EXAMPLE             # Prefix of parsed args
-        "MAKE_TEST"         # Options
+        "MAKE_TEST;LOCAL_EXAMPLE" # Options
         "NAME"              # Single-value args
         "FILES"             # Multi-value-args
         ${ARGN}
     )
+
+    if(${EXAMPLE_LOCAL_EXAMPLE})
+        set(RAMSES_SHLIB ramses-shared-lib)
+    else()
+        set(RAMSES_SHLIB ramses-shared-lib-headless)
+    endif()
 
     createModule(
         NAME                    ${EXAMPLE_NAME}
@@ -21,7 +27,7 @@ function(add_example)
         INCLUDE_PATHS           shared
         ENABLE_INSTALL          OFF
         SRC_FILES               ${EXAMPLE_FILES}
-        DEPENDENCIES            ramses::shared-lib-for-examples
+        DEPENDENCIES            ${RAMSES_SHLIB}
     )
 
     if(TARGET ${EXAMPLE_NAME} AND ramses-sdk_BUILD_TESTS AND ${EXAMPLE_MAKE_TEST})
@@ -47,11 +53,11 @@ add_example(NAME 11_interfaces            FILES 11_interfaces/main.cpp          
 
 if(ramses-sdk_BUILD_FULL_SHARED_LIB)
     # Can't execute ramses animation examples as test - they have a loop which blocks test automation and wastes resources
-    add_example(NAME 08a_static_animation     FILES 08a_static_animation/main.cpp)
-    add_example(NAME 08b_dynamic_animation    FILES 08b_dynamic_animation/main.cpp)
+    add_example(NAME 08a_static_animation     FILES 08a_static_animation/main.cpp   LOCAL_EXAMPLE)
+    add_example(NAME 08b_dynamic_animation    FILES 08b_dynamic_animation/main.cpp  LOCAL_EXAMPLE)
     # Can't execute as test - it is essentially animation with loop which blocks test automation and wastes resources
-    add_example(NAME 14_skinbinding           FILES 14_skinbinding/main.cpp)
-    add_example(NAME 12_anchor_point          FILES 12_anchor_point/main.cpp)
-    add_example(NAME 13_render_order          FILES 13_render_order/main.cpp)
-    add_example(NAME 15_meshnodebinding       FILES 15_meshnodebinding/main.cpp)
+    add_example(NAME 14_skinbinding           FILES 14_skinbinding/main.cpp         LOCAL_EXAMPLE)
+    add_example(NAME 12_anchor_point          FILES 12_anchor_point/main.cpp        LOCAL_EXAMPLE)
+    add_example(NAME 13_render_order          FILES 13_render_order/main.cpp        LOCAL_EXAMPLE)
+    add_example(NAME 15_meshnodebinding       FILES 15_meshnodebinding/main.cpp     LOCAL_EXAMPLE)
 endif()

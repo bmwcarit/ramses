@@ -18,13 +18,13 @@ namespace ramses::internal
     {
         if (!LuaCompilationUtils::CheckModuleName(aliasName))
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "Failed to add dependency '{}'! The alias name should be a valid Lua label.", aliasName);
+            LOG_ERROR(CONTEXT_CLIENT, "Failed to add dependency '{}'! The alias name should be a valid Lua label.", aliasName);
             return false;
         }
 
         if (SolState::IsReservedModuleName(aliasName))
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "Failed to add dependency '{}'! The alias collides with a standard library name!", aliasName);
+            LOG_ERROR(CONTEXT_CLIENT, "Failed to add dependency '{}'! The alias collides with a standard library name!", aliasName);
             return false;
         }
 
@@ -32,7 +32,7 @@ namespace ramses::internal
 
         if (m_modulesMapping.cend() != m_modulesMapping.find(aliasNameStr))
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "Module dependencies must be uniquely aliased! Alias '{}' is already used!", aliasName);
+            LOG_ERROR(CONTEXT_CLIENT, "Module dependencies must be uniquely aliased! Alias '{}' is already used!", aliasName);
             return false;
         }
 
@@ -49,7 +49,7 @@ namespace ramses::internal
     {
         if (std::find(m_stdModules.cbegin(), m_stdModules.cend(), stdModule) != m_stdModules.cend())
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "Standard module {} already added, can't add twice!", stdModule);
+            LOG_ERROR(CONTEXT_CLIENT, "Standard module {} already added, can't add twice!", stdModule);
             return false;
         }
 

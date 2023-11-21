@@ -218,7 +218,7 @@ namespace ramses::internal
             ASSERT_TRUE(tmpLogicEngine.update());
             ASSERT_EQ(5, *script->getOutputs()->getChild("globalValueBefore")->get<int32_t>());
             ASSERT_EQ(42, *script->getOutputs()->getChild("globalValueAfter")->get<int32_t>());
-            ASSERT_TRUE(saveToFileWithoutValidation("withGlobals.bin"));
+            ASSERT_TRUE(saveToFile("withGlobals.bin"));
         }
 
         ASSERT_TRUE(recreateFromFile("withGlobals.bin"));
@@ -423,7 +423,7 @@ namespace ramses::internal
                 end)", {}, "script");
             ASSERT_NE(nullptr, script);
             EXPECT_TRUE(otherLogic.update());
-            EXPECT_TRUE(saveToFileWithoutValidation("intfInGlobal.bin"));
+            EXPECT_TRUE(saveToFile("intfInGlobal.bin"));
         }
 
         ASSERT_TRUE(recreateFromFile("intfInGlobal.bin"));

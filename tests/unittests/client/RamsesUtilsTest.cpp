@@ -328,34 +328,77 @@ namespace ramses::internal
         }
 
         size_t mipMapCount = 0u;
-        MipLevelData* mipData = RamsesUtils::GenerateMipMapsTexture2D(width, height, pixelSize, data, mipMapCount);
+        auto* mipData = RamsesUtils::GenerateMipMapsTexture2D(width, height, pixelSize, data, mipMapCount);
         EXPECT_TRUE(mipData);
         EXPECT_EQ(4u, mipMapCount);
 
         // mip sizes
-        EXPECT_EQ(32u, mipData[0].m_size);
-        EXPECT_EQ(8u,  mipData[1].m_size);
-        EXPECT_EQ(2u,  mipData[2].m_size);
-        EXPECT_EQ(1u,  mipData[3].m_size);
-
-        // original data has been copied
-        EXPECT_NE(data, mipData[0].m_data);
+        EXPECT_EQ(32u, (*mipData)[0].size());
+        EXPECT_EQ(8u,  (*mipData)[1].size());
+        EXPECT_EQ(2u,  (*mipData)[2].size());
+        EXPECT_EQ(1u,  (*mipData)[3].size());
 
         // mip level 1
-        EXPECT_EQ(std::byte{15u}, mipData[0].m_data[14]);
+        EXPECT_EQ(std::byte{15u}, (*mipData)[0][14]);
 
         // mip level 2
-        EXPECT_EQ(std::byte{3u},  mipData[1].m_data[0]);
-        EXPECT_EQ(std::byte{29u}, mipData[1].m_data[7]);
+        EXPECT_EQ(std::byte{3u},  (*mipData)[1][0]);
+        EXPECT_EQ(std::byte{29u}, (*mipData)[1][7]);
 
         // mip level 3
-        EXPECT_EQ(std::byte{8u},  mipData[2].m_data[0]);
-        EXPECT_EQ(std::byte{24u}, mipData[2].m_data[1]);
+        EXPECT_EQ(std::byte{8u},  (*mipData)[2][0]);
+        EXPECT_EQ(std::byte{24u}, (*mipData)[2][1]);
 
         // mip level 4
-        EXPECT_EQ(std::byte{16u}, mipData[3].m_data[0]);
+        EXPECT_EQ(std::byte{16u}, (*mipData)[3][0]);
 
-        RamsesUtils::DeleteGeneratedMipMaps(mipData, mipMapCount);
+        RamsesUtils::DeleteGeneratedMipMaps(mipData);
+        EXPECT_FALSE(mipData);
+    }
+
+    TEST_F(ARamsesUtilsTest, doesNotGenerateMipMapsForTexture2DWithNonPow2Width)
+    {
+        const uint8_t pixelSize = 1u;
+        const uint32_t width = 3u;
+        const uint32_t height = 8u;
+        const size_t dataSize = width * height * pixelSize;
+        std::vector<std::byte> data(dataSize);
+        for (uint8_t i = 0; i < dataSize; i++)
+        {
+            data[i] = std::byte(i + 1u);
+        }
+
+        size_t mipMapCount = 0u;
+        auto mipData = RamsesUtils::GenerateMipMapsTexture2D(width, height, pixelSize, data.data(), mipMapCount);
+        EXPECT_TRUE(mipData);
+        ASSERT_EQ(1u, mipMapCount);
+
+        EXPECT_EQ(data, (*mipData)[0]);
+
+        RamsesUtils::DeleteGeneratedMipMaps(mipData);
+        EXPECT_FALSE(mipData);
+    }
+
+    TEST_F(ARamsesUtilsTest, doesNotGenerateMipMapsForTexture2DWithNonPow2Height)
+    {
+        const uint8_t pixelSize = 1u;
+        const uint32_t width = 4u;
+        const uint32_t height = 7u;
+        const size_t dataSize = width * height * pixelSize;
+        std::vector<std::byte> data(dataSize);
+        for (uint8_t i = 0; i < dataSize; i++)
+        {
+            data[i] = std::byte(i + 1u);
+        }
+
+        size_t mipMapCount = 0u;
+        auto mipData = RamsesUtils::GenerateMipMapsTexture2D(width, height, pixelSize, data.data(), mipMapCount);
+        EXPECT_TRUE(mipData);
+        ASSERT_EQ(1u, mipMapCount);
+
+        EXPECT_EQ(data, (*mipData)[0]);
+
+        RamsesUtils::DeleteGeneratedMipMaps(mipData);
         EXPECT_FALSE(mipData);
     }
 
@@ -372,39 +415,36 @@ namespace ramses::internal
         }
 
         size_t mipMapCount = 0u;
-        MipLevelData* mipData = RamsesUtils::GenerateMipMapsTexture2D(width, height, pixelSize, data, mipMapCount);
+        auto mipData = RamsesUtils::GenerateMipMapsTexture2D(width, height, pixelSize, data, mipMapCount);
         EXPECT_TRUE(mipData);
         EXPECT_EQ(4u, mipMapCount);
 
         // mip sizes
-        EXPECT_EQ(64u, mipData[0].m_size);
-        EXPECT_EQ(16u, mipData[1].m_size);
-        EXPECT_EQ(4u,  mipData[2].m_size);
-        EXPECT_EQ(2u,  mipData[3].m_size);
-
-        // original data has been copied
-        EXPECT_NE(data, mipData[0].m_data);
+        EXPECT_EQ(64u, (*mipData)[0].size());
+        EXPECT_EQ(16u, (*mipData)[1].size());
+        EXPECT_EQ(4u,  (*mipData)[2].size());
+        EXPECT_EQ(2u,  (*mipData)[3].size());
 
         // mip level 1
-        EXPECT_EQ(std::byte{15u}, mipData[0].m_data[28]);
+        EXPECT_EQ(std::byte{15u}, (*mipData)[0][28]);
 
         // mip level 2
-        EXPECT_EQ(std::byte{5u},  mipData[1].m_data[0]);
-        EXPECT_EQ(std::byte{37u}, mipData[1].m_data[1]);
-        EXPECT_EQ(std::byte{27u}, mipData[1].m_data[14]);
-        EXPECT_EQ(std::byte{59u}, mipData[1].m_data[15]);
+        EXPECT_EQ(std::byte{5u},  (*mipData)[1][0]);
+        EXPECT_EQ(std::byte{37u}, (*mipData)[1][1]);
+        EXPECT_EQ(std::byte{27u}, (*mipData)[1][14]);
+        EXPECT_EQ(std::byte{59u}, (*mipData)[1][15]);
 
         // mip level 3
-        EXPECT_EQ(std::byte{14u}, mipData[2].m_data[0]);
-        EXPECT_EQ(std::byte{46u}, mipData[2].m_data[1]);
-        EXPECT_EQ(std::byte{18u}, mipData[2].m_data[2]);
-        EXPECT_EQ(std::byte{50u}, mipData[2].m_data[3]);
+        EXPECT_EQ(std::byte{14u}, (*mipData)[2][0]);
+        EXPECT_EQ(std::byte{46u}, (*mipData)[2][1]);
+        EXPECT_EQ(std::byte{18u}, (*mipData)[2][2]);
+        EXPECT_EQ(std::byte{50u}, (*mipData)[2][3]);
 
         // mip level 4
-        EXPECT_EQ(std::byte{16u}, mipData[3].m_data[0]);
-        EXPECT_EQ(std::byte{48u}, mipData[3].m_data[1]);
+        EXPECT_EQ(std::byte{16u}, (*mipData)[3][0]);
+        EXPECT_EQ(std::byte{48u}, (*mipData)[3][1]);
 
-        RamsesUtils::DeleteGeneratedMipMaps(mipData, mipMapCount);
+        RamsesUtils::DeleteGeneratedMipMaps(mipData);
         EXPECT_FALSE(mipData);
     }
 
@@ -420,48 +460,40 @@ namespace ramses::internal
         }
 
         size_t mipMapCount = 0u;
-        CubeMipLevelData* mipData = RamsesUtils::GenerateMipMapsTextureCube(width, height, pixelSize, data, mipMapCount);
+        auto mipData = RamsesUtils::GenerateMipMapsTextureCube(width, height, pixelSize, data, mipMapCount);
         EXPECT_TRUE(mipData);
         EXPECT_EQ(3u, mipMapCount);
 
         // mip sizes
-        EXPECT_EQ(16u, mipData[0].m_faceDataSize);
-        EXPECT_EQ(4u,  mipData[1].m_faceDataSize);
-        EXPECT_EQ(1u,  mipData[2].m_faceDataSize);
-
-        // original data has been copied
-        EXPECT_NE(&data[0],  mipData[0].m_dataPX);
-        EXPECT_NE(&data[16], mipData[0].m_dataNX);
-        EXPECT_NE(&data[32], mipData[0].m_dataPY);
-        EXPECT_NE(&data[48], mipData[0].m_dataNY);
-        EXPECT_NE(&data[64], mipData[0].m_dataPZ);
-        EXPECT_NE(&data[80], mipData[0].m_dataNZ);
+        EXPECT_EQ(16u, (*mipData)[0].m_dataPX.size());
+        EXPECT_EQ(4u,  (*mipData)[1].m_dataPX.size());
+        EXPECT_EQ(1u,  (*mipData)[2].m_dataPX.size());
 
         // mip level 1
-        EXPECT_EQ(std::byte{11u}, mipData[0].m_dataPX[10]);
-        EXPECT_EQ(std::byte{27u}, mipData[0].m_dataNX[10]);
-        EXPECT_EQ(std::byte{43u}, mipData[0].m_dataPY[10]);
-        EXPECT_EQ(std::byte{59u}, mipData[0].m_dataNY[10]);
-        EXPECT_EQ(std::byte{75u}, mipData[0].m_dataPZ[10]);
-        EXPECT_EQ(std::byte{91u}, mipData[0].m_dataNZ[10]);
+        EXPECT_EQ(std::byte{11u}, (*mipData)[0].m_dataPX[10]);
+        EXPECT_EQ(std::byte{27u}, (*mipData)[0].m_dataNX[10]);
+        EXPECT_EQ(std::byte{43u}, (*mipData)[0].m_dataPY[10]);
+        EXPECT_EQ(std::byte{59u}, (*mipData)[0].m_dataNY[10]);
+        EXPECT_EQ(std::byte{75u}, (*mipData)[0].m_dataPZ[10]);
+        EXPECT_EQ(std::byte{91u}, (*mipData)[0].m_dataNZ[10]);
 
         // mip level 2
-        EXPECT_EQ(std::byte{5u},  mipData[1].m_dataPX[1]);
-        EXPECT_EQ(std::byte{21u}, mipData[1].m_dataNX[1]);
-        EXPECT_EQ(std::byte{37u}, mipData[1].m_dataPY[1]);
-        EXPECT_EQ(std::byte{53u}, mipData[1].m_dataNY[1]);
-        EXPECT_EQ(std::byte{69u}, mipData[1].m_dataPZ[1]);
-        EXPECT_EQ(std::byte{85u}, mipData[1].m_dataNZ[1]);
+        EXPECT_EQ(std::byte{5u},  (*mipData)[1].m_dataPX[1]);
+        EXPECT_EQ(std::byte{21u}, (*mipData)[1].m_dataNX[1]);
+        EXPECT_EQ(std::byte{37u}, (*mipData)[1].m_dataPY[1]);
+        EXPECT_EQ(std::byte{53u}, (*mipData)[1].m_dataNY[1]);
+        EXPECT_EQ(std::byte{69u}, (*mipData)[1].m_dataPZ[1]);
+        EXPECT_EQ(std::byte{85u}, (*mipData)[1].m_dataNZ[1]);
 
         // mip level 3
-        EXPECT_EQ(std::byte{8u},  mipData[2].m_dataPX[0]);
-        EXPECT_EQ(std::byte{24u}, mipData[2].m_dataNX[0]);
-        EXPECT_EQ(std::byte{40u}, mipData[2].m_dataPY[0]);
-        EXPECT_EQ(std::byte{56u}, mipData[2].m_dataNY[0]);
-        EXPECT_EQ(std::byte{72u}, mipData[2].m_dataPZ[0]);
-        EXPECT_EQ(std::byte{88u}, mipData[2].m_dataNZ[0]);
+        EXPECT_EQ(std::byte{8u},  (*mipData)[2].m_dataPX[0]);
+        EXPECT_EQ(std::byte{24u}, (*mipData)[2].m_dataNX[0]);
+        EXPECT_EQ(std::byte{40u}, (*mipData)[2].m_dataPY[0]);
+        EXPECT_EQ(std::byte{56u}, (*mipData)[2].m_dataNY[0]);
+        EXPECT_EQ(std::byte{72u}, (*mipData)[2].m_dataPZ[0]);
+        EXPECT_EQ(std::byte{88u}, (*mipData)[2].m_dataNZ[0]);
 
-        RamsesUtils::DeleteGeneratedMipMaps(mipData, mipMapCount);
+        RamsesUtils::DeleteGeneratedMipMaps(mipData);
         EXPECT_FALSE(mipData);
     }
 

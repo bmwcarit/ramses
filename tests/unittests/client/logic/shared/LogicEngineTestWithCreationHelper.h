@@ -26,6 +26,7 @@
 #include "ramses/client/logic/AnimationNodeConfig.h"
 #include "ramses/client/logic/TimerNode.h"
 #include "ramses/client/logic/AnchorPoint.h"
+#include "ramses/client/logic/RenderBufferBinding.h"
 #include "ramses/client/PerspectiveCamera.h"
 #include "ramses/client/RenderGroup.h"
 #include "ramses/client/RenderPass.h"
@@ -52,7 +53,8 @@ namespace ramses::internal
         DataArray,
         AnimationNode,
         TimerNode,
-        AnchorPoint
+        AnchorPoint,
+        RenderBufferBinding
     >;
 
     class ALogicEngineBaseWithCreationHelper : public ALogicEngineBase
@@ -131,5 +133,9 @@ namespace ramses::internal
         const auto nodeBinding = this->m_logicEngine->createNodeBinding(*m_node, ERotationType::Euler_XYZ, "nodeForAnchor");
         const auto camBinding = this->m_logicEngine->createCameraBinding(*this->m_camera, "camForAnchor");
         return this->m_logicEngine->createAnchorPoint(*nodeBinding, *camBinding, name);
+    }
+    template <> inline RenderBufferBinding* ALogicEngineBaseWithCreationHelper::createObjectOfType<RenderBufferBinding>(std::string_view name)
+    {
+        return this->m_logicEngine->createRenderBufferBinding(*m_renderBuffer, name);
     }
 }

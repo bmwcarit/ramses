@@ -39,6 +39,8 @@ namespace ramses::internal
         [[nodiscard]] ERenderBufferAccessMode getAccessMode() const;
         [[nodiscard]] uint32_t            getSampleCount() const;
 
+        bool setProperties(uint32_t width, uint32_t height, uint32_t sampleCount);
+
         [[nodiscard]] ramses::internal::RenderBufferHandle getRenderBufferHandle() const;
 
     private:

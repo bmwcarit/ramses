@@ -32,7 +32,6 @@
 #include "RendererSceneUpdaterFacade.h"
 #include "internal/Components/SceneUpdate.h"
 #include "internal/Watchdog/ThreadAliveNotifierMock.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
 
 #include <cstdint>
 #include <unordered_set>
@@ -51,9 +50,6 @@ namespace ramses::internal {
             , sceneStateExecutor(renderer, sceneEventSender, rendererEventCollector)
             , rendererSceneUpdater(new RendererSceneUpdaterFacade(Display, renderer.m_platform, renderer, rendererScenes, sceneStateExecutor, rendererEventCollector, frameTimer, expirationMonitor, notifier))
         {
-            // caller is expected to have a display prefix for logs
-            ThreadLocalLog::SetPrefix(1);
-
             rendererSceneUpdater->setSceneReferenceLogicHandler(sceneReferenceLogic);
             frameTimer.startFrame();
             rendererSceneUpdater->setLimitFlushesForceApply(ForceApplyFlushesLimit);

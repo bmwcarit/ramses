@@ -22,7 +22,7 @@ namespace ramses::internal
 
     void SceneCommandVisitor::operator()(const SceneCommandFlushSceneVersion& cmd)
     {
-        LOG_INFO(CONTEXT_CLIENT, "SceneCommandVisitor::execute: set scene version in next flush to \"" << cmd.sceneVersion << "\"");
+        LOG_INFO(CONTEXT_CLIENT, "SceneCommandVisitor::execute: set scene version in next flush to \"{}\"", cmd.sceneVersion);
         m_scene.setSceneVersionForNextFlush(cmd.sceneVersion);
     }
 
@@ -33,7 +33,7 @@ namespace ramses::internal
             // no object, validate whole scene
             ValidationReportImpl report;
             m_scene.validate(report);
-            LOG_INFO(CONTEXT_CLIENT, "Validation:  " << report.toString());
+            LOG_INFO(CONTEXT_CLIENT, "Validation:  {}", report.toString());
         }
         else
         {
@@ -41,10 +41,10 @@ namespace ramses::internal
             {
                 ValidationReportImpl report;
                 ro->impl().validate(report);
-                LOG_INFO(CONTEXT_CLIENT, "Validation:  " << report.toString());
+                LOG_INFO(CONTEXT_CLIENT, "Validation:  {}", report.toString());
             }
             else
-                LOG_ERROR(CONTEXT_CLIENT, "Validation could not find requested object with name: " << cmd.optionalObjectName);
+                LOG_ERROR(CONTEXT_CLIENT, "Validation could not find requested object with name: {}", cmd.optionalObjectName);
         }
     }
 
@@ -52,11 +52,10 @@ namespace ramses::internal
     {
         std::vector<std::byte> sceneData;
         SaveFileConfigImpl config;
-        config.setValidationEnabled(false);
         config.setCompressionEnabled(false);
         if (!m_scene.serialize(sceneData, config))
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "SceneCommandVisitor::execute: failed dump scene: {} (file:{} dlt:{})", m_scene.getSceneId(), cmd.fileName, cmd.sendViaDLT);
+            LOG_ERROR(CONTEXT_CLIENT, "SceneCommandVisitor::execute: failed dump scene: {} (file:{} dlt:{})", m_scene.getSceneId(), cmd.fileName, cmd.sendViaDLT);
             return;
         }
 
@@ -68,12 +67,12 @@ namespace ramses::internal
             {
                 if (!file.write(sceneData.data(), sceneData.size()))
                 {
-                    LOG_ERROR_P(CONTEXT_CLIENT, "SceneCommandVisitor::execute: failed to write scene dump: {}", file.getPath());
+                    LOG_ERROR(CONTEXT_CLIENT, "SceneCommandVisitor::execute: failed to write scene dump: {}", file.getPath());
                 }
             }
             else
             {
-                LOG_ERROR_P(CONTEXT_CLIENT, "SceneCommandVisitor::execute: failed to open: {}", file.getPath());
+                LOG_ERROR(CONTEXT_CLIENT, "SceneCommandVisitor::execute: failed to open: {}", file.getPath());
             }
         }
 
@@ -81,11 +80,11 @@ namespace ramses::internal
         {
             if (GetRamsesLogger().transmit(std::move(sceneData), filename))
             {
-                LOG_INFO_P(CONTEXT_CLIENT, "SceneCommandVisitor::execute: started dlt file transfer: {}", filename);
+                LOG_INFO(CONTEXT_CLIENT, "SceneCommandVisitor::execute: started dlt file transfer: {}", filename);
             }
             else
             {
-                LOG_ERROR_P(CONTEXT_CLIENT, "SceneCommandVisitor::execute: failed to send scene dump file via dlt: {}", filename);
+                LOG_ERROR(CONTEXT_CLIENT, "SceneCommandVisitor::execute: failed to send scene dump file via dlt: {}", filename);
             }
         }
     }

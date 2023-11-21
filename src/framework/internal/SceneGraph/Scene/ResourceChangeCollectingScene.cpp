@@ -131,6 +131,13 @@ namespace ramses::internal
         m_sceneResourceActions.push_back({ handle.asMemoryHandle(), ESceneResourceAction_DestroyRenderBuffer });
     }
 
+    void ResourceChangeCollectingScene::setRenderBufferProperties(RenderBufferHandle handle, uint32_t width, uint32_t height, uint32_t sampleCount)
+    {
+        TransformationCachedScene::setRenderBufferProperties(handle, width, height, sampleCount);
+        m_sceneResourceActions.push_back({ handle.asMemoryHandle(), ESceneResourceAction_UpdateRenderBufferProperties });
+        m_resourcesChanged = true;
+    }
+
     BlitPassHandle ResourceChangeCollectingScene::allocateBlitPass(RenderBufferHandle sourceRenderBufferHandle, RenderBufferHandle destinationRenderBufferHandle, BlitPassHandle passHandle /*= BlitPassHandle::Invalid()*/)
     {
         const BlitPassHandle newHandle = TransformationCachedScene::allocateBlitPass(sourceRenderBufferHandle, destinationRenderBufferHandle, passHandle);

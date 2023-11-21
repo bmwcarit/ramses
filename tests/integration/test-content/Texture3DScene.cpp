@@ -36,38 +36,34 @@ namespace ramses::internal
             ramses::vec3f{ 1.0f, 1.0f, 0.0f }};
         m_vertexPositions = m_scene.createArrayResource(4u, vertexPositionsArray.data());
 
-        const uint8_t rgb8Data_0[] = {
-            0xff, 0x00, 0x00,
-            0xff, 0x00, 0x00,
-            0xff, 0x00, 0x00,
-            0xff, 0x00, 0x00,
-            0x00, 0xff, 0x00,
-            0x00, 0xff, 0x00,
-            0x00, 0xff, 0x00,
-            0x00, 0xff, 0x00,
-            0x00, 0x00, 0xff,
-            0x00, 0x00, 0xff,
-            0x00, 0x00, 0xff,
-            0x00, 0x00, 0xff,
-            0x00, 0xff, 0xff,
-            0x00, 0xff, 0xff,
-            0x00, 0xff, 0xff,
-            0x00, 0xff, 0xff };
+        const MipLevelData rgb8Data_0 = {
+            std::byte{0xff}, std::byte{0x00}, std::byte{0x00},
+            std::byte{0xff}, std::byte{0x00}, std::byte{0x00},
+            std::byte{0xff}, std::byte{0x00}, std::byte{0x00},
+            std::byte{0xff}, std::byte{0x00}, std::byte{0x00},
+            std::byte{0x00}, std::byte{0xff}, std::byte{0x00},
+            std::byte{0x00}, std::byte{0xff}, std::byte{0x00},
+            std::byte{0x00}, std::byte{0xff}, std::byte{0x00},
+            std::byte{0x00}, std::byte{0xff}, std::byte{0x00},
+            std::byte{0x00}, std::byte{0x00}, std::byte{0xff},
+            std::byte{0x00}, std::byte{0x00}, std::byte{0xff},
+            std::byte{0x00}, std::byte{0x00}, std::byte{0xff},
+            std::byte{0x00}, std::byte{0x00}, std::byte{0xff},
+            std::byte{0x00}, std::byte{0xff}, std::byte{0xff},
+            std::byte{0x00}, std::byte{0xff}, std::byte{0xff},
+            std::byte{0x00}, std::byte{0xff}, std::byte{0xff},
+            std::byte{0x00}, std::byte{0xff}, std::byte{0xff} };
 
-        const uint8_t rgb8Data_1[] = {
-            0xff, 0x00, 0x00,
-            0x00, 0xff, 0x00,
+        const MipLevelData rgb8Data_1 = {
+            std::byte{0xff}, std::byte{0x00}, std::byte{0x00},
+            std::byte{0x00}, std::byte{0xff}, std::byte{0x00},
         };
 
-        const uint8_t rgb8Data_2[] = {
-            0xff, 0xff, 0x00,
+        const MipLevelData rgb8Data_2 = {
+            std::byte{0xff}, std::byte{0xff}, std::byte{0x00},
         };
 
-        const std::vector<ramses::MipLevelData> mipLevelData = {
-            ramses::MipLevelData(sizeof(rgb8Data_0), rgb8Data_0),
-            ramses::MipLevelData(sizeof(rgb8Data_1), rgb8Data_1),
-            ramses::MipLevelData(sizeof(rgb8Data_2), rgb8Data_2)
-        };
+        const std::vector<ramses::MipLevelData> mipLevelData = { rgb8Data_0, rgb8Data_1, rgb8Data_2 };
 
         m_texture = m_scene.createTexture3D(
             ramses::ETextureFormat::RGB8,

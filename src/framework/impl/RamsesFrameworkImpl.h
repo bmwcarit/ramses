@@ -16,6 +16,7 @@
 #include "internal/Core/Utils/StatisticCollection.h"
 #include "internal/Communication/TransportCommon/LogConnectionInfo.h"
 #include "internal/Communication/TransportCommon/EConnectionProtocol.h"
+#include "ramses/framework/APIExport.h"
 #include "ramses/framework/RamsesFrameworkTypes.h"
 #include "ramses/framework/EFeatureLevel.h"
 #include "ramses/framework/Issue.h"
@@ -45,7 +46,7 @@ namespace ramses::internal
     class PublicRamshCommand;
     class RamsesFrameworkConfigImpl;
 
-    class RamsesFrameworkImpl
+    class RAMSES_IMPL_EXPORT RamsesFrameworkImpl
     {
     public:
         ~RamsesFrameworkImpl();

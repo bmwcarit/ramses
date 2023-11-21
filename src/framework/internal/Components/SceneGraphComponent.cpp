@@ -92,12 +92,12 @@ namespace ramses::internal
     // TODO(tobias) remove mode, already given with publish
     void SceneGraphComponent::sendCreateScene(const Guid& to, const SceneId& sceneId, [[maybe_unused]] EScenePublicationMode mode)
     {
-        LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::sendCreateScene: sceneId " << sceneId << ", to " << to);
+        LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::sendCreateScene: sceneId {}, to {}", sceneId, to);
 
         const SceneInfo* info = m_locallyPublishedScenes.get(sceneId);
         if (!info)
         {
-            LOG_ERROR(CONTEXT_FRAMEWORK, "SceneGraphComponent::sendCreateScene: scene not published, sceneId " << sceneId);
+            LOG_ERROR(CONTEXT_FRAMEWORK, "SceneGraphComponent::sendCreateScene: scene not published, sceneId {}", sceneId);
             // return;   // TODO: lots of tests must be fixed for this check
         }
 
@@ -154,7 +154,7 @@ namespace ramses::internal
 
     void SceneGraphComponent::sendPublishScene(SceneId sceneId, EScenePublicationMode mode, std::string_view name)
     {
-        LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::publishScene: publishing scene: " << sceneId << " mode: " << EnumToString(mode));
+        LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::publishScene: publishing scene: {} mode: {}", sceneId, EnumToString(mode));
 
         SceneInfo info(sceneId, name, mode);
 
@@ -169,7 +169,7 @@ namespace ramses::internal
 
     void SceneGraphComponent::sendUnpublishScene(SceneId sceneId, EScenePublicationMode mode)
     {
-        LOG_DEBUG(CONTEXT_FRAMEWORK, "SceneGraphComponent::unpublishScene: unpublishing scene: " << sceneId << " mode: " << EnumToString(mode));
+        LOG_DEBUG(CONTEXT_FRAMEWORK, "SceneGraphComponent::unpublishScene: unpublishing scene: {} mode: {}", sceneId, EnumToString(mode));
 
         assert(m_locallyPublishedScenes.contains(sceneId));
         const SceneInfo info = *m_locallyPublishedScenes.get(sceneId);
@@ -186,12 +186,12 @@ namespace ramses::internal
     {
         if (m_myID == to)
         {
-            LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::subscribeScene: subscribing to local scene " << sceneId);
+            LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::subscribeScene: subscribing to local scene {}", sceneId);
             handleSubscribeScene(sceneId, m_myID);
         }
         else
         {
-            LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::subscribeScene: subscribing to scene " << sceneId << " from " << to);
+            LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::subscribeScene: subscribing to scene {} from {}", sceneId, to);
             m_communicationSystem.sendSubscribeScene(to, sceneId);
         }
     }
@@ -258,7 +258,7 @@ namespace ramses::internal
         {
             if (p.value.publicationMode != EScenePublicationMode::LocalOnly)
             {
-                LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::newParticipantHasConnected: publishing scene to new particpant: " << connnectedParticipant << " scene is: " << p.key << " mode: " << EnumToString(p.value.publicationMode) << " from: " << m_myID);
+                LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::newParticipantHasConnected: publishing scene to new participant: {} scene is: {} mode: {} from: {}", connnectedParticipant, p.key, EnumToString(p.value.publicationMode), m_myID);
                 availableScenes.push_back(p.value);
             }
         }
@@ -271,7 +271,7 @@ namespace ramses::internal
 
     void SceneGraphComponent::participantHasDisconnected(const Guid& disconnnectedParticipant)
     {
-        LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::participantHasDisconnected: unsubscribing all scenes for particpant: " << disconnnectedParticipant);
+        LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::participantHasDisconnected: unsubscribing all scenes for participant: {}", disconnnectedParticipant);
 
         PlatformGuard guard(m_frameworkLock);
         for(const auto& publishedScene : m_locallyPublishedScenes)
@@ -300,12 +300,12 @@ namespace ramses::internal
         ClientSceneLogicBase* sceneLogic = nullptr;
         if (enableLocalOnlyOptimization)
         {
-            LOG_INFO(CONTEXT_CLIENT, "SceneGraphComponent::handleCreateScene: creating scene " << scene.getSceneId() << " (direct)");
+            LOG_INFO(CONTEXT_CLIENT, "SceneGraphComponent::handleCreateScene: creating scene {} (direct)", scene.getSceneId());
             sceneLogic = new ClientSceneLogicDirect(*this, scene, m_resourceComponent, m_myID);
         }
         else
         {
-            LOG_INFO(CONTEXT_CLIENT, "SceneGraphComponent::handleCreateScene: creating scene " << scene.getSceneId() << " (shadow copy)");
+            LOG_INFO(CONTEXT_CLIENT, "SceneGraphComponent::handleCreateScene: creating scene {} (shadow copy)", scene.getSceneId());
             sceneLogic = new ClientSceneLogicShadowCopy(*this, scene, m_resourceComponent, m_myID);
         }
         m_sceneEventConsumers.put(sceneId, &eventConsumer);
@@ -317,7 +317,7 @@ namespace ramses::internal
         assert(m_clientSceneLogicMap.contains(sceneId));
         ClientSceneLogicBase& sceneLogic = **m_clientSceneLogicMap.get(sceneId);
 
-        LOG_INFO(CONTEXT_CLIENT, "SceneGraphComponent::handlePublishScene:  " << sceneId << " in mode " << EnumToString(publicationMode));
+        LOG_INFO(CONTEXT_CLIENT, "SceneGraphComponent::handlePublishScene: {} in mode {}", sceneId, EnumToString(publicationMode));
         sceneLogic.publish(publicationMode);
     }
 
@@ -326,7 +326,7 @@ namespace ramses::internal
         assert(m_clientSceneLogicMap.contains(sceneId));
         ClientSceneLogicBase& sceneLogic = **m_clientSceneLogicMap.get(sceneId);
 
-        LOG_INFO(CONTEXT_CLIENT, "SceneGraphComponent::handleUnpublishScene:  unpublishing scene " << sceneId);
+        LOG_INFO(CONTEXT_CLIENT, "SceneGraphComponent::handleUnpublishScene:  unpublishing scene {}", sceneId);
         sceneLogic.unpublish();
     }
 
@@ -341,7 +341,7 @@ namespace ramses::internal
 
     void SceneGraphComponent::handleRemoveScene(SceneId sceneId)
     {
-        LOG_INFO(CONTEXT_CLIENT, "SceneGraphComponent::handleRemoveScene: " << sceneId);
+        LOG_INFO(CONTEXT_CLIENT, "SceneGraphComponent::handleRemoveScene: {}", sceneId);
         ClientSceneLogicBase* sceneLogic = *m_clientSceneLogicMap.get(sceneId);
         assert(sceneLogic != nullptr);
         m_clientSceneLogicMap.remove(sceneId);
@@ -354,12 +354,12 @@ namespace ramses::internal
         ClientSceneLogicBase** sceneLogic = m_clientSceneLogicMap.get(sceneId);
         if (sceneLogic != nullptr)
         {
-            LOG_INFO(CONTEXT_CLIENT, "SceneGraphComponent::handleSceneSubscription: received scene subscription for scene " << sceneId << " from " << consumerID);
+            LOG_INFO(CONTEXT_CLIENT, "SceneGraphComponent::handleSceneSubscription: received scene subscription for scene {} from {}", sceneId, consumerID);
             (*sceneLogic)->addSubscriber(consumerID);
         }
         else
         {
-            LOG_WARN(CONTEXT_CLIENT, "SceneGraphComponent::handleSceneSubscription: received scene subscription for unknown scene " << sceneId << " from " << consumerID);
+            LOG_WARN(CONTEXT_CLIENT, "SceneGraphComponent::handleSceneSubscription: received scene subscription for unknown scene {} from {}", sceneId, consumerID);
         }
     }
 
@@ -368,12 +368,12 @@ namespace ramses::internal
         ClientSceneLogicBase** sceneLogic = m_clientSceneLogicMap.get(sceneId);
         if (sceneLogic != nullptr)
         {
-            LOG_INFO(CONTEXT_CLIENT, "SceneGraphComponent::handleSceneUnsubscription:  received scene unsubscription for scene " << sceneId << " from " << consumerID);
+            LOG_INFO(CONTEXT_CLIENT, "SceneGraphComponent::handleSceneUnsubscription:  received scene unsubscription for scene {} from {}", sceneId, consumerID);
             (*sceneLogic)->removeSubscriber(consumerID);
         }
         else
         {
-            LOG_WARN(CONTEXT_CLIENT, "SceneGraphComponent::handleSceneUnsubscription:  received scene unsubscription for unknown scene " << sceneId << " from " << consumerID);
+            LOG_WARN(CONTEXT_CLIENT, "SceneGraphComponent::handleSceneUnsubscription:  received scene unsubscription for unknown scene {} from {}", sceneId, consumerID);
         }
     }
 
@@ -455,7 +455,7 @@ namespace ramses::internal
                 break;
             }
             default:
-                LOG_ERROR(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleRendererEvent: unknown event type: " << eventType);
+                LOG_ERROR(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleRendererEvent: unknown event type: {}", eventType);
                 break;
         }
     }
@@ -470,8 +470,8 @@ namespace ramses::internal
         else
         {
             LOG_WARN(CONTEXT_CLIENT,
-                     "SceneGraphComponent::forwardToSceneProviderEventConsumer: trying to send event to local client, but no event handler registered for sceneId "
-                         << event.masterSceneId);
+                     "SceneGraphComponent::forwardToSceneProviderEventConsumer: trying to send event to local client, but no event handler registered for sceneId {}",
+                     event.masterSceneId);
         }
     }
 
@@ -485,8 +485,8 @@ namespace ramses::internal
         else
         {
             LOG_WARN(CONTEXT_CLIENT,
-                     "SceneGraphComponent::forwardToSceneProviderEventConsumer: trying to send event to local client, but no event handler registered for sceneId "
-                         << event.sceneid);
+                     "SceneGraphComponent::forwardToSceneProviderEventConsumer: trying to send event to local client, but no event handler registered for sceneId {}",
+                     event.sceneid);
         }
     }
 
@@ -494,22 +494,22 @@ namespace ramses::internal
     {
         if (!m_sceneRendererHandler)
         {
-            LOG_WARN(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleInitializeScene: unexpected call because no renderer, scene " << sceneId << " from " << providerID);
+            LOG_WARN(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleInitializeScene: unexpected call because no renderer, scene {} from {}", sceneId, providerID);
             return;
         }
 
-        LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleSceneActionList: sceneId: " << sceneId << ", by " << providerID);
+        LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleSceneActionList: sceneId: {}, by {}", sceneId, providerID);
 
         auto it = m_remoteScenes.find(sceneId);
         if (it == m_remoteScenes.end())
         {
-            LOG_WARN(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleSceneActionList: received for unknown scene, sceneId: " << sceneId << ", by " << providerID);
+            LOG_WARN(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleSceneActionList: received for unknown scene, sceneId: {}, by {}", sceneId, providerID);
             return;
         }
         if (it->second.provider != providerID)
         {
-            LOG_WARN(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleSceneActionList: received from unexpected provider, sceneId: " << sceneId << ", by " <<
-                     providerID << " but belongs to " << it->second.provider);
+            LOG_WARN(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleSceneActionList: received from unexpected provider, sceneId: {}, by {} but belongs to {}",
+                sceneId, providerID, it->second.provider);
             return;
         }
 
@@ -524,31 +524,31 @@ namespace ramses::internal
     {
         if (!m_sceneRendererHandler)
         {
-            LOG_WARN(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleSceneUpdate: unexpected call because no renderer, scene " << sceneId << " from " << providerID);
+            LOG_WARN(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleSceneUpdate: unexpected call because no renderer, scene {} from {}", sceneId, providerID);
             return;
         }
 
         auto it = m_remoteScenes.find(sceneId);
         if (it == m_remoteScenes.end())
         {
-            LOG_WARN(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleSceneUpdate: received actions for unknown scene " << sceneId << " from " << providerID);
+            LOG_WARN(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleSceneUpdate: received actions for unknown scene {} from {}", sceneId, providerID);
             return;
         }
         if (it->second.provider != providerID)
         {
-            LOG_WARN(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleSceneUpdate: received from unexpected provider, sceneId: " << sceneId << ", by " <<
-                     providerID << " but belongs to " << it->second.provider);
+            LOG_WARN(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleSceneUpdate: received from unexpected provider, sceneId: {}, by {} but belongs to {}",
+                sceneId, providerID, it->second.provider);
             return;
         }
         if (actionData.empty())
         {
-            LOG_WARN(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleSceneUpdate: data is empty, sceneId " << sceneId << " from " << providerID);
+            LOG_WARN(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleSceneUpdate: data is empty, sceneId {} from {}", sceneId, providerID);
             return;
         }
         SceneUpdateStreamDeserializer* deserializer = it->second.sceneUpdateDeserializer.get();
         if (!deserializer)
         {
-            LOG_WARN(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleSceneUpdate: scene was not initialized before sending actions, sceneId " << sceneId << " from " << providerID);
+            LOG_WARN(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleSceneUpdate: scene was not initialized before sending actions, sceneId {} from {}", sceneId, providerID);
             return;
         }
 
@@ -558,7 +558,7 @@ namespace ramses::internal
         case SceneUpdateStreamDeserializer::ResultType::Empty:
             break;
         case SceneUpdateStreamDeserializer::ResultType::Failed:
-            LOG_ERROR(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleSceneUpdate: deserialization failed for scene: " << sceneId << " from provider:" << providerID);
+            LOG_ERROR(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleSceneUpdate: deserialization failed for scene: {} from provider:{}", sceneId, providerID);
             // TODO(tobias) handle properly by unsub scene or disconnect participant
             break;
         case SceneUpdateStreamDeserializer::ResultType::HasData:
@@ -579,12 +579,12 @@ namespace ramses::internal
 
         for(const auto& newScene : newScenes)
         {
-            LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleNewScenesAvailable: sceneId: " << newScene.sceneID << ", name " << newScene.friendlyName <<", by " << providerID << ", featureLevel " << featureLevel);
+            LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleNewScenesAvailable: sceneId: {}, name {}, by: {}, featureLevel: {}", newScene.sceneID, newScene.friendlyName, providerID, featureLevel);
 
             auto existingSceneIt = m_remoteScenes.find(newScene.sceneID);
             if (existingSceneIt != m_remoteScenes.end() && existingSceneIt->second.provider == providerID)
             {
-                LOG_WARN(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleNewScenesAvailable: duplicate publish of scene: " << newScene.sceneID.getValue() << " @ " << providerID << " name:" << newScene.friendlyName << ". Will unpublish first");
+                LOG_WARN(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleNewScenesAvailable: duplicate publish of scene: {} @ {} name:{}. Will unpublish first", newScene.sceneID.getValue(), providerID, newScene.friendlyName);
                 if (m_sceneRendererHandler)
                     m_sceneRendererHandler->handleSceneBecameUnavailable(newScene.sceneID, providerID);
                 m_remoteScenes.erase(newScene.sceneID);
@@ -594,7 +594,7 @@ namespace ramses::internal
             {
                 if (featureLevel == m_featureLevel)
                 {
-                    LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleNewScenesAvailable: scene published: " << newScene.sceneID.getValue() << " @ " << providerID << " name:" << newScene.friendlyName << " publicationmode: " << EnumToString(newScene.publicationMode));
+                    LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleNewScenesAvailable: scene published: {} @ {} name:{} publicationmode: {}", newScene.sceneID.getValue(), providerID, newScene.friendlyName, EnumToString(newScene.publicationMode));
 
                     m_remoteScenes[newScene.sceneID] = ReceivedScene{ newScene, providerID, nullptr };
 
@@ -604,12 +604,12 @@ namespace ramses::internal
                 else
                 {
                     LOG_WARN(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleNewScenesAvailable: ignore publish for scene with mismatched feature level: "
-                        "sceneId: " << newScene.sceneID.getValue() << ", provider: " << providerID << ", name:" << newScene.friendlyName << ", featureLevel: " << featureLevel);
+                        "sceneId: {}, provider: {}, name:{}, featureLevel: {}", newScene.sceneID.getValue(), providerID, newScene.friendlyName, featureLevel);
                 }
             }
             else
             {
-                LOG_WARN(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleNewScenesAvailable: ignore publish for duplicate scene: " << newScene.sceneID.getValue() << " @ " << providerID << " name:" << newScene.friendlyName);
+                LOG_WARN(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleNewScenesAvailable: ignore publish for duplicate scene: {} @ {} name: {}", newScene.sceneID.getValue(), providerID, newScene.friendlyName);
             }
         }
     }
@@ -618,7 +618,7 @@ namespace ramses::internal
     {
         for (const auto& scene : unavailableScenes)
         {
-            LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleScenesBecameUnavailable: sceneId: " << scene.sceneID << ", name " << scene.friendlyName <<",  by " << providerID);
+            LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleScenesBecameUnavailable: sceneId: {}, name {},  by {}", scene.sceneID, scene.friendlyName, providerID);
 
             auto it = m_remoteScenes.find(scene.sceneID);
             if (it != m_remoteScenes.end())
@@ -629,14 +629,14 @@ namespace ramses::internal
             }
             else
             {
-                LOG_WARN(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleScenesBecameUnavailable: ignore unpublish for unknown scene: " << scene.sceneID.getValue() << " by " << providerID);
+                LOG_WARN(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleScenesBecameUnavailable: ignore unpublish for unknown scene: {} by {}", scene.sceneID.getValue(), providerID);
             }
         }
     }
 
     void SceneGraphComponent::handleSceneNotAvailable(const SceneId& sceneId, const Guid& providerID)
     {
-        LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleSceneNotAvailable: ignoring from sceneId: " << sceneId <<",  by " << providerID);
+        LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::handleSceneNotAvailable: ignoring from sceneId: {},  by {}", sceneId, providerID);
     }
 
     const ClientSceneLogicBase* SceneGraphComponent::getClientSceneLogicForScene(SceneId sceneId) const

@@ -89,11 +89,6 @@ modify some of the build settings:
     * default: ON
     * Builds a version of the ramses shared library **with** renderer support. At least one window type must be enabled for build.
 
-* -Dramses-sdk_BUILD_HEADLESS_SHARED_LIB
-    * options: ON/OFF
-    * default: OFF
-    * Builds a version of the ramses shared library **without** renderer support.
-
 
 ``Ramses`` needs (at least) one platform-specific window type to support rendering. Several window types can be included into one build (e.g. X11 and Wayland). By default one suitable window type will be auto-detected.
 Build will fail if dependencies for an enabled window type are not found.

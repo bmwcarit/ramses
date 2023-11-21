@@ -33,9 +33,6 @@ namespace ramses::internal
         [[nodiscard]] Scene& getScene();
 
         // impl methods
-        void setObjectRegistryHandle(SceneObjectRegistryHandle handle);
-        [[nodiscard]] SceneObjectRegistryHandle getObjectRegistryHandle() const;
-
         [[nodiscard]] const SceneImpl& getSceneImpl() const;
         [[nodiscard]] SceneImpl&       getSceneImpl();
         bool serialize(ramses::internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
@@ -53,6 +50,5 @@ namespace ramses::internal
 
     private:
         SceneImpl& m_scene;
-        SceneObjectRegistryHandle m_objectRegistryHandle;
     };
 }

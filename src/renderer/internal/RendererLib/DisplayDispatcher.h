@@ -62,7 +62,7 @@ namespace ramses::internal
         [[nodiscard]] bool hasSystemCompositorController() const;
 
     protected:
-        void preprocessCommand(const RendererCommand::Variant& cmd);
+        void preprocessCommand(RendererCommand::Variant& cmd);
         void dispatchCommand(RendererCommand::Variant&& cmd);
         [[nodiscard]] bool isSceneStateChangeEmittedFromOwningDisplay(SceneId sceneId, DisplayHandle emittingDisplay) const;
 

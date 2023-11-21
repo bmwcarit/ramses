@@ -86,7 +86,7 @@ namespace ramses::internal
 
         if (m_testConfig.durationEachTestSeconds < MinDurationPerTestSeconds[testToRun])
         {
-            LOG_ERROR(CONTEXT_SMOKETEST, "Test " << EnumToString(testToRun) << " has too short execution time! Aborting test and marking as failed...");
+            LOG_ERROR(CONTEXT_SMOKETEST, "Test {} has too short execution time! Aborting test and marking as failed...", EnumToString(testToRun));
             return -1;
         }
 
@@ -323,11 +323,11 @@ namespace ramses::internal
 
         if (testResult != 0)
         {
-            LOG_ERROR(CONTEXT_SMOKETEST, "Test " << EnumToString(testToRun) << " finished with errors.");
+            LOG_ERROR(CONTEXT_SMOKETEST, "Test {} finished with errors.", EnumToString(testToRun));
         }
         else
         {
-            LOG_DEBUG(CONTEXT_SMOKETEST, "Test " << EnumToString(testToRun) << " finished successfully.");
+            LOG_DEBUG(CONTEXT_SMOKETEST, "Test {} finished successfully.", EnumToString(testToRun));
         }
         return testResult;
     }

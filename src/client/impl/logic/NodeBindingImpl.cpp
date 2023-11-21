@@ -254,7 +254,7 @@ namespace ramses::internal
                 // Otherwise issue a warning
                 if (euler[0] != 0.f || euler[1] != 0.f || euler[2] != 0.f)
                 {
-                    LOG_WARN_P(CONTEXT_CLIENT, "Initial rotation values for NodeBinding '{}' will not be imported from bound Ramses node due to mismatching rotation type. Expected Quaternion, got Euler.",
+                    LOG_WARN(CONTEXT_CLIENT, "Initial rotation values for NodeBinding '{}' will not be imported from bound Ramses node due to mismatching rotation type. Expected Quaternion, got Euler.",
                              binding.getIdentificationString());
                 }
             }
@@ -271,7 +271,7 @@ namespace ramses::internal
                 // Otherwise issue a warning
                 if (rotationValue[0] != 0.f || rotationValue[1] != 0.f || rotationValue[2] != 0.f)
                 {
-                    LOG_WARN_P(CONTEXT_CLIENT, "Initial rotation values for NodeBinding '{}' will not be imported from bound Ramses node due to mismatching rotation type.", binding.getIdentificationString());
+                    LOG_WARN(CONTEXT_CLIENT, "Initial rotation values for NodeBinding '{}' will not be imported from bound Ramses node due to mismatching rotation type.", binding.getIdentificationString());
                 }
             }
             else
