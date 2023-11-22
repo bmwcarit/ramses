@@ -26,9 +26,10 @@ jobs:
         type: [Debug, Release]
         compiler: [default]
         include:
-          - target-platform: iphoneos
-            os: macos-12
-            type: Debug
+          # temporarily disable iOS build for 28 RC3 release
+          # - target-platform: iphoneos
+          #   os: macos-12
+          #   type: Debug
           - target-platform: iphonesimulator
             os: macos-12
             type: Debug
