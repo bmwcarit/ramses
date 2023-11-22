@@ -109,7 +109,7 @@ namespace ramses::internal
         EScenePublicationMode getPublicationModeSetFromSceneConfig() const;
 
         bool serialize(std::vector<std::byte>& outputBuffer, const SaveFileConfigImpl& config) const;
-        bool saveToFile(std::string_view fileName, const SaveFileConfigImpl& config) const;
+        bool saveToFile(std::string_view fileName, const SaveFileConfigImpl& config);
 
         LogicEngine* createLogicEngine(std::string_view name);
 
@@ -307,6 +307,7 @@ namespace ramses::internal
         void applyVisibilityToSubtree(NodeImpl& initialNode, EVisibilityMode initialVisibility);
         void prepareListOfDirtyNodesForHierarchicalVisibility(NodeVisibilityInfoVector& nodesToProcess);
         void applyHierarchicalVisibility();
+        std::optional<Issue> validateRenderBufferDependingObjects() const;
 
         bool writeSceneObjectsToStream(ramses::internal::IOutputStream& outputStream, const SaveFileConfigImpl& saveConfig) const;
 

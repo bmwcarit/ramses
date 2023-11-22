@@ -54,8 +54,6 @@ namespace ramses::internal
         virtual void deinitializeFrameworkData() = 0;
 
         void validate(ValidationReportImpl& report) const;
-
-    protected:
         virtual void onValidate(ValidationReportImpl& /*report*/) const {};
 
     private:

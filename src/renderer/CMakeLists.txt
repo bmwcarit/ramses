@@ -18,4 +18,5 @@ createModule(
                             impl/*.cpp
 
     DEPENDENCIES            Platform
+                            ramses-framework
 )

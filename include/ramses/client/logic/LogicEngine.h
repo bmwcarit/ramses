@@ -33,6 +33,7 @@ namespace ramses
     class RenderGroup;
     class UniformInput;
     class MeshNode;
+    class RenderBuffer;
     class LogicObject;
 }
 
@@ -61,6 +62,7 @@ namespace ramses
     class RenderGroupBindingElements;
     class MeshNodeBinding;
     class SkinBinding;
+    class RenderBufferBinding;
     class DataArray;
     class AnimationNode;
     class AnimationNodeConfig;
@@ -350,6 +352,18 @@ namespace ramses
             AppearanceBinding& appearanceBinding,
             const ramses::UniformInput& jointMatInput,
             std::string_view name = {});
+
+        /**
+         * Creates a new #ramses::RenderBufferBinding which can be used to change some properties of a #ramses::RenderBuffer object.
+         * The creation will fail if provided #ramses::RenderBuffer is not from same #ramses::Scene as this #LogicEngine instance.
+         *
+         * @param renderBuffer the #ramses::RenderBuffer object to control with the binding.
+         * @param name a name for the the new #ramses::RenderBufferBinding.
+         * @return a pointer to the created object or nullptr if
+         * something went wrong during creation. In that case, use #ramses::RamsesFramework::getLastError.
+         * The binding can be destroyed by calling the #destroy method
+         */
+        RenderBufferBinding* createRenderBufferBinding(ramses::RenderBuffer& renderBuffer, std::string_view name ="");
 
         /**
         * Creates a new #ramses::DataArray to store data which can be used with animations.
@@ -754,6 +768,7 @@ namespace ramses
             std::is_same_v<T, RenderGroupBinding> ||
             std::is_same_v<T, MeshNodeBinding> ||
             std::is_same_v<T, SkinBinding> ||
+            std::is_same_v<T, RenderBufferBinding> ||
             std::is_same_v<T, DataArray> ||
             std::is_same_v<T, AnimationNode> ||
             std::is_same_v<T, TimerNode> ||

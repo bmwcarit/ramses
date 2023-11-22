@@ -320,7 +320,7 @@ namespace ramses::internal
         if (!comparisonResult && saveDiffOnError)
         {
             assert(m_activeTestCase != nullptr);
-            LOG_ERROR(ramses::internal::CONTEXT_RENDERER, "Screenshot comparison failed for rendering test case: " << m_activeTestCase->m_name << " -> expected screenshot: " << expectedImageName);
+            LOG_ERROR(CONTEXT_RENDERER, "Screenshot comparison failed for rendering test case: {} -> expected screenshot: {}", m_activeTestCase->m_name, expectedImageName);
         }
 
         return comparisonResult;
@@ -536,7 +536,7 @@ namespace ramses::internal
 
         for(const auto& testCase : m_testCases)
         {
-            LOG_INFO(ramses::internal::CONTEXT_RENDERER, "====== Running rendering test case: " << testCase->m_name << " ======");
+            LOG_INFO(CONTEXT_RENDERER, "====== Running rendering test case: {} ======", testCase->m_name);
             fmt::print("======\nRunning rendering test case: {}\n======\n", testCase->m_name);
             fflush(stdout);
 
@@ -546,7 +546,7 @@ namespace ramses::internal
             }
             else
             {
-                LOG_ERROR(ramses::internal::CONTEXT_RENDERER, "Renderer/display initialization failed for rendering test case: " << testCase->m_name);
+                LOG_ERROR(CONTEXT_RENDERER, "Renderer/display initialization failed for rendering test case: {}", testCase->m_name);
                 testResult = false;
             }
 

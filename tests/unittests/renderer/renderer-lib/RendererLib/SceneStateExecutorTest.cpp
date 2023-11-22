@@ -14,7 +14,6 @@
 #include "ComponentMocks.h"
 #include "RendererMock.h"
 #include "RendererSceneEventSenderMock.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
 
 namespace ramses::internal
 {
@@ -30,8 +29,6 @@ namespace ramses::internal
             , renderer(displayHandle, rendererScenes, rendererEventCollector, expirationMonitor, rendererStatistics)
             , sceneStateExecutor(renderer, rendererSceneSender, rendererEventCollector)
         {
-            // caller is expected to have a display prefix for logs
-            ThreadLocalLog::SetPrefix(1);
         }
 
         void TearDown() override

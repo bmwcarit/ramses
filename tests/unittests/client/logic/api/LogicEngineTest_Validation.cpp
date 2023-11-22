@@ -21,7 +21,7 @@
 
 namespace ramses::internal
 {
-    const size_t SCENE_ISSUES = 6u;
+    const size_t SCENE_ISSUES = 9u;
 
     class ALogicEngine_Validation : public ALogicEngine
     {
@@ -33,14 +33,10 @@ namespace ramses::internal
     {
         int warningCount = 0;
 
-        ScopedLogContextLevel logCollector{ CONTEXT_CLIENT, ELogLevel::Trace, [&](ELogLevel type, std::string_view /*message*/)
-            {
-                if (type == ELogLevel::Warn)
-                {
-                    ++warningCount;
-                }
-            }
-        };
+        ScopedLogContextLevel logCollector{ CONTEXT_CLIENT, ELogLevel::Trace, [&](ELogLevel type, std::string_view /*message*/) {
+            if (type == ELogLevel::Warn)
+                ++warningCount;
+        }};
 
         m_logicEngine->validate(report);
         EXPECT_FALSE(report.hasIssue());
@@ -49,73 +45,6 @@ namespace ramses::internal
         // Empty logic engine has ho warnings
         saveToFile("noWarnings.ramses");
         EXPECT_LE(warningCount, SCENE_ISSUES); // logic is valid, but ramses scene is not
-    }
-
-    TEST_F(ALogicEngine_Validation, LogsWarningsWhenSavingFile_WhenContentHasValidationIssues)
-    {
-        std::vector<std::string> warnings;
-        ScopedLogContextLevel logCollector{ CONTEXT_CLIENT, ELogLevel::Trace, [&](ELogLevel type, std::string_view message)
-            {
-                if (type == ELogLevel::Warn)
-                {
-                    warnings.emplace_back(message);
-                }
-            }
-        };
-
-        WithTempDirectory tmpDir;
-        // Cause some validation issues on purpose
-        NodeBinding& nodeBinding = *m_logicEngine->createNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
-        nodeBinding.getInputs()->getChild("scaling")->set<vec3f>({1.5f, 1.f, 1.f});
-
-        saveToFile("noWarnings.ramses");
-
-        ASSERT_EQ(warnings.size(), SCENE_ISSUES + 2u);
-        EXPECT_EQ(warnings[0], "Saving logic engine content with manually updated binding values without calling update() will result in those values being lost!");
-        EXPECT_EQ(warnings[1], "[NodeBinding [LogicObject ScnObjId=9]] Node [NodeBinding] has no ingoing links! Node should be deleted or properly linked!");
-
-        // Fixing the problems -> removes the warning
-        warnings.clear();
-        auto* intf = m_logicEngine->createLuaInterface(m_interfaceSourceCode, "intf");
-        m_logicEngine->link(*intf->getOutputs()->getChild("param_vec3f"), *nodeBinding.getInputs()->getChild("scaling"));
-        m_logicEngine->update();
-
-        saveToFile("noWarnings.ramses");
-
-        ASSERT_EQ(warnings.size(), SCENE_ISSUES);
-    }
-
-    TEST_F(ALogicEngine_Validation, LogsNoContentWarningsWhenSavingFile_WhenContentHasValidationIssues_ButValidationIsDisabled)
-    {
-        std::vector<std::string> infoLogs;
-        ScopedLogContextLevel logCollector{ CONTEXT_CLIENT, ELogLevel::Trace, [&](ELogLevel type, std::string_view message)
-            {
-                if (type == ELogLevel::Info)
-                {
-                    infoLogs.emplace_back(message);
-                }
-                else
-                {
-                    FAIL() << "Unexpected log!";
-                }
-        }
-        };
-
-        WithTempDirectory tmpDir;
-        // Cause some validation issues on purpose
-        NodeBinding& nodeBinding = *m_logicEngine->createNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
-        nodeBinding.getInputs()->getChild("scaling")->set<vec3f>({ 1.5f, 1.f, 1.f });
-
-        SaveFileConfig conf;
-        conf.setValidationEnabled(false);
-
-        // Disabling the validation causes a warning
-        ASSERT_EQ(infoLogs.size(), 1u);
-        EXPECT_EQ(infoLogs[0], "Validation before saving was disabled during save*() calls! Possible content issues will not yield further warnings.");
-        infoLogs.clear();
-
-        // Content warning doesn't show up because disabled
-        saveToFile("noWarnings.ramses", conf);
     }
 
     TEST_F(ALogicEngine_Validation, ProducesWarningIfBindingValuesHaveDirtyValue)
@@ -223,11 +152,11 @@ namespace ramses::internal
         const auto& warnings = report.getIssues();
         ASSERT_EQ(2u, warnings.size());
         EXPECT_THAT(warnings, ::testing::ElementsAre(::testing::Field(&Issue::message, ::testing::StrEq("Node [scr] has no outgoing links! Node should be deleted or properly linked!")),
-                                                    ::testing::Field(&Issue::message, ::testing::StrEq("Node [scr] has no ingoing links! Node should be deleted or properly linked!"))));
+                                                    ::testing::Field(&Issue::message, ::testing::StrEq("Node [scr] has no incoming links! Node should be deleted or properly linked!"))));
         EXPECT_THAT(warnings, ::testing::Each(::testing::Field(&Issue::type, ::testing::Eq(EIssueType::Warning))));
     }
 
-    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfScriptHasNoIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfScriptHasNoIncomingLinks)
     {
         auto* script = m_logicEngine->createLuaScript(m_scriptSrc, {}, "scr");
         ASSERT_NE(nullptr, script);
@@ -237,7 +166,7 @@ namespace ramses::internal
         m_logicEngine->validate(report);
         const auto& warnings = report.getIssues();
         ASSERT_EQ(1u, warnings.size());
-        EXPECT_THAT(warnings, ::testing::ElementsAre(::testing::Field(&Issue::message, ::testing::StrEq("Node [scr] has no ingoing links! Node should be deleted or properly linked!"))));
+        EXPECT_THAT(warnings, ::testing::ElementsAre(::testing::Field(&Issue::message, ::testing::StrEq("Node [scr] has no incoming links! Node should be deleted or properly linked!"))));
         EXPECT_THAT(warnings, ::testing::Each(::testing::Field(&Issue::type, ::testing::Eq(EIssueType::Warning))));
     }
 
@@ -255,7 +184,7 @@ namespace ramses::internal
         EXPECT_THAT(warnings, ::testing::Each(::testing::Field(&Issue::type, ::testing::Eq(EIssueType::Warning))));
     }
 
-    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfScriptHasIngoingAndOutgoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfScriptHasIncomingAndOutgoingLinks)
     {
         auto* script = m_logicEngine->createLuaScript(m_scriptSrc, {}, "scr");
         ASSERT_NE(nullptr, script);
@@ -269,7 +198,7 @@ namespace ramses::internal
 
     // -- interfaces -- //
 
-    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfInterfaceHasNoIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfInterfaceHasNoIncomingLinks)
     {
         LuaInterface* intf = m_logicEngine->createLuaInterface(R"(
             function interface(INOUT)
@@ -286,7 +215,7 @@ namespace ramses::internal
 
     // -- node bindings -- //
 
-    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfNodeBindingHasNoIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfNodeBindingHasNoIncomingLinks)
     {
         auto* nodeBind = m_logicEngine->createNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "binding");
         ASSERT_NE(nullptr, nodeBind);
@@ -294,11 +223,11 @@ namespace ramses::internal
         m_logicEngine->validate(report);
         const auto& warnings = report.getIssues();
         ASSERT_EQ(1u, warnings.size());
-        EXPECT_THAT(warnings, ::testing::ElementsAre(::testing::Field(&Issue::message, ::testing::StrEq("Node [binding] has no ingoing links! Node should be deleted or properly linked!"))));
+        EXPECT_THAT(warnings, ::testing::ElementsAre(::testing::Field(&Issue::message, ::testing::StrEq("Node [binding] has no incoming links! Node should be deleted or properly linked!"))));
         EXPECT_THAT(warnings, ::testing::Each(::testing::Field(&Issue::type, ::testing::Eq(EIssueType::Warning))));
     }
 
-    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfNodeBindingHasIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfNodeBindingHasIncomingLinks)
     {
         auto* nodeBind = m_logicEngine->createNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "binding");
         ASSERT_NE(nullptr, nodeBind);
@@ -312,7 +241,7 @@ namespace ramses::internal
 
     // -- appearance bindings -- //
 
-    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfAppearanceBindingHasNoIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfAppearanceBindingHasNoIncomingLinks)
     {
         auto* appearanceBind = m_logicEngine->createAppearanceBinding(*m_appearance, "binding");
         ASSERT_NE(nullptr, appearanceBind);
@@ -320,11 +249,11 @@ namespace ramses::internal
         m_logicEngine->validate(report);
         const auto& warnings = report.getIssues();
         ASSERT_EQ(1u, warnings.size());
-        EXPECT_THAT(warnings, ::testing::ElementsAre(::testing::Field(&Issue::message, ::testing::StrEq("Node [binding] has no ingoing links! Node should be deleted or properly linked!"))));
+        EXPECT_THAT(warnings, ::testing::ElementsAre(::testing::Field(&Issue::message, ::testing::StrEq("Node [binding] has no incoming links! Node should be deleted or properly linked!"))));
         EXPECT_THAT(warnings, ::testing::Each(::testing::Field(&Issue::type, ::testing::Eq(EIssueType::Warning))));
     }
 
-    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfAppearanceBindingHasIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfAppearanceBindingHasIncomingLinks)
     {
         auto* appearanceBind = m_logicEngine->createAppearanceBinding(*m_appearance, "binding");
         ASSERT_NE(nullptr, appearanceBind);
@@ -338,7 +267,7 @@ namespace ramses::internal
 
     // -- camera bindings -- //
 
-    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfCameraBindingHasNoIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfCameraBindingHasNoIncomingLinks)
     {
         auto* cameraBind = m_logicEngine->createCameraBinding(*m_camera, "binding");
         ASSERT_NE(nullptr, cameraBind);
@@ -346,11 +275,11 @@ namespace ramses::internal
         m_logicEngine->validate(report);
         const auto& warnings = report.getIssues();
         ASSERT_EQ(1u, warnings.size());
-        EXPECT_THAT(warnings, ::testing::ElementsAre(::testing::Field(&Issue::message, ::testing::StrEq("Node [binding] has no ingoing links! Node should be deleted or properly linked!"))));
+        EXPECT_THAT(warnings, ::testing::ElementsAre(::testing::Field(&Issue::message, ::testing::StrEq("Node [binding] has no incoming links! Node should be deleted or properly linked!"))));
         EXPECT_THAT(warnings, ::testing::Each(::testing::Field(&Issue::type, ::testing::Eq(EIssueType::Warning))));
     }
 
-    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfCameraBindingHasIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfCameraBindingHasIncomingLinks)
     {
         auto* cameraBind = m_logicEngine->createCameraBinding(*m_camera, "binding");
         ASSERT_NE(nullptr, cameraBind);
@@ -364,7 +293,7 @@ namespace ramses::internal
 
     // -- render pass bindings -- //
 
-    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfRenderPassBindingHasNoIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfRenderPassBindingHasNoIncomingLinks)
     {
         auto* passBind = m_logicEngine->createRenderPassBinding(*m_renderPass, "binding");
         ASSERT_NE(nullptr, passBind);
@@ -372,11 +301,11 @@ namespace ramses::internal
         m_logicEngine->validate(report);
         const auto& warnings = report.getIssues();
         ASSERT_EQ(1u, warnings.size());
-        EXPECT_THAT(warnings, ::testing::ElementsAre(::testing::Field(&Issue::message, ::testing::StrEq("Node [binding] has no ingoing links! Node should be deleted or properly linked!"))));
+        EXPECT_THAT(warnings, ::testing::ElementsAre(::testing::Field(&Issue::message, ::testing::StrEq("Node [binding] has no incoming links! Node should be deleted or properly linked!"))));
         EXPECT_THAT(warnings, ::testing::Each(::testing::Field(&Issue::type, ::testing::Eq(EIssueType::Warning))));
     }
 
-    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfRenderPassBindingHasIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfRenderPassBindingHasIncomingLinks)
     {
         auto* passBind = m_logicEngine->createRenderPassBinding(*m_renderPass, "binding");
         ASSERT_NE(nullptr, passBind);
@@ -390,7 +319,7 @@ namespace ramses::internal
 
     // -- render group bindings -- //
 
-    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfRenderGroupBindingHasNoIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfRenderGroupBindingHasNoIncomingLinks)
     {
         RenderGroupBindingElements elements;
         elements.addElement(*m_meshNode, "mesh");
@@ -400,11 +329,11 @@ namespace ramses::internal
         m_logicEngine->validate(report);
         const auto& warnings = report.getIssues();
         ASSERT_EQ(1u, warnings.size());
-        EXPECT_THAT(warnings, ::testing::ElementsAre(::testing::Field(&Issue::message, ::testing::StrEq("Node [binding] has no ingoing links! Node should be deleted or properly linked!"))));
+        EXPECT_THAT(warnings, ::testing::ElementsAre(::testing::Field(&Issue::message, ::testing::StrEq("Node [binding] has no incoming links! Node should be deleted or properly linked!"))));
         EXPECT_THAT(warnings, ::testing::Each(::testing::Field(&Issue::type, ::testing::Eq(EIssueType::Warning))));
     }
 
-    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfRenderGroupBindingHasIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfRenderGroupBindingHasIncomingLinks)
     {
         RenderGroupBindingElements elements;
         elements.addElement(*m_meshNode, "mesh");
@@ -420,18 +349,18 @@ namespace ramses::internal
 
     // -- mesh node bindings -- //
 
-    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfMeshNodeBindingHasNoIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfMeshNodeBindingHasNoIncomingLinks)
     {
         m_logicEngine->createMeshNodeBinding(*m_meshNode, "binding");
 
         m_logicEngine->validate(report);
         const auto& warnings = report.getIssues();
         ASSERT_EQ(1u, warnings.size());
-        EXPECT_THAT(warnings, ::testing::ElementsAre(::testing::Field(&Issue::message, ::testing::StrEq("Node [binding] has no ingoing links! Node should be deleted or properly linked!"))));
+        EXPECT_THAT(warnings, ::testing::ElementsAre(::testing::Field(&Issue::message, ::testing::StrEq("Node [binding] has no incoming links! Node should be deleted or properly linked!"))));
         EXPECT_THAT(warnings, ::testing::Each(::testing::Field(&Issue::type, ::testing::Eq(EIssueType::Warning))));
     }
 
-    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfMeshNodeBindingHasIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfMeshNodeBindingHasIncomingLinks)
     {
         const auto binding = m_logicEngine->createMeshNodeBinding(*m_meshNode, "binding");
         ASSERT_NE(nullptr, binding);
@@ -459,7 +388,7 @@ namespace ramses::internal
         const auto& warnings = report.getIssues();
         ASSERT_EQ(2u, warnings.size());
         EXPECT_THAT(warnings, ::testing::ElementsAre(::testing::Field(&Issue::message, ::testing::StrEq("Node [anim] has no outgoing links! Node should be deleted or properly linked!")),
-            ::testing::Field(&Issue::message, ::testing::StrEq("Node [anim] has no ingoing links! Node should be deleted or properly linked!"))));
+            ::testing::Field(&Issue::message, ::testing::StrEq("Node [anim] has no incoming links! Node should be deleted or properly linked!"))));
         EXPECT_THAT(warnings, ::testing::Each(::testing::Field(&Issue::type, ::testing::Eq(EIssueType::Warning))));
     }
 
@@ -482,7 +411,7 @@ namespace ramses::internal
         EXPECT_THAT(warnings, ::testing::Each(::testing::Field(&Issue::type, ::testing::Eq(EIssueType::Warning))));
     }
 
-    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfAnimationHasNoIngoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, ProducesWarningIfAnimationHasNoIncomingLinks)
     {
         const auto* m_dataFloat = m_logicEngine->createDataArray(std::vector<float>{ 1.f, 2.f, 3.f });
         const auto* m_dataVec2 = m_logicEngine->createDataArray(std::vector<vec2f>{ { 1.f, 2.f }, { 3.f, 4.f }, { 5.f, 6.f } });
@@ -497,11 +426,11 @@ namespace ramses::internal
         m_logicEngine->validate(report);
         const auto& warnings = report.getIssues();
         ASSERT_EQ(1u, warnings.size());
-        EXPECT_THAT(warnings, ::testing::ElementsAre(::testing::Field(&Issue::message, ::testing::StrEq("Node [anim] has no ingoing links! Node should be deleted or properly linked!"))));
+        EXPECT_THAT(warnings, ::testing::ElementsAre(::testing::Field(&Issue::message, ::testing::StrEq("Node [anim] has no incoming links! Node should be deleted or properly linked!"))));
         EXPECT_THAT(warnings, ::testing::Each(::testing::Field(&Issue::type, ::testing::Eq(EIssueType::Warning))));
     }
 
-    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfAnimationHasIngoingAndOutgoingLinks)
+    TEST_F(ALogicEngine_ValidatingDanglingNodes, DoesNotProduceWarningIfAnimationHasIncomingAndOutgoingLinks)
     {
         const auto* m_dataFloat = m_logicEngine->createDataArray(std::vector<float>{ 1.f, 2.f, 3.f });
         const auto* m_dataVec2 = m_logicEngine->createDataArray(std::vector<vec2f>{ { 1.f, 2.f }, { 3.f, 4.f }, { 5.f, 6.f } });

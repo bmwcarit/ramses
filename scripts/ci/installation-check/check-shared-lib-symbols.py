@@ -15,9 +15,9 @@ from pathlib import Path
 
 
 @click.command(help='Check if there are missing symbols from shared lib')
-@click.option('--headless', is_flag=True, default=False, help='Check headless shared lib')
+@click.option('--headless-only', is_flag=True, default=False, help='Check headless shared lib')
 @click.option('-b', '--build-dir', type=click.Path(), help='Build dir')
-def main(build_dir, headless):
+def main(build_dir, headless_only):
     if not build_dir:
         raise Exception("build dir needed")
 
@@ -26,8 +26,6 @@ def main(build_dir, headless):
     renderer_static_lib_dir = Path(build_dir) / 'src/renderer/libramses-renderer.a'
     headless_shared_lib_dir = Path(build_dir) / 'install/lib/libramses-shared-lib-headless.so'
     full_shared_lib_dir = Path(build_dir) / 'install/lib/libramses-shared-lib.so'
-
-    shared_lib_dir = headless_shared_lib_dir if headless else full_shared_lib_dir
 
     def file_to_symbols(lib_file, is_shared_lib):
         if not lib_file.exists():
@@ -61,10 +59,12 @@ def main(build_dir, headless):
 
     static_lib_symbols = file_to_symbols(client_static_lib_dir, False)
     static_lib_symbols += file_to_symbols(framework_static_lib_dir, False)
-    if not headless:
+    if not headless_only:
         static_lib_symbols += file_to_symbols(renderer_static_lib_dir, False)
 
-    shared_lib_symbols = file_to_symbols(shared_lib_dir, True)
+    shared_lib_symbols = file_to_symbols(headless_shared_lib_dir, True)
+    if not headless_only:
+        shared_lib_symbols += file_to_symbols(full_shared_lib_dir, True)
 
     missing_symbols = [s for s in static_lib_symbols if s not in shared_lib_symbols]
     if len(missing_symbols) > 0:

@@ -35,7 +35,7 @@ namespace ramses::internal
         : m_ramsh(ramsh)
         , m_prompt(std::move(prompt))
         , m_pausePrompt(false)
-        , m_checkInputThread("R_Ramsh_Console")
+        , m_checkInputThread("Ramsh_Console")
         , m_nextCommandFromHistory(0)
         , m_interactiveMode(!PlatformEnvironmentVariables::HasEnvVar("DISABLE_RAMSH_INTERACTIVE_MODE"))
         , m_console(std::move(consoleInput))

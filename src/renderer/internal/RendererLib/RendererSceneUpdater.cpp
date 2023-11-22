@@ -29,14 +29,14 @@
 #include "internal/RendererLib/SceneReferenceLogic.h"
 #include "internal/RendererLib/ResourceUploader.h"
 #include "internal/RendererLib/RendererEventCollector.h"
+#include "internal/RendererLib/SceneResourceUploader.h"
 #include "internal/Components/FlushTimeInformation.h"
 #include "internal/Components/SceneUpdate.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "internal/Core/Utils/Image.h"
 #include "internal/PlatformAbstraction/PlatformTime.h"
 #include "internal/PlatformAbstraction/Macros.h"
 #include <algorithm>
-#include "internal/RendererLib/SceneResourceUploader.h"
 
 namespace ramses::internal
 {
@@ -80,7 +80,7 @@ namespace ramses::internal
     {
         ESceneState sceneState = m_sceneStateExecutor.getSceneState(sceneId);
 
-        LOG_TRACE_P(CONTEXT_RENDERER, "RendererSceneUpdater::handleSceneUpdate: for sceneId {}, flushCounter {}, sceneState {}",
+        LOG_TRACE(CONTEXT_RENDERER, "RendererSceneUpdater::handleSceneUpdate: for sceneId {}, flushCounter {}, sceneState {}",
                     sceneId, sceneUpdate.flushInfos.flushCounter, EnumToString(sceneState));
 
         if (sceneState == ESceneState::SubscriptionPending)
@@ -100,7 +100,7 @@ namespace ramses::internal
         }
         else
         {
-            LOG_ERROR_P(CONTEXT_RENDERER, "RendererSceneUpdater::handleSceneActions could not apply scene actions because scene {} is neither subscribed nor mapped", sceneId);
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSceneActions could not apply scene actions because scene {} is neither subscribed nor mapped", sceneId);
         }
     }
 
@@ -117,7 +117,7 @@ namespace ramses::internal
             IRenderBackend& renderBackend = displayController.getRenderBackend();
             IEmbeddedCompositingManager& embeddedCompositingManager = displayController.getEmbeddedCompositingManager();
 
-            m_asyncEffectUploader = std::make_unique<AsyncEffectUploader>(m_platform, renderBackend, m_notifier, static_cast<int>(m_display.asMemoryHandle()));
+            m_asyncEffectUploader = std::make_unique<AsyncEffectUploader>(m_platform, renderBackend, m_notifier, m_display);
             if (!m_asyncEffectUploader->createResourceUploadRenderBackendAndStartThread())
             {
                 m_renderer.destroyDisplayContext();
@@ -132,7 +132,7 @@ namespace ramses::internal
 
             m_rendererEventCollector.addDisplayEvent(ERendererEventType::DisplayCreated, m_display);
 
-            LOG_INFO_P(CONTEXT_RENDERER, "Created display: {}x{}{} MSAA{}",
+            LOG_INFO(CONTEXT_RENDERER, "Created display: {}x{}{} MSAA{}",
                 displayController.getDisplayWidth(), displayController.getDisplayHeight(), (displayConfig.getFullscreenState() ? " fullscreen" : ""),
                 displayConfig.getAntialiasingSampleCount());
         }
@@ -295,15 +295,15 @@ namespace ramses::internal
 
     void RendererSceneUpdater::logTooManyFlushesAndUnsubscribeIfRemoteScene(SceneId sceneId, std::size_t numPendingFlushes)
     {
-        LOG_ERROR(CONTEXT_RENDERER, "Scene " << sceneId << " has " << numPendingFlushes << " pending flushes,"
-            << " force applying pending flushes seems to have been interrupted too often and the renderer has no way to catch up without potentially blocking other scenes."
-            << " Possible causes: too many flushes queued and couldn't be applied (even force-applied); or renderer thread was stopped or stalled,"
-            << " e.g. because of taking screenshots, and couldn't process the flushes.");
+        LOG_ERROR(CONTEXT_RENDERER, "Scene {} has {} pending flushes,"
+            " force applying pending flushes seems to have been interrupted too often and the renderer has no way to catch up without potentially blocking other scenes."
+            " Possible causes: too many flushes queued and couldn't be applied (even force-applied); or renderer thread was stopped or stalled,"
+            " e.g. because of taking screenshots, and couldn't process the flushes.", sceneId, numPendingFlushes);
 
         if (m_sceneStateExecutor.getScenePublicationMode(sceneId) != EScenePublicationMode::LocalOnly)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Force unsubscribing scene " << sceneId << " to avoid risk of running out of memory!"
-                << " Any incoming data for the scene will be ignored till the scene is re-subscribed.");
+            LOG_ERROR(CONTEXT_RENDERER, "Force unsubscribing scene {} to avoid risk of running out of memory!"
+                " Any incoming data for the scene will be ignored till the scene is re-subscribed.", sceneId);
             // Unsubscribe scene as 'indirect' because it is not triggered by user
             handleSceneUnsubscriptionRequest(sceneId, true);
         }
@@ -312,7 +312,7 @@ namespace ramses::internal
             // Don't force-ubsubscribe local scenes
             // Local client is responsible for his own scene - should not spam the renderer with flushes, or if he does
             // and renderer goes out of memory -> it is possible to fix on client side in the local case
-            LOG_ERROR(CONTEXT_RENDERER, "Because scene " << sceneId << " is a local scene, it will not be forcefully ubsubscribed. Beware of possible out-of-memory errors!");
+            LOG_ERROR(CONTEXT_RENDERER, "Because scene {} is a local scene, it will not be forcefully ubsubscribed. Beware of possible out-of-memory errors!", sceneId);
         }
     }
 
@@ -365,7 +365,7 @@ namespace ramses::internal
         }));
         if (!sceneUpdate.flushInfos.resourceChanges.empty())
         {
-            LOG_TRACE(CONTEXT_RENDERER, sceneUpdate.flushInfos.resourceChanges);
+            LOG_TRACE(CONTEXT_RENDERER, ::fmt::to_string(sceneUpdate.flushInfos.resourceChanges));
         }
 
         PendingSceneResourcesUtils::ConsolidateSceneResourceActions(resourceChanges.m_sceneResourceActions, pendingData.sceneResourceActions);
@@ -544,7 +544,7 @@ namespace ramses::internal
             const auto numPendingFlushes = getNumberOfPendingNonEmptyFlushes(sceneID);
             if (numPendingFlushes > m_maximumPendingFlushes)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "Force applying pending flushes! Scene " << sceneID << " has " << numPendingFlushes << " pending flushes, renderer cannot catch up with resource updates.");
+                LOG_ERROR(CONTEXT_RENDERER, "Force applying pending flushes! Scene {} has {} pending flushes, renderer cannot catch up with resource updates.", sceneID, numPendingFlushes);
                 logMissingResources(stagingInfo.pendingData, sceneID);
 
                 canApplyFlushes = true;
@@ -576,7 +576,7 @@ namespace ramses::internal
             rendererScene.setActiveShaderAnimation(false);
             if (pendingFlush.timeInfo.isEffectTimeSync)
             {
-                LOG_INFO_P(CONTEXT_RENDERER, "EffectTimeSync: {} for scene: {}",
+                LOG_INFO(CONTEXT_RENDERER, "EffectTimeSync: {} for scene: {}",
                     std::chrono::time_point_cast<std::chrono::milliseconds>(pendingFlush.timeInfo.internalTimestamp).time_since_epoch().count(),
                     rendererScene.getSceneId());
                 rendererScene.setEffectTimeSync(pendingFlush.timeInfo.internalTimestamp);
@@ -585,8 +585,7 @@ namespace ramses::internal
 
             if (pendingFlush.versionTag.isValid())
             {
-                LOG_DEBUG(CONTEXT_SMOKETEST, "Named flush applied on scene " << rendererScene.getSceneId() <<
-                    " with sceneVersionTag " << pendingFlush.versionTag);
+                LOG_DEBUG(CONTEXT_SMOKETEST, "Named flush applied on scene {} with sceneVersionTag {}", rendererScene.getSceneId(), pendingFlush.versionTag);
                 m_rendererEventCollector.addSceneFlushEvent(ERendererEventType::SceneFlushed, sceneID, pendingFlush.versionTag);
             }
             stagingInfo.lastAppliedVersionTag = pendingFlush.versionTag;
@@ -788,8 +787,8 @@ namespace ramses::internal
                 // mapping a scene needs re-request of all its resources at the new resource manager
                 if (!markClientAndSceneResourcesForReupload(sceneId))
                 {
-                    LOG_ERROR(CONTEXT_RENDERER, "Failed to upload all scene resources within time budget (" << m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneResourcesUpload).count() << " us)."
-                        << " Reduce amount of scene resources or use client resources instead! Scene " << sceneId << " will be force unsubscribed!");
+                    LOG_ERROR(CONTEXT_RENDERER, "Failed to upload all scene resources within time budget ({} us). Reduce amount of scene resources or use client resources instead! Scene {} will be force unsubscribed!",
+                        m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneResourcesUpload).count(), sceneId);
                     scenesToForceUnsubscribe.push_back(sceneId);
                 }
             }
@@ -837,7 +836,7 @@ namespace ramses::internal
             const auto& pendingFlushes = m_rendererScenes.getStagingInfo(sceneId).pendingData.pendingFlushes;
             if (!pendingFlushes.empty())
             {
-                LOG_ERROR(CONTEXT_RENDERER, "Scene " << sceneId << " - expected no pending flushes at this point");
+                LOG_ERROR(CONTEXT_RENDERER, "Scene {} - expected no pending flushes at this point", sceneId);
                 assert(pendingFlushes.size() > m_maximumPendingFlushes);
             }
         }
@@ -897,7 +896,7 @@ namespace ramses::internal
         const auto numPendingFlushes = getNumberOfPendingNonEmptyFlushes(sceneId);
         if (numPendingFlushes > m_maximumPendingFlushes)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Force mapping scene " << sceneId << " due to " << numPendingFlushes << " pending flushes, renderer cannot catch up with resource updates.");
+            LOG_ERROR(CONTEXT_RENDERER, "Force mapping scene {} due to {} pending flushes, renderer cannot catch up with resource updates.", sceneId, numPendingFlushes);
             const auto usedResources = m_displayResourceManager->getResourcesInUseByScene(sceneId);
             if (usedResources)
                 logMissingResources(*usedResources, sceneId);
@@ -911,8 +910,8 @@ namespace ramses::internal
             // Scene might already have broken resources in it before mapping and then new flushes won't be blocked
             // therefore this additional time-based criteria for force mapping.
             // It is still error but it is not necessary to block on it forever.
-            LOG_ERROR(CONTEXT_RENDERER, "Force mapping scene " << sceneId << " due to " << totalWaitingTime.count()
-                << " ms waiting time to be mapped, renderer cannot catch up with resource updates or scene has broken resources.");
+            LOG_ERROR(CONTEXT_RENDERER, "Force mapping scene {} due to {} ms waiting time to be mapped, renderer cannot catch up with resource updates or scene has broken resources.",
+                sceneId, totalWaitingTime.count());
             return true;
         }
 
@@ -923,11 +922,11 @@ namespace ramses::internal
     {
         const SceneActionCollection& actionsForScene = flushInfo.sceneActions;
         const uint32_t numActions = actionsForScene.numberOfActions();
-        LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::applySceneActions start applying scene actions [count:" << numActions << "] for scene with id " << scene.getSceneId());
+        LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::applySceneActions start applying scene actions [count:{}] for scene with id {}", numActions, scene.getSceneId());
 
         SceneActionApplier::ApplyActionsOnScene(scene, actionsForScene);
 
-        LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::applySceneActions finished applying scene actions for scene with id " << scene.getSceneId());
+        LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::applySceneActions finished applying scene actions for scene with id {}", scene.getSceneId());
     }
 
     void RendererSceneUpdater::destroyScene(SceneId sceneID)
@@ -991,7 +990,7 @@ namespace ramses::internal
         if (!sceneResourceActions.empty())
         {
             if (sceneResourcesByteSize > 0u)
-                LOG_INFO(CONTEXT_RENDERER, "Applying scene resources gathered from scene " << sceneId << ", " << sceneResourceActions.size() << " actions, " << sceneResourcesByteSize << " bytes");
+                LOG_INFO(CONTEXT_RENDERER, "Applying scene resources gathered from scene {}, {} actions, {} bytes", sceneId, sceneResourceActions.size(), sceneResourcesByteSize);
 
             // enable time measuring and interrupting of upload only if scene is remote
             const bool sceneIsRemote = (m_sceneStateExecutor.getScenePublicationMode(sceneId) != EScenePublicationMode::LocalOnly);
@@ -1004,7 +1003,7 @@ namespace ramses::internal
         ResourceUtils::GetAllResourcesFromScene(resourcesUsedInScene, scene);
         if (!resourcesUsedInScene.empty())
         {
-            LOG_INFO(CONTEXT_RENDERER, "Marking " << resourcesUsedInScene.size() << " client resources as used by scene " << sceneId);
+            LOG_INFO(CONTEXT_RENDERER, "Marking {} client resources as used by scene {}", resourcesUsedInScene.size(), sceneId);
 
             // compare actual 'in-use' list with 'to be uploaded for mapping' list
             // the only case these do not contain same elements is re-map case (other than first mapping)
@@ -1023,10 +1022,10 @@ namespace ramses::internal
                 ResourceContentHashVector resourcesToReference;
                 std::set_difference(resourcesUsedInScene.cbegin(), resourcesUsedInScene.cend(), providedHashes.cbegin(), providedHashes.cend(), std::back_inserter(resourcesToReference));
                 resourceManager.referenceResourcesForScene(sceneId, resourcesToReference);
-                LOG_INFO_P(CONTEXT_RENDERER, "Out of {} resources used in scene {} there are {} resources that are not ready to be provided and uploaded unless already cached.", resourcesUsedInScene.size(), sceneId, resourcesToReference.size());
+                LOG_INFO(CONTEXT_RENDERER, "Out of {} resources used in scene {} there are {} resources that are not ready to be provided and uploaded unless already cached.", resourcesUsedInScene.size(), sceneId, resourcesToReference.size());
             }
             else
-                LOG_INFO_P(CONTEXT_RENDERER, "All resources used in scene {} are ready to be provided and uploaded.", sceneId);
+                LOG_INFO(CONTEXT_RENDERER, "All resources used in scene {} are ready to be provided and uploaded.", sceneId);
         }
 
         return true;
@@ -1162,7 +1161,7 @@ namespace ramses::internal
             IRendererResourceManager& resourceManager = *m_displayResourceManager;
             if (resourceManager.getOffscreenBufferDeviceHandle(buffer).isValid())
             {
-                LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleBufferCreateRequest an offscreen buffer with the same ID (" << buffer << ") already exists!");
+                LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleBufferCreateRequest an offscreen buffer with the same ID ({}) already exists!", buffer);
             }
             else
             {
@@ -1171,7 +1170,7 @@ namespace ramses::internal
                 m_renderer.resetRenderInterruptState();
                 m_renderer.registerOffscreenBuffer(deviceHandle, width, height, isDoubleBuffered);
 
-                LOG_INFO_P(CONTEXT_RENDERER, "Created offscreen buffer {} (device handle {}): {}x{} {}", buffer, deviceHandle, width, height, (isDoubleBuffered ? " interruptible" : ""));
+                LOG_INFO(CONTEXT_RENDERER, "Created offscreen buffer {} (device handle {}): {}x{} {}", buffer, deviceHandle, width, height, (isDoubleBuffered ? " interruptible" : ""));
                 success = true;
             }
         }
@@ -1196,7 +1195,7 @@ namespace ramses::internal
             IRendererResourceManager& resourceManager = *m_displayResourceManager;
             if (resourceManager.getOffscreenBufferDeviceHandle(buffer).isValid())
             {
-                LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleDmaBufferCreateRequest an offscreen buffer with the same ID (" << buffer << ") already exists!");
+                LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleDmaBufferCreateRequest an offscreen buffer with the same ID ({}) already exists!", buffer);
             }
             else
             {
@@ -1205,7 +1204,7 @@ namespace ramses::internal
                 m_renderer.resetRenderInterruptState();
                 m_renderer.registerOffscreenBuffer(deviceHandle, width, height, false);
 
-                LOG_INFO_P(CONTEXT_RENDERER, "Created DMA offscreen buffer {} (device handle {}): {}x{}", buffer, deviceHandle, width, height);
+                LOG_INFO(CONTEXT_RENDERER, "Created DMA offscreen buffer {} (device handle {}): {}x{}", buffer, deviceHandle, width, height);
                 dmaBufferFD = resourceManager.getDmaOffscreenBufferFD(buffer);
                 dmaBufferStride = resourceManager.getDmaOffscreenBufferStride(buffer);
                 success = true;
@@ -1230,7 +1229,7 @@ namespace ramses::internal
         const auto bufferDeviceHandle = resourceManager.getOffscreenBufferDeviceHandle(buffer);
         if (!bufferDeviceHandle.isValid())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleBufferDestroyRequest could not find buffer with ID " << buffer);
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleBufferDestroyRequest could not find buffer with ID {}", buffer);
             return false;
         }
 
@@ -1240,7 +1239,7 @@ namespace ramses::internal
             const auto sceneDisplayBuffer = m_renderer.getBufferSceneIsAssignedTo(sceneId);
             if (sceneDisplayBuffer == bufferDeviceHandle)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleBufferDestroyRequest cannot destroy buffer " << buffer << ", there is one or more scenes assigned to it, unmap or reassign them first.");
+                LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleBufferDestroyRequest cannot destroy buffer {}, there is one or more scenes assigned to it, unmap or reassign them first.", buffer);
                 return false;
             }
         }
@@ -1269,14 +1268,14 @@ namespace ramses::internal
             if (deviceHandle.isValid())
             {
                 const uint32_t glTexId = resourceManager.getExternalBufferGlId(buffer);
-                LOG_INFO_P(CONTEXT_RENDERER, "Created external buffer {} (device handle {}, GL id: {})", buffer, deviceHandle, glTexId);
+                LOG_INFO(CONTEXT_RENDERER, "Created external buffer {} (device handle {}, GL id: {})", buffer, deviceHandle, glTexId);
 
                 m_rendererEventCollector.addExternalBufferEvent(ERendererEventType::ExternalBufferCreated, m_display, buffer, glTexId);
                 return true;
             }
         }
 
-        LOG_ERROR_P(CONTEXT_RENDERER, "Failed creating external buffer {}", buffer);
+        LOG_ERROR(CONTEXT_RENDERER, "Failed creating external buffer {}", buffer);
 
         m_rendererEventCollector.addExternalBufferEvent(ERendererEventType::ExternalBufferCreateFailed, m_display, buffer, 0u);
         return false;
@@ -1295,7 +1294,7 @@ namespace ramses::internal
             const auto bufferDeviceHandle = resourceManager.getExternalBufferDeviceHandle(buffer);
             if (!bufferDeviceHandle.isValid())
             {
-                LOG_ERROR_P(CONTEXT_RENDERER, "RendererSceneUpdater::handleExternalBufferDestroyRequest could not find external buffer {}", buffer);
+                LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleExternalBufferDestroyRequest could not find external buffer {}", buffer);
             }
             else
             {
@@ -1324,14 +1323,14 @@ namespace ramses::internal
         IRendererResourceManager& resourceManager = *m_displayResourceManager;
         if (resourceManager.getStreamBufferDeviceHandle(buffer).isValid())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleBufferCreateRequest a stream buffer with the same ID (" << buffer << ") already exists!");
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleBufferCreateRequest a stream buffer with the same ID ({}) already exists!", buffer);
             return false;
         }
 
         resourceManager.uploadStreamBuffer(buffer, source);
 
         const DeviceResourceHandle deviceHandle = resourceManager.getStreamBufferDeviceHandle(buffer);
-        LOG_INFO(CONTEXT_RENDERER, "Created stream buffer " << buffer << " (device handle " << deviceHandle << ")");
+        LOG_INFO(CONTEXT_RENDERER, "Created stream buffer {} (device handle {})", buffer, deviceHandle);
 
         return true;
     }
@@ -1348,7 +1347,7 @@ namespace ramses::internal
         IRendererResourceManager& resourceManager = *m_displayResourceManager;
         if (!resourceManager.getStreamBufferDeviceHandle(buffer).isValid())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleBufferDestroyRequest could not find stream buffer with ID " << buffer);
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleBufferDestroyRequest could not find stream buffer with ID {}", buffer);
             return false;
         }
 
@@ -1372,7 +1371,7 @@ namespace ramses::internal
             bufferDeviceHandle = m_displayResourceManager->getOffscreenBufferDeviceHandle(buffer);
             if (!bufferDeviceHandle.isValid())
             {
-                LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSetClearEnabled cannot enable/disable clear for unknown offscreen buffer " << buffer);
+                LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSetClearEnabled cannot enable/disable clear for unknown offscreen buffer {}", buffer);
                 return;
             }
         }
@@ -1397,7 +1396,7 @@ namespace ramses::internal
             bufferDeviceHandle = m_displayResourceManager->getOffscreenBufferDeviceHandle(buffer);
             if (!bufferDeviceHandle.isValid())
             {
-                LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSetClearColor cannot set clear color for unknown offscreen buffer " << buffer);
+                LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSetClearColor cannot set clear color for unknown offscreen buffer {}", buffer);
                 return;
             }
         }
@@ -1456,7 +1455,7 @@ namespace ramses::internal
             }
             else
             {
-                LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::readPixels failed, requested buffer does not exist : " << buffer << " !");
+                LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::readPixels failed, requested buffer does not exist : {} !", buffer);
                 readPixelsFailed = true;
             }
         }
@@ -1477,7 +1476,7 @@ namespace ramses::internal
     {
         if (!m_renderer.hasDisplayController() || !m_rendererScenes.hasScene(sceneId))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSceneDisplayBufferAssignmentRequest cannot assign scene " << sceneId << " to a display buffer, display invalid or scene is not mapped.");
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSceneDisplayBufferAssignmentRequest cannot assign scene {} to a display buffer, display invalid or scene is not mapped.", sceneId);
             return false;
         }
 
@@ -1487,7 +1486,7 @@ namespace ramses::internal
         const DeviceResourceHandle bufferDeviceHandle = (buffer.isValid() ? resourceManager.getOffscreenBufferDeviceHandle(buffer) : m_renderer.getDisplayController().getDisplayBuffer());
         if (!bufferDeviceHandle.isValid())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSceneDisplayBufferAssignmentRequest cannot assign scene to render buffer, buffer " << buffer << " not found on this display.");
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleSceneDisplayBufferAssignmentRequest cannot assign scene to render buffer, buffer {} not found on this display.", buffer);
             return false;
         }
 
@@ -1511,7 +1510,7 @@ namespace ramses::internal
                 {
                     if (m_sceneStateExecutor.getSceneState(providerSceneId) < ESceneState::Mapped)
                     {
-                        LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: provider scene providing a texture must be fully mapped before linking! (Provider scene: " << providerSceneId << ") (Consumer scene: " << consumerSceneId << ")");
+                        LOG_ERROR(CONTEXT_RENDERER, "Renderer::createDataLink failed: provider scene providing a texture must be fully mapped before linking! (Provider scene: {}) (Consumer scene: {})", providerSceneId, consumerSceneId);
                         m_rendererEventCollector.addDataLinkEvent(ERendererEventType::SceneDataLinkFailed, providerSceneId, consumerSceneId, providerId, consumerId);
                         return;
                     }
@@ -1528,7 +1527,7 @@ namespace ramses::internal
     {
         if (!m_renderer.hasDisplayController() || !m_rendererScenes.hasScene(consumerSceneId))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Link offscreen buffer to consumer scene " << consumerSceneId << " failed, invalid display or scene not mapped.");
+            LOG_ERROR(CONTEXT_RENDERER, "Link offscreen buffer to consumer scene {} failed, invalid display or scene not mapped.", consumerSceneId);
             m_rendererEventCollector.addBufferEvent(ERendererEventType::SceneDataBufferLinkFailed, buffer, consumerSceneId, consumerId);
             return;
         }
@@ -1537,7 +1536,7 @@ namespace ramses::internal
         const IRendererResourceManager& resourceManager = *m_displayResourceManager;
         if (!resourceManager.getOffscreenBufferDeviceHandle(buffer).isValid())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Link offscreen buffer failed: offscreen buffer " << buffer << " has to exist on the same display where the consumer scene " << consumerSceneId << " is mapped!");
+            LOG_ERROR(CONTEXT_RENDERER, "Link offscreen buffer failed: offscreen buffer {} has to exist on the same display where the consumer scene {} is mapped!", buffer, consumerSceneId);
             m_rendererEventCollector.addBufferEvent(ERendererEventType::SceneDataBufferLinkFailed, buffer, consumerSceneId, consumerId);
             return;
         }
@@ -1551,7 +1550,7 @@ namespace ramses::internal
     {
         if (!m_renderer.hasDisplayController() || !m_rendererScenes.hasScene(consumerSceneId))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Link stream buffer to consumer scene " << consumerSceneId << " failed, invalid display or scene not mapped.");
+            LOG_ERROR(CONTEXT_RENDERER, "Link stream buffer to consumer scene {} failed, invalid display or scene not mapped.", consumerSceneId);
             m_rendererEventCollector.addBufferEvent(ERendererEventType::SceneDataBufferLinkFailed, buffer, consumerSceneId, consumerId);
             return;
         }
@@ -1565,7 +1564,7 @@ namespace ramses::internal
     {
         if (!m_renderer.hasDisplayController() || !m_rendererScenes.hasScene(consumerSceneId))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Link external buffer to consumer scene " << consumerSceneId << " failed, invalid display or scene not mapped.");
+            LOG_ERROR(CONTEXT_RENDERER, "Link external buffer to consumer scene {} failed, invalid display or scene not mapped.", consumerSceneId);
             m_rendererEventCollector.addBufferEvent(ERendererEventType::SceneDataBufferLinkFailed, buffer, consumerSceneId, consumerId);
             return;
         }
@@ -1574,7 +1573,7 @@ namespace ramses::internal
         const IRendererResourceManager& resourceManager = *m_displayResourceManager;
         if (!resourceManager.getExternalBufferDeviceHandle(buffer).isValid())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Link external buffer failed: external buffer " << buffer << " has to exist on the same display where the consumer scene " << consumerSceneId << " is mapped!");
+            LOG_ERROR(CONTEXT_RENDERER, "Link external buffer failed: external buffer {} has to exist on the same display where the consumer scene {} is mapped!", buffer, consumerSceneId);
             m_rendererEventCollector.addBufferEvent(ERendererEventType::SceneDataBufferLinkFailed, buffer, consumerSceneId, consumerId);
             return;
         }
@@ -1596,7 +1595,7 @@ namespace ramses::internal
         const auto bufferHandle = m_renderer.getBufferSceneIsAssignedTo(sceneId);
         if (!m_rendererScenes.hasScene(sceneId) || !bufferHandle.isValid())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handlePickEvent could not process pick event for scene " << sceneId << " which is not assigned to any display buffer.");
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handlePickEvent could not process pick event for scene {} which is not assigned to any display buffer.", sceneId);
             return;
         }
 
@@ -1630,9 +1629,9 @@ namespace ramses::internal
         m_maximumPendingFlushesToKillScene = limitForPendingFlushesForceUnsubscribe;
     }
 
-    void RendererSceneUpdater::logRendererInfo(ERendererLogTopic topic, bool verbose, NodeHandle nodeFilter) const
+    void RendererSceneUpdater::logRendererInfo(const RendererCommand::LogInfo& cmd) const
     {
-        RendererLogger::LogTopic(*this, topic, verbose, nodeFilter);
+        RendererLogger::LogTopic(*this, cmd);
     }
 
     void RendererSceneUpdater::setSkippingOfUnmodifiedScenes(bool enable)
@@ -1864,16 +1863,16 @@ namespace ramses::internal
                 // is converted to layout normally used in image files (top-down)
                 const Image bitmap(screenshot.rectangle.width, screenshot.rectangle.height, screenshot.pixelData.cbegin(), screenshot.pixelData.cend(), true);
                 bitmap.saveToFilePNG(screenshot.filename);
-                LOG_INFO(CONTEXT_RENDERER, "RendererSceneUpdater::processScreenshotResults: screenshot successfully saved to file: " << screenshot.filename);
+                LOG_INFO(CONTEXT_RENDERER, "RendererSceneUpdater::processScreenshotResults: screenshot successfully saved to file: {}", screenshot.filename);
                 if (screenshot.sendViaDLT)
                 {
                     if (GetRamsesLogger().transmitFile(screenshot.filename, false))
                     {
-                        LOG_INFO(CONTEXT_RENDERER, "RendererSceneUpdater::processScreenshotResults: started dlt file transfer: " << screenshot.filename);
+                        LOG_INFO(CONTEXT_RENDERER, "RendererSceneUpdater::processScreenshotResults: started dlt file transfer: {}", screenshot.filename);
                     }
                     else
                     {
-                        LOG_WARN(CONTEXT_RENDERER, "RendererSceneUpdater::processScreenshotResults: screenshot file could not send via dlt: " << screenshot.filename);
+                        LOG_WARN(CONTEXT_RENDERER, "RendererSceneUpdater::processScreenshotResults: screenshot file could not send via dlt: {}", screenshot.filename);
                     }
                 }
             }

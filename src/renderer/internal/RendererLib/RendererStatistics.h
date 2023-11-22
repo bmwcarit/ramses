@@ -58,7 +58,7 @@ namespace ramses::internal
     private:
         int32_t m_frameNumber = 0;
         uint64_t m_timeBase = PlatformTime::GetMillisecondsMonotonic();
-        uint32_t m_drawCalls = 0u;
+        SummaryEntry<uint32_t> m_drawCalls;
         uint64_t m_lastFrameTick = 0u;
         uint32_t m_frameDurationMin = std::numeric_limits<uint32_t>::max();
         uint32_t m_frameDurationMax = 0u;

@@ -23,7 +23,7 @@ namespace ramses::internal
 
     uint32_t RendererStatistics::getDrawCallsPerFrame() const
     {
-        return m_frameNumber <= 0 ? 0u : m_drawCalls / m_frameNumber;
+        return m_frameNumber <= 0 ? 0u : std::lround(static_cast<float>(m_drawCalls.sum) / static_cast<float>(m_frameNumber));
     }
 
     void RendererStatistics::sceneRendered(SceneId sceneId)
@@ -182,7 +182,7 @@ namespace ramses::internal
         }
 
         m_frameNumber++;
-        m_drawCalls += drawCalls;
+        m_drawCalls.update(drawCalls);
 
         m_lastFrameTick = currTick;
     }
@@ -199,7 +199,7 @@ namespace ramses::internal
     {
         m_timeBase = PlatformTime::GetMillisecondsMonotonic();
         m_frameNumber = 0;
-        m_drawCalls = 0u;
+        m_drawCalls.reset();
         m_frameDurationMin = std::numeric_limits<uint32_t>::max();
         m_frameDurationMax = 0u;
         m_resourcesUploaded = 0u;
@@ -261,7 +261,7 @@ namespace ramses::internal
         str << "Avg framerate: " << getFps() << " FPS"
             " [minFrameTime " << m_frameDurationMin << "us" <<
             ", maxFrameTime " << m_frameDurationMax << "us]" <<
-            ", drawcallsPerFrame " << getDrawCallsPerFrame() <<
+            ", drawCalls (" << m_drawCalls.minValue << "/" << m_drawCalls.maxValue << "/" << getDrawCallsPerFrame() << ")" <<
             ", numFrames " << m_frameNumber;
         if (m_resourcesUploaded > 0u)
             str << ", resUploaded " << m_resourcesUploaded << " (" << m_resourcesBytesUploaded << " B)";

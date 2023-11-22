@@ -22,7 +22,7 @@ namespace ramses::internal
     PeriodicLogger::PeriodicLogger(PlatformLock& frameworkLock, StatisticCollectionFramework& statisticCollection)
         : m_isRunning(false)
         , m_periodicLogTimeoutSeconds(0)
-        , m_thread("R_PerLogger")
+        , m_thread("PerLogger")
         , m_frameworkLock(frameworkLock)
         , m_statisticCollection(statisticCollection)
         , m_triggerCounter(0)
@@ -128,12 +128,10 @@ namespace ramses::internal
         int64_t steadyDiff = std::chrono::duration_cast<std::chrono::milliseconds>(steadyNow - m_previousSteadyTime).count();
         int64_t syncDiff = std::chrono::duration_cast<std::chrono::milliseconds>(syncNow - m_previousSyncTime).count();
 
-        LOG_INFO(CONTEXT_PERIODIC, "Version: " << ::ramses_sdk::RAMSES_SDK_RAMSES_VERSION << " Hash:" << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH
-            << " Commit:" << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_COUNT << " Type:" << ::ramses_sdk::RAMSES_SDK_CMAKE_BUILD_TYPE
-            << " Env:" << ::ramses_sdk::RAMSES_SDK_BUILD_ENV_VERSION_INFO_FULL
-            << " SyncT:" << asMilliseconds(syncNow) << "ms (dtSteady:" << steadyDiff << " - dtSync:" << syncDiff << " -> " << (steadyDiff - syncDiff) << ")"
-            << " PUp:" << pUp <<  " RUp:" << rUp
-            << " RInit:" << m_numberOfRamsesInstancesStartedInProcess.load() << " RParallel:" << m_numberOfRamsesInstancesCurrentlyActive.load());
+        LOG_INFO(CONTEXT_PERIODIC, "Version: {} Hash:{} Commit:{} Type:{} Env:{} SyncT:{}ms (dtSteady:{} - dtSync:{} -> {}) PUp:{} RUp:{} RInit:{} RParallel:{}",
+            ::ramses_sdk::RAMSES_SDK_RAMSES_VERSION, ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH, ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_COUNT,
+            ::ramses_sdk::RAMSES_SDK_CMAKE_BUILD_TYPE, ::ramses_sdk::RAMSES_SDK_BUILD_ENV_VERSION_INFO_FULL, asMilliseconds(syncNow),
+            steadyDiff, syncDiff, steadyDiff - syncDiff, pUp, rUp, m_numberOfRamsesInstancesStartedInProcess.load(), m_numberOfRamsesInstancesCurrentlyActive.load());
 
         m_previousSyncTime = syncNow;
         m_previousSteadyTime = steadyNow;

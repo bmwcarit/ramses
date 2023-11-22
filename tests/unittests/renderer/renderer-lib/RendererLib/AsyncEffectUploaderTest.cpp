@@ -10,7 +10,6 @@
 #include "internal/RendererLib/AsyncEffectUploader.h"
 #include "internal/SceneGraph/Resource/EffectResource.h"
 #include "PlatformMock.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
 #include "internal/Watchdog/ThreadAliveNotifierMock.h"
 
 using namespace testing;
@@ -21,10 +20,8 @@ namespace ramses::internal
     {
     protected:
         AnAsyncEffectUploader()
-            : asyncEffectUploader(platformMock, platformMock.renderBackendMock, (EXPECT_CALL(notifier, registerThread()).WillOnce(Return(ThreadAliveNotifierMock::dummyThreadId)), notifier), 1)
+            : asyncEffectUploader(platformMock, platformMock.renderBackendMock, (EXPECT_CALL(notifier, registerThread()).WillOnce(Return(ThreadAliveNotifierMock::dummyThreadId)), notifier), DisplayHandle{ 1 })
         {
-            // caller of async shader uploader is expected to have a display prefix for logs
-            ThreadLocalLog::SetPrefix(0);
         }
 
         void TearDown() override

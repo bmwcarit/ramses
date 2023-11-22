@@ -8,7 +8,7 @@
 
 #include "internal/Platform/X11/Window_X11.h"
 #include "internal/RendererLib/DisplayConfig.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "internal/Core/Utils/Warnings.h"
 #include <array>
 
@@ -212,7 +212,7 @@ namespace ramses::internal
         {
             m_X11WindowData.window = m_userProvidedWindowHandle.getValue();
 
-            LOG_INFO(CONTEXT_RENDERER, "Window_X11::init from existing X11 window: " << m_X11WindowData.window);
+            LOG_INFO(CONTEXT_RENDERER, "Window_X11::init from existing X11 window: {}", m_X11WindowData.window);
             m_X11WindowData.display = XOpenDisplay(nullptr);
 
             if (!m_X11WindowData.display)
@@ -260,7 +260,7 @@ namespace ramses::internal
         // update window size in global config, if required
         const int32_t displayWidth = XDisplayWidth(m_X11WindowData.display, m_X11WindowData.screen);
         const int32_t displayHeight = XDisplayHeight(m_X11WindowData.display, m_X11WindowData.screen);
-        LOG_DEBUG(CONTEXT_RENDERER, "Screen size is " << displayWidth << " by " << displayHeight << " pixels");
+        LOG_DEBUG(CONTEXT_RENDERER, "Screen size is {} by {} pixels", displayWidth, displayHeight);
         if (m_fullscreen)
         {
             m_width = displayWidth;
@@ -366,7 +366,7 @@ namespace ramses::internal
         // set window title
         XStoreName(m_X11WindowData.display, m_X11WindowData.window, m_windowName.c_str());
 
-        LOG_INFO(CONTEXT_RENDERER, "Created X11 Window, size " << m_width << " by " << m_height << " pixels");
+        LOG_INFO(CONTEXT_RENDERER, "Created X11 Window, size {} by {} pixels", m_width, m_height);
         return true;
     }
 
@@ -578,7 +578,7 @@ namespace ramses::internal
                 }
                 break;
             default:
-                LOG_DEBUG(CONTEXT_RENDERER, "Other X11 event received, type " << event.type);
+                LOG_DEBUG(CONTEXT_RENDERER, "Other X11 event received, type {}", event.type);
                 break;
             }
         }

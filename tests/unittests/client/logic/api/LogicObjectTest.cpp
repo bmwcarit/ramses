@@ -24,6 +24,7 @@
 #include "ramses/client/logic/AnimationNodeConfig.h"
 #include "ramses/client/logic/TimerNode.h"
 #include "ramses/client/logic/AnchorPoint.h"
+#include "ramses/client/logic/RenderBufferBinding.h"
 #include "ramses/client/PerspectiveCamera.h"
 #include "ramses/client/RenderGroup.h"
 #include "ramses/client/RenderPass.h"
@@ -44,6 +45,7 @@
 #include "impl/logic/AnimationNodeImpl.h"
 #include "impl/logic/TimerNodeImpl.h"
 #include "impl/logic/AnchorPointImpl.h"
+#include "impl/logic/RenderBufferBindingImpl.h"
 
 #include "impl/RamsesObjectTypeTraits.h"
 #include "impl/RamsesObjectTypeUtils.h"
@@ -246,6 +248,7 @@ namespace ramses::internal
             this->template createObjectOfType<AnimationNode>("objectName");
             this->template createObjectOfType<TimerNode>("objectName");
             this->template createObjectOfType<AnchorPoint>("objectName");
+            this->template createObjectOfType<RenderBufferBinding>("objectName");
 
             auto* obj = this->template createObjectOfType<TypeParam>("objectName");
             ASSERT_TRUE(obj);
@@ -255,7 +258,7 @@ namespace ramses::internal
             EXPECT_TRUE(obj->setName("newName"));
             EXPECT_TRUE(obj->setUserId(1u, 2u));
 
-            ASSERT_TRUE(this->saveToFileWithoutValidation("file.tmp"));
+            ASSERT_TRUE(this->saveToFile("file.tmp"));
             ASSERT_TRUE(this->recreateFromFile("file.tmp"));
         }
 

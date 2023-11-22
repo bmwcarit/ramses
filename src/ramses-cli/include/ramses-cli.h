@@ -150,6 +150,6 @@ namespace ramses
                 is >> a;
                 config.setClearColor({r, g, b, a});
                 return !is.fail() && (is.rdbuf()->in_avail() == 0);
-            }, "set clear color (rgba)");
+            }, "set clear color (rgba), e.g. 1,0,0,1");
     }
 }

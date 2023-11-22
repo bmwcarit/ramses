@@ -710,7 +710,7 @@ namespace ramses::internal
 
             if (outputString.rfind(expectedLogBuf.str(), 0) != 0)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "SingleStreamTextureTests::runEmbeddedCompositingTestCase  Wrong log output: " << outputString.c_str());
+                LOG_ERROR(CONTEXT_RENDERER, "SingleStreamTextureTests::runEmbeddedCompositingTestCase  Wrong log output: {}", outputString.c_str());
                 testResultValue = false;
             }
 
@@ -781,12 +781,12 @@ namespace ramses::internal
         {
             testResult &= testFramework.waitUntilNumberOfCommitedFramesForIviSurface(waylandSurfaceIviId, frameIndex + 1);
 
-            LOG_INFO(CONTEXT_RENDERER, "SingleStreamTextureTests::RenderFramesOnTestApplicationAndTakeScreenshots(): taking screenshot for frame with index: " << frameIndex);
+            LOG_INFO(CONTEXT_RENDERER, "SingleStreamTextureTests::RenderFramesOnTestApplicationAndTakeScreenshots(): taking screenshot for frame with index: {}", frameIndex);
 
             const std::string& screenshotName = screenshotFiles[frameIndex % triangleColorCount];
             if(!testFramework.renderAndCompareScreenshot(screenshotName))
             {
-                LOG_ERROR(CONTEXT_RENDERER, "SingleStreamTextureTests::RenderFramesOnTestApplicationAndTakeScreenshots(): test failed for screenshot for frame with index: " << frameIndex);
+                LOG_ERROR(CONTEXT_RENDERER, "SingleStreamTextureTests::RenderFramesOnTestApplicationAndTakeScreenshots(): test failed for screenshot for frame with index: {}", frameIndex);
                 testResult = false;
             }
         }

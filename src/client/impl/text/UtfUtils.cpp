@@ -131,7 +131,7 @@ namespace ramses
             }
             else
             {
-                LOG_ERROR(CONTEXT_TEXT, "UtfUtils::ConvertCharUtf32ToUtf8: invalid Unicode " << static_cast<uint32_t>(convertChar) << " Skipping Character\n" );
+                LOG_ERROR(CONTEXT_TEXT, "UtfUtils::ConvertCharUtf32ToUtf8: invalid Unicode {} Skipping Character\n", static_cast<uint32_t>(convertChar));
             }
 
             return utf8string;
@@ -165,7 +165,7 @@ namespace ramses
                 if (!UtfUtils::IsValidUTF8Byte(currentByte))
                 {
                     //invalid byte
-                    LOG_ERROR(CONTEXT_TEXT, "UtfUtils: invalid UTF-8 byte " << currentByte);
+                    LOG_ERROR(CONTEXT_TEXT, "UtfUtils: invalid UTF-8 byte {}", currentByte);
                     result.extractionSuccessful = false;
                     break;
                 }
@@ -176,7 +176,7 @@ namespace ramses
                     {
                         //trailing byte expected, but lead byte found
                         //previous character did not finish correctly
-                        LOG_ERROR(CONTEXT_TEXT, "UtfUtils: unexpected UTF-8 lead byte " << currentByte << "! Aborting previous code point and re-starting from this one");
+                        LOG_ERROR(CONTEXT_TEXT, "UtfUtils: unexpected UTF-8 lead byte {}! Aborting previous code point and re-starting from this one", currentByte);
                         result.extractionSuccessful = false;
                         // TODO Violin this is weird logic... We "unread" this unexpected lead byte and pretend we didn't see the wrong bytes before
                         // Check if there is a better way
@@ -212,11 +212,11 @@ namespace ramses
                                 }
                                 else
                                 {
-                                    LOG_ERROR(CONTEXT_TEXT, "UtfUtils::GetNextUTF8CharacterFromStream: overlong encoded UTF-8 character " << result.codePoint);
+                                    LOG_ERROR(CONTEXT_TEXT, "UtfUtils::GetNextUTF8CharacterFromStream: overlong encoded UTF-8 character {}", result.codePoint);
                                 }
                             }
                             else
-                                LOG_ERROR(CONTEXT_TEXT, "UtfUtils::GetNextUTF8CharacterFromStream invalid UTF-8 code point " << result.codePoint);
+                                LOG_ERROR(CONTEXT_TEXT, "UtfUtils::GetNextUTF8CharacterFromStream invalid UTF-8 code point {}", result.codePoint);
 
                             // TODO Violin this is wrong! If the codepoint is invalid, it should not be returned
                             // Otherwise this might result in further errors along the text processing stages
@@ -227,7 +227,7 @@ namespace ramses
                     else
                     {
                         //lead byte expected, but continuation byte, something is wrong
-                        LOG_ERROR(CONTEXT_TEXT, "UtfUtils::GetNextUTF8CharacterFromStream: unexpected UTF-8 continuation byte " << currentByte);
+                        LOG_ERROR(CONTEXT_TEXT, "UtfUtils::GetNextUTF8CharacterFromStream: unexpected UTF-8 continuation byte {}", currentByte);
                         result.extractionSuccessful = false;
                         break;
                     }
@@ -255,7 +255,7 @@ namespace ramses
                 {
                     if (lowSurrogateExpected)
                     {
-                        LOG_ERROR(CONTEXT_TEXT, "UtfUtils::ExtractUnicodePointFromUTF16Array: unexpected UTF-16 word " << currentWord << ", low surrogate was expected");
+                        LOG_ERROR(CONTEXT_TEXT, "UtfUtils::ExtractUnicodePointFromUTF16Array: unexpected UTF-16 word {}, low surrogate was expected", currentWord);
                         // TODO Violin this looks quite weird, check if it is correct to "unread" one word
                         --strBegin;
                         result.extractionSuccessful = false;
@@ -271,7 +271,7 @@ namespace ramses
                 {
                     if (lowSurrogateExpected)
                     {
-                        LOG_ERROR(CONTEXT_TEXT, "UtfUtils::ExtractUnicodePointFromUTF16Array: unexpected UTF-16 high surrogate " << currentWord << " in string, low surrogate was expected");
+                        LOG_ERROR(CONTEXT_TEXT, "UtfUtils::ExtractUnicodePointFromUTF16Array: unexpected UTF-16 high surrogate {} in string, low surrogate was expected", currentWord);
                         // TODO Violin this looks quite weird, check if it is correct to "unread" one word
                         --strBegin;
                         result.extractionSuccessful = false;
@@ -284,7 +284,7 @@ namespace ramses
                 {
                     if (!lowSurrogateExpected)
                     {
-                        LOG_ERROR(CONTEXT_TEXT, "UtfUtils::ExtractUnicodePointFromUTF16Array: unexpected UTF-16 low surrogate " << currentWord << " in string, no high surrogate");
+                        LOG_ERROR(CONTEXT_TEXT, "UtfUtils::ExtractUnicodePointFromUTF16Array: unexpected UTF-16 low surrogate {} in string, no high surrogate", currentWord);
                         result.extractionSuccessful = false;
                         break;
                     }

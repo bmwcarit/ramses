@@ -76,7 +76,7 @@ namespace ramses::internal
                     {
                         continue;
                     }
-                    LOG_ERROR_P(CONTEXT_RAMSH, "Unknown option: {}", arg);
+                    LOG_ERROR(CONTEXT_RAMSH, "Unknown option: {}", arg);
                     return false;
                 }
             }

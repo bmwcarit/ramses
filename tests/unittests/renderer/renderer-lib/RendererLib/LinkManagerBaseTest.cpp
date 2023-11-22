@@ -14,7 +14,6 @@
 #include "internal/RendererLib/RendererScenes.h"
 #include "internal/RendererLib/RendererEventCollector.h"
 #include "SceneLinksTestUtils.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
 
 using namespace testing;
 
@@ -36,9 +35,6 @@ namespace ramses::internal
             , providerSlotHandle(55u)
             , consumerSlotHandle(66u)
         {
-            // caller is expected to have a display prefix for logs
-            ThreadLocalLog::SetPrefix(1);
-
             createDataSlot<T>(providerSceneAllocator, providerSlotHandle, DataSlotId(33u), true);
             createDataSlot<T>(consumerSceneAllocator, consumerSlotHandle, DataSlotId(44u), false);
         }

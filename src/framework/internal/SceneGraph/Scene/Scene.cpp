@@ -180,6 +180,16 @@ namespace ramses::internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
+    void SceneT<MEMORYPOOL>::setRenderBufferProperties(RenderBufferHandle handle, uint32_t width, uint32_t height, uint32_t sampleCount)
+    {
+        assert(m_renderBuffers.isAllocated(handle));
+        auto& rb = *m_renderBuffers.getMemory(handle);
+        rb.width = width;
+        rb.height = height;
+        rb.sampleCount = sampleCount;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
     uint32_t SceneT<MEMORYPOOL>::getRenderBufferCount() const
     {
         return m_renderBuffers.getTotalCount();

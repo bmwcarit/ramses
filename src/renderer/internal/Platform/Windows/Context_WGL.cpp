@@ -9,7 +9,7 @@
 #include "internal/Platform/Windows/Context_WGL.h"
 #include "internal/Platform/Windows/HiddenWindow.h"
 #include "internal/Platform/Windows/Window_Windows.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {
@@ -55,7 +55,7 @@ namespace ramses::internal
         if (0 == m_wglContextHandle)
         {
             uint32_t error = GetLastError();
-            LOG_ERROR(CONTEXT_RENDERER, "wglCreateContextAttribsARB failed, returned context handle is 0. GetLastError returned error code " << error);
+            LOG_ERROR(CONTEXT_RENDERER, "wglCreateContextAttribsARB failed, returned context handle is 0. GetLastError returned error code {}", error);
             return false;
         }
 
@@ -163,7 +163,7 @@ namespace ramses::internal
 
         if (!valid || numFormats == 0)
         {
-            LOG_WARN(CONTEXT_RENDERER, "Context_WGL::initCustomPixelFormat() m_ext.procs.wglChoosePixelFormatARB failed. valid = " << valid << ", numFormats = " << numFormats);
+            LOG_WARN(CONTEXT_RENDERER, "Context_WGL::initCustomPixelFormat() m_ext.procs.wglChoosePixelFormatARB failed. valid = {}, numFormats = {}", valid, numFormats);
             return false;
         }
 
@@ -186,27 +186,23 @@ namespace ramses::internal
             return false;
         }
 
-        LOG_INFO(CONTEXT_RENDERER, "Context_WGL::initCustomPixelFormat:  OpenGL pixel format: "
-            << "COLOR_BITS :" << resultAttribs[0]
-            << ", ALPHA_BITS :" << resultAttribs[1]
-            << ", DEPTH_BITS :" << resultAttribs[2]
-            << ", STENCIL_BITS :" << resultAttribs[3]
-            << ", SAMPLE_COUNT :" << resultAttribs[4]);
+        LOG_INFO(CONTEXT_RENDERER, "Context_WGL::initCustomPixelFormat:  OpenGL pixel format: COLOR_BITS:{}, ALPHA_BITS :{}, DEPTH_BITS : {}, STENCIL_BITS :{}, SAMPLE_COUNT : ",
+            resultAttribs[0], resultAttribs[1], resultAttribs[2], resultAttribs[3], resultAttribs[4]);
 
         if (resultAttribs[0] != colorBits)
-            LOG_WARN(CONTEXT_RENDERER, "Context_WGL::initCustomPixelFormat:  could not get Requested pixel format. actual COLOR_BITS :" << resultAttribs[0] << " vs requested :" << colorBits);
+            LOG_WARN(CONTEXT_RENDERER, "Context_WGL::initCustomPixelFormat:  could not get Requested pixel format. actual COLOR_BITS :{} vs requested :{}", resultAttribs[0], colorBits);
 
         if (resultAttribs[1] != alphaBits)
-            LOG_WARN(CONTEXT_RENDERER, "Context_WGL::initCustomPixelFormat:  could not get Requested pixel format. actual ALPHA_BITS :" << resultAttribs[1] << " vs requested :" << alphaBits);
+            LOG_WARN(CONTEXT_RENDERER, "Context_WGL::initCustomPixelFormat:  could not get Requested pixel format. actual ALPHA_BITS :{} vs requested :{}", resultAttribs[1], alphaBits);
 
         if (resultAttribs[2] != depthBits)
-            LOG_WARN(CONTEXT_RENDERER, "Context_WGL::initCustomPixelFormat:  could not get Requested pixel format. actual DEPTH_BITS :" << resultAttribs[2] << " vs requested :" << depthBits);
+            LOG_WARN(CONTEXT_RENDERER, "Context_WGL::initCustomPixelFormat:  could not get Requested pixel format. actual DEPTH_BITS :{} vs requested :{}", resultAttribs[2], depthBits);
 
         if (resultAttribs[3] != stencilBits)
-            LOG_WARN(CONTEXT_RENDERER, "Context_WGL::initCustomPixelFormat:  could not get Requested pixel format. actual STENCIL_BITS :" << resultAttribs[3] << " vs requested :" << stencilBits);
+            LOG_WARN(CONTEXT_RENDERER, "Context_WGL::initCustomPixelFormat:  could not get Requested pixel format. actual STENCIL_BITS :{} vs requested :{}", resultAttribs[3], stencilBits);
 
         if (resultAttribs[4] != sampleCount)
-            LOG_WARN(CONTEXT_RENDERER, "Context_WGL::initCustomPixelFormat:  could not get Requested pixel format. actual SAMPLE_COUNT :" << resultAttribs[4] << " vs requested :" << sampleCount);
+            LOG_WARN(CONTEXT_RENDERER, "Context_WGL::initCustomPixelFormat:  could not get Requested pixel format. actual SAMPLE_COUNT :{} vs requested :{}", resultAttribs[4], sampleCount);
 
         // This code is very misleading  - it looks like setting up a surface pixel format
         // but it doesn't, the data is actually unused

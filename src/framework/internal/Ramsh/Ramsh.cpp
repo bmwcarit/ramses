@@ -56,7 +56,7 @@ namespace ramses::internal
         // check keywords
         if (command->keywords().empty())
         {
-            LOG_WARN_P(CONTEXT_RAMSH, "Ramsh::add: Command has no keywords");
+            LOG_WARN(CONTEXT_RAMSH, "Ramsh::add: Command has no keywords");
             return false;
         }
         for (const auto& kw : command->keywords())
@@ -71,14 +71,14 @@ namespace ramses::internal
             };
             if (std::find_if(kw.begin(), kw.end(), isValidChar) != kw.end())
             {
-                LOG_WARN_P(CONTEXT_RAMSH, "Ramsh::add: Command keyword '{}' is invalid", kw);
+                LOG_WARN(CONTEXT_RAMSH, "Ramsh::add: Command keyword '{}' is invalid", kw);
                 return false;
             }
             if (!allowOverride)
             {
                 if (m_commands.find(kw) != m_commands.end())
                 {
-                    LOG_WARN_P(CONTEXT_RAMSH, "Ramsh::add: Command with keyword '{}' already exists", kw);
+                    LOG_WARN(CONTEXT_RAMSH, "Ramsh::add: Command with keyword '{}' already exists", kw);
                     return false;
                 }
             }
@@ -105,7 +105,7 @@ namespace ramses::internal
             auto iter = m_commands.find(keyword);
             if (iter == m_commands.end())
             {
-                LOG_ERROR_P(CONTEXT_RAMSH, "unknown command: '{}'", keyword);
+                LOG_ERROR(CONTEXT_RAMSH, "unknown command: '{}'", keyword);
                 return false;
             }
 
@@ -113,15 +113,15 @@ namespace ramses::internal
         }
         if (!cmd)
         {
-            LOG_ERROR_P(CONTEXT_RAMSH, "command implementation missing: '{}'", keyword);
+            LOG_ERROR(CONTEXT_RAMSH, "command implementation missing: '{}'", keyword);
             return false;
         }
 
-        LOG_DEBUG_P(CONTEXT_RAMSH, "triggering cmd '{}'", fmt::join(input, " "));
+        LOG_DEBUG(CONTEXT_RAMSH, "triggering cmd '{}'", fmt::join(input, " "));
         const bool cmdResult = cmd->executeInput(input);
         if (!cmdResult)
         {
-            LOG_WARN_P(CONTEXT_RAMSH, "cmd '{}' returned false", fmt::join(input, " "));
+            LOG_WARN(CONTEXT_RAMSH, "cmd '{}' returned false", fmt::join(input, " "));
         }
 
         return cmdResult;

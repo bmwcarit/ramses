@@ -11,7 +11,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.13)
 set(RAMSES_VERSION_MAJOR 28)
 set(RAMSES_VERSION_MINOR 0)
 set(RAMSES_VERSION_PATCH 0)
-set(RAMSES_VERSION_POSTFIX "-rc2")
+set(RAMSES_VERSION_POSTFIX "-rc3")
 set(RAMSES_VERSION "${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}.${RAMSES_VERSION_PATCH}${RAMSES_VERSION_POSTFIX}")
 
 project(ramses-sdk
@@ -45,8 +45,7 @@ option(ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_IVI        "Enable building for Way
 option(ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_WL_SHELL   "Enable building for Wayland wl_shell window" OFF)
 
 # shared lib options
-option(ramses-sdk_BUILD_FULL_SHARED_LIB                 "Build per-renderer shared libraries." ON)
-option(ramses-sdk_BUILD_HEADLESS_SHARED_LIB             "Enable building headless shared library without renderer" OFF)
+option(ramses-sdk_BUILD_FULL_SHARED_LIB                 "Build full shared libraries (with renderer)." ON)
 
 # optional components
 option(ramses-sdk_ENABLE_LOGIC                          "Enable ramses logic - a component for scripting and animation." ON)
@@ -172,21 +171,11 @@ if(NOT ANY_WINDOW_TYPE_ENABLED)
         elseif(CMAKE_SYSTEM_NAME  STREQUAL "iOS")
             setDefaultWindowType(ramses-sdk_ENABLE_WINDOW_TYPE_IOS "iOS")
         else()
-            message(WARNING "Incorrect configuration. No default window type is known for the build operating system '${CMAKE_SYSTEM_NAME}':\n"
+            message(WARNING "No default window type is known for the build operating system '${CMAKE_SYSTEM_NAME}':\n"
                              "* Either disable default window type by setting ramses-sdk_ENABLE_DEFAULT_WINDOW_TYPE=OFF\n"
-                             "* or enable a window type explicitly by setting any of the options ramses-sdk_ENABLE_WINDOW_TYPE_* to ON\n"
-                             "For current configuration ramses-sdk_BUILD_HEADLESS_SHARED_LIB will be overridden to ON, and headless shared lib will be built.")
-
-            # Override cmake option (with normal/non-cached cmake variable)
-             set(ramses-sdk_BUILD_HEADLESS_SHARED_LIB ON)
+                             "* or enable a window type explicitly by setting any of the options ramses-sdk_ENABLE_WINDOW_TYPE_* to ON")
         endif()
     endif()
-endif()
-
-if(NOT ANY_WINDOW_TYPE_ENABLED AND NOT ramses-sdk_BUILD_HEADLESS_SHARED_LIB)
-    message(FATAL_ERROR "Invalid configuration. Neither any window type, nor headless shared lib enabled:\n"
-                        "* Either enable at least one window type by setting any of the options ramses-sdk_ENABLE_WINDOW_TYPE_* to ON\n"
-                        "* or enable building headless shared lib (without renderer) by setting ramses-sdk_BUILD_HEADLESS_SHARED_LIB=ON")
 endif()
 
 if(NOT ANY_WINDOW_TYPE_ENABLED AND ramses-sdk_BUILD_FULL_SHARED_LIB)
@@ -253,11 +242,10 @@ if(ramses-sdk_BUILD_TOOLS)
     add_subdirectory(tools)
 endif()
 
-if(ramses-sdk_BUILD_FULL_SHARED_LIB OR ramses-sdk_BUILD_HEADLESS_SHARED_LIB)
-    if(ramses-sdk_BUILD_EXAMPLES)
-        add_subdirectory(examples)
-    endif()
+if(ramses-sdk_BUILD_EXAMPLES)
+    add_subdirectory(examples)
 endif()
+
 if(ramses-sdk_BUILD_FULL_SHARED_LIB)
     if(ramses-sdk_BUILD_DEMOS)
         add_subdirectory(demo)
@@ -283,10 +271,7 @@ if(ramses-sdk_ENABLE_INSTALL)
 
     include(CMakePackageConfigHelpers)
 
-    set(configmodules) # initially empty
-    if (ramses-sdk_BUILD_HEADLESS_SHARED_LIB)
-        list(APPEND configmodules ramses-shared-lib-headless)
-    endif()
+    list(APPEND configmodules ramses-shared-lib-headless)
     if (ramses-sdk_BUILD_FULL_SHARED_LIB)
         list(APPEND configmodules ramses-shared-lib)
     endif()

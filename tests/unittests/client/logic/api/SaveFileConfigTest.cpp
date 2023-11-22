@@ -23,7 +23,6 @@ namespace ramses::internal
         {
             config.setMetadataString("metadata");
             config.setExporterVersion(1u, 2u, 3u, 4u);
-            config.setValidationEnabled(false);
             config.setCompressionEnabled(true);
             config.setLuaSavingMode(ELuaSavingMode::SourceAndByteCode);
         }
@@ -35,9 +34,8 @@ namespace ramses::internal
             EXPECT_EQ(2u, config.impl().getExporterVersion().minor);
             EXPECT_EQ(3u, config.impl().getExporterVersion().patch);
             EXPECT_EQ(4u, config.impl().getExporterVersion().fileFormat);
-            EXPECT_FALSE(config.impl().getValidationEnabled());
             EXPECT_EQ(ELuaSavingMode::SourceAndByteCode, config.impl().getLuaSavingMode());
-            EXPECT_EQ("'metadata' exporter:1.2.3.4 validate:false compress:true lua:2", fmt::to_string(config.impl()));
+            EXPECT_EQ("'metadata' exporter:1.2.3.4 compress:true lua:2", fmt::to_string(config.impl()));
         }
     };
 
@@ -49,9 +47,8 @@ namespace ramses::internal
         EXPECT_EQ(0u, config.impl().getExporterVersion().minor);
         EXPECT_EQ(0u, config.impl().getExporterVersion().patch);
         EXPECT_EQ(0u, config.impl().getExporterVersion().fileFormat);
-        EXPECT_TRUE(config.impl().getValidationEnabled());
         EXPECT_EQ(ELuaSavingMode::SourceAndByteCode, config.impl().getLuaSavingMode());
-        EXPECT_EQ("'' exporter:0.0.0.0 validate:true compress:false lua:2", fmt::to_string(config.impl()));
+        EXPECT_EQ("'' exporter:0.0.0.0 compress:false lua:2", fmt::to_string(config.impl()));
     }
 
     TEST_F(ASaveFileConfig, IsCopied)

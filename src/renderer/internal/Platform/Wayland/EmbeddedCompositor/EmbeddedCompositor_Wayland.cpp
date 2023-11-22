@@ -19,7 +19,7 @@
 #include "internal/Platform/EGL/Context_EGL.h"
 #include "internal/RendererLib/DisplayConfig.h"
 #include "internal/RendererLib/RendererLogContext.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "internal/Core/Utils/Warnings.h"
 #include "internal/PlatformAbstraction/PlatformTime.h"
 #include <algorithm>
@@ -107,7 +107,7 @@ namespace ramses::internal
 
     WaylandIviSurfaceIdSet EmbeddedCompositor_Wayland::dispatchUpdatedStreamTextureSourceIds()
     {
-        LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::dispatchUpdatedStreamTextureSourceIds(): count of pending updates for dispatching :" << m_updatedStreamTextureSourceIds.size());
+        LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::dispatchUpdatedStreamTextureSourceIds(): count of pending updates for dispatching :{}", m_updatedStreamTextureSourceIds.size());
         WaylandIviSurfaceIdSet result = m_updatedStreamTextureSourceIds;
         m_updatedStreamTextureSourceIds.clear();
         return result;
@@ -162,7 +162,7 @@ namespace ramses::internal
     void EmbeddedCompositor_Wayland::addWaylandSurface(IWaylandSurface& waylandSurface)
     {
         m_surfaces.push_back(&waylandSurface);
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::addWaylandSurface: Client created surface. Count surfaces :" << m_surfaces.size());
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::addWaylandSurface: Client created surface. Count surfaces :{}", m_surfaces.size());
     }
 
     void EmbeddedCompositor_Wayland::removeWaylandSurface(IWaylandSurface& waylandSurface)
@@ -180,14 +180,14 @@ namespace ramses::internal
             }
         }
 
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::removeWaylandSurface() Client destroyed surface, showing fallback texture for " << waylandSurface.getIviSurfaceId()
-                 << ". Count surfaces :" << m_surfaces.size());
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::removeWaylandSurface() Client destroyed surface, showing fallback texture for {}. Count surfaces :{}",
+            waylandSurface.getIviSurfaceId(), m_surfaces.size());
     }
 
     void EmbeddedCompositor_Wayland::addWaylandCompositorConnection(IWaylandCompositorConnection& waylandCompositorConnection)
     {
         m_compositorConnections.put(&waylandCompositorConnection);
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::addWaylandCompositorConnection: embedded-compositing connection created. Count connections :" << m_compositorConnections.size());
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::addWaylandCompositorConnection: embedded-compositing connection created. Count connections :{}", m_compositorConnections.size());
     }
 
     IWaylandSurface* EmbeddedCompositor_Wayland::findWaylandSurfaceByIviSurfaceId(WaylandIviSurfaceId iviSurfaceId) const
@@ -227,8 +227,8 @@ namespace ramses::internal
         IWaylandSurface* waylandClientSurface = findWaylandSurfaceByIviSurfaceId(streamTextureSourceId);
         assert(nullptr != waylandClientSurface);
 
-        LOG_DEBUG(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::uploadCompositingContentForStreamTexture() " << streamTextureSourceId);
-        LOG_INFO(CONTEXT_SMOKETEST, "embedded-compositing client surface found for existing streamtexture: " << streamTextureSourceId);
+        LOG_DEBUG(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::uploadCompositingContentForStreamTexture() {}", streamTextureSourceId);
+        LOG_INFO(CONTEXT_SMOKETEST, "embedded-compositing client surface found for existing streamtexture: {}", streamTextureSourceId);
 
         UploadCompositingContentForWaylandSurface(waylandClientSurface, textureHandle, textureUploadingAdapter);
         return waylandClientSurface->getNumberOfCommitedFrames();
@@ -253,7 +253,7 @@ namespace ramses::internal
             std::byte dummyData { 0u };
             textureUploadingAdapter.uploadTexture2D(textureHandle, 1u, 1u, EPixelStorageFormat::R8, &dummyData, swizzle);
 
-            LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::uploadCompositingContentForWaylandSurface(): resetting swizzle for " << waylandSurface->getIviSurfaceId());
+            LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::uploadCompositingContentForWaylandSurface(): resetting swizzle for {}", waylandSurface->getIviSurfaceId());
         }
 
         if (nullptr != sharedMemoryBufferData)
@@ -391,8 +391,8 @@ namespace ramses::internal
         const bool removed = m_compositorConnections.remove(&waylandCompositorConnection);
         assert(removed);
 
-        LOG_INFO(CONTEXT_SMOKETEST, "EmbeddedCompositor_Wayland::removeWaylandCompositorConnection: embedded-compositing connection removed. Count connections :"
-                 << m_compositorConnections.size() << ", was removed " << removed);
+        LOG_INFO(CONTEXT_SMOKETEST, "EmbeddedCompositor_Wayland::removeWaylandCompositorConnection: embedded-compositing connection removed. Count connections :{}, was removed {}",
+            m_compositorConnections.size(), removed);
     }
 
     void EmbeddedCompositor_Wayland::removeFromUpdatedStreamTextureSourceIds(WaylandIviSurfaceId id)
@@ -412,7 +412,7 @@ namespace ramses::internal
 
     void EmbeddedCompositor_Wayland::addToUpdatedStreamTextureSourceIds(WaylandIviSurfaceId id)
     {
-        LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::addToUpdatedStreamTextureSourceIds: new texture data for stream texture with " << id);
+        LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::addToUpdatedStreamTextureSourceIds: new texture data for stream texture with {}", id);
         m_updatedStreamTextureSourceIds.insert(id);
 
         if (m_knownStreamTextureSoruceIds.count(id) == 0u)

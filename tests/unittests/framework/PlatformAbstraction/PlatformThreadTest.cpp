@@ -7,6 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "internal/PlatformAbstraction/PlatformThread.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "gtest/gtest.h"
 
 namespace ramses::internal
@@ -42,6 +43,15 @@ namespace ramses::internal
                 {
                     PlatformThread::Sleep(10);
                 }
+            }
+        };
+
+        class LoggingRunnable : public Runnable
+        {
+        public:
+            void run() override
+            {
+                LOG_INFO(CONTEXT_FRAMEWORK, "test");
             }
         };
     }
@@ -172,5 +182,35 @@ namespace ramses::internal
         thread.join();
         EXPECT_FALSE(thread.joinable());
         EXPECT_FALSE(thread.isRunning());
+    }
+
+    TEST_F(APlatformThread, setsNameToLogger)
+    {
+        std::string logMsg;
+        GetRamsesLogger().setLogHandler([&logMsg](auto /*unused*/, auto /*unused*/, auto message) {
+            logMsg = message;
+            });
+
+        // logging prefix name tests work with static thread_local variables, each test case needs to run in own thread to not affect other test cases
+        std::thread t([&] {
+
+            RamsesLogger::SetPrefixes("instName", "");
+
+            LoggingRunnable runnable;
+
+            PlatformThread thread{ "thrdName" };
+            thread.start(runnable);
+            thread.join();
+            EXPECT_EQ("instName.thrdName: test", logMsg);
+
+            PlatformThread thread2{ "thrdName2" };
+            thread2.start(runnable);
+            thread2.join();
+            EXPECT_EQ("instName.thrdName2: test", logMsg);
+
+            });
+        t.join();
+
+        GetRamsesLogger().setLogHandler(nullptr);
     }
 }

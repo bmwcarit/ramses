@@ -10,7 +10,7 @@
 #include "internal/RendererLib/PlatformInterface/IWindowEventHandler.h"
 #include "internal/RendererLib/DisplayConfig.h"
 #include "internal/RendererLib/Enums/EKeyModifier.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "internal/PlatformAbstraction/Collections/Guid.h"
 #include "fmt/format.h"
 #include <WindowsX.h>
@@ -269,7 +269,7 @@ namespace ramses::internal
 
         setFullscreen(m_fullscreen);
 
-        LOG_INFO(CONTEXT_RENDERER, "Surface_Windows::Surface_Windows:  created window '" << getTitle() << "', size = " << getWidth() << "x" << getHeight() << ", posx = " << getPosX() << ", posy = " << getPosY());
+        LOG_INFO(CONTEXT_RENDERER, "Surface_Windows::Surface_Windows:  created window '{}', size = {}x{}, posx = {}, posy = {}", getTitle(), getWidth(), getHeight(), getPosX(), getPosY());
 
         return true;
     }
@@ -294,11 +294,11 @@ namespace ramses::internal
 
             if (messageBuffer)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "Windows API error: " << messageBuffer);
+                LOG_ERROR(CONTEXT_RENDERER, "Windows API error: {}", messageBuffer);
             }
             else
             {
-                LOG_ERROR(CONTEXT_RENDERER, "Windows API error ID: " << errorMessageID);
+                LOG_ERROR(CONTEXT_RENDERER, "Windows API error ID: {}", errorMessageID);
             }
 
             //Free the buffer.
@@ -370,7 +370,7 @@ namespace ramses::internal
         const bool keyReleased = WM_KEYUP == windowsMsg || WM_SYSKEYUP == windowsMsg;
         if (!keyPressed && !keyReleased)
         {
-            LOG_WARN(CONTEXT_RENDERER, "invalid handle key event: " << windowsMsg);
+            LOG_WARN(CONTEXT_RENDERER, "invalid handle key event: {}", windowsMsg);
             return;
         }
 

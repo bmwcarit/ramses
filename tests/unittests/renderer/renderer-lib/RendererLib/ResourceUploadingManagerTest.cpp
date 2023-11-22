@@ -20,8 +20,6 @@
 #include "internal/Components/ResourceDeleterCallingCallback.h"
 #include "internal/PlatformAbstraction/PlatformThread.h"
 #include "internal/Watchdog/ThreadAliveNotifierMock.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
-
 
 namespace ramses::internal
 {
@@ -53,12 +51,9 @@ namespace ramses::internal
             , dummyManagedResourceCallback(managedResourceDeleter)
             , sceneId(66u)
             , uploader(new StrictMock<ResourceUploaderMock>)
-            , asyncEffectUploader(platformMock, platformMock.renderBackendMock, notifier, 1)
+            , asyncEffectUploader(platformMock, platformMock.renderBackendMock, notifier, DisplayHandle{ 1 })
             , rendererResourceUploader(resourceRegistry, std::unique_ptr<IResourceUploader>{ uploader }, platformMock.renderBackendMock, asyncEffectUploader, cfg, frameTimer, stats)
         {
-            // caller is expected to have a display prefix for logs
-            ThreadLocalLog::SetPrefix(1);
-
             InSequence s;
             EXPECT_CALL(platformMock.renderBackendMock.contextMock, disable()).WillOnce(Return(true));
             EXPECT_CALL(platformMock, createResourceUploadRenderBackend());

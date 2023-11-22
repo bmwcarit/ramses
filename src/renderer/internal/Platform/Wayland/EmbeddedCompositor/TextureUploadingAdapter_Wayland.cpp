@@ -15,7 +15,7 @@
 #include "linux-dmabuf-unstable-v1-server-protocol.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/LinuxDmabuf.h"
 #include "internal/RendererLib/PlatformInterface/IDevice.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "internal/Core/Utils/Warnings.h"
 
 namespace ramses::internal
@@ -82,7 +82,7 @@ namespace ramses::internal
                 {
                     LOG_ERROR(CONTEXT_RENDERER, "eglQueryWaylandBufferWL(EGL_HEIGHT) failed");
                 }
-                LOG_DEBUG_P(CONTEXT_RENDERER, "TextureUploadingAdapter_Wayland::uploadTextureFromWaylandResource: w:{} h:{} format:{} ({})",
+                LOG_DEBUG(CONTEXT_RENDERER, "TextureUploadingAdapter_Wayland::uploadTextureFromWaylandResource: w:{} h:{} format:{} ({})",
                             textureWidth, textureHeight, textureFormat, m_waylandEglExtensionProcs.getTextureFormatName(textureFormat));
             }
 
@@ -131,9 +131,8 @@ namespace ramses::internal
             {
                 const auto modifierFormat = modifier & 0x00ffffffffffffffULL;
                 const auto modifierVendor = modifier >> 56;
-                LOG_WARN(CONTEXT_RENDERER, "TextureUploadingAdapter_Wayland::importDmabufToEglImage: DMA buf has unsupported modifier set (will be ignored)! modifier=" << modifier
-                         << ", vendor=" << modifierVendor
-                         << ", format=" << modifierFormat);
+                LOG_WARN(CONTEXT_RENDERER, "TextureUploadingAdapter_Wayland::importDmabufToEglImage: DMA buf has unsupported modifier set (will be ignored)! modifier={}, vendor={}, format={}",
+                    modifier, modifierVendor, modifierFormat);
             }
 
             POP_DISABLE_C_STYLE_CAST_WARNING
@@ -151,7 +150,7 @@ namespace ramses::internal
         // NOLINTNEXTLINE(hicpp-signed-bitwise)
         if ((dmabuf->getFlags() & ~ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT) != 0u)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "TextureUploadingAdapter_Wayland::importDmabufToEglImage: DMA buf has unsupported flags=" << dmabuf->getFlags() << "! Creating EGL image failed!");
+            LOG_ERROR(CONTEXT_RENDERER, "TextureUploadingAdapter_Wayland::importDmabufToEglImage: DMA buf has unsupported flags={}! Creating EGL image failed!", dmabuf->getFlags());
             return nullptr;
         }
 
@@ -250,12 +249,11 @@ namespace ramses::internal
         EGLImage eglImage = m_waylandEglExtensionProcs.eglCreateImageKHR(nullptr, EGL_LINUX_DMA_BUF_EXT, nullptr, attribs.data());
         if (EGL_NO_IMAGE == eglImage)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "TextureUploadingAdapter_Wayland::importDmabufToEglImage: Creating EGL image failed width egl error code : " << eglGetError());
+            LOG_ERROR(CONTEXT_RENDERER, "TextureUploadingAdapter_Wayland::importDmabufToEglImage: Creating EGL image failed width egl error code : {}", eglGetError());
             return nullptr;
         }
 
-        LOG_INFO(CONTEXT_RENDERER, "TextureUploadingAdapter_Wayland::importDmabufToEglImage: egl image [=" << eglImage
-                << "] created succesffully [W :" << dmabuf->getWidth() << ", H :" << dmabuf->getHeight() << "]");
+        LOG_INFO(CONTEXT_RENDERER, "TextureUploadingAdapter_Wayland::importDmabufToEglImage: egl image [={}] created succesffully [W :{}, H :{}]", eglImage, dmabuf->getWidth(), dmabuf->getHeight());
 
         return new DmabufEglImage(*this, eglImage, GL_TEXTURE_EXTERNAL_OES);
     }
@@ -301,7 +299,7 @@ namespace ramses::internal
     {
         if (EGL_NO_IMAGE != m_eglImage)
         {
-            LOG_INFO(CONTEXT_RENDERER, "DmabufEglImage::~DmabufEglImage: destroying egl image [=" << m_eglImage << "]");
+            LOG_INFO(CONTEXT_RENDERER, "DmabufEglImage::~DmabufEglImage: destroying egl image [={}]", m_eglImage);
             m_parent.m_waylandEglExtensionProcs.eglDestroyImageKHR(m_eglImage);
         }
     }

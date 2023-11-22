@@ -53,7 +53,6 @@ def test_cmake_configuration(cli_context, build_dir, expect_success, **cmake_opt
             assert all(f'+ {e} ' not in process_output for e in expectations)
 
     # check expected and non-expected output based on logical consequences of each option, and their combination together
-    headless = "headless" in cmake_options
     x11 = "enable_x11" in cmake_options
     wayland_ivi = "enable_wayland_ivi" in cmake_options
     wayland_shell = "enable_wayland_wl_shell" in cmake_options
@@ -78,37 +77,37 @@ def test_cmake_configuration(cli_context, build_dir, expect_success, **cmake_opt
         assert "Found LuaJIT" in process_output
 
     # shared libs
-    check_expectations(headless, "ramses-shared-lib-headless")
+    check_expectations(True, "ramses-shared-lib-headless")
     check_expectations(full_shared_lib, "ramses-shared-lib")
 
     # renderer
     check_expectations(x11, "X11")
     check_expectations(wayland_ivi, "Wayland ivi")
     check_expectations(wayland_shell, "Wayland wl_shell")
-    check_expectations(renderer, "ramses-renderer-lib", "ramses-renderer")
+    check_expectations(renderer, "ramses-renderer-internal", "ramses-renderer")
 
     # tools
     check_expectations(tools, "ivi-gears", "ivi-simple-dmabuf-egl", "ramses-daemon")
-    check_expectations(tools and renderer, "ramses-renderer-standalone", "ramses-scene-viewer", "ramses-stream-viewer", "ramses-imgui")
-    check_expectations(tools and logic and headless, "ramses-logic-viewer-headless")
-    check_expectations(tools and logic and full_shared_lib, "ramses-logic-viewer", "test-asset-producer")
+    check_expectations(tools and renderer, "ramses-renderer-standalone", "ramses-stream-viewer", "ramses-imgui")
+    check_expectations(tools and logic, "ramses-viewer-headless", "test-asset-producer")
+    check_expectations(tools and logic and renderer, "ramses-viewer")
 
     # tests
     check_expectations(tests, "ramses-framework-test", "ramses-client-test")
-    check_expectations(tests and renderer, "ramses-renderer-lib-test", "ramses-renderer-test", "rendering-tests", "ramses-test-client")
+    check_expectations(tests and renderer, "ramses-renderer-internal-test", "ramses-renderer-test", "rendering-tests", "ramses-test-client")
     check_expectations(tests and logic, "ramses-logic-benchmarks")
     check_expectations(x11 and tests, "window-x11-test")
     check_expectations(wayland_ivi and tests, "window-wayland-ivi-test")
     check_expectations(wayland_shell and tests, "window-wayland-wl-shell-test")
 
     # tool tests
-    check_expectations(tests and tools and logic, "ramses-logic-viewer-test")
-    check_expectations(tests and tools and logic and full_shared_lib and use_imagemagick, "ramses-logic-viewer-gui-test")
+    check_expectations(tests and tools and logic, "ramses-viewer-test")
+    check_expectations(tests and tools and logic and renderer and use_imagemagick, "ramses-viewer-gui-test")
 
     # examples
-    check_expectations(examples and (headless or full_shared_lib), "ramses-example-basic-geometry")
+    check_expectations(examples, "ramses-example-basic-geometry")
     check_expectations(examples and full_shared_lib, "ramses-example-local-client")
-    check_expectations(examples and (headless or full_shared_lib) and logic, "00_minimal")
+    check_expectations(examples and logic, "00_minimal")
     check_expectations(examples and full_shared_lib and logic, "13_render_order")
 
     if tests:
@@ -130,7 +129,7 @@ def test_cmake_configuration(cli_context, build_dir, expect_success, **cmake_opt
         # step 3: build list of expected tests based on cmake options
         expected_tests = ['ramses-framework-test_UNITTEST', 'ramses-client-test_UNITTEST']
 
-        if (headless or full_shared_lib) and examples and logic:
+        if examples and logic:
             expected_tests += [
                 '00_minimal_UNITTEST',
                 '01a_primitive_properties_UNITTEST',
@@ -146,7 +145,7 @@ def test_cmake_configuration(cli_context, build_dir, expect_success, **cmake_opt
 
         if renderer:
             expected_tests += [
-                'ramses-renderer-lib-test_UNITTEST',
+                'ramses-renderer-internal-test_UNITTEST',
                 'ramses-renderer-test_UNITTEST',
                 'ramses-cli-test_UNITTEST']
 
@@ -191,7 +190,11 @@ def test_cmake_configuration(cli_context, build_dir, expect_success, **cmake_opt
 
         if logic and tools:
             expected_tests += [
-                'ramses-logic-viewer-test_UNITTEST']
+                'ramses-viewer-test_UNITTEST']
+
+        if logic and tools and renderer and use_imagemagick:
+            expected_tests += [
+                'ramses-viewer-gui-test_RNDSANDWICHTEST_SWRAST']
 
         # step 4: find missing and/or unexpected tests
         unexpected_tests = [t for t in ctest_test_entries if t not in expected_tests]
@@ -220,20 +223,17 @@ def main(cli_context, build_dir):
     start_time = time.time()
 
     # can configure with (external) luajit
-    test_cmake_configuration(cli_context, build_dir, True, headless=True, enable_luajit=True)
+    test_cmake_configuration(cli_context, build_dir, True, enable_luajit=True)
     test_cmake_configuration(cli_context, build_dir, True, enable_x11=True, enable_luajit=True)
 
-    # can not configure if no useful feature is enabled, i.e., user gets a non-usable project without any shared libs or renderer
-    test_cmake_configuration(cli_context, build_dir, False)
-    test_cmake_configuration(cli_context, build_dir, False, no_full_shared_lib=True)
-
     # can configure if trying to build shared lib (on by default) while no window types enabled (generates a warning though)
-    test_cmake_configuration(cli_context, build_dir, True, headless=True)
+    test_cmake_configuration(cli_context, build_dir, True)
+    test_cmake_configuration(cli_context, build_dir, True, no_full_shared_lib=True)
 
     # can configure ramses with headless lib only (without full shared lib, and without any window types enabled)
-    test_cmake_configuration(cli_context, build_dir, True, headless=True, no_full_shared_lib=True)
+    test_cmake_configuration(cli_context, build_dir, True, no_full_shared_lib=True)
     # can configure ramses with headless lib and full shared lib
-    test_cmake_configuration(cli_context, build_dir, True, headless=True, enable_x11=True)
+    test_cmake_configuration(cli_context, build_dir, True, enable_x11=True)
 
     # can configure with any window type enabled (full shared lib on by default)
     test_cmake_configuration(cli_context, build_dir, True, enable_x11=True)
@@ -247,16 +247,16 @@ def main(cli_context, build_dir):
     test_cmake_configuration(cli_context, build_dir, True, enable_x11=True, no_tools=True)
     test_cmake_configuration(cli_context, build_dir, True, enable_x11=True, no_full_shared_lib=True,
                              no_examples=True, no_demos=True, no_tests=True, no_tools=True)
-    test_cmake_configuration(cli_context, build_dir, True, headless=True, no_full_shared_lib=True,
+    test_cmake_configuration(cli_context, build_dir, True, no_full_shared_lib=True,
                              no_examples=True, no_demos=True, no_tests=True, no_tools=True)
 
     # can configure with imagemagick enabled even if shared lib not available
-    test_cmake_configuration(cli_context, build_dir, True, headless=True, no_full_shared_lib=True, use_imagemagick=True)
+    test_cmake_configuration(cli_context, build_dir, True, no_full_shared_lib=True, use_imagemagick=True)
     test_cmake_configuration(cli_context, build_dir, True, enable_x11=True, no_full_shared_lib=True, use_imagemagick=True)
 
     # can configure with ramses logic disabled
-    test_cmake_configuration(cli_context, build_dir, True, headless=True, disable_logic=True, no_full_shared_lib=True)
-    test_cmake_configuration(cli_context, build_dir, True, headless=True, disable_logic=True, no_full_shared_lib=True, use_imagemagick=True)
+    test_cmake_configuration(cli_context, build_dir, True, disable_logic=True, no_full_shared_lib=True)
+    test_cmake_configuration(cli_context, build_dir, True, disable_logic=True, no_full_shared_lib=True, use_imagemagick=True)
 
     elapsed_time = time.time() - start_time
     print(f"Tests finished SUCCESSFULLY...Elapsed time to run cmake configuration tests : {elapsed_time:.2f} seconds")

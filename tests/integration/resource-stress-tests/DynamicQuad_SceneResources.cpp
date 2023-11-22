@@ -110,16 +110,16 @@ namespace ramses::internal
         m_vertexPos->updateData(0u, 4, vertexPositionsData.data());
         m_texCoords->updateData(0u, 4, vertexTexcoordsData.data());
 
-        std::vector<uint8_t> rawData;
+        std::vector<std::byte> rawData;
         rawData.resize(DynamicTextureWidth * DynamicTextureHeight * 3);
 
         for (uint32_t x = 0; x < DynamicTextureWidth; ++x)
         {
             for (uint32_t y = 0; y < DynamicTextureHeight; ++y)
             {
-                rawData[3 * (y * DynamicTextureWidth + x) + 0] = static_cast<uint8_t>(TestRandom::Get(128, 255));
-                rawData[3 * (y * DynamicTextureWidth + x) + 1] = 0u;
-                rawData[3 * (y * DynamicTextureWidth + x) + 2] = static_cast<uint8_t>(TestRandom::Get(0, 128));
+                rawData[3 * (y * DynamicTextureWidth + x) + 0] = std::byte{ static_cast<uint8_t>(TestRandom::Get(128, 255)) };
+                rawData[3 * (y * DynamicTextureWidth + x) + 1] = std::byte{ 0 };
+                rawData[3 * (y * DynamicTextureWidth + x) + 2] = std::byte{ static_cast<uint8_t>(TestRandom::Get(0, 128)) };
             }
         }
 

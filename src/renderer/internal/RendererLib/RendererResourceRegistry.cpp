@@ -7,16 +7,16 @@
 //  -------------------------------------------------------------------------
 
 #include "internal/RendererLib/RendererResourceRegistry.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {
     void RendererResourceRegistry::registerResource(const ResourceContentHash& hash)
     {
-        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceRegistry::registerResource Registering resource #" << hash);
+        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceRegistry::registerResource Registering resource #{}", hash);
         if (m_resources.contains(hash))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::registerResource Resource already registered! #" << hash << " (" << getResourceDescriptor(hash).type << " : " << getResourceDescriptor(hash).status << ")");
+            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::registerResource Resource already registered! #{} ({} : {})", hash, getResourceDescriptor(hash).type, getResourceDescriptor(hash).status);
             assert(false);
             return;
         }
@@ -29,17 +29,17 @@ namespace ramses::internal
 
     void RendererResourceRegistry::unregisterResource(const ResourceContentHash& hash)
     {
-        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceRegistry::unregisterResource Unregistering resource #" << hash);
+        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceRegistry::unregisterResource Unregistering resource #{}", hash);
         if (!m_resources.contains(hash))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::unregisterResource Resource not registered! #" << hash);
+            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::unregisterResource Resource not registered! #{}", hash);
             assert(false);
             return;
         }
         const auto& rd = *m_resources.get(hash);
         if (!rd.sceneUsage.empty())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::unregisterResource Resource is still being referenced by one or more scenes! #" << hash);
+            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::unregisterResource Resource is still being referenced by one or more scenes! #{}", hash);
             assert(false);
             return;
         }
@@ -58,10 +58,10 @@ namespace ramses::internal
 
     void RendererResourceRegistry::addResourceRef(const ResourceContentHash& hash, SceneId sceneId)
     {
-        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceRegistry::addResourceRef for scene (" << sceneId << ") resource #" << hash);
+        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceRegistry::addResourceRef for scene ({}) resource #{}", sceneId, hash);
         if (!m_resources.contains(hash))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::addResourceRef Resource not registered! #" << hash);
+            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::addResourceRef Resource not registered! #{}", hash);
             assert(false);
             return;
         }
@@ -75,10 +75,10 @@ namespace ramses::internal
 
     void RendererResourceRegistry::removeResourceRef(const ResourceContentHash& hash, SceneId sceneId)
     {
-        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceRegistry::removeResourceRef for scene (" << sceneId << ") resource #" << hash);
+        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceRegistry::removeResourceRef for scene ({}) resource #{}", sceneId, hash);
         if (!m_resources.contains(hash))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::removeResourceRef Resource not registered! #" << hash);
+            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::removeResourceRef Resource not registered! #{}", hash);
             assert(false);
             return;
         }
@@ -86,7 +86,7 @@ namespace ramses::internal
         ResourceDescriptor& rd = *m_resources.get(hash);
         if (!contains_c(rd.sceneUsage, sceneId))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::removeResourceRef Resource not referenced by scene (" << sceneId << ")! #" << hash);
+            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::removeResourceRef Resource not referenced by scene ({})! #{}", sceneId, hash);
             assert(false);
             return;
         }
@@ -113,7 +113,7 @@ namespace ramses::internal
         const auto res = m_resources.get(hash);
         if (res == nullptr)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::getResourceDescriptor Resource not registered! #" << hash);
+            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceRegistry::getResourceDescriptor Resource not registered! #{}", hash);
             assert(false);
             static const ResourceDescriptor DummyRD = {};
             return DummyRD;
@@ -167,7 +167,7 @@ namespace ramses::internal
     {
         assert(m_resources.contains(hash));
         ResourceDescriptor& rd = *m_resources.get(hash);
-        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceRegistry::setResourceStatus resource " << hash << " status change: " << rd.status << " -> " << status);
+        LOG_TRACE(CONTEXT_RENDERER, "RendererResourceRegistry::setResourceStatus resource {} status change: {} -> {}", hash, rd.status, status);
         assert(ValidateStatusChange(rd.status, status));
 
         updateCachedLists(hash, rd.status, status);

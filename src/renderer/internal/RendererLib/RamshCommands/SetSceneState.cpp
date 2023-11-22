@@ -25,7 +25,7 @@ namespace ramses::internal
     {
         if (sceneState >= 4)
         {
-            LOG_ERROR_P(CONTEXT_RAMSH, "Invalid scene state: {}", sceneState);
+            LOG_ERROR(CONTEXT_RAMSH, "Invalid scene state: {}", sceneState);
             return false;
         }
         m_rendererCommandBuffer.enqueueCommand(ramses::internal::RendererCommand::SetSceneState{ SceneId{sceneId}, static_cast<RendererSceneState>(sceneState) });

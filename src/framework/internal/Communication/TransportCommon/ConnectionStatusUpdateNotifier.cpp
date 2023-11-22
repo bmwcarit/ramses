@@ -51,7 +51,7 @@ namespace ramses::internal
         assert(status == EConnectionStatus_Connected || status == EConnectionStatus_NotConnected);
         if (status == EConnectionStatus_Connected)
         {
-            LOG_INFO(m_logContext, "ConnectionStatusUpdateNotifier(" << m_participantName << ":" << m_usage << ")::doStatusUpdate: newParticipantHasConnected " << participant);
+            LOG_INFO(m_logContext, "ConnectionStatusUpdateNotifier({}:{})::doStatusUpdate: newParticipantHasConnected {}", m_participantName, m_usage, participant);
             m_currentState.put(participant);
             for(auto listener : m_listeners)
             {
@@ -60,7 +60,7 @@ namespace ramses::internal
         }
         else
         {
-            LOG_INFO(m_logContext, "ConnectionStatusUpdateNotifier(" << m_participantName << ":" << m_usage << ")::doStatusUpdate: participantHasDisconnected " << participant);
+            LOG_INFO(m_logContext, "ConnectionStatusUpdateNotifier({}:{})::doStatusUpdate: participantHasDisconnected {}", m_participantName, m_usage, participant);
             m_currentState.remove(participant);
             for (auto listener : m_listeners)
             {

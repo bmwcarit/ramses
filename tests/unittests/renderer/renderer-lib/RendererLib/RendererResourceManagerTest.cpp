@@ -19,7 +19,6 @@
 #include "ResourceUploaderMock.h"
 #include "internal/Watchdog/ThreadAliveNotifierMock.h"
 #include "internal/RendererLib/DisplayConfig.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
 
 namespace ramses::internal {
     using namespace testing;
@@ -29,12 +28,9 @@ namespace ramses::internal {
     public:
         explicit ARendererResourceManager()
             : fakeSceneId(66u)
-            , asyncEffectUploader(platform, platform.renderBackendMock, notifier, 1)
+            , asyncEffectUploader(platform, platform.renderBackendMock, notifier, DisplayHandle{ 1 })
             , resourceManager(platform.renderBackendMock, std::unique_ptr<IResourceUploader>{ resUploader }, asyncEffectUploader, embeddedCompositingManager, {}, frameTimer, stats)
         {
-            // caller is expected to have a display prefix for logs
-            ThreadLocalLog::SetPrefix(1);
-
             InSequence s;
             EXPECT_CALL(platform.renderBackendMock.contextMock, disable()).WillOnce(Return(true));
             EXPECT_CALL(platform, createResourceUploadRenderBackend());
@@ -449,12 +445,31 @@ namespace ramses::internal {
     TEST_F(ARendererResourceManager, canUploadAndUnloadRenderTargetBuffer)
     {
         RenderBufferHandle bufferHandle(1u);
-        const RenderBuffer colorBuffer(800u, 600u, EPixelStorageFormat::RGBA8, ERenderBufferAccessMode::ReadWrite, 0u);
+        const RenderBuffer colorBuffer{ 800u, 600u, EPixelStorageFormat::RGBA8, ERenderBufferAccessMode::ReadWrite, 0u };
 
         EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(800u, 600u, EPixelStorageFormat::RGBA8, ERenderBufferAccessMode::ReadWrite, 0u));
         resourceManager.uploadRenderTargetBuffer(bufferHandle, fakeSceneId, colorBuffer);
 
         EXPECT_EQ(DeviceMock::FakeRenderBufferDeviceHandle, resourceManager.getRenderTargetBufferDeviceHandle(bufferHandle, fakeSceneId));
+
+        EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteRenderBuffer(_));
+        resourceManager.unloadRenderTargetBuffer(bufferHandle, fakeSceneId);
+    }
+
+    TEST_F(ARendererResourceManager, gracefullyFailsSettingRenderBufferIfParamsDifferent)
+    {
+        RenderBufferHandle bufferHandle(1u);
+        const RenderBuffer colorBuffer{ 800u, 600u, EPixelStorageFormat::RGBA8, ERenderBufferAccessMode::ReadWrite, 0u };
+
+        EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(800u, 600u, EPixelStorageFormat::RGBA8, ERenderBufferAccessMode::ReadWrite, 0u));
+        resourceManager.uploadRenderTargetBuffer(bufferHandle, fakeSceneId, colorBuffer);
+
+        // set same params - noop
+        resourceManager.updateRenderTargetBufferProperties(bufferHandle, fakeSceneId, colorBuffer);
+
+        // set different params - will produce error
+        const RenderBuffer differentBuffer{ 1u, 2u, EPixelStorageFormat::RGBA8, ERenderBufferAccessMode::ReadWrite, 1u };
+        resourceManager.updateRenderTargetBufferProperties(bufferHandle, fakeSceneId, differentBuffer);
 
         EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteRenderBuffer(_));
         resourceManager.unloadRenderTargetBuffer(bufferHandle, fakeSceneId);
@@ -466,7 +481,7 @@ namespace ramses::internal {
         const RenderBufferHandle sourceRenderBufferHandle(101u);
         const RenderBufferHandle destinationRenderBufferHandle(102u);
 
-        const RenderBuffer renderBuffer(800u, 600u, EPixelStorageFormat::RGBA8, ERenderBufferAccessMode::ReadWrite, 0u);
+        const RenderBuffer renderBuffer{ 800u, 600u, EPixelStorageFormat::RGBA8, ERenderBufferAccessMode::ReadWrite, 0u };
 
         const DeviceResourceHandle sourceRenderBufferDeviceHandle(201u);
         EXPECT_CALL(platform.renderBackendMock.deviceMock,
@@ -513,8 +528,8 @@ namespace ramses::internal {
         bufferHandles.push_back(RenderBufferHandle(1u));
         bufferHandles.push_back(RenderBufferHandle(5u));
 
-        const RenderBuffer colorBuffer(800u, 600u, EPixelStorageFormat::RGBA8, ERenderBufferAccessMode::ReadWrite, 0u);
-        const RenderBuffer depthBuffer(800u, 600u, EPixelStorageFormat::Depth24, ERenderBufferAccessMode::ReadWrite, 0u);
+        const RenderBuffer colorBuffer{ 800u, 600u, EPixelStorageFormat::RGBA8, ERenderBufferAccessMode::ReadWrite, 0u };
+        const RenderBuffer depthBuffer{ 800u, 600u, EPixelStorageFormat::Depth24, ERenderBufferAccessMode::ReadWrite, 0u };
 
         {
             InSequence seq;
@@ -1182,8 +1197,8 @@ namespace ramses::internal {
         bufferHandles.push_back(RenderBufferHandle(5u));
         EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(800u, 600u, EPixelStorageFormat::RGBA8, ERenderBufferAccessMode::ReadWrite, 0u));
         EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadRenderBuffer(800u, 600u, EPixelStorageFormat::Depth16, ERenderBufferAccessMode::ReadWrite, 0u));
-        const RenderBuffer colorBuffer(800u, 600u, EPixelStorageFormat::RGBA8, ERenderBufferAccessMode::ReadWrite, 0u);
-        const RenderBuffer depthBuffer(800u, 600u, EPixelStorageFormat::Depth16, ERenderBufferAccessMode::ReadWrite, 0u);
+        const RenderBuffer colorBuffer{ 800u, 600u, EPixelStorageFormat::RGBA8, ERenderBufferAccessMode::ReadWrite, 0u };
+        const RenderBuffer depthBuffer{ 800u, 600u, EPixelStorageFormat::Depth16, ERenderBufferAccessMode::ReadWrite, 0u };
         resourceManager.uploadRenderTargetBuffer(bufferHandles[0], fakeSceneId, colorBuffer);
         resourceManager.uploadRenderTargetBuffer(bufferHandles[1], fakeSceneId, depthBuffer);
 

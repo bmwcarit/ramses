@@ -37,11 +37,11 @@ namespace ramses::internal
 
     void RendererFrameworkLogic::handleNewSceneAvailable(const SceneInfo& newScene, const Guid& providerID)
     {
-        LOG_INFO(CONTEXT_RENDERER, "RendererFrameworkLogic::handleNewScenesAvailable: scene published: " << newScene.sceneID << " @ " << providerID << " name:" << newScene.friendlyName << " publicationmode: " << EnumToString(newScene.publicationMode));
+        LOG_INFO(CONTEXT_RENDERER, "RendererFrameworkLogic::handleNewScenesAvailable: scene published: {} @ {} name:{} publicationmode: {}", newScene.sceneID, providerID, newScene.friendlyName, EnumToString(newScene.publicationMode));
 
         if (m_sceneClients.contains(newScene.sceneID))
         {
-            LOG_WARN(CONTEXT_RENDERER, "RendererFrameworkLogic::handleNewScenesAvailable: ignore already published scene: " << newScene.sceneID << " @ " << providerID << " name:" << newScene.friendlyName << " publicationmode: " << EnumToString(newScene.publicationMode));
+            LOG_WARN(CONTEXT_RENDERER, "RendererFrameworkLogic::handleNewScenesAvailable: ignore already published scene: {} @ {} name:{} publicationmode: {}", newScene.sceneID, providerID, newScene.friendlyName, EnumToString(newScene.publicationMode));
             return;
         }
         m_sceneClients.put(newScene.sceneID, std::make_pair(providerID, newScene.friendlyName));
@@ -50,7 +50,7 @@ namespace ramses::internal
 
     void RendererFrameworkLogic::handleSceneBecameUnavailable(const SceneId& unavailableScene, const Guid& providerID)
     {
-        LOG_INFO(CONTEXT_RENDERER, "RendererFrameworkLogic::handleSceneBecameUnavailable: scene unpublished: " << unavailableScene << " by " << providerID);
+        LOG_INFO(CONTEXT_RENDERER, "RendererFrameworkLogic::handleSceneBecameUnavailable: scene unpublished: {} by {}", unavailableScene, providerID);
 
         assert(m_sceneClients.contains(unavailableScene));
         m_sceneClients.remove(unavailableScene);
@@ -59,7 +59,7 @@ namespace ramses::internal
 
     void RendererFrameworkLogic::handleInitializeScene(const SceneInfo& sceneInfo, const Guid& providerID)
     {
-        LOG_INFO(CONTEXT_RENDERER, "RendererFrameworkLogic::handleInitializeScene: " << sceneInfo.sceneID << " by " << providerID);
+        LOG_INFO(CONTEXT_RENDERER, "RendererFrameworkLogic::handleInitializeScene: {} by {}", sceneInfo.sceneID, providerID);
 
         assert(m_sceneClients.contains(sceneInfo.sceneID));
         m_rendererCommands.enqueueCommand(RendererCommand::ReceiveScene{ sceneInfo });
@@ -76,7 +76,7 @@ namespace ramses::internal
         auto it = m_sceneClients.find(sceneId);
         if (it == m_sceneClients.end())
         {
-            LOG_WARN(CONTEXT_RENDERER, "RendererFrameworkLogic::sendSubscribeScene: can't send subscribe scene " << sceneId << " because provider unknown");
+            LOG_WARN(CONTEXT_RENDERER, "RendererFrameworkLogic::sendSubscribeScene: can't send subscribe scene {} because provider unknown", sceneId);
             return;
         }
         m_sceneGraphConsumerComponent.subscribeScene(it->value.first, sceneId);
@@ -88,7 +88,7 @@ namespace ramses::internal
         auto it = m_sceneClients.find(sceneId);
         if (it == m_sceneClients.end())
         {
-            LOG_WARN(CONTEXT_RENDERER, "RendererFrameworkLogic::sendUnsubscribeScene: can't send subscribe scene " << sceneId << " because provider unknown");
+            LOG_WARN(CONTEXT_RENDERER, "RendererFrameworkLogic::sendUnsubscribeScene: can't send subscribe scene {} because provider unknown", sceneId);
             return;
         }
         m_sceneGraphConsumerComponent.unsubscribeScene(it->value.first, sceneId);
@@ -105,11 +105,11 @@ namespace ramses::internal
         auto it = m_sceneClients.find(masterScene);
         if (it == m_sceneClients.end())
         {
-            LOG_WARN(CONTEXT_RENDERER, "RendererFrameworkLogic::sendSceneStateChanged: can't send scene state changed event for scene " << masterScene << " because provider unknown");
+            LOG_WARN(CONTEXT_RENDERER, "RendererFrameworkLogic::sendSceneStateChanged: can't send scene state changed event for scene {} because provider unknown", masterScene);
             return;
         }
 
-        LOG_INFO_P(CONTEXT_FRAMEWORK,
+        LOG_INFO(CONTEXT_FRAMEWORK,
             "RendererFrameworkLogic::sendSceneStateChanged: sending scene state changed event (state {} / master {} / reffed {}) to {}",
             EnumToString(newState), masterScene, referencedScene, it->value.first);
         m_sceneGraphConsumerComponent.sendSceneReferenceEvent(it->value.first, event);
@@ -126,11 +126,11 @@ namespace ramses::internal
         auto it = m_sceneClients.find(masterScene);
         if (it == m_sceneClients.end())
         {
-            LOG_WARN(CONTEXT_RENDERER, "RendererFrameworkLogic::sendSceneFlushed: can't send scene state changed event for scene " << masterScene << " because provider unknown");
+            LOG_WARN(CONTEXT_RENDERER, "RendererFrameworkLogic::sendSceneFlushed: can't send scene state changed event for scene {} because provider unknown", masterScene);
             return;
         }
 
-        LOG_INFO_P(CONTEXT_FRAMEWORK,
+        LOG_INFO(CONTEXT_FRAMEWORK,
             "RendererFrameworkLogic::sendSceneFlushed: sending scene flushed event (tag {} / master {} / reffed {}) to {}",
             tag, masterScene, referencedScene, it->value.first);
         m_sceneGraphConsumerComponent.sendSceneReferenceEvent(it->value.first, event);
@@ -150,11 +150,11 @@ namespace ramses::internal
         auto it = m_sceneClients.find(masterScene);
         if (it == m_sceneClients.end())
         {
-            LOG_WARN(CONTEXT_RENDERER, "RendererFrameworkLogic::sendDataLinked: can't send scene state changed event for scene " << masterScene << " because provider unknown");
+            LOG_WARN(CONTEXT_RENDERER, "RendererFrameworkLogic::sendDataLinked: can't send scene state changed event for scene {} because provider unknown", masterScene);
             return;
         }
 
-        LOG_INFO_P(CONTEXT_FRAMEWORK,
+        LOG_INFO(CONTEXT_FRAMEWORK,
             "RendererFrameworkLogic::sendDataLinked: sending data linked event (master {} / providerScene {} / provider {} / consumerScene {} / consumer {} / success {}) to {}",
             masterScene, providerScene, provider, consumerScene, consumer, success, it->value.first);
         m_sceneGraphConsumerComponent.sendSceneReferenceEvent(it->value.first, event);
@@ -172,11 +172,11 @@ namespace ramses::internal
         auto it = m_sceneClients.find(masterScene);
         if (it == m_sceneClients.end())
         {
-            LOG_WARN(CONTEXT_RENDERER, "RendererFrameworkLogic::sendDataUnlinked: can't send scene state changed event for scene " << masterScene << " because provider unknown");
+            LOG_WARN(CONTEXT_RENDERER, "RendererFrameworkLogic::sendDataUnlinked: can't send scene state changed event for scene {} because provider unknown", masterScene);
             return;
         }
 
-        LOG_INFO_P(CONTEXT_FRAMEWORK,
+        LOG_INFO(CONTEXT_FRAMEWORK,
             "RendererFrameworkLogic::sendDataLinked: sending data linked event (master {} / consumerScene {} / consumer {} / success {}) to {}",
             masterScene, consumerScene, consumer, success, it->value.first);
         m_sceneGraphConsumerComponent.sendSceneReferenceEvent(it->value.first, event);

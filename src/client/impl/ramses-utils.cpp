@@ -78,12 +78,13 @@ namespace ramses
         const unsigned int ret = lodepng::decode(data, width, height, pngFilePath);
         if (ret != 0)
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "RamsesUtils::CreateTextureResourceFromPng: Could not load PNG. File not found or invalid format: " <<
-                      pngFilePath << " (error " << ret << ": " << lodepng_error_text(ret) << ")");
+            LOG_ERROR(CONTEXT_CLIENT, "RamsesUtils::CreateTextureResourceFromPng: Could not load PNG. File not found or invalid format: {} (error {}: {})",
+                pngFilePath, ret, lodepng_error_text(ret));
             return nullptr;
         }
 
-        const std::vector<MipLevelData> mipLevelData{ MipLevelData(static_cast<uint32_t>(data.size()), data.data()) };
+        auto dataBytes = reinterpret_cast<std::byte*>(data.data());
+        const std::vector<MipLevelData> mipLevelData{ MipLevelData( dataBytes, dataBytes + data.size() ) };
         return scene.createTexture2D(ETextureFormat::RGBA8, width, height, mipLevelData, false, swizzle, name);
     }
 
@@ -96,11 +97,12 @@ namespace ramses
         const unsigned int ret = lodepng::decode(data, width, height, pngData.data(), pngData.size());
         if (ret != 0)
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "RamsesUtils::CreateTextureResourceFromPngBuffer: Could not load PNG. Invalid format (error " << ret << ": " << lodepng_error_text(ret) << ")");
+            LOG_ERROR(CONTEXT_CLIENT, "RamsesUtils::CreateTextureResourceFromPngBuffer: Could not load PNG. Invalid format (error {}: {})", ret, lodepng_error_text(ret));
             return nullptr;
         }
 
-        const std::vector<MipLevelData> mipLevelData{ MipLevelData(static_cast<uint32_t>(data.size()), data.data()) };
+        auto dataBytes = reinterpret_cast<std::byte*>(data.data());
+        const std::vector<MipLevelData> mipLevelData{ MipLevelData( dataBytes, dataBytes + data.size() ) };
         return scene.createTexture2D(ETextureFormat::RGBA8, width, height, mipLevelData, false, swizzle, name);
     }
 
@@ -127,7 +129,7 @@ namespace ramses
         const unsigned int ret = lodepng::encode(filePath, reinterpret_cast<const unsigned char*>(imageData.data()), width, height);
         if (ret != 0)
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "RamsesUtils::SaveImageBufferToPng: Error while saving PNG file: " << filePath << " (error " << ret << ": " << lodepng_error_text(ret) << ")");
+            LOG_ERROR(CONTEXT_CLIENT, "RamsesUtils::SaveImageBufferToPng: Error while saving PNG file: {} (error {}: {})", filePath, ret, lodepng_error_text(ret));
             return false;
         }
         return true;
@@ -177,13 +179,8 @@ namespace ramses
         return true;
     }
 
-    MipLevelData* RamsesUtils::GenerateMipMapsTexture2D(uint32_t originalWidth, uint32_t originalHeight, uint8_t bytesPerPixel, std::byte* data, size_t& mipMapCount)
+    std::vector<MipLevelData>* RamsesUtils::GenerateMipMapsTexture2D(uint32_t originalWidth, uint32_t originalHeight, uint8_t bytesPerPixel, std::byte* data, size_t& mipMapCount)
     {
-        // copy original data
-        const uint32_t originalSize = originalWidth * originalHeight * bytesPerPixel;
-        auto* originalData = new std::byte[originalSize];
-        ramses::internal::PlatformMemory::Copy(originalData, data, originalSize);
-
         if (!IsPowerOfTwo(originalWidth) || !IsPowerOfTwo(originalHeight))
         {
             // if no mip maps can be created only return original data
@@ -195,18 +192,20 @@ namespace ramses
         }
 
         // prepare mip data generation
-        auto* mipLevelData = new ramses::MipLevelData[mipMapCount];
+        auto* mipLevelData = new std::vector<MipLevelData>(mipMapCount);
 
-        mipLevelData[0].m_size = originalSize;
-        mipLevelData[0].m_data = originalData;
+        // copy original data
+        const uint32_t originalSize = originalWidth * originalHeight * bytesPerPixel;
+        (*mipLevelData)[0].assign(data, data + originalSize);
 
         size_t currentMipMapIndex = 1u;
         while (currentMipMapIndex < mipMapCount)
         {
+            const auto& originalData = (*mipLevelData)[currentMipMapIndex-1];
             uint32_t nextWidth = std::max(originalWidth >> 1, 1u);
             uint32_t nextHeight = std::max(originalHeight >> 1, 1u);
             uint32_t nextSize = nextWidth * nextHeight * bytesPerPixel;
-            auto* nextData = new std::byte[nextSize];
+            (*mipLevelData)[currentMipMapIndex].resize(nextSize);
 
             uint32_t originalRowSize = originalWidth * bytesPerPixel;
             uint32_t nextRowSize = nextWidth * bytesPerPixel;
@@ -245,16 +244,11 @@ namespace ramses
                             }
                         }
 
-                        nextData[nextIndex + i] = std::byte{static_cast<uint8_t>(tmp)};
+                        (*mipLevelData)[currentMipMapIndex][nextIndex + i] = static_cast<std::byte>(tmp);
                     }
                 }
             }
 
-            mipLevelData[currentMipMapIndex].m_size = nextSize;
-            mipLevelData[currentMipMapIndex].m_data = nextData;
-
-            originalData = nextData;
-            nextData = nullptr;
             originalWidth = nextWidth;
             originalHeight = nextHeight;
             currentMipMapIndex++;
@@ -263,11 +257,11 @@ namespace ramses
         return mipLevelData;
     }
 
-    CubeMipLevelData* RamsesUtils::GenerateMipMapsTextureCube(uint32_t faceWidth, uint32_t faceHeight, uint8_t bytesPerPixel, std::byte* data, size_t& mipMapCount)
+    std::vector<CubeMipLevelData>* RamsesUtils::GenerateMipMapsTextureCube(uint32_t faceWidth, uint32_t faceHeight, uint8_t bytesPerPixel, std::byte* data, size_t& mipMapCount)
     {
         const uint32_t faceSize = faceWidth * faceHeight * bytesPerPixel;
         mipMapCount = 0u;
-        std::array<MipLevelData*,6> faceMips{};
+        std::array<std::vector<MipLevelData>*,6> faceMips{};
         faceMips[0] = GenerateMipMapsTexture2D(faceWidth, faceHeight, bytesPerPixel, &data[faceSize * 0], mipMapCount);
         faceMips[1] = GenerateMipMapsTexture2D(faceWidth, faceHeight, bytesPerPixel, &data[faceSize * 1], mipMapCount);
         faceMips[2] = GenerateMipMapsTexture2D(faceWidth, faceHeight, bytesPerPixel, &data[faceSize * 2], mipMapCount);
@@ -275,49 +269,34 @@ namespace ramses
         faceMips[4] = GenerateMipMapsTexture2D(faceWidth, faceHeight, bytesPerPixel, &data[faceSize * 4], mipMapCount);
         faceMips[5] = GenerateMipMapsTexture2D(faceWidth, faceHeight, bytesPerPixel, &data[faceSize * 5], mipMapCount);
 
-        auto* cubeMipMaps = new CubeMipLevelData[mipMapCount];
+        auto cubeMipMaps = new std::vector<CubeMipLevelData>(mipMapCount);
         for (size_t level = 0; level < mipMapCount; level++)
         {
-            new (&cubeMipMaps[level]) CubeMipLevelData{
-                faceMips[0][level].m_size,
-                faceMips[0][level].m_data,
-                faceMips[1][level].m_data,
-                faceMips[2][level].m_data,
-                faceMips[3][level].m_data,
-                faceMips[4][level].m_data,
-                faceMips[5][level].m_data};
+            (*cubeMipMaps)[level] = CubeMipLevelData{
+                std::move((*faceMips[0])[level]),
+                std::move((*faceMips[1])[level]),
+                std::move((*faceMips[2])[level]),
+                std::move((*faceMips[3])[level]),
+                std::move((*faceMips[4])[level]),
+                std::move((*faceMips[5])[level])};
         }
 
-        for (uint8_t level = 0; level < 6u; level++)
+        for (auto*& ptr : faceMips)
         {
-            delete[] faceMips[level];
+            delete ptr;
         }
         return cubeMipMaps;
     }
 
-    void RamsesUtils::DeleteGeneratedMipMaps(MipLevelData*& data, size_t mipMapCount)
+    void RamsesUtils::DeleteGeneratedMipMaps(std::vector<MipLevelData>*& data)
     {
-        for (size_t i = 0; i < mipMapCount; i++)
-        {
-            delete[] data[i].m_data;
-        }
-
-        delete[] data;
+        delete data;
         data = nullptr;
     }
 
-    void RamsesUtils::DeleteGeneratedMipMaps(CubeMipLevelData*& data, size_t mipMapCount)
+    void RamsesUtils::DeleteGeneratedMipMaps(std::vector<CubeMipLevelData>*& data)
     {
-        for (size_t level = 0u; level < mipMapCount; level++)
-        {
-            delete[] data[level].m_dataPX;
-            delete[] data[level].m_dataNX;
-            delete[] data[level].m_dataPY;
-            delete[] data[level].m_dataNY;
-            delete[] data[level].m_dataPZ;
-            delete[] data[level].m_dataNZ;
-        }
-        delete[] data;
+        delete data;
         data = nullptr;
     }
 

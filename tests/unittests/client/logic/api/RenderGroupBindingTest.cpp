@@ -445,7 +445,7 @@ namespace ramses::internal
             EXPECT_TRUE(m_logicEngine->update());
 
             // binding has no inputs linked, validatation would fail
-            ASSERT_TRUE(saveToFileWithoutValidation("binding.bin"));
+            ASSERT_TRUE(saveToFile("binding.bin"));
         }
 
         {

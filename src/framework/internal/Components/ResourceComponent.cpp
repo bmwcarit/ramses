@@ -70,7 +70,7 @@ namespace ramses::internal
         const FileContentsMap* content = m_resourceFiles.getContentsOfResourceFile(handle);
         if (!content)
         {
-            LOG_WARN(CONTEXT_FRAMEWORK, "ResourceComponent::loadResourceFromFile: handle " << handle << " unknown, can't force load");
+            LOG_WARN(CONTEXT_FRAMEWORK, "ResourceComponent::loadResourceFromFile: handle {} unknown, can't force load", handle);
             return;
         }
 
@@ -116,7 +116,7 @@ namespace ramses::internal
         {
             size_t currentPos = 0;
             resourceStream->getPos(currentPos);
-            LOG_ERROR_P(CONTEXT_FRAMEWORK, "ResourceComponent::loadResource: RetrieveResourceFromStream CRITICALLY failed with a std::exception ('{}')"
+            LOG_ERROR(CONTEXT_FRAMEWORK, "ResourceComponent::loadResource: RetrieveResourceFromStream CRITICALLY failed with a std::exception ('{}')"
                 " for type {}, hash {}, fileHandle {}, offset {}, size {}, streamState {}, current streamPos {}. No resource created, expect further errors.",
                 e.what(), entry.resourceInfo.type, entry.resourceInfo.hash, fileHandle, entry.offsetInBytes, entry.sizeInBytes, resourceStream->getState(), currentPos);
             return {};
@@ -125,7 +125,7 @@ namespace ramses::internal
         {
             size_t currentPos = 0;
             resourceStream->getPos(currentPos);
-            LOG_ERROR_P(CONTEXT_FRAMEWORK, "ResourceComponent::loadResource: RetrieveResourceFromStream CRITICALLY failed and did not return a resource"
+            LOG_ERROR(CONTEXT_FRAMEWORK, "ResourceComponent::loadResource: RetrieveResourceFromStream CRITICALLY failed and did not return a resource"
                 " for type {}, hash {}, fileHandle {}, offset {}, size {}, streamState {}, current streamPos {}. Expect further errors.",
                 entry.resourceInfo.type, entry.resourceInfo.hash, fileHandle, entry.offsetInBytes, entry.sizeInBytes, resourceStream->getState(), currentPos);
             return {};
@@ -164,7 +164,7 @@ namespace ramses::internal
         }
 
         if (!failed.empty())
-            LOG_ERROR_P(CONTEXT_FRAMEWORK, "ResourceComponent::resolveResources: failed to load resources: {}", failed);
+            LOG_ERROR(CONTEXT_FRAMEWORK, "ResourceComponent::resolveResources: failed to load resources: {}", failed);
 
         return result;
     }

@@ -31,6 +31,8 @@ namespace ramses::internal
         bool serialize(ramses::internal::IOutputStream& outStream, SerializationContext& serializationContext) const override;
         bool deserialize(ramses::internal::IInputStream& inStream, DeserializationContext& serializationContext) override;
 
+        void onValidate(ValidationReportImpl& report) const override;
+
         [[nodiscard]] uint32_t getWidth() const;
         [[nodiscard]] uint32_t getHeight() const;
 

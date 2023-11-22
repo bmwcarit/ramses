@@ -28,12 +28,14 @@
 #include "ramses/client/logic/NodeBinding.h"
 #include "ramses/client/logic/CameraBinding.h"
 #include "ramses/client/logic/RenderPassBinding.h"
+#include "ramses/client/logic/RenderBufferBinding.h"
 
 #include "impl/logic/LogicEngineImpl.h"
 #include "impl/logic/LogicNodeImpl.h"
 #include "impl/logic/LuaScriptImpl.h"
 #include "impl/logic/PropertyImpl.h"
 #include "impl/logic/NodeBindingImpl.h"
+#include "impl/RenderBufferImpl.h"
 #include "internal/logic/ApiObjects.h"
 
 #include "fmt/format.h"
@@ -274,8 +276,9 @@ namespace ramses::internal
         EXPECT_EQ("Failed to sort logic nodes based on links between their properties. Create a loop-free link graph before calling update()!", getLastErrorMessage());
 
         // Also refuse to save to file
-        EXPECT_FALSE(saveToFileWithoutValidation("will_not_write"));
-        EXPECT_EQ("Failed to sort logic nodes based on links between their properties. Create a loop-free link graph before calling saveToFile()!", getLastErrorMessage());
+        EXPECT_FALSE(saveToFile("will_not_write"));
+        EXPECT_EQ("Scene::saveToFile failed due to failed logic engine update: Failed to sort logic nodes based on links between their properties."
+            " Create a loop-free link graph before calling update()!", getLastErrorMessage());
     }
 
     TEST_F(ALogicEngine_Linking, PropagatesValuesAcrossMultipleLinksInAChain)
@@ -1470,7 +1473,7 @@ namespace ramses::internal
 
             ASSERT_EQ(std::string("A: forward 'From A' & B: forward forward 'From A'"), *scriptC_concatenate_AB->get<std::string>());
 
-            ASSERT_TRUE(saveToFileWithoutValidation("links.bin"));
+            ASSERT_TRUE(saveToFile("links.bin"));
         }
 
         {
@@ -1579,7 +1582,7 @@ namespace ramses::internal
             auto scriptB_concatenated = scriptB->getOutputs()->getChild("concat_all");
             ASSERT_EQ(std::string("str1 {foo, str2}"), *scriptB_concatenated->get<std::string>());
 
-            ASSERT_TRUE(saveToFileWithoutValidation("nested_links.bin"));
+            ASSERT_TRUE(saveToFile("nested_links.bin"));
         }
 
         {
@@ -1669,11 +1672,10 @@ namespace ramses::internal
             script2Input2->set(std::string("B"));
             script3Input2->set(std::string("C"));
 
-            tmpLogicEngine.update();
-            // during 1st update the weak link has no value yet so there is no concatenation from previous update
-            EXPECT_STREQ("ABC", script3Output->get<std::string>()->c_str());
+            ASSERT_TRUE(saveToFile("weaklinks.bin"));
 
-            ASSERT_TRUE(saveToFileWithoutValidation("weaklinks.bin"));
+            // during 1st update which was executed during saving the weak link has no value yet so there is no concatenation from previous update
+            EXPECT_STREQ("ABC", script3Output->get<std::string>()->c_str());
         }
 
         ASSERT_TRUE(recreateFromFile("weaklinks.bin"));
@@ -1812,7 +1814,7 @@ namespace ramses::internal
             ExpectValues(*ramsesNode2, ENodePropertyStaticIndex::Translation, { 11.1f, 11.2f, 11.3f });
             EXPECT_EQ(ramsesNode2->getVisibility(), ramses::EVisibilityMode::Visible);
 
-            ASSERT_TRUE(saveToFileWithoutValidation("binding_links.bin"));
+            ASSERT_TRUE(saveToFile("binding_links.bin"));
         }
 
         {
@@ -1911,7 +1913,7 @@ namespace ramses::internal
             ExpectVec3f(appearance2, "uniform1", { 100.0f, 200.0f, 300.0f });
             ExpectVec3f(appearance2, "uniform2", { 100.0f, 200.0f, 300.0f });
 
-            ASSERT_TRUE(saveToFileWithoutValidation("binding_links.bin"));
+            ASSERT_TRUE(saveToFile("binding_links.bin"));
         }
 
         {
@@ -2001,7 +2003,7 @@ namespace ramses::internal
             EXPECT_EQ(camera2->getViewportX(), 19);
             EXPECT_EQ(camera2->getFarPlane(), 7.8f);
 
-            ASSERT_TRUE(saveToFileWithoutValidation("binding_links.bin"));
+            ASSERT_TRUE(saveToFile("binding_links.bin"));
         }
         {
             ASSERT_TRUE(recreateFromFile("binding_links.bin"));
@@ -2088,7 +2090,7 @@ namespace ramses::internal
             EXPECT_FALSE(rp2->isEnabled());
             EXPECT_EQ(rp2->getRenderOrder(), 33);
 
-            ASSERT_TRUE(saveToFileWithoutValidation("binding_links.bin"));
+            ASSERT_TRUE(saveToFile("binding_links.bin"));
         }
         {
             ASSERT_TRUE(recreateFromFile("binding_links.bin"));
@@ -2160,7 +2162,7 @@ namespace ramses::internal
             EXPECT_EQ(33, renderOrder);
 
             // script has no inputs linked, validatation would fail
-            ASSERT_TRUE(saveToFileWithoutValidation("binding_links.bin"));
+            ASSERT_TRUE(saveToFile("binding_links.bin"));
         }
 
         {
@@ -2177,13 +2179,52 @@ namespace ramses::internal
             EXPECT_EQ(100, renderOrder);
 
             auto binding = m_logicEngine->findObject<RenderGroupBinding>("binding");
+            ASSERT_TRUE(binding);
 
             // This value should be overwritten by the link - set it to a different value to make sure that happens
-            binding->getInputs()->getChild("renderOrders")->getChild("meshNode")->set(222);
+            EXPECT_TRUE(m_renderGroup->addMeshNode(*m_meshNode, 222));
             EXPECT_TRUE(m_logicEngine->update());
 
             m_renderGroup->getMeshNodeOrder(*m_meshNode, renderOrder);
             EXPECT_EQ(33, renderOrder);
+        }
+    }
+
+    TEST_F(ALogicEngine_Linking_WithBindings, PreservesLinksToRenderBufferBindingAfterSavingAndLoadingFromFile)
+    {
+        {
+            LogicEngine& tmpLogicEngine = *m_logicEngine;
+            const std::string_view scriptSrc = R"(
+            function interface(IN,OUT)
+                OUT.width = Type:Int32()
+                end
+                function run(IN,OUT)
+                    OUT.width = 33
+                end
+            )";
+
+            auto script = tmpLogicEngine.createLuaScript(scriptSrc);
+            auto binding = tmpLogicEngine.createRenderBufferBinding(*m_renderBuffer, "binding");
+            ASSERT_TRUE(tmpLogicEngine.link(*script->getOutputs()->getChild("width"), *binding->getInputs()->getChild("width")));
+
+            ASSERT_TRUE(tmpLogicEngine.update());
+            EXPECT_EQ(33u, m_renderBuffer->getWidth());
+            ASSERT_TRUE(saveToFile("binding_links.bin"));
+        }
+
+        {
+            ASSERT_TRUE(recreateFromFile("binding_links.bin"));
+            ASSERT_TRUE(m_renderBuffer != nullptr);
+
+            EXPECT_EQ(33u, m_renderBuffer->getWidth());
+            auto binding = m_logicEngine->findObject<RenderBufferBinding>("binding");
+            ASSERT_TRUE(binding);
+
+            // This value should be overwritten by the link - set it to a different value to make sure that happens
+            EXPECT_TRUE(m_renderBuffer->impl().setProperties(222u, 2u, 3u));
+            EXPECT_TRUE(m_logicEngine->update());
+
+            EXPECT_EQ(33u, m_renderBuffer->getWidth());
         }
     }
 

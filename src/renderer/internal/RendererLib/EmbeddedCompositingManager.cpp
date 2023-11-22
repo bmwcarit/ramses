@@ -10,7 +10,7 @@
 #include "internal/RendererLib/PlatformInterface/IDevice.h"
 #include "internal/RendererLib/PlatformInterface/IEmbeddedCompositor.h"
 #include "internal/RendererLib/PlatformInterface/ITextureUploadingAdapter.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {
@@ -26,13 +26,13 @@ namespace ramses::internal
         auto streamTextureInfoIt = m_streamTextureSourceInfoMap.find(source);
         if (m_streamTextureSourceInfoMap.end() == streamTextureInfoIt)
         {
-            LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingManager::refStream: Creating new stream texture with: " << source);
+            LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingManager::refStream: Creating new stream texture with: {}", source);
             createStreamTexture(source);
             streamTextureInfoIt = m_streamTextureSourceInfoMap.find(source);
         }
 
         streamTextureInfoIt->value.refs++;
-        LOG_INFO_P(CONTEXT_RENDERER, "EmbeddedCompositingManager::refStream adding reference to stream texture {}. Total refs: {}", source, streamTextureInfoIt->value.refs);
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingManager::refStream adding reference to stream texture {}. Total refs: {}", source, streamTextureInfoIt->value.refs);
     }
 
     void EmbeddedCompositingManager::unrefStream(WaylandIviSurfaceId source)
@@ -43,11 +43,11 @@ namespace ramses::internal
         // remove stream buffer reference
         assert(streamTextureSourceInfo->refs > 0);
         streamTextureSourceInfo->refs--;
-        LOG_INFO_P(CONTEXT_RENDERER, "EmbeddedCompositingManager::unrefStream removing reference to stream texture {}. Total refs: {}", source, streamTextureSourceInfo->refs);
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingManager::unrefStream removing reference to stream texture {}. Total refs: {}", source, streamTextureSourceInfo->refs);
 
         if (streamTextureSourceInfo->refs == 0)
         {
-            LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingManager::unrefStream: Destroying no more referenced stream texture with " << source);
+            LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingManager::unrefStream: Destroying no more referenced stream texture with {}", source);
             destroyStreamTexture(source);
         }
     }
@@ -140,7 +140,7 @@ namespace ramses::internal
 
         if (m_embeddedCompositor.isContentAvailableForStreamTexture(source))
         {
-            LOG_DEBUG(CONTEXT_RENDERER, "EmbeddedCompositingManager::uploadStreamTexture Content available for stream texture " << source);
+            LOG_DEBUG(CONTEXT_RENDERER, "EmbeddedCompositingManager::uploadStreamTexture Content available for stream texture {}", source);
             m_embeddedCompositor.uploadCompositingContentForStreamTexture(source, streamTextureSourceInfo.compositedTextureHandle, m_textureUploadingAdapter);
         }
     }

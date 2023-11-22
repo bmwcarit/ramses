@@ -264,7 +264,7 @@ namespace ramses::internal
 
             if (data.size() != expectedDataSize)
             {
-                LOG_ERROR_P(CONTEXT_FRAMEWORK, "ResourceSerialization::Deserialize: Expected resource size {} but got {}, compression state {}",
+                LOG_ERROR(CONTEXT_FRAMEWORK, "ResourceSerialization::Deserialize: Expected resource size {} but got {}, compression state {}",
                             expectedDataSize, data.size(), header.compressionStatus);
                 return nullptr;
             }

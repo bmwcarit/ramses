@@ -38,6 +38,35 @@ namespace ramses
         */
         [[nodiscard]] size_t getElementCount() const;
 
+        /**
+        * @brief Destructor of UniformInput.
+        */
+        ~UniformInput();
+
+        /**
+         * @brief Copy constructor.
+         * @param other source to copy from
+         */
+        UniformInput(const UniformInput& other);
+
+        /**
+         * @brief Move constructor.
+         * @param other source to move from
+         */
+        UniformInput(UniformInput&& other) noexcept;
+
+        /**
+         * @brief Assignment operator.
+         * @param other source to assign from
+         */
+        UniformInput& operator=(const UniformInput& other);
+
+        /**
+         * @brief Move assignment operator.
+         * @param other source to move assign from
+         */
+        UniformInput& operator=(UniformInput&& other) noexcept;
+
     protected:
         /**
          * @brief Default constructor of UniformInput.

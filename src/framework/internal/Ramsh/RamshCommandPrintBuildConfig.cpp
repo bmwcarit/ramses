@@ -22,18 +22,19 @@ namespace ramses::internal
     bool RamshCommandPrintBuildConfig::executeInput(const std::vector<std::string>& /*unused*/)
     {
         LOG_INFO(CONTEXT_RAMSH,
-            "VERSION_STRING = "     << ::ramses_sdk::RAMSES_SDK_RAMSES_VERSION << "\n" <<
-            "GIT_COMMIT_COUNT = "   << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_COUNT << "\n" <<
-            "GIT_COMMIT_HASH = "    << ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH << "\n" <<
-            "BUILD_TYPE = "         << ::ramses_sdk::RAMSES_SDK_CMAKE_BUILD_TYPE << "\n" <<
-            "CXX_COMPILER = "       << ::ramses_sdk::RAMSES_SDK_CMAKE_CXX_COMPILER << "\n" <<
-            "CXX_COMPILER_ID = "    << ::ramses_sdk::RAMSES_SDK_CMAKE_CXX_COMPILER_ID << "\n" <<
-            "CXX_FLAGS = "          << ::ramses_sdk::RAMSES_SDK_CMAKE_CXX_FLAGS << "\n" <<
-            "CXX_FLAGS_DEBUG = "    << ::ramses_sdk::RAMSES_SDK_CMAKE_CXX_FLAGS_DEBUG << "\n" <<
-            "CXX_FLAGS_RELEASE = "  << ::ramses_sdk::RAMSES_SDK_CMAKE_CXX_FLAGS_RELEASE << "\n" <<
-            "BUILD_SYSTEM_NAME = "  << ::ramses_sdk::RAMSES_SDK_CMAKE_SYSTEM_NAME << "\n" <<
-            "CMAKE_VERSION = "      << ::ramses_sdk::RAMSES_SDK_CMAKE_VERSION << "\n" <<
-            "BUILD_ENV_INFO = "     << ::ramses_sdk::RAMSES_SDK_BUILD_ENV_VERSION_INFO_FULL << "\n"
+            "VERSION_STRING = {}\nGIT_COMMIT_COUNT = {}\nGIT_COMMIT_HASH = {}\nBUILD_TYPE = {}\nCXX_COMPILER = {}\nCXX_COMPILER_ID = {}\nCXX_FLAGS = {}\nCXX_FLAGS_DEBUG = {}\nCXX_FLAGS_RELEASE = {}\nBUILD_SYSTEM_NAME = {}\nCMAKE_VERSION = {}\nBUILD_ENV_INFO = {}\n",
+            ::ramses_sdk::RAMSES_SDK_RAMSES_VERSION,
+            ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_COUNT,
+            ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH,
+            ::ramses_sdk::RAMSES_SDK_CMAKE_BUILD_TYPE,
+            ::ramses_sdk::RAMSES_SDK_CMAKE_CXX_COMPILER,
+            ::ramses_sdk::RAMSES_SDK_CMAKE_CXX_COMPILER_ID,
+            ::ramses_sdk::RAMSES_SDK_CMAKE_CXX_FLAGS,
+            ::ramses_sdk::RAMSES_SDK_CMAKE_CXX_FLAGS_DEBUG,
+            ::ramses_sdk::RAMSES_SDK_CMAKE_CXX_FLAGS_RELEASE,
+            ::ramses_sdk::RAMSES_SDK_CMAKE_SYSTEM_NAME,
+            ::ramses_sdk::RAMSES_SDK_CMAKE_VERSION,
+            ::ramses_sdk::RAMSES_SDK_BUILD_ENV_VERSION_INFO_FULL
             );
         return true;
     }

@@ -15,7 +15,6 @@
 #include "TestSceneHelper.h"
 #include "SceneAllocateHelper.h"
 #include "MockResourceHash.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
 
 namespace ramses::internal {
     using namespace testing;
@@ -35,9 +34,6 @@ namespace ramses::internal {
             , consumerSceneAllocator(consumerScene)
             , sceneHelper(consumerScene)
         {
-            // caller is expected to have a display prefix for logs
-            ThreadLocalLog::SetPrefix(1);
-
             consumerSceneAllocator.allocateTextureSampler({ {}, consumerTextureHash }, sampler);
             consumerSceneAllocator.allocateTextureSampler({ {}, consumerTextureHash }, sampler2);
             consumerSceneAllocator.allocateTextureSampler({ {}, consumerTextureHash }, sampler3);

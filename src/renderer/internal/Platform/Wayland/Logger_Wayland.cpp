@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "internal/Platform/Wayland/Logger_Wayland.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include <wayland-client.h>
 #include <wayland-server.h>
 #include <array>
@@ -21,13 +21,13 @@ namespace ramses::internal
         void WaylandClientLog(const char* fmt, va_list ap)
         {
             std::vsnprintf(buffer.data(), buffer.size(), fmt, ap);
-            LOG_ERROR(CONTEXT_RENDERER, "Logger_Wayland::ClientLog: " << buffer.data());
+            LOG_ERROR(CONTEXT_RENDERER, "Logger_Wayland::ClientLog: {}", buffer.data());
         }
 
         void WaylandServerLog(const char* fmt, va_list ap)
         {
             std::vsnprintf(buffer.data(), buffer.size(), fmt, ap);
-            LOG_ERROR(CONTEXT_RENDERER, "Logger_Wayland::ServerLog: " << buffer.data());
+            LOG_ERROR(CONTEXT_RENDERER, "Logger_Wayland::ServerLog: {}", buffer.data());
         }
     }
 

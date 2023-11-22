@@ -53,9 +53,7 @@ namespace ramses
             }
         }
 
-        SaveFileConfig configNoValidation;
-        configNoValidation.setValidationEnabled(false);
-        std::ignore = setup.m_scene.saveToFile(fileName, configNoValidation);
+        std::ignore = setup.m_scene.saveToFile(fileName, {});
 
         std::ifstream fileStream(std::string(fileName), std::ifstream::binary);
         fileStream.seekg(0, std::ios::end);

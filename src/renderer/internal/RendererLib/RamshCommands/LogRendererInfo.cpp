@@ -37,7 +37,7 @@ namespace ramses::internal
         if (!etopic.has_value())
             return false;
 
-        m_rendererCommandBuffer.enqueueCommand(ramses::internal::RendererCommand::LogInfo{ *etopic, verbose, NodeHandle(nodeHandleFilter) });
+        m_rendererCommandBuffer.enqueueCommand(ramses::internal::RendererCommand::LogInfo{ *etopic, verbose, NodeHandle(nodeHandleFilter), false, false, ELoopMode::UpdateAndRender, {} });
         return true;
     }
 

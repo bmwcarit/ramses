@@ -248,7 +248,7 @@ namespace ramses::internal
             ASSERT_TRUE(config.addChannel(channel2));
             ASSERT_TRUE(otherEngine.createAnimationNode(config, "animNode"));
 
-            ASSERT_TRUE(saveToFileWithoutValidation("logic_animNodes.bin"));
+            ASSERT_TRUE(saveToFile("logic_animNodes.bin"));
         }
 
         ASSERT_TRUE(recreateFromFile("logic_animNodes.bin"));
@@ -301,7 +301,7 @@ namespace ramses::internal
             animNode->getInputs()->getChild("channelsData")->getChild("channel")->getChild("keyframes")->getChild(2u)->set(1000.f);
             EXPECT_TRUE(otherEngine.update());
 
-            ASSERT_TRUE(saveToFileWithoutValidation("logic_animNodes.bin"));
+            ASSERT_TRUE(saveToFile("logic_animNodes.bin"));
         }
 
         ASSERT_TRUE(recreateFromFile("logic_animNodes.bin"));

@@ -80,14 +80,14 @@ namespace ramses::internal
         const IEmbeddedCompositor& embeddedCompositor = getEmbeddedCompositor(displayIdx);
         IEmbeddedCompositingManager& embeddedCompositorManager = getEmbeddedCompositorManager(displayIdx);
 
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForContentOnStreamTexture() " << iviSurface);
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForContentOnStreamTexture() {}", iviSurface);
 
         while (!embeddedCompositor.isContentAvailableForStreamTexture(iviSurface))
         {
             embeddedCompositorManager.processClientRequests();
         }
 
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForContentOnStreamTexture(): content found on " << iviSurface);
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForContentOnStreamTexture(): content found on {}", iviSurface);
     }
 
     void EmbeddedCompositingTestsFramework::waitForUnavailablilityOfContentOnStreamTexture(WaylandIviSurfaceId iviSurface)
@@ -95,14 +95,14 @@ namespace ramses::internal
         const IEmbeddedCompositor& embeddedCompositor = getEmbeddedCompositor();
         IEmbeddedCompositingManager& embeddedCompositorManager = getEmbeddedCompositorManager();
 
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForUnavailablilityOfContentFromStreamTexture() " << iviSurface);
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForUnavailablilityOfContentFromStreamTexture() {}", iviSurface);
 
         while (embeddedCompositor.isContentAvailableForStreamTexture(iviSurface))
         {
             embeddedCompositorManager.processClientRequests();
         }
 
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForUnavailablilityOfContentFromStreamTexture(): no content on " << iviSurface);
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForUnavailablilityOfContentFromStreamTexture(): no content on {}", iviSurface);
     }
 
     bool EmbeddedCompositingTestsFramework::waitUntilNumberOfCommitedFramesForIviSurface(WaylandIviSurfaceId iviSurface, uint64_t numberOfComittedBuffers, uint32_t timeoutMilliseconds)
@@ -110,7 +110,7 @@ namespace ramses::internal
         const IEmbeddedCompositor& embeddedCompositor = getEmbeddedCompositor();
         IEmbeddedCompositingManager& embeddedCompositingManager = getEmbeddedCompositorManager();
 
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitUntilNumberOfCommitedBuffersForIviSurface(): waiting for number of commited buffers for " << iviSurface << " reaching " << numberOfComittedBuffers);
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitUntilNumberOfCommitedBuffersForIviSurface(): waiting for number of commited buffers for {} reaching {}", iviSurface, numberOfComittedBuffers);
 
         const uint64_t startTime = PlatformTime::GetMillisecondsMonotonic();
         while (embeddedCompositor.getNumberOfCommitedFramesForWaylandIviSurfaceSinceBeginningOfTime(iviSurface) != numberOfComittedBuffers)
@@ -120,11 +120,11 @@ namespace ramses::internal
             const auto timeElapsed = static_cast<uint32_t>(PlatformTime::GetMillisecondsMonotonic() - startTime);
             if(timeElapsed > timeoutMilliseconds)
             {
-                LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitUntilNumberOfCommitedFramesForIviSurfaceWithTimeout(): timed out after " << timeElapsed << " ms");
+                LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitUntilNumberOfCommitedFramesForIviSurfaceWithTimeout(): timed out after {} ms", timeElapsed);
                 return false;
             }
         }
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitUntilNumberOfCommitedBuffersForIviSurface(): number of commited buffers for " << iviSurface << " is " << embeddedCompositor.getNumberOfCommitedFramesForWaylandIviSurfaceSinceBeginningOfTime(iviSurface));
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitUntilNumberOfCommitedBuffersForIviSurface(): number of commited buffers for {} is {}", iviSurface, embeddedCompositor.getNumberOfCommitedFramesForWaylandIviSurfaceSinceBeginningOfTime(iviSurface));
         return true;
     }
 
@@ -144,7 +144,7 @@ namespace ramses::internal
         const IEmbeddedCompositor& embeddedCompositor = getEmbeddedCompositor(displayIdx);
         IEmbeddedCompositingManager& embeddedCompositingManager = getEmbeddedCompositorManager(displayIdx);
 
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitUntilNumberOfCompositorConnections(): waiting for number of connections reaching " << numberOfConnections);
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitUntilNumberOfCompositorConnections(): waiting for number of connections reaching {}", numberOfConnections);
 
         while (embeddedCompositor.getNumberOfCompositorConnections() != numberOfConnections)
         {
@@ -157,7 +157,7 @@ namespace ramses::internal
             }
         }
 
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitUntilNumberOfCompositorConnections(): number of compositor connections is " << numberOfConnections);
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitUntilNumberOfCompositorConnections(): number of compositor connections is {}", numberOfConnections);
     }
 
     void EmbeddedCompositingTestsFramework::waitForBufferAttachedToIviSurface(WaylandIviSurfaceId iviSurface)
@@ -167,7 +167,7 @@ namespace ramses::internal
 
         LOG_INFO(CONTEXT_RENDERER,
                  "EmbeddedCompositingTestsFramework::waitForBufferAttachedToIviSurface(): waiting for "
-                 "buffer attached to " << iviSurface);
+                 "buffer attached to {}", iviSurface);
 
         while (!embeddedCompositor.isBufferAttachedToWaylandIviSurface(iviSurface))
         {
@@ -184,7 +184,7 @@ namespace ramses::internal
 
         LOG_INFO(CONTEXT_RENDERER,
                  "EmbeddedCompositingTestsFramework::waitForNoBufferAttachedToIviSurface(): waiting for "
-                 "no buffer attached to " << iviSurface);
+                 "no buffer attached to {}", iviSurface);
 
         while (embeddedCompositor.isBufferAttachedToWaylandIviSurface(iviSurface))
         {
@@ -204,28 +204,28 @@ namespace ramses::internal
     {
         const IEmbeddedCompositor& embeddedCompositor = getEmbeddedCompositor();
 
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForSurfaceAvailableForStreamTexture() " << iviSurface);
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForSurfaceAvailableForStreamTexture() {}", iviSurface);
 
         while (!embeddedCompositor.hasSurfaceForStreamTexture(iviSurface))
         {
             getTestRenderer().doOneLoop();
         }
 
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForSurfaceAvailableForStreamTexture(): surface available for " << iviSurface);
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForSurfaceAvailableForStreamTexture(): surface available for {}", iviSurface);
     }
 
     void EmbeddedCompositingTestsFramework::waitForSurfaceUnavailableForStreamTexture(WaylandIviSurfaceId iviSurface)
     {
         const IEmbeddedCompositor& embeddedCompositor = getEmbeddedCompositor();
 
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForSurfaceUnavailableForStreamTexture() " << iviSurface);
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForSurfaceUnavailableForStreamTexture() {}", iviSurface);
 
         while (embeddedCompositor.hasSurfaceForStreamTexture(iviSurface))
         {
             getTestRenderer().doOneLoop();
         }
 
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForSurfaceUnavailableForStreamTexture(): surface unavailable for " << iviSurface);
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForSurfaceUnavailableForStreamTexture(): surface unavailable for {}", iviSurface);
     }
 
     bool EmbeddedCompositingTestsFramework::waitForStreamSurfaceAvailabilityChange(WaylandIviSurfaceId iviSurface, bool available)

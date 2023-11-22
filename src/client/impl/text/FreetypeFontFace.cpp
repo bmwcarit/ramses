@@ -25,7 +25,7 @@ namespace ramses::internal
             int32_t error = FT_Open_Face(m_freetypeLib, fontDataArgs, -1, &localFaceForQuery);
             if (error != 0)
             {
-                LOG_ERROR(CONTEXT_TEXT, "FreetypeFontFace::initFromOpenArgs: Failed to open face, FT error " << error);
+                LOG_ERROR(CONTEXT_TEXT, "FreetypeFontFace::initFromOpenArgs: Failed to open face, FT error {}", error);
                 return false;
             }
             if (localFaceForQuery->num_faces < 1)
@@ -35,7 +35,7 @@ namespace ramses::internal
                 return false;
             }
             if (localFaceForQuery->num_faces > 1)
-                LOG_INFO(CONTEXT_TEXT, "FreetypeFontFace::initFromOpenArgs: current implementation does not support multiple faces, face with index 0 will be used (" << localFaceForQuery->num_faces << " faces found in file)");
+                LOG_INFO(CONTEXT_TEXT, "FreetypeFontFace::initFromOpenArgs: current implementation does not support multiple faces, face with index 0 will be used ({} faces found in file)", localFaceForQuery->num_faces);
 
             // close temporary face
             FT_Done_Face(localFaceForQuery);
@@ -47,7 +47,7 @@ namespace ramses::internal
             int32_t error = FT_Open_Face(m_freetypeLib, fontDataArgs, 0, &localFace);
             if (error != 0)
             {
-                LOG_ERROR(CONTEXT_TEXT, "FreetypeFontFace::initFromOpenArgs: Failed to open face, FT error " << error);
+                LOG_ERROR(CONTEXT_TEXT, "FreetypeFontFace::initFromOpenArgs: Failed to open face, FT error {}", error);
                 return false;
             }
 

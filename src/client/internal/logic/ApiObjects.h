@@ -47,6 +47,7 @@ namespace ramses
     class RenderGroup;
     class UniformInput;
     class MeshNode;
+    class RenderBuffer;
 
     class LogicObject;
     class LogicNode;
@@ -65,6 +66,7 @@ namespace ramses
     class AnimationNode;
     class TimerNode;
     class AnchorPoint;
+    class RenderBufferBinding;
 }
 
 namespace ramses::internal
@@ -144,6 +146,7 @@ namespace ramses::internal
         AnimationNode* createAnimationNode(const AnimationNodeConfigImpl& config, std::string_view name);
         TimerNode* createTimerNode(std::string_view name);
         AnchorPoint* createAnchorPoint(NodeBindingImpl& nodeBinding, CameraBindingImpl& cameraBinding, std::string_view name);
+        RenderBufferBinding* createRenderBufferBinding(ramses::RenderBuffer& renderBuffer, std::string_view name);
         bool destroy(LogicObject& object, ErrorReporting& errorReporting);
 
         // Invariance checks
@@ -200,6 +203,8 @@ namespace ramses::internal
         ApiObjectContainer<AnimationNode>            m_animationNodes;
         ApiObjectContainer<TimerNode>                m_timerNodes;
         ApiObjectContainer<AnchorPoint>              m_anchorPoints;
+        ApiObjectContainer<RenderBufferBinding>      m_renderBufferBindings;
+
         ApiObjectContainer<LogicObject>              m_logicObjects;
         ApiObjectOwningContainer                     m_objectsOwningContainer;
 

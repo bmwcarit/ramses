@@ -93,12 +93,12 @@ namespace ramses::internal
 
     std::unique_ptr<IResource> ResourcePersistation::RetrieveResourceFromStream(IInputStream& inStream, const ResourceFileEntry& fileEntry)
     {
-        LOG_DEBUG_P(CONTEXT_FRAMEWORK, "ResourcePersistation::RetrieveResourceFromStream: Hash {}, Size {}, Offset {}",
+        LOG_DEBUG(CONTEXT_FRAMEWORK, "ResourcePersistation::RetrieveResourceFromStream: Hash {}, Size {}, Offset {}",
                     fileEntry.resourceInfo.hash, fileEntry.sizeInBytes, fileEntry.offsetInBytes);
 
         if (inStream.seek(fileEntry.offsetInBytes, IInputStream::Seek::FromBeginning) != EStatus::Ok)
         {
-            LOG_ERROR_P(CONTEXT_FRAMEWORK, "ResourcePersistation::RetrieveResourceFromStream: seek failed for resource {}", fileEntry.resourceInfo.hash);
+            LOG_ERROR(CONTEXT_FRAMEWORK, "ResourcePersistation::RetrieveResourceFromStream: seek failed for resource {}", fileEntry.resourceInfo.hash);
             return {};
         }
 
@@ -108,7 +108,7 @@ namespace ramses::internal
 
         if (inStream.getState() != EStatus::Ok)
         {
-            LOG_ERROR_P(CONTEXT_FRAMEWORK, "ResourcePersistation::RetrieveResourceFromStream: resource deserialization failed for {}", fileEntry.resourceInfo.hash);
+            LOG_ERROR(CONTEXT_FRAMEWORK, "ResourcePersistation::RetrieveResourceFromStream: resource deserialization failed for {}", fileEntry.resourceInfo.hash);
             return {};
         }
 
@@ -116,7 +116,7 @@ namespace ramses::internal
         const EStatus posStatus = inStream.getPos(currentPosAfterRead);
         if (posStatus != EStatus::Ok || currentPosAfterRead - fileEntry.offsetInBytes != fileEntry.sizeInBytes)
         {
-            LOG_ERROR_P(CONTEXT_FRAMEWORK, "ResourcePersistation::RetrieveResourceFromStream: read position fail for {}, state {} (resOffset {}, resSize {}, filePos{})",
+            LOG_ERROR(CONTEXT_FRAMEWORK, "ResourcePersistation::RetrieveResourceFromStream: read position fail for {}, state {} (resOffset {}, resSize {}, filePos{})",
                         fileEntry.resourceInfo.hash, posStatus, fileEntry.offsetInBytes, fileEntry.sizeInBytes, currentPosAfterRead);
             return {};
         }

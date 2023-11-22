@@ -27,7 +27,6 @@ namespace ramses::internal
     public:
         void setMetadataString(std::string_view metadata);
         void setExporterVersion(uint32_t major, uint32_t minor, uint32_t patch, uint32_t fileFormatVersion);
-        void setValidationEnabled(bool validationEnabled);
         void setLuaSavingMode(ELuaSavingMode mode);
         void setCompressionEnabled(bool compressionEnabled);
 
@@ -41,14 +40,12 @@ namespace ramses::internal
 
         [[nodiscard]] const std::string& getMetadataString() const;
         [[nodiscard]] const ExporterVersion& getExporterVersion() const;
-        [[nodiscard]] bool getValidationEnabled() const;
         [[nodiscard]] ELuaSavingMode getLuaSavingMode() const;
         [[nodiscard]] bool getCompressionEnabled() const;
 
     private:
         std::string m_metadata;
         ExporterVersion m_exporterVersion;
-        bool m_validationEnabled = true;
         bool m_compressionEnabled = false;
         ELuaSavingMode m_luaSavingMode = ELuaSavingMode::SourceAndByteCode;
     };
@@ -71,13 +68,12 @@ template <> struct fmt::formatter<ramses::internal::SaveFileConfigImpl> : public
     template <typename FormatContext> constexpr auto format(const ramses::internal::SaveFileConfigImpl& c, FormatContext& ctx)
     {
         const auto& exporter = c.getExporterVersion();
-        return fmt::format_to(ctx.out(), "'{}' exporter:{}.{}.{}.{} validate:{} compress:{} lua:{}",
+        return fmt::format_to(ctx.out(), "'{}' exporter:{}.{}.{}.{} compress:{} lua:{}",
                               c.getMetadataString(),
                               exporter.major,
                               exporter.minor,
                               exporter.patch,
                               exporter.fileFormat,
-                              c.getValidationEnabled(),
                               c.getCompressionEnabled(),
                               c.getLuaSavingMode()
                               );

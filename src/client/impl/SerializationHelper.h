@@ -46,7 +46,7 @@ namespace ramses::internal
                 if (RamsesObjectTypeUtils::IsConcreteType(type) &&
                     RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, baseType))
                 {
-                    const uint32_t count = registry.getNumberOfObjects(type);
+                    const auto count = static_cast<uint32_t>(registry.getNumberOfObjects(type));
                     if (count > 0u)
                     {
                         const TypeCountPair typeCountEntry = { type, count };

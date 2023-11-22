@@ -54,7 +54,7 @@ namespace ramses::internal
             }
             else
             {
-                LOG_ERROR(CONTEXT_TEXT, "TextCache::getPositionedGlyphs: Could not find font instance " << fontIt->fontInstance);
+                LOG_ERROR(CONTEXT_TEXT, "TextCache::getPositionedGlyphs: Could not find font instance {}", fontIt->fontInstance);
             }
         }
 
@@ -91,7 +91,7 @@ namespace ramses::internal
                 IFontInstance* fontInstance = m_fontAccessor.getFontInstance(glyph.key.fontInstanceId);
                 if (fontInstance == nullptr)
                 {
-                    LOG_ERROR(CONTEXT_TEXT, "TextCache::createTextLine: Could not find font instance " << glyph.key.fontInstanceId);
+                    LOG_ERROR(CONTEXT_TEXT, "TextCache::createTextLine: Could not find font instance {}", glyph.key.fontInstanceId);
                     return {};
                 }
                 QuadSize glyphSize;
@@ -174,7 +174,7 @@ namespace ramses::internal
     {
         if (m_textLines.count(textId) != 1)
         {
-            LOG_ERROR(CONTEXT_TEXT, "TextCache::deleteTextLine: Cannot delete text line " << textId << ", no such entry");
+            LOG_ERROR(CONTEXT_TEXT, "TextCache::deleteTextLine: Cannot delete text line {}, no such entry", textId);
             return false;
         }
 

@@ -22,7 +22,13 @@
 #include "ramses/client/OrthographicCamera.h"
 #include "ramses/client/PerspectiveCamera.h"
 #include "ramses/client/ArrayBuffer.h"
+#include "ramses/client/RenderBuffer.h"
+#include "ramses/client/RenderTargetDescription.h"
+#include "ramses/client/RenderTarget.h"
 #include "ramses/client/logic/TimerNode.h"
+#include "ramses/client/logic/LuaScript.h"
+#include "ramses/client/logic/Property.h"
+#include "ramses/client/logic/NodeBinding.h"
 #include "ramses/client/ramses-utils.h"
 #include "ramses/framework/EDataType.h"
 
@@ -33,6 +39,7 @@
 #include "impl/BlitPassImpl.h"
 #include "impl/TextureSamplerImpl.h"
 #include "impl/Texture2DImpl.h"
+#include "impl/RenderBufferImpl.h"
 #include "impl/SceneConfigImpl.h"
 #include "ClientTestUtils.h"
 #include "SimpleSceneTopology.h"
@@ -308,8 +315,7 @@ namespace ramses::internal
     {
         ramses::Scene& anotherScene(*client.createScene(SceneConfig(sceneId_t{ 0xf00 })));
         {
-            const uint8_t data[] = { 1, 2, 3 };
-            const std::vector<MipLevelData> mipData({ MipLevelData(3u, data) });
+            const std::vector<MipLevelData> mipData{ { std::byte{1}, std::byte{2}, std::byte{3} } };
             Texture2D* texture = anotherScene.createTexture2D(ETextureFormat::RGB8, 1u, 1u, mipData, false);
             ASSERT_TRUE(texture != nullptr);
 
@@ -317,8 +323,11 @@ namespace ramses::internal
             EXPECT_TRUE(nullptr == textureSampler);
         }
         {
-            const uint8_t data[1 * 2 * 2 * 4] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
-            std::vector<MipLevelData> mipLevelData({ MipLevelData(sizeof(data), data) });
+            const MipLevelData data = {
+                std::byte{1}, std::byte{2}, std::byte{3}, std::byte{4}, std::byte{5}, std::byte{6}, std::byte{7}, std::byte{8},
+                std::byte{9}, std::byte{10}, std::byte{11}, std::byte{12}, std::byte{13}, std::byte{14}, std::byte{15}, std::byte{16} };
+            ASSERT_TRUE(data.size() == 1 * 2 * 2 * 4);
+            std::vector<MipLevelData> mipLevelData{ data };
             Texture3D* texture = anotherScene.createTexture3D(ETextureFormat::RGBA8, 2, 1, 2, mipLevelData, false, {});
             ASSERT_TRUE(nullptr != texture);
 
@@ -326,8 +335,8 @@ namespace ramses::internal
             EXPECT_TRUE(nullptr == textureSampler);
         }
         {
-            const std::byte data[4 * 10 * 10] = {};
-            std::vector<CubeMipLevelData> mipLevelData{ CubeMipLevelData(sizeof(data), data, data, data, data, data, data) };
+            const std::vector<std::byte> data(4 * 10 * 10);
+            std::vector<CubeMipLevelData> mipLevelData{ { data, data, data, data, data, data } };
             TextureCube* texture = anotherScene.createTextureCube(ETextureFormat::RGBA8, 10, mipLevelData, false);
             ASSERT_TRUE(nullptr != texture);
 
@@ -930,8 +939,7 @@ namespace ramses::internal
         RamsesFrameworkConfig config{EFeatureLevel_Latest};
         RamsesFramework anotherFramework{config};
         ramses::Scene& anotherScene(*client.createScene(SceneConfig(sceneId_t{ 0xf00 })));
-        uint8_t data = 0u;
-        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        const std::vector<MipLevelData> mipData{ { std::byte{ 0u } } };
         const Texture2D* texture = anotherScene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
@@ -941,8 +949,7 @@ namespace ramses::internal
     TEST_F(AScene, reportsErrorWhenCreateTextureConsumerWithSamplerFromAnotherScene)
     {
         ramses::Scene& anotherScene = *client.createScene(SceneConfig(sceneId_t(12u)));
-        uint8_t data = 0u;
-        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        const std::vector<MipLevelData> mipData{ { std::byte{ 0u } } };
         Texture2D* texture = anotherScene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
@@ -983,8 +990,7 @@ namespace ramses::internal
     {
         EXPECT_EQ(0u, m_scene.impl().getIScene().getDataSlotCount());
 
-        uint8_t data = 0u;
-        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        const std::vector<MipLevelData> mipData{ { std::byte{ 0u } } };
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
@@ -1002,13 +1008,11 @@ namespace ramses::internal
     {
         EXPECT_EQ(0u, m_scene.impl().getIScene().getDataSlotCount());
 
-        uint8_t data1 = 0u;
-        const std::vector<MipLevelData> mipData1{ MipLevelData(1u, &data1) };
+        const std::vector<MipLevelData> mipData1{ { std::byte{ 0u } } };
         Texture2D* texture1 = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData1, false);
         ASSERT_TRUE(nullptr != texture1);
 
-        uint8_t data2 = 1u;
-        const std::vector<MipLevelData> mipData2{ MipLevelData(1u, &data2) };
+        const std::vector<MipLevelData> mipData2{ { std::byte{ 1u } } };
         Texture2D* texture2 = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData2, false);
         ASSERT_TRUE(nullptr != texture2);
 
@@ -1027,8 +1031,7 @@ namespace ramses::internal
     {
         EXPECT_EQ(0u, m_scene.impl().getIScene().getDataSlotCount());
 
-        uint8_t data = 0u;
-        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        const std::vector<MipLevelData> mipData{ { std::byte{0u} } };
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
@@ -1088,8 +1091,7 @@ namespace ramses::internal
     {
         EXPECT_EQ(0u, m_scene.impl().getIScene().getDataSlotCount());
 
-        uint8_t data = 0u;
-        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        const std::vector<MipLevelData> mipData{ { std::byte{ 0u } } };
         Texture3D* texture = m_scene.createTexture3D(ETextureFormat::R8, 1u, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
@@ -1101,8 +1103,7 @@ namespace ramses::internal
 
     TEST_F(AScene, removesDataSlotsOfTextureSamplerOnDestruction)
     {
-        uint8_t data = 0u;
-        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        const std::vector<MipLevelData> mipData{ { std::byte{ 0u } } };
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
@@ -1122,8 +1123,7 @@ namespace ramses::internal
 
     TEST_F(AScene, canNotCreateMoreThanOneConsumerForATextureSampler)
     {
-        uint8_t data = 0u;
-        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        const std::vector<MipLevelData> mipData{ { std::byte{ 0u } } };
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
@@ -1157,8 +1157,7 @@ namespace ramses::internal
 
     TEST_F(AScene, canNotCreateMoreThanOneProviderForATexture)
     {
-        uint8_t data = 0u;
-        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        const std::vector<MipLevelData> mipData{ { std::byte{ 0u } } };
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
@@ -1168,8 +1167,7 @@ namespace ramses::internal
 
     TEST_F(AScene, canNotCreateMoreThanOneTextureConsumerOrProviderWithTheSameId)
     {
-        uint8_t data = 0u;
-        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        const std::vector<MipLevelData> mipData{ { std::byte{ 0u } } };
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
         Texture2D* texture2 = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
@@ -1191,8 +1189,7 @@ namespace ramses::internal
 
     TEST_F(AScene, canNotUpdateTextureProviderWhichWasNotCreatedBefore)
     {
-        uint8_t data = 0u;
-        const std::vector<MipLevelData> mipData{ MipLevelData(1u, &data) };
+        const std::vector<MipLevelData> mipData{ { std::byte{ 0u } } };
         Texture2D* texture = m_scene.createTexture2D(ETextureFormat::R8, 1u, 1u, mipData, false);
         ASSERT_TRUE(nullptr != texture);
 
@@ -1722,5 +1719,203 @@ namespace ramses::internal
         EXPECT_TRUE(logicEngine->setName("other"));
         // only one remaining scene object with test name
         EXPECT_EQ(logicObject, m_scene.findObject<ramses::SceneObject>("test"));
+    }
+
+    TEST_F(AScene, willFailFlushIfRenderTargetInvalid)
+    {
+        const auto rb1 = m_scene.createRenderBuffer(1u, 2u, ERenderBufferFormat::R16F, ERenderBufferAccessMode::ReadWrite, 3u);
+        const auto rb2 = m_scene.createRenderBuffer(1u, 2u, ERenderBufferFormat::R16F, ERenderBufferAccessMode::ReadWrite, 3u);
+        EXPECT_TRUE(m_scene.flush());
+
+        RenderTargetDescription desc;
+        EXPECT_TRUE(desc.addRenderBuffer(*rb1));
+        EXPECT_TRUE(desc.addRenderBuffer(*rb2));
+        const auto rt = m_scene.createRenderTarget(desc);
+        EXPECT_TRUE(m_scene.flush());
+
+        // simulate RB properties changed, there is currently no direct public API (only RenderBufferBinding via LogicEngine)
+        EXPECT_TRUE(rb2->impl().setProperties(1u, 1u, 1u));
+
+        EXPECT_FALSE(m_scene.flush());
+        const auto err = framework.getLastError();
+        ASSERT_TRUE(err);
+        EXPECT_EQ(rt, err->object);
+        EXPECT_EQ("Scene::flush: Flushing scene failed: RenderTarget uses render buffers with mismatching resolution and/or sample count."
+            " This RenderTarget cannot be used and attempt to flush scene will fail.", err->message);
+
+        // back to matching values
+        EXPECT_TRUE(rb2->impl().setProperties(1u, 2u, 3u));
+        EXPECT_TRUE(m_scene.flush());
+    }
+
+    TEST_F(AScene, willFailFlushIfBlitPassInvalid)
+    {
+        const auto rb1 = m_scene.createRenderBuffer(1u, 2u, ERenderBufferFormat::R16F, ERenderBufferAccessMode::ReadWrite, 3u);
+        const auto rb2 = m_scene.createRenderBuffer(1u, 2u, ERenderBufferFormat::R16F, ERenderBufferAccessMode::ReadWrite, 3u);
+        EXPECT_TRUE(m_scene.flush());
+
+        const auto bp = m_scene.createBlitPass(*rb1, *rb2);
+        EXPECT_TRUE(m_scene.flush());
+
+        // simulate RB properties changed, there is currently no direct public API (only RenderBufferBinding via LogicEngine)
+        EXPECT_TRUE(rb2->impl().setProperties(1u, 1u, 1u));
+
+        EXPECT_FALSE(m_scene.flush());
+        const auto err = framework.getLastError();
+        ASSERT_TRUE(err);
+        EXPECT_EQ(bp, err->object);
+        EXPECT_EQ("Scene::flush: Flushing scene failed: blitpass blit region out of source or destination buffer size", err->message);
+
+        // back to matching values
+        EXPECT_TRUE(rb2->impl().setProperties(1u, 2u, 3u));
+        EXPECT_TRUE(m_scene.flush());
+    }
+
+    TEST_F(AScene, failedFlushDoesNotSendChanges)
+    {
+        // create valid RT and flush
+        const auto rb1 = m_scene.createRenderBuffer(1u, 2u, ERenderBufferFormat::R16F, ERenderBufferAccessMode::ReadWrite, 3u);
+        const auto rb2 = m_scene.createRenderBuffer(1u, 2u, ERenderBufferFormat::R16F, ERenderBufferAccessMode::ReadWrite, 3u);
+        RenderTargetDescription desc;
+        EXPECT_TRUE(desc.addRenderBuffer(*rb1));
+        EXPECT_TRUE(desc.addRenderBuffer(*rb2));
+        m_scene.createRenderTarget(desc);
+        EXPECT_TRUE(m_scene.flush());
+
+        // publis scene to initiate sending of actions
+        {
+            EXPECT_CALL(sceneActionsCollector, handleNewSceneAvailable(_, _));
+            EXPECT_TRUE(m_scene.publish(ramses::EScenePublicationMode::LocalOnly));
+            // first flush sends scene init
+            EXPECT_CALL(sceneActionsCollector, handleInitializeScene(_, _));
+            // send update
+            EXPECT_CALL(sceneActionsCollector, handleSceneUpdate_rvr(_, _, _)).Times(1u);
+            EXPECT_TRUE(m_scene.flush());
+        }
+
+        // simulate invalid RT so that next flush fails
+        EXPECT_TRUE(rb2->impl().setProperties(1u, 1u, 1u));
+
+        // no action sent due to failed flush
+        EXPECT_CALL(sceneActionsCollector, handleSceneUpdate_rvr(_, _, _)).Times(0u);
+        EXPECT_FALSE(m_scene.flush());
+
+        // fix invalid RT so flush succeeds
+        EXPECT_TRUE(rb2->impl().setProperties(1u, 2u, 3u));
+        // now changes are sent
+        EXPECT_CALL(sceneActionsCollector, handleSceneUpdate_rvr(_, _, _)).Times(1u);
+        EXPECT_TRUE(m_scene.flush());
+
+        EXPECT_CALL(sceneActionsCollector, handleSceneBecameUnavailable(_, _));
+    }
+
+    TEST_F(AScene, failsToSaveToFileIfFlushFails)
+    {
+        // simulate invalid RT so that flush fails
+        const auto rb1 = m_scene.createRenderBuffer(1u, 2u, ERenderBufferFormat::R16F, ERenderBufferAccessMode::ReadWrite, 3u);
+        const auto rb2 = m_scene.createRenderBuffer(1u, 2u, ERenderBufferFormat::R16F, ERenderBufferAccessMode::ReadWrite, 3u);
+        RenderTargetDescription desc;
+        EXPECT_TRUE(desc.addRenderBuffer(*rb1));
+        EXPECT_TRUE(desc.addRenderBuffer(*rb2));
+        m_scene.createRenderTarget(desc);
+        EXPECT_TRUE(m_scene.flush());
+        EXPECT_TRUE(rb2->impl().setProperties(1u, 1u, 1u)); // mismatching RBs
+        EXPECT_FALSE(m_scene.flush());
+
+        EXPECT_FALSE(m_scene.saveToFile("will_not_write"));
+        const auto err = framework.getLastError();
+        ASSERT_TRUE(err);
+        EXPECT_EQ(&m_scene, err->object);
+        EXPECT_EQ("Scene::saveToFile failed due to failed scene flush: Scene::flush: Flushing scene failed: RenderTarget uses render buffers with mismatching resolution and/or sample count."
+            " This RenderTarget cannot be used and attempt to flush scene will fail.", err->message);
+
+        // fix invalid RT so flush succeeds
+        EXPECT_TRUE(rb2->impl().setProperties(1u, 2u, 3u));
+        EXPECT_TRUE(m_scene.saveToFile("tmp.ramses"));
+    }
+
+    TEST_F(AScene, failsToSaveToFileIfLogicEngineUpdateFails)
+    {
+        const std::string_view srcCode = R"(
+            function interface(IN,OUT)
+                IN.target = Type:Bool()
+                OUT.source = Type:Bool()
+            end
+            function run(IN,OUT)
+                error("This will die")
+            end
+        )";
+
+        // simulate error in script so that update fails
+        auto logic = m_scene.createLogicEngine();
+        LuaConfig config;
+        config.addStandardModuleDependency(EStandardModule::Base);
+        auto script = logic->createLuaScript(srcCode, config);
+        EXPECT_FALSE(logic->update());
+
+        EXPECT_FALSE(m_scene.saveToFile("will_not_write"));
+        const auto err = framework.getLastError();
+        ASSERT_TRUE(err);
+        EXPECT_EQ(logic, err->object);
+        EXPECT_EQ("Scene::saveToFile failed due to failed logic engine update: [string \"RL_lua_script\"]:7:"
+            " This will die\nstack traceback:\n\t[C]: in function 'error'\n\t[string \"RL_lua_script\"]:7: in function <[string \"RL_lua_script\"]:6>", err->message);
+
+        // destroy invalid script so update succeeds
+        EXPECT_TRUE(logic->destroy(*script));
+        EXPECT_TRUE(m_scene.saveToFile("tmp.ramses"));
+    }
+
+    TEST_F(ASceneWithContent, sceneIsFlushedBeforeSavingAndHierarchicalVisibilityIsAppliedToSavedFile)
+    {
+        // set root invisible and flush so all children are invisible
+        EXPECT_TRUE(m_vis1.setVisibility(EVisibilityMode::Invisible));
+        EXPECT_TRUE(m_scene.flush());
+        EXPECT_EQ(m_mesh1a.impl().getFlattenedVisibility(), EVisibilityMode::Invisible);
+        EXPECT_EQ(m_mesh1b.impl().getFlattenedVisibility(), EVisibilityMode::Invisible);
+
+        // destroying root will make children visible again, dont flush, only save to file
+        EXPECT_TRUE(m_scene.destroy(m_vis1));
+        EXPECT_TRUE(m_scene.saveToFile("tmp.ramses"));
+        // hierchical visibility was applied, children are now visible
+        EXPECT_EQ(m_mesh1a.impl().getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(m_mesh1b.impl().getFlattenedVisibility(), EVisibilityMode::Visible);
+
+        // same state (visible children) was saved to file
+        EXPECT_TRUE(client.destroy(m_scene));
+        auto loadedScene = client.loadSceneFromFile("tmp.ramses");
+        ASSERT_TRUE(loadedScene);
+        EXPECT_EQ(loadedScene->findObject<MeshNode>("mesh1a")->impl().getFlattenedVisibility(), EVisibilityMode::Visible);
+        EXPECT_EQ(loadedScene->findObject<MeshNode>("mesh1b")->impl().getFlattenedVisibility(), EVisibilityMode::Visible);
+    }
+
+    TEST_F(AScene, logicEngineIsUpdatedBeforeSaving)
+    {
+        auto node = m_scene.createNode("boundNode");
+        auto logic = m_scene.createLogicEngine();
+        auto binding = logic->createNodeBinding(*node);
+        EXPECT_TRUE(binding->getInputs()->getChild("translation")->set(glm::vec3{ 1, 2, 3 }));
+        EXPECT_TRUE(logic->update());
+        glm::vec3 nodeTr;
+        EXPECT_TRUE(node->getTranslation(nodeTr));
+        EXPECT_EQ(glm::vec3(1, 2, 3), nodeTr);
+
+        // now set translation via binding to new value but with no update
+        EXPECT_TRUE(binding->getInputs()->getChild("translation")->set(glm::vec3{ 111, 222, 333 }));
+        // no change in node
+        EXPECT_TRUE(node->getTranslation(nodeTr));
+        EXPECT_EQ(glm::vec3(1, 2, 3), nodeTr);
+
+        // saving should update logic
+        EXPECT_TRUE(m_scene.saveToFile("tmp.ramses"));
+        // now node changed
+        EXPECT_TRUE(node->getTranslation(nodeTr));
+        EXPECT_EQ(glm::vec3(111, 222, 333), nodeTr);
+
+        // same state (node with new values) was saved to file
+        EXPECT_TRUE(client.destroy(m_scene));
+        auto loadedScene = client.loadSceneFromFile("tmp.ramses");
+        ASSERT_TRUE(loadedScene);
+        EXPECT_TRUE(loadedScene->findObject<Node>("boundNode")->getTranslation(nodeTr));
+        EXPECT_EQ(glm::vec3(111, 222, 333), nodeTr);
     }
 }

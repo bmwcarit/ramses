@@ -143,7 +143,7 @@ namespace ramses::internal
         ResourceDeleterCallingCallback deleter(*this);
 
         const ResourceContentHash hash = resource.getHash();
-        LOG_TRACE(CONTEXT_FRAMEWORK, "Adding resource:" << hash);
+        LOG_TRACE(CONTEXT_FRAMEWORK, "Adding resource:{}", hash);
         const IResource* resourceToReturn = nullptr;
         m_resourceMapLock.lock();
         RefCntResource* entry = m_resourceMap.get(hash);
@@ -192,7 +192,7 @@ namespace ramses::internal
 
     void ResourceStorage::resourceHashUsageZero(const ResourceContentHash& hash)
     {
-        LOG_TRACE(CONTEXT_FRAMEWORK, "ResourceStorage::resourceHashUsageZero resource:" << hash);
+        LOG_TRACE(CONTEXT_FRAMEWORK, "ResourceStorage::resourceHashUsageZero resource:{}", hash);
         m_resourceMapLock.lock();
         RefCntResource* entry = m_resourceMap.get(hash);
         assert(entry && entry->hashUsages > 0);
@@ -204,7 +204,7 @@ namespace ramses::internal
     void ResourceStorage::managedResourceDeleted(const IResource& resourceToRemove)
     {
         const ResourceContentHash hashToRemove = resourceToRemove.getHash();
-        LOG_TRACE(CONTEXT_FRAMEWORK, "ResourceStorage::managedResourceDeleted unreference resource:" << hashToRemove);
+        LOG_TRACE(CONTEXT_FRAMEWORK, "ResourceStorage::managedResourceDeleted unreference resource:{}", hashToRemove);
         m_resourceMapLock.lock();
         RefCntResource* entry = m_resourceMap.get(hashToRemove);
         assert(entry && entry->refCount > 0);
@@ -234,7 +234,7 @@ namespace ramses::internal
 
                 if (entry.hashUsages == 0)
                 {
-                    LOG_TRACE(CONTEXT_FRAMEWORK, "ResourceStorage::checkForDeletion hashusages is zero, really delete:" << hash);
+                    LOG_TRACE(CONTEXT_FRAMEWORK, "ResourceStorage::checkForDeletion hashusages is zero, really delete:{}", hash);
                     ResourceContentHash* hashObject = entry.hash;
                     m_resourceMap.remove(hash);
                     delete hashObject;

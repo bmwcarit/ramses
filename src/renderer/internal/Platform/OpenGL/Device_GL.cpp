@@ -24,7 +24,7 @@
 #include "internal/RendererLib/PlatformInterface/IDeviceExtension.h"
 #include "internal/SceneGraph/Resource/EffectResource.h"
 
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "internal/Core/Utils/TextureMathUtils.h"
 #include "internal/PlatformAbstraction/PlatformStringUtils.h"
 #include "internal/PlatformAbstraction/Macros.h"
@@ -115,16 +115,16 @@ namespace ramses::internal
         const char* tmp = nullptr;
 
         tmp = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
-        LOG_INFO(CONTEXT_RENDERER, "Device_GL::init:  OpenGL vendor is " << tmp);
+        LOG_INFO(CONTEXT_RENDERER, "Device_GL::init:  OpenGL vendor is {}", tmp);
 
         tmp = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
-        LOG_INFO(CONTEXT_RENDERER, "    OpenGL renderer is " << tmp);
+        LOG_INFO(CONTEXT_RENDERER, "    OpenGL renderer is {}", tmp);
 
         tmp = reinterpret_cast<const char*>(glGetString(GL_VERSION));
-        LOG_INFO(CONTEXT_RENDERER, "     OpenGL version is " << tmp);
+        LOG_INFO(CONTEXT_RENDERER, "     OpenGL version is {}", tmp);
 
         tmp = reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION));
-        LOG_INFO(CONTEXT_RENDERER, "     GLSL version " << tmp);
+        LOG_INFO(CONTEXT_RENDERER, "     GLSL version {}", tmp);
 
         loadOpenGLExtensions();
         queryDeviceDependentFeatures();
@@ -150,7 +150,7 @@ namespace ramses::internal
         assert(m_activeIndexArraySizeBytes != 0 && m_activeIndexArrayElementSizeBytes != 0);
         if (m_activeIndexArraySizeBytes < (startOffset + elementCount) * m_activeIndexArrayElementSizeBytes)
         {
-            LOG_ERROR_P(CONTEXT_RENDERER, "Device_GL::drawIndexedTriangles: index buffer access out of bounds "
+            LOG_ERROR(CONTEXT_RENDERER, "Device_GL::drawIndexedTriangles: index buffer access out of bounds "
                 "[drawStartOffset={} drawElementCount={} IndexBufferElementCount={}]",
                 startOffset, elementCount, m_activeIndexArraySizeBytes / m_activeIndexArrayElementSizeBytes);
             return;
@@ -330,7 +330,7 @@ namespace ramses::internal
     {
         if (width > m_limits.getMaxViewportWidth() || height > m_limits.getMaxViewportHeight())
         {
-            LOG_WARN_P(CONTEXT_RENDERER, "Device_GL::setViewport: viewport size out of bounds "
+            LOG_WARN(CONTEXT_RENDERER, "Device_GL::setViewport: viewport size out of bounds "
                 "[width={} height={}], clamping to [maxW={} maxH={}]",
                 width, height, m_limits.getMaxViewportWidth(), m_limits.getMaxViewportHeight());
         }
@@ -588,7 +588,7 @@ namespace ramses::internal
         const GLHandle texID = getTextureAddress(handle);
         assert(texID != InvalidGLHandle);
         assert(data != nullptr);
-        LOG_DEBUG(CONTEXT_RENDERER, "Device_GL::uploadStreamTexture2D:  texid: " << texID << " width: " << width << " height: " << height << " format: " << EnumToString(format) << " textureSwizzle: " << EnumToString(swizzle[0]) << "," << EnumToString(swizzle[1]) << "," << EnumToString(swizzle[2]) << "," << EnumToString(swizzle[3]));
+        LOG_DEBUG(CONTEXT_RENDERER, "Device_GL::uploadStreamTexture2D:  texid: {}, width: {}, height: {}, format: {}, textureSwizzle: {},{},{},{}", texID, width, height, EnumToString(format), EnumToString(swizzle[0]), EnumToString(swizzle[1]), EnumToString(swizzle[2]), EnumToString(swizzle[3]));
 
         glBindTexture(GL_TEXTURE_2D, texID);
 
@@ -616,7 +616,7 @@ namespace ramses::internal
 
         if (!m_limits.isTextureFormatAvailable(textureFormat))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Device_GL::createGLInternalTextureInfo: Unsupported texture format " << EnumToString(textureFormat));
+            LOG_ERROR(CONTEXT_RENDERER, "Device_GL::createGLInternalTextureInfo: Unsupported texture format {}", EnumToString(textureFormat));
             assert(false && "Device_GL::createGLInternalTextureInfo unsupported texture format");
         }
 
@@ -633,7 +633,7 @@ namespace ramses::internal
             auto maxNumSamples = static_cast<uint32_t>(maxNumSamplesGL);
             if (numSamples > maxNumSamples)
             {
-                LOG_WARN_P(CONTEXT_RENDERER, "Device_GL: clamping requested MSAA sample count {} "
+                LOG_WARN(CONTEXT_RENDERER, "Device_GL: clamping requested MSAA sample count {} "
                     "to {}, a maximum number of samples supported by device for this format.", numSamples, maxNumSamples);
                 numSamples = maxNumSamples;
             }
@@ -918,7 +918,7 @@ namespace ramses::internal
         {
             m_textureSamplerObjectsCache[samplerStatesHash] = uploadTextureSampler(samplerStates);
             it = m_textureSamplerObjectsCache.find(samplerStatesHash);
-            LOG_INFO(CONTEXT_RENDERER, "Device_GL::activateTextureSamplerObject: cached new sampler object, total count: " << m_textureSamplerObjectsCache.size());
+            LOG_INFO(CONTEXT_RENDERER, "Device_GL::activateTextureSamplerObject: cached new sampler object, total count: {}", m_textureSamplerObjectsCache.size());
         }
 
         activateTextureSampler(it->second, field);
@@ -956,7 +956,7 @@ namespace ramses::internal
 
         if (renderBuffers.size() > m_limits.getMaximumDrawBuffers())
         {
-            LOG_ERROR_P(CONTEXT_RENDERER, "Device_GL::uploadRenderTarget failed: this device supports at most {} render buffers attached to render target, requested {}.",
+            LOG_ERROR(CONTEXT_RENDERER, "Device_GL::uploadRenderTarget failed: this device supports at most {} render buffers attached to render target, requested {}.",
                 m_limits.getMaximumDrawBuffers(), renderBuffers.size());
             return DeviceResourceHandle::Invalid();
         }
@@ -982,7 +982,7 @@ namespace ramses::internal
         const GLenum FBOstatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (FBOstatus != GL_FRAMEBUFFER_COMPLETE)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Device_GL::createRenderTargetComponents Framebuffer status not complete! GL error code: " << FBOstatus);
+            LOG_ERROR(CONTEXT_RENDERER, "Device_GL::createRenderTargetComponents Framebuffer status not complete! GL error code: {}", FBOstatus);
             return DeviceResourceHandle::Invalid();
         }
         glDrawBuffers(static_cast<GLsizei>(colorBuffers.size()), colorBuffers.data());
@@ -1157,7 +1157,7 @@ namespace ramses::internal
             if (!vertexInputAddress.isValid())
             {
                 //In case attribute is optimized out by shader compiler, e.g., because it is unused
-                LOG_DEBUG_P(CONTEXT_RENDERER, "Device_GL::allocateVertexArray could not find attrib location for field: {}. Field will be ignored in vertex array.", vb.field);
+                LOG_DEBUG(CONTEXT_RENDERER, "Device_GL::allocateVertexArray could not find attrib location for field: {}. Field will be ignored in vertex array.", vb.field);
                 continue;
             }
 
@@ -1251,7 +1251,7 @@ namespace ramses::internal
         {
             return std::make_unique<const ShaderGPUResource_GL>(shader, programInfo);
         }
-        LOG_ERROR(CONTEXT_RENDERER, "Device_GL::uploadShader: shader upload failed: " << debugErrorLog);
+        LOG_ERROR(CONTEXT_RENDERER, "Device_GL::uploadShader: shader upload failed: {}", debugErrorLog);
         return nullptr;
     }
 
@@ -1268,10 +1268,10 @@ namespace ramses::internal
 
         if (uploadSuccessful)
         {
-            LOG_DEBUG(CONTEXT_SMOKETEST, "Device_GL::uploadShader: renderer successfully uploaded binary shader for effect " << shader.getName());
+            LOG_DEBUG(CONTEXT_SMOKETEST, "Device_GL::uploadShader: renderer successfully uploaded binary shader for effect {}", shader.getName());
             return m_resourceMapper.registerResource(std::make_unique<ShaderGPUResource_GL>(shader, programInfo));
         }
-        LOG_INFO(CONTEXT_RENDERER, "Device_GL::uploadShader: renderer failed to upload binary shader for effect " << shader.getName() << ". Error was: " << debugErrorLog);
+        LOG_INFO(CONTEXT_RENDERER, "Device_GL::uploadShader: renderer failed to upload binary shader for effect {}. Error was: {}", shader.getName(), debugErrorLog);
         return DeviceResourceHandle::Invalid();
     }
 
@@ -1280,7 +1280,7 @@ namespace ramses::internal
         binaryShader.clear();
 
         const auto& shaderProgramGL = m_resourceMapper.getResourceAs<ShaderGPUResource_GL>(handle);
-        LOG_TRACE(CONTEXT_RENDERER, "Device_GL::getBinaryShader:  retrieving shader binary for effect with handle " << handle.asMemoryHandle());
+        LOG_TRACE(CONTEXT_RENDERER, "Device_GL::getBinaryShader:  retrieving shader binary for effect with handle {}", handle.asMemoryHandle());
         return shaderProgramGL.getBinaryInfo(binaryShader, binaryShaderFormat);
     }
 
@@ -1338,7 +1338,7 @@ namespace ramses::internal
         }
         else
         {
-            LOG_DEBUG(CONTEXT_RENDERER, "Device_GL::activateTexture could not find uniform location for field :" << field.asMemoryHandle() << ").");
+            LOG_DEBUG(CONTEXT_RENDERER, "Device_GL::activateTexture could not find uniform location for field :{}).", field.asMemoryHandle());
         }
     }
 
@@ -1514,7 +1514,7 @@ namespace ramses::internal
         const GLenum errorStatus = glGetError();
         if (GL_NO_ERROR != errorStatus)
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Device_GL::validateDeviceStatusHealthy:  GL Error detected :" << errorStatus);
+            LOG_ERROR(CONTEXT_RENDERER, "Device_GL::validateDeviceStatusHealthy:  GL Error detected :{}", errorStatus);
             return false;
         }
 

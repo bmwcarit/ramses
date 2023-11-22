@@ -149,45 +149,43 @@ namespace ramses::internal
         const uint32_t idx_blue = pixelCount * 2;
         const uint32_t idx_white = pixelCount * 3;
 
-        auto* rgba8_level0 = new uint8_t[pixelCount * 4];
+        ramses::MipLevelData rgba8_level0(pixelCount * 4);
         for (uint32_t pixel = 0u; pixel < pixelCount; pixel++)
         {
             const uint32_t idx = pixel * 4;
             if (idx < idx_green)
             {
                 //red
-                rgba8_level0[idx] = 0xff;
-                rgba8_level0[idx + 1] = 0x00;
-                rgba8_level0[idx + 2] = 0x00;
+                rgba8_level0[idx]     = static_cast<std::byte>(0xff);
+                rgba8_level0[idx + 1] = static_cast<std::byte>(0x00);
+                rgba8_level0[idx + 2] = static_cast<std::byte>(0x00);
             }
             else if (idx < idx_blue)
             {
                 //green
-                rgba8_level0[idx] = 0x00;
-                rgba8_level0[idx + 1] = 0xff;
-                rgba8_level0[idx + 2] = 0x00;
+                rgba8_level0[idx]     = static_cast<std::byte>(0x00);
+                rgba8_level0[idx + 1] = static_cast<std::byte>(0xff);
+                rgba8_level0[idx + 2] = static_cast<std::byte>(0x00);
             }
             else if (idx < idx_white)
             {
                 //blue
-                rgba8_level0[idx] = 0x00;
-                rgba8_level0[idx + 1] = 0x00;
-                rgba8_level0[idx + 2] = 0xff;
+                rgba8_level0[idx]     = static_cast<std::byte>(0x00);
+                rgba8_level0[idx + 1] = static_cast<std::byte>(0x00);
+                rgba8_level0[idx + 2] = static_cast<std::byte>(0xff);
             }
             else
             {
                 //white
-                rgba8_level0[idx] = 0xff;
-                rgba8_level0[idx + 1] = 0xff;
-                rgba8_level0[idx + 2] = 0xff;
+                rgba8_level0[idx]     = static_cast<std::byte>(0xff);
+                rgba8_level0[idx + 1] = static_cast<std::byte>(0xff);
+                rgba8_level0[idx + 2] = static_cast<std::byte>(0xff);
             }
             // opacity
-            rgba8_level0[idx + 3] = 0xff - transparency;
+            rgba8_level0[idx + 3] = static_cast<std::byte>(0xffu - transparency);
         }
 
-        const std::vector<ramses::MipLevelData> mipLevelData = {
-            ramses::MipLevelData(width*height*4u*sizeof(uint8_t), rgba8_level0)
-        };
+        const std::vector<ramses::MipLevelData> mipLevelData = { rgba8_level0 };
 
         ramses::Texture2D* texture = m_scene.createTexture2D(
             ramses::ETextureFormat::RGBA8,
@@ -201,8 +199,6 @@ namespace ramses::internal
             ramses::ETextureSamplingMethod::Nearest_MipMapNearest,
             ramses::ETextureSamplingMethod::Nearest,
             *texture);
-
-        delete[] rgba8_level0;
 
         return sampler;
     }

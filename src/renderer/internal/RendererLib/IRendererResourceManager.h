@@ -38,12 +38,13 @@ namespace ramses::internal
         virtual void             unreferenceResourcesForScene   (SceneId sceneId, const ResourceContentHashVector& resources) = 0;
 
         virtual void             provideResourceData(const ManagedResource& mr) = 0;
-        [[nodiscard]] virtual bool             hasResourcesToBeUploaded() const = 0;
+        [[nodiscard]] virtual bool hasResourcesToBeUploaded() const = 0;
         virtual void             uploadAndUnloadPendingResources() = 0;
 
         // Scene resources
         virtual void             uploadRenderTargetBuffer(RenderBufferHandle renderBufferHandle, SceneId sceneId, const RenderBuffer& renderBuffer) = 0;
         virtual void             unloadRenderTargetBuffer(RenderBufferHandle renderBufferHandle, SceneId sceneId) = 0;
+        virtual void             updateRenderTargetBufferProperties(RenderBufferHandle renderBufferHandle, SceneId sceneId, const RenderBuffer& renderBuffer) = 0;
         virtual void             uploadRenderTarget(RenderTargetHandle renderTarget, const RenderBufferHandleVector& rtBufferHandles, SceneId sceneId) = 0;
         virtual void             unloadRenderTarget(RenderTargetHandle renderTarget, SceneId sceneId) = 0;
 

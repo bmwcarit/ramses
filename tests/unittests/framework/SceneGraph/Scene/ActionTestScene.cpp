@@ -849,6 +849,12 @@ namespace ramses::internal
         flushPendingSceneActions();
     }
 
+    void ActionTestScene::setRenderBufferProperties(RenderBufferHandle handle, uint32_t width, uint32_t height, uint32_t sampleCount)
+    {
+        m_actionCollector.setRenderBufferProperties(handle, width, height, sampleCount);
+        flushPendingSceneActions();
+    }
+
     bool ActionTestScene::isRenderBufferAllocated(RenderBufferHandle handle) const
     {
         return m_scene.isRenderBufferAllocated(handle);

@@ -9,6 +9,7 @@
 #pragma once
 
 #include "ramses/framework/Issue.h"
+#include "ramses/framework/APIExport.h"
 #include <optional>
 #include <mutex>
 
@@ -21,7 +22,7 @@ namespace ramses::internal
 {
     class RamsesObjectImpl;
 
-    class ErrorReporting
+    class RAMSES_IMPL_EXPORT ErrorReporting
     {
     public:
         void reset();

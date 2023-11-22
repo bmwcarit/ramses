@@ -135,7 +135,10 @@ namespace ramses::internal
         inputUV = effect->findAttributeInput("a_texcoord");
         inputColor = effect->findAttributeInput("Color");
 
-        ImGui::CreateContext();
+        if (!ImGui::GetCurrentContext())
+        {
+            m_context = ImGui::CreateContext();
+        }
         ImGuiIO& io = ImGui::GetIO();
         io.DisplaySize.x = static_cast<float>(width);
         io.DisplaySize.y = static_cast<float>(height);
@@ -172,7 +175,8 @@ namespace ramses::internal
         int textureheight = 0;
         unsigned char* pixels = nullptr;
         io.Fonts->GetTexDataAsRGBA32(&pixels, &texturewidth, &textureheight);
-        const std::vector<MipLevelData> mipLevelData{ MipLevelData(static_cast<uint32_t>(texturewidth * textureheight * 4), pixels) };
+        auto pixelBytes = reinterpret_cast<std::byte*>(pixels);
+        const std::vector<MipLevelData> mipLevelData{ MipLevelData(pixelBytes, pixelBytes + texturewidth * textureheight * 4) };
         auto texture = m_imguiscene->createTexture2D(ramses::ETextureFormat::RGBA8, texturewidth, textureheight, mipLevelData);
         sampler = m_imguiscene->createTextureSampler(
             ramses::ETextureAddressMode::Repeat,
@@ -191,7 +195,8 @@ namespace ramses::internal
 
     ImguiClientHelper::~ImguiClientHelper()
     {
-        ImGui::DestroyContext();
+        if (m_context)
+            ImGui::DestroyContext(m_context);
     }
 
     void ImguiClientHelper::setDisplayId(ramses::displayId_t displayId)

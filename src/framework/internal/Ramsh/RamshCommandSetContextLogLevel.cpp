@@ -37,11 +37,11 @@ namespace ramses::internal
 
         for (const auto& info : logger.getAllContextsInformation())
         {
-            LOG_INFO(CONTEXT_RAMSH, info.id << " | " << info.name
-                        << " | "
-                        << static_cast<int32_t>(info.logLevel)
-                        << " | "
-                        << RamsesLogger::GetLogLevelText(info.logLevel));
+            LOG_INFO(CONTEXT_RAMSH, "{} | {} | {} | {}",
+                info.id,
+                info.name,
+                static_cast<int32_t>(info.logLevel),
+                RamsesLogger::GetLogLevelText(info.logLevel));
         }
         return true;
     }

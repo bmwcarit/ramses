@@ -42,7 +42,7 @@ namespace ramses::internal
 
     ResourceImpl::~ResourceImpl()
     {
-        LOG_DEBUG_P(CONTEXT_FRAMEWORK, "Destroy resource type {}, hl {}, ll {}", getType(), m_resourceId, getLowlevelResourceHash());
+        LOG_DEBUG(CONTEXT_FRAMEWORK, "Destroy resource type {}, hl {}, ll {}", getType(), m_resourceId, getLowlevelResourceHash());
     }
 
     resourceId_t ResourceImpl::getResourceId() const

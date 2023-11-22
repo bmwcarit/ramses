@@ -16,7 +16,7 @@ namespace ramses::internal
     {
         if (m_scenes.count(sceneInfo.sceneID) != 0)
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "SceneFactory::createScene: scene with id " << sceneInfo.sceneID << " already exists, scene ID must be unique!");
+            LOG_ERROR(CONTEXT_CLIENT, "SceneFactory::createScene: scene with id {} already exists, scene ID must be unique!", sceneInfo.sceneID);
             return nullptr;
         }
 

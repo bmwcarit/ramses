@@ -19,7 +19,7 @@ namespace ramses::internal
         //commands to set the log level for console appender
         registerKeyword("setLogLevelConsole");
         registerKeyword("lc");
-        description = "Command to set the console log level. Usage: setLogLevelConsole {off | fatal | error | warn | info | debug | trace}";
+        description = "Command to set the console log level. Usage: setLogLevelConsole {{off | fatal | error | warn | info | debug | trace}}";
     }
 
     bool RamshCommandSetConsoleLogLevel::executeInput(const std::vector<std::string>& input)
@@ -32,7 +32,7 @@ namespace ramses::internal
             return false;
 
 
-        LOG_INFO(CONTEXT_RAMSH, "Logging Console in level: " << RamsesLogger::GetLogLevelText(level));
+        LOG_INFO(CONTEXT_RAMSH, "Logging Console in level: {}", RamsesLogger::GetLogLevelText(level));
         GetRamsesLogger().setConsoleLogLevel(level);
         return true;
     }

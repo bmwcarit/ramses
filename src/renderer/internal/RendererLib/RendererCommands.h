@@ -222,6 +222,10 @@ namespace ramses::internal
             ERendererLogTopic topic = ERendererLogTopic::All;
             bool verbose = false;
             NodeHandle nodeFilter;
+            bool displaysThreaded = false;
+            bool displaysThreadsRunning = false;
+            ELoopMode rendererLoopMode = ELoopMode::UpdateAndRender;
+            std::chrono::microseconds minFrameTime;
         };
 
         struct SCListIviSurfaces

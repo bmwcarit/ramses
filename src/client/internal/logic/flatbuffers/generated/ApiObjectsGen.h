@@ -24,6 +24,7 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 23 &&
 #include "LuaScriptGen.h"
 #include "MeshNodeBindingGen.h"
 #include "NodeBindingGen.h"
+#include "RenderBufferBindingGen.h"
 #include "RenderGroupBindingGen.h"
 #include "RenderPassBindingGen.h"
 #include "SkinBindingGen.h"
@@ -57,7 +58,8 @@ struct ApiObjects FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_ANCHORPOINTS = 26,
     VT_RENDERGROUPBINDINGS = 28,
     VT_SKINBINDINGS = 30,
-    VT_MESHNODEBINDINGS = 32
+    VT_MESHNODEBINDINGS = 32,
+    VT_RENDERBUFFERBINDINGS = 34
   };
   const ::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::LuaModule>> *luaModules() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::LuaModule>> *>(VT_LUAMODULES);
@@ -103,6 +105,9 @@ struct ApiObjects FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   const ::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::MeshNodeBinding>> *meshNodeBindings() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::MeshNodeBinding>> *>(VT_MESHNODEBINDINGS);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::RenderBufferBinding>> *renderBufferBindings() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::RenderBufferBinding>> *>(VT_RENDERBUFFERBINDINGS);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -151,6 +156,9 @@ struct ApiObjects FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_MESHNODEBINDINGS) &&
            verifier.VerifyVector(meshNodeBindings()) &&
            verifier.VerifyVectorOfTables(meshNodeBindings()) &&
+           VerifyOffset(verifier, VT_RENDERBUFFERBINDINGS) &&
+           verifier.VerifyVector(renderBufferBindings()) &&
+           verifier.VerifyVectorOfTables(renderBufferBindings()) &&
            verifier.EndTable();
   }
 };
@@ -204,6 +212,9 @@ struct ApiObjectsBuilder {
   void add_meshNodeBindings(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::MeshNodeBinding>>> meshNodeBindings) {
     fbb_.AddOffset(ApiObjects::VT_MESHNODEBINDINGS, meshNodeBindings);
   }
+  void add_renderBufferBindings(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::RenderBufferBinding>>> renderBufferBindings) {
+    fbb_.AddOffset(ApiObjects::VT_RENDERBUFFERBINDINGS, renderBufferBindings);
+  }
   explicit ApiObjectsBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -231,8 +242,10 @@ inline ::flatbuffers::Offset<ApiObjects> CreateApiObjects(
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::AnchorPoint>>> anchorPoints = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::RenderGroupBinding>>> renderGroupBindings = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::SkinBinding>>> skinBindings = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::MeshNodeBinding>>> meshNodeBindings = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::MeshNodeBinding>>> meshNodeBindings = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<rlogic_serialization::RenderBufferBinding>>> renderBufferBindings = 0) {
   ApiObjectsBuilder builder_(_fbb);
+  builder_.add_renderBufferBindings(renderBufferBindings);
   builder_.add_meshNodeBindings(meshNodeBindings);
   builder_.add_skinBindings(skinBindings);
   builder_.add_renderGroupBindings(renderGroupBindings);
@@ -272,7 +285,8 @@ inline ::flatbuffers::Offset<ApiObjects> CreateApiObjectsDirect(
     const std::vector<::flatbuffers::Offset<rlogic_serialization::AnchorPoint>> *anchorPoints = nullptr,
     const std::vector<::flatbuffers::Offset<rlogic_serialization::RenderGroupBinding>> *renderGroupBindings = nullptr,
     const std::vector<::flatbuffers::Offset<rlogic_serialization::SkinBinding>> *skinBindings = nullptr,
-    const std::vector<::flatbuffers::Offset<rlogic_serialization::MeshNodeBinding>> *meshNodeBindings = nullptr) {
+    const std::vector<::flatbuffers::Offset<rlogic_serialization::MeshNodeBinding>> *meshNodeBindings = nullptr,
+    const std::vector<::flatbuffers::Offset<rlogic_serialization::RenderBufferBinding>> *renderBufferBindings = nullptr) {
   auto luaModules__ = luaModules ? _fbb.CreateVector<::flatbuffers::Offset<rlogic_serialization::LuaModule>>(*luaModules) : 0;
   auto luaScripts__ = luaScripts ? _fbb.CreateVector<::flatbuffers::Offset<rlogic_serialization::LuaScript>>(*luaScripts) : 0;
   auto luaInterfaces__ = luaInterfaces ? _fbb.CreateVector<::flatbuffers::Offset<rlogic_serialization::LuaInterface>>(*luaInterfaces) : 0;
@@ -288,6 +302,7 @@ inline ::flatbuffers::Offset<ApiObjects> CreateApiObjectsDirect(
   auto renderGroupBindings__ = renderGroupBindings ? _fbb.CreateVector<::flatbuffers::Offset<rlogic_serialization::RenderGroupBinding>>(*renderGroupBindings) : 0;
   auto skinBindings__ = skinBindings ? _fbb.CreateVector<::flatbuffers::Offset<rlogic_serialization::SkinBinding>>(*skinBindings) : 0;
   auto meshNodeBindings__ = meshNodeBindings ? _fbb.CreateVector<::flatbuffers::Offset<rlogic_serialization::MeshNodeBinding>>(*meshNodeBindings) : 0;
+  auto renderBufferBindings__ = renderBufferBindings ? _fbb.CreateVector<::flatbuffers::Offset<rlogic_serialization::RenderBufferBinding>>(*renderBufferBindings) : 0;
   return rlogic_serialization::CreateApiObjects(
       _fbb,
       luaModules__,
@@ -304,7 +319,8 @@ inline ::flatbuffers::Offset<ApiObjects> CreateApiObjectsDirect(
       anchorPoints__,
       renderGroupBindings__,
       skinBindings__,
-      meshNodeBindings__);
+      meshNodeBindings__,
+      renderBufferBindings__);
 }
 
 inline const ::flatbuffers::TypeTable *ApiObjectsTypeTable() {
@@ -323,7 +339,8 @@ inline const ::flatbuffers::TypeTable *ApiObjectsTypeTable() {
     { ::flatbuffers::ET_SEQUENCE, 1, 11 },
     { ::flatbuffers::ET_SEQUENCE, 1, 12 },
     { ::flatbuffers::ET_SEQUENCE, 1, 13 },
-    { ::flatbuffers::ET_SEQUENCE, 1, 14 }
+    { ::flatbuffers::ET_SEQUENCE, 1, 14 },
+    { ::flatbuffers::ET_SEQUENCE, 1, 15 }
   };
   static const ::flatbuffers::TypeFunction type_refs[] = {
     rlogic_serialization::LuaModuleTypeTable,
@@ -340,7 +357,8 @@ inline const ::flatbuffers::TypeTable *ApiObjectsTypeTable() {
     rlogic_serialization::AnchorPointTypeTable,
     rlogic_serialization::RenderGroupBindingTypeTable,
     rlogic_serialization::SkinBindingTypeTable,
-    rlogic_serialization::MeshNodeBindingTypeTable
+    rlogic_serialization::MeshNodeBindingTypeTable,
+    rlogic_serialization::RenderBufferBindingTypeTable
   };
   static const char * const names[] = {
     "luaModules",
@@ -357,10 +375,11 @@ inline const ::flatbuffers::TypeTable *ApiObjectsTypeTable() {
     "anchorPoints",
     "renderGroupBindings",
     "skinBindings",
-    "meshNodeBindings"
+    "meshNodeBindings",
+    "renderBufferBindings"
   };
   static const ::flatbuffers::TypeTable tt = {
-    ::flatbuffers::ST_TABLE, 15, type_codes, type_refs, nullptr, nullptr, names
+    ::flatbuffers::ST_TABLE, 16, type_codes, type_refs, nullptr, nullptr, names
   };
   return &tt;
 }

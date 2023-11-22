@@ -13,6 +13,7 @@
 #include "PropertyLinkTestUtils.h"
 
 #include "ramses/client/logic/Property.h"
+#include "ramses/client/logic/RenderBufferBinding.h"
 
 #include "ramses/client/EffectDescription.h"
 #include "ramses/client/Effect.h"
@@ -167,6 +168,9 @@ namespace ramses::internal
             const std::vector<std::vector<float>> expectedData{ { 1.f, 2.f, 3.f, 4.f, 5.f }, { 6.f, 7.f, 8.f, 9.f, 10.f } };
             EXPECT_EQ(expectedData, *data);
             EXPECT_TRUE(logicEngine.findObject<MeshNodeBinding>("meshnodebinding"));
+            auto rbBinding = logicEngine.findObject<RenderBufferBinding>("renderBufferBinding");
+            ASSERT_TRUE(rbBinding);
+            EXPECT_EQ(ramsesScene.findObject<ramses::RenderBuffer>("renderBuffer"), &rbBinding->getRenderBuffer());
         }
 
         static void expectFeatureLevel02Content(const LogicEngine& /*logicEngine*/, ramses::Scene& /*ramsesScene*/)
@@ -211,9 +215,7 @@ namespace ramses::internal
         {
             WithTempDirectory tempDir;
 
-            ramses::SaveFileConfig noValidationConfig;
-            noValidationConfig.setValidationEnabled(false);
-            EXPECT_TRUE(scene.saveToFile("temp.ramses", noValidationConfig));
+            EXPECT_TRUE(scene.saveToFile("temp.ramses", {}));
 
             auto& client = scene.getRamsesClient();
             client.destroy(scene);

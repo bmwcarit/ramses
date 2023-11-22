@@ -88,8 +88,7 @@ namespace ramses::internal
         case DATA_PROVIDER_LARGE:
         case DATA_PROVIDER:
         {
-            const std::array<uint8_t, 4> pxData{ {0xff, 0x0, 0x0, 0xff} };
-            const std::vector<MipLevelData> mipLevelData{ MipLevelData(4, pxData.data()) };
+            const std::vector<MipLevelData> mipLevelData{ { std::byte{0xff}, std::byte{0x0}, std::byte{0x0}, std::byte{0xff} } };
             const ramses::Texture2D& texture = *m_scene.createTexture2D(ramses::ETextureFormat::RGBA8, 1u, 1u, mipLevelData, false, {}, "ProviderTexture");
             const ramses::TextureSampler& sampler = createSampler(texture);
             SetSampler(appearance1, sampler);
@@ -100,8 +99,7 @@ namespace ramses::internal
             break;
         case DATA_CONSUMER:
         {
-            const std::array<uint8_t, 4> pxData{ { 0x0, 0xff, 0x0, 0xff } };
-            const std::vector<MipLevelData> mipLevelData{ MipLevelData(4, pxData.data()) };
+            const std::vector<MipLevelData> mipLevelData{ { std::byte{0x0}, std::byte{0xff}, std::byte{0x0}, std::byte{0xff} } };
             const ramses::Texture2D& texture = *m_scene.createTexture2D(ramses::ETextureFormat::RGBA8, 1u, 1u, mipLevelData, false, {}, "ConsumerTexture");
             const ramses::TextureSampler& sampler = createSampler(texture);
             SetSampler(appearance1, sampler);
@@ -142,8 +140,7 @@ namespace ramses::internal
         case DATA_CONSUMER_AND_PROVIDER_LARGE:
         case DATA_CONSUMER_AND_PROVIDER:
         {
-            const std::array<uint8_t, 4> pxData{ { 0x0, 0x0, 0xff, 0xff } };
-            const std::vector<MipLevelData> mipLevelData{ MipLevelData(4, pxData.data()) };
+            const std::vector<MipLevelData> mipLevelData{ { std::byte{0x0}, std::byte{0x0}, std::byte{0xff}, std::byte{0xff} } };
             const ramses::Texture2D& texture = *m_scene.createTexture2D(ramses::ETextureFormat::RGBA8, 1u, 1u, mipLevelData, false, {}, "ConsumerProviderTexture");
             const ramses::TextureSampler& sampler1 = createSampler(texture);
             const ramses::TextureSampler& sampler2 = createSampler(texture);

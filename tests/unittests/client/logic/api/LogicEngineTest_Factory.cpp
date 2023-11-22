@@ -14,6 +14,7 @@
 #include "ramses/client/logic/RenderPassBinding.h"
 #include "ramses/client/logic/LuaModule.h"
 #include "ramses/client/logic/AnimationNodeConfig.h"
+#include "ramses/client/logic/RenderBufferBinding.h"
 
 #include "ramses/client/DataObject.h"
 
@@ -68,7 +69,7 @@ namespace ramses::internal
         auto script = otherLogicEngine.createLuaScript(m_valid_empty_script);
         ASSERT_TRUE(script);
         ASSERT_FALSE(m_logicEngine->destroy(*script));
-        EXPECT_EQ(getLastErrorMessage(), "Failed to destroy object ' [LogicObject ScnObjId=10]', cannot find it in this LogicEngine instance.");
+        EXPECT_EQ(getLastErrorMessage(), "Failed to destroy object ' [LogicObject ScnObjId=11]', cannot find it in this LogicEngine instance.");
     }
 
     TEST_P(ALogicEngine_Factory, CreatesLuaModule)
@@ -123,7 +124,7 @@ namespace ramses::internal
         ASSERT_NE(nullptr, module);
 
         EXPECT_FALSE(m_logicEngine->destroy(*module));
-        EXPECT_EQ(getLastErrorMessage(), "Failed to destroy object ' [LogicObject ScnObjId=10]', cannot find it in this LogicEngine instance.");
+        EXPECT_EQ(getLastErrorMessage(), "Failed to destroy object ' [LogicObject ScnObjId=11]', cannot find it in this LogicEngine instance.");
     }
 
     TEST_P(ALogicEngine_Factory, FailsToDestroyLuaModuleIfUsedInLuaScript)
@@ -259,7 +260,7 @@ namespace ramses::internal
         auto nodeBinding = otherLogicEngine.createNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "NodeBinding");
         ASSERT_TRUE(nodeBinding);
         ASSERT_FALSE(m_logicEngine->destroy(*nodeBinding));
-        EXPECT_EQ(getLastErrorMessage(), "Failed to destroy object 'NodeBinding [LogicObject ScnObjId=10]', cannot find it in this LogicEngine instance.");
+        EXPECT_EQ(getLastErrorMessage(), "Failed to destroy object 'NodeBinding [LogicObject ScnObjId=11]', cannot find it in this LogicEngine instance.");
     }
 
     TEST_P(ALogicEngine_Factory, ProducesErrorsWhenDestroyingAppearanceBindingFromAnotherEngineInstance)
@@ -268,7 +269,7 @@ namespace ramses::internal
         auto binding = otherLogicEngine.createAppearanceBinding(*m_appearance, "AppearanceBinding");
         ASSERT_TRUE(binding);
         ASSERT_FALSE(m_logicEngine->destroy(*binding));
-        EXPECT_EQ(getLastErrorMessage(), "Failed to destroy object 'AppearanceBinding [LogicObject ScnObjId=10]', cannot find it in this LogicEngine instance.");
+        EXPECT_EQ(getLastErrorMessage(), "Failed to destroy object 'AppearanceBinding [LogicObject ScnObjId=11]', cannot find it in this LogicEngine instance.");
     }
 
     TEST_P(ALogicEngine_Factory, DestroysCameraBindingWithoutErrors)
@@ -284,7 +285,7 @@ namespace ramses::internal
         auto binding = otherLogicEngine.createCameraBinding(*m_camera, "CameraBinding");
         ASSERT_TRUE(binding);
         ASSERT_FALSE(m_logicEngine->destroy(*binding));
-        EXPECT_EQ(getLastErrorMessage(), "Failed to destroy object 'CameraBinding [LogicObject ScnObjId=10]', cannot find it in this LogicEngine instance.");
+        EXPECT_EQ(getLastErrorMessage(), "Failed to destroy object 'CameraBinding [LogicObject ScnObjId=11]', cannot find it in this LogicEngine instance.");
     }
 
     TEST_P(ALogicEngine_Factory, DestroysRenderPassBindingWithoutErrors)
@@ -300,7 +301,7 @@ namespace ramses::internal
         auto binding = otherLogicEngine.createRenderPassBinding(*m_renderPass, "rp");
         ASSERT_TRUE(binding);
         ASSERT_FALSE(m_logicEngine->destroy(*binding));
-        EXPECT_EQ(getLastErrorMessage(), "Failed to destroy object 'rp [LogicObject ScnObjId=10]', cannot find it in this LogicEngine instance.");
+        EXPECT_EQ(getLastErrorMessage(), "Failed to destroy object 'rp [LogicObject ScnObjId=11]', cannot find it in this LogicEngine instance.");
     }
 
     TEST_P(ALogicEngine_Factory, DestroysRenderGroupBindingWithoutErrors)
@@ -317,7 +318,7 @@ namespace ramses::internal
 
         auto& otherLogicEngine = *m_scene->createLogicEngine();
         ASSERT_FALSE(otherLogicEngine.destroy(*binding));
-        EXPECT_EQ(getLastErrorMessage(), "Failed to destroy object 'renderGroupBinding [LogicObject ScnObjId=9]', cannot find it in this LogicEngine instance.");
+        EXPECT_EQ(getLastErrorMessage(), "Failed to destroy object 'renderGroupBinding [LogicObject ScnObjId=10]', cannot find it in this LogicEngine instance.");
     }
 
     TEST_P(ALogicEngine_Factory, DestroysMeshNodeBindingWithoutErrors)
@@ -334,7 +335,7 @@ namespace ramses::internal
 
         auto& otherLogicEngine = *m_scene->createLogicEngine();
         ASSERT_FALSE(otherLogicEngine.destroy(*binding));
-        EXPECT_EQ(getLastErrorMessage(), "Failed to destroy object ' [LogicObject ScnObjId=9]', cannot find it in this LogicEngine instance.");
+        EXPECT_EQ(getLastErrorMessage(), "Failed to destroy object ' [LogicObject ScnObjId=10]', cannot find it in this LogicEngine instance.");
     }
 
     TEST_P(ALogicEngine_Factory, ProducesErrorWhenCreatingAnchorPointAndNodeOrCameraFromAnotherInstance)
@@ -522,6 +523,7 @@ namespace ramses::internal
         LogicObject* renderGroupBinding = createRenderGroupBinding();
         LogicObject* skin = createSkinBinding(*m_logicEngine);
         LogicObject* meshBinding = m_logicEngine->createMeshNodeBinding(*m_meshNode);
+        LogicObject* rbBinding = m_logicEngine->createRenderBufferBinding(*m_renderBuffer);
 
         EXPECT_TRUE(luaModule->as<LuaModule>());
         EXPECT_TRUE(luaScript->as<LuaScript>());
@@ -534,6 +536,7 @@ namespace ramses::internal
         EXPECT_TRUE(renderGroupBinding->as<RenderGroupBinding>());
         EXPECT_TRUE(skin->as<SkinBinding>());
         EXPECT_TRUE(meshBinding->as<MeshNodeBinding>());
+        EXPECT_TRUE(rbBinding->as<RenderBufferBinding>());
 
         EXPECT_FALSE(luaModule->as<AnimationNode>());
         EXPECT_FALSE(luaScript->as<DataArray>());
@@ -546,6 +549,7 @@ namespace ramses::internal
         EXPECT_FALSE(renderGroupBinding->as<CameraBinding>());
         EXPECT_FALSE(skin->as<CameraBinding>());
         EXPECT_FALSE(meshBinding->as<CameraBinding>());
+        EXPECT_FALSE(rbBinding->as<CameraBinding>());
 
         //cast obj -> node -> binding -> appearanceBinding
         auto* nodeCastFromObject = appearanceBinding->as<LogicNode>();
@@ -586,6 +590,7 @@ namespace ramses::internal
         createRenderGroupBinding();
         createSkinBinding(*m_logicEngine);
         m_logicEngine->createMeshNodeBinding(*m_meshNode, "meshBinding");
+        m_logicEngine->createRenderBufferBinding(*m_renderBuffer, "rbBinding");
 
         const auto* immutableLogicEngine = m_logicEngine;
         const auto* luaModuleConst         = immutableLogicEngine->findObject<LogicObject>("luaModule");
@@ -599,6 +604,7 @@ namespace ramses::internal
         const auto* renderGroupBindingConst = immutableLogicEngine->findObject<LogicObject>("renderGroupBinding");
         const auto* skinConst = immutableLogicEngine->findObject<LogicObject>("skin");
         const auto* meshBindingConst = immutableLogicEngine->findObject<LogicObject>("meshBinding");
+        const auto* rbBindingConst = immutableLogicEngine->findObject<LogicObject>("rbBinding");
 
         EXPECT_TRUE(luaModuleConst->as<LuaModule>());
         EXPECT_TRUE(luaScriptConst->as<LuaScript>());
@@ -611,6 +617,7 @@ namespace ramses::internal
         EXPECT_TRUE(renderGroupBindingConst->as<RenderGroupBinding>());
         EXPECT_TRUE(skinConst->as<SkinBinding>());
         EXPECT_TRUE(meshBindingConst->as<MeshNodeBinding>());
+        EXPECT_TRUE(rbBindingConst->as<RenderBufferBinding>());
 
         EXPECT_FALSE(luaModuleConst->as<AnimationNode>());
         EXPECT_FALSE(luaScriptConst->as<DataArray>());
@@ -623,6 +630,7 @@ namespace ramses::internal
         EXPECT_FALSE(renderGroupBindingConst->as<LuaInterface>());
         EXPECT_FALSE(skinConst->as<CameraBinding>());
         EXPECT_FALSE(meshBindingConst->as<CameraBinding>());
+        EXPECT_FALSE(rbBindingConst->as<CameraBinding>());
 
         // cast obj -> node -> binding -> appearanceBinding
         const auto* nodeCastFromObject = appearanceBindingConst->as<LogicNode>();

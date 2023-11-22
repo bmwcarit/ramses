@@ -21,6 +21,7 @@ namespace ramses
 namespace ramses::internal
 {
     class RenderBufferImpl;
+    struct PixelRectangle;
 
     class BlitPassImpl final : public SceneObjectImpl
     {
@@ -50,6 +51,8 @@ namespace ramses::internal
         [[nodiscard]] BlitPassHandle getBlitPassHandle() const;
 
     private:
+        [[nodiscard]] bool validateBlittingRegions(const PixelRectangle& src, const PixelRectangle& dst) const;
+
         BlitPassHandle m_blitPassHandle;
         const RenderBufferImpl* m_sourceRenderBufferImpl = nullptr;
         const RenderBufferImpl* m_destinationRenderBufferImpl = nullptr;

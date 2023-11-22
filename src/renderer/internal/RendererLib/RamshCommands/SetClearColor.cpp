@@ -58,7 +58,7 @@ namespace ramses::internal
 
         if (positionals.size() != 5)
         {
-            LOG_ERROR_P(CONTEXT_RAMSH, "None or too many arguments provided: {}", positionals.size());
+            LOG_ERROR(CONTEXT_RAMSH, "None or too many arguments provided: {}", positionals.size());
             return false;
         }
 

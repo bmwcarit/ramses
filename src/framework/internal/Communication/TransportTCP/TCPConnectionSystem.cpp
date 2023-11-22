@@ -44,7 +44,7 @@ namespace ramses::internal
         , m_aliveInterval(aliveInterval)
         , m_aliveIntervalTimeout(aliveTimeout)
         , m_frameworkLock(frameworkLock)
-        , m_thread("R_TCP_ConnSys")
+        , m_thread("TCP_ConnSys")
         , m_statisticCollection(statisticCollection)
         , m_ramsesConnectionStatusUpdateNotifier(m_participantAddress.getParticipantName(), CONTEXT_COMMUNICATION, "ramses", frameworkLock)
         , m_sceneProviderHandler(nullptr)
@@ -77,14 +77,14 @@ namespace ramses::internal
                                            }));
         if (m_aliveIntervalTimeout < m_aliveInterval + std::chrono::milliseconds{100})
         {
-            LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << "): Alive timeout very low, expect issues " <<
-                     "(alive " << m_aliveInterval.count() << ", timeout " << m_aliveIntervalTimeout.count() << ")");
+            LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem({}): Alive timeout very low, expect issues (alive {}, timeout {})",
+                m_participantAddress.getParticipantName(), m_aliveInterval.count(), m_aliveIntervalTimeout.count());
         }
 
         PlatformGuard guard(m_frameworkLock);
         if (m_runState)
         {
-            LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::connectServices: called more than once");
+            LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::connectServices: called more than once", m_participantAddress.getParticipantName());
             return false;
         }
 
@@ -96,12 +96,12 @@ namespace ramses::internal
 
     bool TCPConnectionSystem::disconnectServices()
     {
-        LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::disconnectServices");
+        LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::disconnectServices", m_participantAddress.getParticipantName());
 
         PlatformGuard guard(m_frameworkLock);
         if (!m_runState)
         {
-            LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::disconnectServices: called without being connected");
+            LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::disconnectServices: called without being connected", m_participantAddress.getParticipantName());
             return false;
         }
 
@@ -115,7 +115,7 @@ namespace ramses::internal
         }
         m_runState.reset();
 
-        LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::disconnectServices: done");
+        LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::disconnectServices: done", m_participantAddress.getParticipantName());
         return true;
     }
 
@@ -144,7 +144,7 @@ namespace ramses::internal
         // initiate connection to daemon (when not self)
         if (m_daemonAddress.getPort() != 0 && m_hasOtherDaemon)
         {
-            LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::run: Initiate connection to daemon at " << m_daemonAddress.getIp() << ":" << m_daemonAddress.getPort());
+            LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::run: Initiate connection to daemon at {}:{}", m_participantAddress.getParticipantName(), m_daemonAddress.getIp(), m_daemonAddress.getPort());
 
             auto daemonPp = std::make_shared<Participant>(m_daemonAddress, m_runState->m_io, EParticipantType::Daemon, EParticipantState::Connecting);
             m_connectingParticipants.put(daemonPp);
@@ -175,7 +175,7 @@ namespace ramses::internal
         m_runState->m_acceptor.open(asio::ip::tcp::v4(), e);
         if (e)
         {
-            LOG_ERROR(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::openAcceptor: open failed. " << e.message().c_str());
+            LOG_ERROR(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::openAcceptor: open failed. {}", m_participantAddress.getParticipantName(), e.message().c_str());
             return false;
         }
 
@@ -185,19 +185,19 @@ namespace ramses::internal
         m_runState->m_acceptor.bind(asio::ip::tcp::endpoint(asio::ip::address::from_string("0.0.0.0"), m_participantAddress.getPort()), e);
         if (e)
         {
-            LOG_ERROR(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::openAcceptor: bind failed. " << e.message().c_str());
+            LOG_ERROR(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::openAcceptor: bind failed. {}", m_participantAddress.getParticipantName(), e.message().c_str());
             return false;
         }
 
         m_runState->m_acceptor.listen(asio::socket_base::max_connections, e);
         if (e)
         {
-            LOG_ERROR(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::openAcceptor: listen failed. " << e.message().c_str());
+            LOG_ERROR(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::openAcceptor: listen failed. {}", m_participantAddress.getParticipantName(), e.message().c_str());
             return false;
         }
 
         const auto endpoint = m_runState->m_acceptor.local_endpoint();
-        LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::openAcceptor: Listening for connections on " << endpoint.address().to_string().c_str() << ":" << endpoint.port());
+        LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::openAcceptor: Listening for connections on {}:{}", m_participantAddress.getParticipantName(), endpoint.address().to_string().c_str(), endpoint.port());
 
         return true;
     }
@@ -208,15 +208,15 @@ namespace ramses::internal
                                 [this](asio::error_code e) {
                                     if (e)
                                     {
-                                        LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::doAcceptIncomingConnections: accept failed. " << e.message().c_str());
+                                        LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::doAcceptIncomingConnections: accept failed. {}", m_participantAddress.getParticipantName(), e.message().c_str());
                                         doAcceptIncomingConnections();
                                         // TODO: not sure if correct response or is really recoverable (close + reopen acceptor?)
                                     }
                                     else
                                     {
                                         auto remoteEp = m_runState->m_acceptorSocket.remote_endpoint();
-                                        LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::doAcceptIncomingConnections: Accepted new connection from " <<
-                                                 remoteEp.address().to_string().c_str() << ":" << remoteEp.port());
+                                        LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::doAcceptIncomingConnections: Accepted new connection from {}:{}",
+                                            m_participantAddress.getParticipantName(), remoteEp.address().to_string().c_str(), remoteEp.port());
 
                                         // create new participant
                                         auto pp = std::make_shared<Participant>(NetworkParticipantAddress(), m_runState->m_io, EParticipantType::Client, EParticipantState::WaitingForHello);
@@ -234,7 +234,7 @@ namespace ramses::internal
 
     void TCPConnectionSystem::doConnect(const ParticipantPtr& pp)
     {
-        LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::doConnect: Try connect to participant at " << pp->address.getIp() << ":" << pp->address.getPort());
+        LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::doConnect: Try connect to participant at {}:{}", m_participantAddress.getParticipantName(), pp->address.getIp(), pp->address.getPort());
 
         // convert localhost to an actual ip, no need for dns resolving here
         const char* const ipStr = (pp->address.getIp() == "localhost" ? "127.0.0.1" : pp->address.getIp().c_str());
@@ -244,7 +244,7 @@ namespace ramses::internal
         const auto asioIp = asio::ip::address::from_string(ipStr, err);
         if (err)
         {
-            LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::doConnect: Failed to parse ip address '" << pp->address.getIp() << ":" << pp->address.getPort() << "'");
+            LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::doConnect: Failed to parse ip address '{}:{}'", m_participantAddress.getParticipantName(), pp->address.getIp(), pp->address.getPort());
             return;
         }
 
@@ -254,14 +254,14 @@ namespace ramses::internal
                 if (e)
                 {
                     // connect failed, try again after timeout
-                    LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::doConnect: Connect to "
-                              << pp->address.getIp() << ":" << pp->address.getPort() << " failed. " << e.message().c_str());
+                    LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::doConnect: Connect to {}:{} failed. {}",
+                        m_participantAddress.getParticipantName(), pp->address.getIp(), pp->address.getPort(), e.message().c_str());
                     pp->connectTimer.expires_after(std::chrono::milliseconds{100});
                     pp->connectTimer.async_wait([this, pp](asio::error_code ee) {
                                                     if (ee)
                                                     {
-                                                        LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::doConnect: Connect to "
-                                                                  << pp->address.getIp() << ":" << pp->address.getPort() << " failed. Timer canceled");
+                                                        LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::doConnect: Connect to {}:{} failed. Timer canceled",
+                                                            m_participantAddress.getParticipantName(), pp->address.getIp(), pp->address.getPort());
                                                     }
                                                     else
                                                     {
@@ -272,7 +272,7 @@ namespace ramses::internal
                 else
                 {
                     // connected
-                    LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::doConnect: Established to " << usedEndpoint.address().to_string().c_str() << ":" << usedEndpoint.port());
+                    LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::doConnect: Established to {}:{}", m_participantAddress.getParticipantName(), usedEndpoint.address().to_string().c_str(), usedEndpoint.port());
                     initializeNewlyConnectedParticipant(pp);
                 }
             });
@@ -280,7 +280,7 @@ namespace ramses::internal
 
     void TCPConnectionSystem::initializeNewlyConnectedParticipant(const ParticipantPtr& pp)
     {
-        LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::initializeNewlyConnectedParticipant: " << pp->address.getParticipantId());
+        LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::initializeNewlyConnectedParticipant: {}", m_participantAddress.getParticipantName(), pp->address.getParticipantId());
         assert(m_connectingParticipants.contains(pp));
 
         // Set send buffer to resource chunk size to allow maximum one resource chunk to use up send buffer. This
@@ -303,8 +303,8 @@ namespace ramses::internal
         pp->currentOutBuffer = msg.stream.release();
         const auto fullSize = static_cast<uint32_t>(pp->currentOutBuffer.size());
 
-        LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendMessageToParticipant: To " << pp->address.getParticipantId() <<
-                  ", MsgType " << msg.messageType << ", Size " << fullSize);
+        LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::sendMessageToParticipant: To {}, MsgType {}, Size {}",
+            m_participantAddress.getParticipantName(), pp->address.getParticipantId(), msg.messageType, fullSize);
 
         RawBinaryOutputStream s(pp->currentOutBuffer.data(), pp->currentOutBuffer.size());
         const uint32_t remainingSize = fullSize - sizeof(pp->lengthReceiveBuffer);
@@ -315,16 +315,15 @@ namespace ramses::internal
                           [this, pp](asio::error_code e, std::size_t sentBytes) {
                               if (e)
                               {
-                                  LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendMessageToParticipant: Send to "
-                                           << pp->address.ParticipantIdentifier::getParticipantId() << "/" << pp->address.ParticipantIdentifier::getParticipantName() <<
-                                           " failed. " << e.message().c_str() << ". Remove participant");
+                                  LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::sendMessageToParticipant: Send to {}/{} failed. {}. Remove participant",
+                                      m_participantAddress.getParticipantName(), pp->address.ParticipantIdentifier::getParticipantId(), pp->address.ParticipantIdentifier::getParticipantName(), e.message().c_str());
 
                                   removeParticipant(pp);
                               }
                               else
                               {
-                                  LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendMessageToParticipant: To " << pp->address.getParticipantId() <<
-                                            ", MsgBytes " << pp->currentOutBuffer.size() << ", SentBytes " << sentBytes);
+                                  LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::sendMessageToParticipant: To {}, MsgBytes {}, SentBytes {}",
+                                      m_participantAddress.getParticipantName(), pp->address.getParticipantId(), pp->currentOutBuffer.size(), sentBytes);
 
                                   pp->currentOutBuffer.clear();
                                   pp->lastSent = std::chrono::steady_clock::now();
@@ -366,21 +365,20 @@ namespace ramses::internal
 
     void TCPConnectionSystem::doReadHeader(const ParticipantPtr& pp)
     {
-        LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::doReadHeader: start reading from " << pp->address.getParticipantId());
+        LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::doReadHeader: start reading from {}", m_participantAddress.getParticipantName(), pp->address.getParticipantId());
 
         asio::async_read(pp->socket,
                          asio::mutable_buffer(&pp->lengthReceiveBuffer, sizeof(pp->lengthReceiveBuffer)),
                          [this, pp](asio::error_code e, size_t readBytes) {
                              if (e)
                              {
-                                 LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::doReadHeader: read from "
-                                          << pp->address.getParticipantId() << " failed (len " << readBytes << "). " << e.message().c_str());
+                                 LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::doReadHeader: read from {} failed (len {}). ",
+                                     m_participantAddress.getParticipantName(), pp->address.getParticipantId(), readBytes, e.message().c_str());
                                  removeParticipant(pp);
                              }
                              else
                              {
-                                 LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::doReadHeader: done read from "
-                                           << pp->address.getParticipantId() << ". Expect " << pp->lengthReceiveBuffer << " bytes");
+                                 LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::doReadHeader: done read from {}. Expect {} bytes", m_participantAddress.getParticipantName(), pp->address.getParticipantId(), pp->lengthReceiveBuffer);
 
                                  updateLastReceivedTime(pp);
                                  pp->receiveBuffer.resize(pp->lengthReceiveBuffer);
@@ -396,14 +394,14 @@ namespace ramses::internal
                          [this, pp](asio::error_code e, size_t readBytes) {
                              if (e)
                              {
-                                 LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::doReadContent: read from "
-                                          << pp->address.getParticipantId() << " failed (len " << readBytes << "). " << e.message().c_str());
+                                 LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::doReadContent: read from {} failed (len {}). {}",
+                                     m_participantAddress.getParticipantName(), pp->address.getParticipantId(), readBytes, e.message().c_str());
                                  removeParticipant(pp);
                              }
                              else
                              {
-                                 LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::doReadContent: done read from "
-                                           << pp->address.getParticipantId() << ", " << readBytes << " bytes");
+                                 LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::doReadContent: done read from {}, {} bytes",
+                                     m_participantAddress.getParticipantName(), pp->address.getParticipantId(), readBytes);
 
                                  m_statisticCollection.statMessagesReceived.incCounter(1);
 
@@ -441,8 +439,8 @@ namespace ramses::internal
         if (pp->state == EParticipantState::Invalid)
             return;
 
-        LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::removeParticipant: " << pp->address.getParticipantId() << "/" << pp->address.getParticipantName() <<
-                 ", state " << EnumToString(pp->state));
+        LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::removeParticipant: {}/{}, state {}",
+            m_participantAddress.getParticipantName(), pp->address.getParticipantId(), pp->address.getParticipantName(), EnumToString(pp->state));
 
         if (pp->state == EParticipantState::Established && pp->type != EParticipantType::PureDaemon)
         {
@@ -467,12 +465,12 @@ namespace ramses::internal
         if (reconnectWithBackoff)
         {
             const std::chrono::milliseconds backoffTime{2000};
-            LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::removeParticipant: will delay reconnect by " << backoffTime.count() << "ms");
+            LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::removeParticipant: will delay reconnect by {}ms", m_participantAddress.getParticipantName(), backoffTime.count());
             pp->connectTimer.expires_after(backoffTime);
             pp->connectTimer.async_wait([this, pp](asio::error_code ee) {
                 if (ee)
                 {
-                    LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::removeParticipant: Backoff timer got canceled.");
+                    LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::removeParticipant: Backoff timer got canceled.", m_participantAddress.getParticipantName());
                 }
                 else
                 {
@@ -517,9 +515,8 @@ namespace ramses::internal
 
         if (!m_actAsDaemon && (otherIsDaemon || (!address.getParticipantId().isInvalid() && shouldConnectbasedOnGuid)))
         {
-            LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::addNewParticipantByAddress: attemp new connection to participant "
-                     << address.getParticipantId() << " / " << address.getParticipantName()
-                     << " based on: otherIsDaemon " << otherIsDaemon << ", guid valid " << !address.getParticipantId().isInvalid() << " , guid comparison " << (shouldConnectbasedOnGuid ? "will connect" : "wait for connection"));
+            LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::addNewParticipantByAddress: attempt new connection to participant {} / {} based on: otherIsDaemon {}, guid valid {}, guid comparison {}",
+                m_participantAddress.getParticipantName(), address.getParticipantId(), address.getParticipantName(), otherIsDaemon, !address.getParticipantId().isInvalid(), shouldConnectbasedOnGuid ? "will connect" : "wait for connection");
 
             auto pp = std::make_shared<Participant>(address, m_runState->m_io, otherIsDaemon ? EParticipantType::Daemon : EParticipantType::Client, EParticipantState::Connecting);
             m_connectingParticipants.put(pp);
@@ -527,9 +524,8 @@ namespace ramses::internal
         }
         else
         {
-            LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::addNewParticipantByAddress: will wait for connection from participant "
-                     << address.getParticipantId() << " / " << address.getParticipantName()
-                     << " based on: otherIsDaemon " << otherIsDaemon << ", guid valid " << !address.getParticipantId().isInvalid() << " , guid comparison " << (shouldConnectbasedOnGuid ? "will connect" : "wait for connection"));
+            LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::addNewParticipantByAddress: will wait for connection from participant {} / {} based on: otherIsDaemon {}, guid valid {}, guid comparison {}",
+                m_participantAddress.getParticipantName(), address.getParticipantId(), address.getParticipantName(), otherIsDaemon, !address.getParticipantId().isInvalid(), shouldConnectbasedOnGuid ? "will connect" : "wait for connection");
         }
     }
 
@@ -538,7 +534,7 @@ namespace ramses::internal
         // expect framework lock to be held
         if (!m_runState)
         {
-            LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::postMessageForSending: called without being connected");
+            LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::postMessageForSending: called without being connected", m_participantAddress.getParticipantName());
             return false;
         }
 
@@ -569,8 +565,8 @@ namespace ramses::internal
                                 ParticipantPtr pp;
                                 if (m_establishedParticipants.get(msg.to.front(), pp) != EStatus::Ok)
                                 {
-                                    LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::postMessageForSending: post message " << msg.messageType <<
-                                             " to not (fully) connected participant " << msg.to.front());
+                                    LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::postMessageForSending: post message {} to not (fully) connected participant {}",
+                                        m_participantAddress.getParticipantName(), msg.messageType, msg.to.front());
                                     return;
                                 }
                                 assert(pp);
@@ -594,8 +590,8 @@ namespace ramses::internal
 
         if (m_protocolVersion != recvProtocolVersion)
         {
-            LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleReceivedMessage: Invalid protocol version received (expected "
-                     << m_protocolVersion << ", got " << recvProtocolVersion << "). Drop connection");
+            LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::handleReceivedMessage: Invalid protocol version received (expected {}, got {}). Drop connection",
+                m_participantAddress.getParticipantName(), m_protocolVersion, recvProtocolVersion);
             removeParticipant(pp, true);
             return;
         }
@@ -604,8 +600,7 @@ namespace ramses::internal
         stream >> messageTypeTmp;
         auto messageType = static_cast<EMessageId>(messageTypeTmp);
 
-        LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleReceivedMessage: From " <<
-                 pp->address.getParticipantId() << ", type " << messageType);
+        LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::handleReceivedMessage: From {}, type {}", m_participantAddress.getParticipantName(), pp->address.getParticipantId(), messageType);
 
         switch (messageType)
         {
@@ -640,14 +635,14 @@ namespace ramses::internal
             handleRendererEvent(pp, stream);
             break;
         default:
-            LOG_ERROR(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleReceivedMessage: Invalid messagetype " << messageType << " From " << pp->address.getParticipantId());
+            LOG_ERROR(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::handleReceivedMessage: Invalid messagetype {} From {}", m_participantAddress.getParticipantName(), messageType, pp->address.getParticipantId());
             removeParticipant(pp);
         }
     }
 
     void TCPConnectionSystem::sendConnectionDescriptionOnNewConnection(const ParticipantPtr& pp)
     {
-        LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendConnectionDescriptionOnNewConnection: " << pp->address.getParticipantId());
+        LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::sendConnectionDescriptionOnNewConnection: {}", m_participantAddress.getParticipantName(), pp->address.getParticipantId());
 
         OutMessage msg(std::vector<Guid>(), EMessageId::ConnectionDescriptionMessage);
         msg.stream << m_participantAddress.getParticipantId()
@@ -662,13 +657,13 @@ namespace ramses::internal
     {
         if (pp->state == EParticipantState::Established)
         {
-            LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleConnectionDescriptionMessage: Duplicate connection description while established from " << pp->address.getParticipantId());
+            LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::handleConnectionDescriptionMessage: Duplicate connection description while established from {}", m_participantAddress.getParticipantName(), pp->address.getParticipantId());
             return;
         }
         if (pp->state != EParticipantState::WaitingForHello)
         {
-            LOG_ERROR(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleConnectionDescriptionMessage: Unexpected connection description from " << pp->address.getParticipantId() <<
-                      " in state " << EnumToString(pp->state));
+            LOG_ERROR(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::handleConnectionDescriptionMessage: Unexpected connection description from {} in state {}",
+                m_participantAddress.getParticipantName(), pp->address.getParticipantId(), EnumToString(pp->state));
             removeParticipant(pp, true);
             return;
         }
@@ -688,8 +683,8 @@ namespace ramses::internal
         pp->address = NetworkParticipantAddress(guid, name, ip, port);
         assert(!guid.isInvalid());
 
-        LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleConnectionDescriptionMessage: Hello from " <<
-                 guid << "/" << name << " type " << EnumToString(participantType) << " at " << ip << ":" << port << ". Established now");
+        LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::handleConnectionDescriptionMessage: Hello from {}/{} type {} at {}:{}. Established now",
+            m_participantAddress.getParticipantName(), guid, name, EnumToString(participantType), ip, port);
 
         pp->type = participantType;
         pp->state = EParticipantState::Established;
@@ -707,8 +702,8 @@ namespace ramses::internal
     {
         if (m_participantType == EParticipantType::Daemon || m_participantType == EParticipantType::PureDaemon)
         {
-            LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendConnectorAddressExchangeMessagesForNewParticipant: Send address exchange for " <<
-                     newPp->address.getParticipantId() << "/" << newPp->address.getParticipantName());
+            LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::sendConnectorAddressExchangeMessagesForNewParticipant: Send address exchange for {}/{}",
+                m_participantAddress.getParticipantName(), newPp->address.getParticipantId(), newPp->address.getParticipantName());
 
             // send all established non-daemon participants to new one
             {
@@ -719,8 +714,8 @@ namespace ramses::internal
                         ++relevantParticipants;
                 }
 
-                LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendConnectorAddressExchangeMessagesForNewParticipant: Send " << relevantParticipants << " entries to " <<
-                         newPp->address.getParticipantId() << "/" << newPp->address.getParticipantName());
+                LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::sendConnectorAddressExchangeMessagesForNewParticipant: Send {} entries to {}/{}",
+                    m_participantAddress.getParticipantName(), relevantParticipants, newPp->address.getParticipantId(), newPp->address.getParticipantName());
 
                 OutMessage msg(newPp->address.getParticipantId(), EMessageId::ConnectorAddressExchange);
                 msg.stream << relevantParticipants;
@@ -744,9 +739,8 @@ namespace ramses::internal
             {
                 if (newPp != p.value)
                 {
-                    LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendConnectorAddressExchangeMessagesForNewParticipant: Send "
-                              << newPp->address.getParticipantId() << "/" << newPp->address.getParticipantName() << " to "
-                              << p.value->address.getParticipantId() << "/" << p.value->address.getParticipantName());
+                    LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::sendConnectorAddressExchangeMessagesForNewParticipant: Send {}/{} to {}/{}",
+                        m_participantAddress.getParticipantName(), newPp->address.getParticipantId(), newPp->address.getParticipantName(), p.value->address.getParticipantId(), p.value->address.getParticipantName());
 
                     OutMessage msg(p.value->address.getParticipantId(), EMessageId::ConnectorAddressExchange);
                     const NetworkParticipantAddress& addr = newPp->address;
@@ -767,7 +761,7 @@ namespace ramses::internal
         uint32_t numEntries = 0;
         stream >> numEntries;
 
-        LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleConnectorAddressExchange: from " << pp->address.getParticipantId() << ", numEntries " << numEntries);
+        LOG_INFO(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::handleConnectorAddressExchange: from {}, numEntries {}", m_participantAddress.getParticipantName(), pp->address.getParticipantId(), numEntries);
 
         for (uint32_t i = 0; i < numEntries; ++i)
         {
@@ -783,8 +777,8 @@ namespace ramses::internal
                    >> participantType;
             NetworkParticipantAddress addr(guid, name, ip, port);
 
-            LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleConnectorAddressExchange: from " << pp->address.getParticipantId() << ". " <<
-                      guid << "/" << name << " at " << ip << ":" << port << ", type " << EnumToString(participantType));
+            LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::handleConnectorAddressExchange: from {}. {}/{} at {}:{}, type {}",
+                m_participantAddress.getParticipantName(), pp->address.getParticipantId(), guid, name, ip, port, EnumToString(participantType));
 
             ParticipantPtr* newPpPtr = m_establishedParticipants.get(addr.getParticipantId());
             if (newPpPtr)
@@ -793,18 +787,18 @@ namespace ramses::internal
                 const ParticipantPtr& newPp = *newPpPtr;
                 if (newPp->address != addr)
                 {
-                    LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleConnectorAddressExchange: Received mismatching participant info for "
-                             << addr.getParticipantId() << ". Expect problems");
+                    LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::handleConnectorAddressExchange: Received mismatching participant info for {}. Expect problems",
+                        m_participantAddress.getParticipantName(), addr.getParticipantId());
                 }
                 else
                 {
-                    LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleConnectorAddressExchange: Same information for existing participant "
-                              << addr.getParticipantId());
+                    LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::handleConnectorAddressExchange: Same information for existing participant {}",
+                        m_participantAddress.getParticipantName(), addr.getParticipantId());
                 }
             }
             else if (guid == m_participantAddress.getParticipantId())
             {
-                LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleConnectorAddressExchange: Got info for self");
+                LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::handleConnectorAddressExchange: Got info for self", m_participantAddress.getParticipantName());
                 // TODO: check if correct
             }
             else
@@ -833,7 +827,7 @@ namespace ramses::internal
     // --- user message handling ---
     bool TCPConnectionSystem::sendSubscribeScene(const Guid& to, const SceneId& sceneId)
     {
-        LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendSubscribeScene: to " << to << ", sceneId " << sceneId);
+        LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::sendSubscribeScene: to {}, sceneId {}", m_participantAddress.getParticipantName(), to, sceneId);
         OutMessage msg(to, EMessageId::SubscribeScene);
         msg.stream << sceneId.getValue();
         return postMessageForSending(std::move(msg));
@@ -846,7 +840,7 @@ namespace ramses::internal
             SceneId sceneId;
             stream >> sceneId.getReference();
 
-            LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleSubscribeScene: from " << pp->address.getParticipantId() << ", sceneId " << sceneId);
+            LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::handleSubscribeScene: from {}, sceneId {}", m_participantAddress.getParticipantName(), pp->address.getParticipantId(), sceneId);
             PlatformGuard guard(m_frameworkLock);
             m_sceneProviderHandler->handleSubscribeScene(sceneId, pp->address.getParticipantId());
         }
@@ -855,7 +849,7 @@ namespace ramses::internal
     // --
     bool TCPConnectionSystem::sendUnsubscribeScene(const Guid& to, const SceneId& sceneId)
     {
-        LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendUnsubscribeScene: to " << to << ", sceneId " << sceneId);
+        LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::sendUnsubscribeScene: to {}, sceneId {}", m_participantAddress.getParticipantName(), to, sceneId);
         OutMessage msg(to, EMessageId::UnsubscribeScene);
         msg.stream << sceneId.getValue();
         return postMessageForSending(std::move(msg));
@@ -868,7 +862,7 @@ namespace ramses::internal
             SceneId sceneId;
             stream >> sceneId.getReference();
 
-            LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleUnsubscribeScene: from " << pp->address.getParticipantId() << ", sceneId " << sceneId);
+            LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::handleUnsubscribeScene: from {}, sceneId {}", m_participantAddress.getParticipantName(), pp->address.getParticipantId(), sceneId);
             PlatformGuard guard(m_frameworkLock);
             m_sceneProviderHandler->handleUnsubscribeScene(sceneId, pp->address.getParticipantId());
         }
@@ -877,7 +871,7 @@ namespace ramses::internal
     // --
     bool TCPConnectionSystem::sendInitializeScene(const Guid& to, const SceneId& sceneId)
     {
-        LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendInitializeScene: to " << to << ", sceneId " << sceneId);
+        LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::sendInitializeScene: to {}, sceneId {}", m_participantAddress.getParticipantName(), to, sceneId);
         OutMessage msg(to, EMessageId::CreateScene);
         msg.stream << sceneId.getValue();
         return postMessageForSending(std::move(msg));
@@ -890,8 +884,7 @@ namespace ramses::internal
             SceneId sceneId;
             stream >> sceneId.getReference();
 
-            LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleCreateScene: from " << pp->address.getParticipantId() <<
-                      ", sceneId " << sceneId);
+            LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::handleCreateScene: from {}, sceneId {}", m_participantAddress.getParticipantName(), pp->address.getParticipantId(), sceneId);
             PlatformGuard guard(m_frameworkLock);
             m_sceneRendererHandler->handleInitializeScene(sceneId, pp->address.getParticipantId());
         }
@@ -900,7 +893,7 @@ namespace ramses::internal
     // --
     bool TCPConnectionSystem::sendSceneUpdate(const Guid& to, const SceneId& sceneId, const ISceneUpdateSerializer& serializer)
     {
-        LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendSceneActionList: to " << to);
+        LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::sendSceneActionList: to {}", m_participantAddress.getParticipantName(), to);
 
         static_assert(SceneActionDataSize < 1000000, "SceneActionDataSize too big");
 
@@ -930,7 +923,7 @@ namespace ramses::internal
             std::vector<std::byte> data(dataSize);
             stream.read(data.data(), dataSize);
 
-            LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleSceneActionList: from " << pp->address.getParticipantId());
+            LOG_TRACE(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::handleSceneActionList: from {}", m_participantAddress.getParticipantName(), pp->address.getParticipantId());
 
             PlatformGuard guard(m_frameworkLock);
             m_sceneRendererHandler->handleSceneUpdate(sceneId, data, pp->address.getParticipantId());
@@ -1065,10 +1058,10 @@ namespace ramses::internal
     // --
     bool TCPConnectionSystem::sendRendererEvent(const Guid& to, const SceneId& sceneId, const std::vector<std::byte>& data)
     {
-        LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendRendererEvent: to " << to << ", size " << data.size());
+        LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::sendRendererEvent: to {}, size {}", m_participantAddress.getParticipantName(), to, data.size());
         if (data.size() > 32000)  // really 32768
         {
-            LOG_ERROR(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::sendRendererEvent: to " << to << " failed because size too large " << data.size());
+            LOG_ERROR(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::sendRendererEvent: to {} failed because size too large {}", m_participantAddress.getParticipantName(), to, data.size());
             return false;
         }
         OutMessage msg(to, EMessageId::RendererEvent);
@@ -1092,7 +1085,7 @@ namespace ramses::internal
 
             stream.read(data.data(), dataSize);
 
-            LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handleRendererEvent: from " << pp->address.getParticipantId() << ", size " << dataSize);
+            LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem({})::handleRendererEvent: from {}, size {}", m_participantAddress.getParticipantName(), pp->address.getParticipantId(), dataSize);
             PlatformGuard guard(m_frameworkLock);
             m_sceneProviderHandler->handleRendererEvent(sceneId, data, pp->address.getParticipantId());
         }
@@ -1176,7 +1169,7 @@ namespace ramses::internal
         }
         else
         {
-            LOG_INFO(CONTEXT_PERIODIC, "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << "): Not connected");
+            LOG_INFO(CONTEXT_PERIODIC, "TCPConnectionSystem({}): Not connected", m_participantAddress.getParticipantName());
         }
     }
 
@@ -1214,17 +1207,17 @@ namespace ramses::internal
 
     TCPConnectionSystem::Participant::~Participant()
     {
-        LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem::~Participant(" << address.getParticipantName() << ")");
+        LOG_DEBUG(CONTEXT_COMMUNICATION, "TCPConnectionSystem::~Participant({})", address.getParticipantName());
         if (socket.is_open())
         {
             asio::error_code ec;
             socket.shutdown(asio::ip::tcp::socket::shutdown_both, ec);
             if (ec)
-                LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem::~Participant(" << address.getParticipantName() << "): shutdown failed: " << ec.message().c_str());
+                LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem::~Participant({}): shutdown failed: {}", address.getParticipantName(), ec.message().c_str());
 
             socket.close(ec);
             if (ec)
-                LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem::~Participant(" << address.getParticipantName() << "): close failed: " << ec.message().c_str());
+                LOG_WARN(CONTEXT_COMMUNICATION, "TCPConnectionSystem::~Participant({}): close failed: {}", address.getParticipantName(), ec.message().c_str());
         }
     }
 

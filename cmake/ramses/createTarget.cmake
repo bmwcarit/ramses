@@ -147,6 +147,7 @@ function(createModule)
         set(LINK_VISIBILITY PUBLIC)
     elseif("${MODULE_TYPE}" STREQUAL "OBJECT")
         add_library(${MODULE_NAME} OBJECT ${GLOBBED_MODULE_SRC_FILES})
+        set(LINK_VISIBILITY PUBLIC)
     elseif("${MODULE_TYPE}" STREQUAL "SHARED_LIBRARY")
         add_library(${MODULE_NAME} SHARED ${GLOBBED_MODULE_SRC_FILES})
 
@@ -209,7 +210,7 @@ function(createModuleWithRenderer)
         message(FATAL_ERROR "Unparsed createModuleWithRenderer properties: '${MODULE_UNPARSED_ARGUMENTS}'")
     endif()
 
-    set(MODULE_DEPENDENCIES "ramses-renderer;ramses-build-options-base;${MODULE_DEPENDENCIES}")
+    set(MODULE_DEPENDENCIES "ramses-renderer;ramses-client;ramses-build-options-base;${MODULE_DEPENDENCIES}")
 
     createModule(NAME                   ${MODULE_NAME}
                 TYPE                    ${MODULE_TYPE}

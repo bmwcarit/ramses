@@ -18,7 +18,6 @@
 #include "internal/Platform/PlatformFactory.h"
 #include "internal/RendererLib/PlatformInterface/IPlatform.h"
 #include "internal/SceneGraph/Resource/EffectResource.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
 #include "impl/DisplayConfigImpl.h"
 #include "RendererTestUtils.h"
 #include <future>
@@ -46,9 +45,6 @@ namespace ramses::internal
             auto dispConfig = RendererTestUtils::CreateTestDisplayConfig(0u);
             platform = platformFactory.createPlatform(rendererConfig, dispConfig.impl().getInternalDisplayConfig());
             assert(platform);
-
-            // caller is expected to have a display prefix for logs
-            ThreadLocalLog::SetPrefix(1);
         }
 
     protected:
@@ -263,9 +259,6 @@ namespace ramses::internal
 
         std::thread resourceUploadThread([&]()
             {
-                // caller is expected to have a display prefix for logs
-                ThreadLocalLog::SetPrefix(2);
-
                 IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend();
                 if (!resourceUploadRenderBackend)
                 {
@@ -294,9 +287,6 @@ namespace ramses::internal
 
         std::thread resourceUploadThread([&]()
             {
-                // caller is expected to have a display prefix for logs
-                ThreadLocalLog::SetPrefix(2);
-
                 IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend();
                 if (!resourceUploadRenderBackend)
                 {
@@ -333,9 +323,6 @@ namespace ramses::internal
 
         std::thread resourceUploadThread([&]()
             {
-                // caller is expected to have a display prefix for logs
-                ThreadLocalLog::SetPrefix(2);
-
                 IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend();
                 if (!resourceUploadRenderBackend)
                 {
@@ -370,9 +357,6 @@ namespace ramses::internal
 
         std::thread resourceUploadThread([&]()
             {
-                // caller is expected to have a display prefix for logs
-                ThreadLocalLog::SetPrefix(2);
-
                 IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend();
                 if (!resourceUploadRenderBackend)
                 {
@@ -416,9 +400,6 @@ namespace ramses::internal
 
         std::thread resourceUploadThread([&]()
             {
-                // caller is expected to have a display prefix for logs
-                ThreadLocalLog::SetPrefix(2);
-
                 IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend();
                 if (!resourceUploadRenderBackend)
                 {
@@ -462,9 +443,6 @@ namespace ramses::internal
 
         std::thread resourceUploadThread([&]()
             {
-                // caller is expected to have a display prefix for logs
-                ThreadLocalLog::SetPrefix(2);
-
                 IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend();
                 if (!resourceUploadRenderBackend)
                 {

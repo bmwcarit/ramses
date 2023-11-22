@@ -17,5 +17,5 @@ createModule(
     RESOURCE_FOLDERS        res
     DEPENDENCIES            ramses-client
                             ramses-framework
-                            ramses-renderer-lib
+                            ramses-renderer-internal
 )

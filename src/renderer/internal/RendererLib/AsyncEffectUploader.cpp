@@ -15,18 +15,18 @@
 #include "internal/RendererLib/PlatformInterface/IPlatform.h"
 #include "internal/SceneGraph/Resource/EffectResource.h"
 #include "internal/Watchdog/IThreadAliveNotifier.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include <algorithm>
 
 namespace ramses::internal
 {
-    AsyncEffectUploader::AsyncEffectUploader(IPlatform& platform, IRenderBackend& renderBackend, IThreadAliveNotifier& notifier, int logPrefixID)
+    AsyncEffectUploader::AsyncEffectUploader(IPlatform& platform, IRenderBackend& renderBackend, IThreadAliveNotifier& notifier, DisplayHandle display)
         : m_platform(platform)
         , m_renderBackend(renderBackend)
-        , m_thread{ fmt::format("R_EffUpload{}", logPrefixID) }
+        , m_thread{ fmt::format("EffUpload{}", display) }
         , m_notifier(notifier)
         , m_aliveIdentifier(notifier.registerThread())
-        , m_logPrefixID{ logPrefixID }
+        , m_displayHandle{ display }
     {
     }
 
@@ -93,7 +93,7 @@ namespace ramses::internal
             m_effectsToUpload.swap(effectsToUpload);
         }
 
-        LOG_TRACE(CONTEXT_RENDERER, "AsyncEffectUploader::uploadEffectsOrWait: will upload: " << effectsToUpload.size() << ",  uploaded in cache:" << m_effectsUploadedCache.size());
+        LOG_TRACE(CONTEXT_RENDERER, "AsyncEffectUploader::uploadEffectsOrWait: will upload: {},  uploaded in cache:{}", effectsToUpload.size(), m_effectsUploadedCache.size());
 
         std::chrono::microseconds maxShaderUploadTime{ 0u };
         std::chrono::microseconds totalShaderUploadTime{ 0u };
@@ -108,7 +108,7 @@ namespace ramses::internal
             }
 
             const auto& effectHash = effectRes->getHash();
-            LOG_INFO(CONTEXT_RENDERER, "AsyncEffectUploader uploading: " << effectHash);
+            LOG_INFO(CONTEXT_RENDERER, "AsyncEffectUploader uploading: {}", effectHash);
 
             assert(std::find_if(std::cbegin(m_effectsUploadedCache), std::cend(m_effectsUploadedCache), [&effectHash](const auto& u) {return effectHash == u.first; }) == m_effectsUploadedCache.cend());
             m_notifier.notifyAlive(m_aliveIdentifier);
@@ -128,9 +128,8 @@ namespace ramses::internal
 
         if (!effectsToUpload.empty())
         {
-            LOG_INFO(CONTEXT_RENDERER, "AsyncEffectUploader " << effectsToUpload.size() << " uploaded in "
-                << totalShaderUploadTime.count() << " us ("
-                << "Max: " << maxShaderUploadTime.count() << " us " << effectWithMaxUploadTime << ")");
+            LOG_INFO(CONTEXT_RENDERER, "AsyncEffectUploader {} uploaded in {} us (Max: {} us {})",
+                effectsToUpload.size(), totalShaderUploadTime.count(), maxShaderUploadTime.count(), effectWithMaxUploadTime);
 
 #if defined(_WIN32)
             // Workaround for bug https://github.com/COVESA/ramses/issues/61
@@ -160,9 +159,8 @@ namespace ramses::internal
 
         if (!effectsToUpload.empty() || !uploadedResourcesOut.empty())
         {
-            LOG_INFO(CONTEXT_RENDERER, "AsyncEffectUploader newToUpload: " << effectsToUpload.size()
-                << ", totalPending: " << totalEffectsToUpload
-                << ", uploaded: " << uploadedResourcesOut.size());
+            LOG_INFO(CONTEXT_RENDERER, "AsyncEffectUploader newToUpload: {}, totalPending: {}, uploaded: {}",
+                effectsToUpload.size(), totalEffectsToUpload, uploadedResourcesOut.size());
         }
 
         if (!effectsToUpload.empty())
@@ -173,8 +171,6 @@ namespace ramses::internal
 
     void AsyncEffectUploader::run()
     {
-        ThreadLocalLog::SetPrefix(m_logPrefixID);
-
         LOG_INFO(CONTEXT_RENDERER, "AsyncEffectUploader creating render backend for resource uploading");
         auto resourceUploadRenderBackend = m_platform.createResourceUploadRenderBackend();
         if (!resourceUploadRenderBackend)

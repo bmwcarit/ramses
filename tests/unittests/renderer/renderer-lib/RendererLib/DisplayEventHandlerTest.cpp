@@ -12,7 +12,6 @@
 #include "internal/RendererLib/RendererEventCollector.h"
 #include "internal/RendererLib/Enums/EKeyEvent.h"
 #include "internal/RendererLib/Enums/EKeyModifier.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
 
 namespace ramses::internal
 {
@@ -25,8 +24,6 @@ namespace ramses::internal
             : m_displayHandle(5110u)
             , m_displayEventHandler(m_displayHandle, m_eventCollector)
         {
-            // caller is expected to have a display prefix for logs
-            ThreadLocalLog::SetPrefix(1);
         }
 
         [[nodiscard]] RendererEvent getRendererEvent(uint32_t index) const

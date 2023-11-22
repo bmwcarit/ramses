@@ -365,7 +365,7 @@ namespace ramses::internal
                     res->compress(IResource::CompressionLevel::Realtime);
                     value += std::to_integer<size_t>(res->getCompressedResourceData().data()[0]);
                 }
-                LOG_DEBUG(CONTEXT_FRAMEWORK, "Test result " << value);
+                LOG_DEBUG(CONTEXT_FRAMEWORK, "Test result {}", value);
             });
         }
         run();
@@ -384,7 +384,7 @@ namespace ramses::internal
                     value += std::to_integer<size_t>(res->getResourceData().data()[0]);
                     value += res->getDecompressedDataSize();
                 }
-                LOG_DEBUG(CONTEXT_FRAMEWORK, "Test result " << value);
+                LOG_DEBUG(CONTEXT_FRAMEWORK, "Test result {}", value);
             });
         }
         run();
@@ -409,7 +409,7 @@ namespace ramses::internal
                         res->compress(IResource::CompressionLevel::Realtime);
                     }
                 }
-                LOG_DEBUG(CONTEXT_FRAMEWORK, "Test result " << value);
+                LOG_DEBUG(CONTEXT_FRAMEWORK, "Test result {}", value);
             });
         }
         run();
@@ -430,7 +430,7 @@ namespace ramses::internal
                 value += std::to_integer<size_t>(res->getResourceData().data()[0]);
                 value += res->getDecompressedDataSize();
             }
-            LOG_DEBUG(CONTEXT_FRAMEWORK, "Test result " << value);
+            LOG_DEBUG(CONTEXT_FRAMEWORK, "Test result {}", value);
         });
         run();
     }

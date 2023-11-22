@@ -23,7 +23,7 @@ namespace ramses::internal
         const bool isDaemon = true;
         const NetworkParticipantAddress participantNetworkAddress(TCPConnectionSystem::GetDaemonId(), "SM", config.m_tcpConfig.getIPAddress(), config.m_tcpConfig.getPort(isDaemon));
 
-        LOG_DEBUG(CONTEXT_COMMUNICATION, "TcpDiscoveryDaemon::TcpDiscoveryDaemon: My Address: " << participantNetworkAddress.getIp() << ":" << participantNetworkAddress.getPort());
+        LOG_DEBUG(CONTEXT_COMMUNICATION, "TcpDiscoveryDaemon::TcpDiscoveryDaemon: My Address: {}:{}", participantNetworkAddress.getIp(), participantNetworkAddress.getPort());
 
         const NetworkParticipantAddress daemonNetworkAddress;
         m_communicationSystem = std::make_unique<TCPConnectionSystem>(participantNetworkAddress, config.getProtocolVersion(),

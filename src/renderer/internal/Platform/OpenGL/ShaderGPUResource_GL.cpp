@@ -9,7 +9,7 @@
 #include "internal/Platform/OpenGL/ShaderGPUResource_GL.h"
 #include "internal/Platform/OpenGL/Device_GL_platform.h"
 #include "internal/SceneGraph/Resource/EffectResource.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {
@@ -103,7 +103,7 @@ namespace ramses::internal
         const GLInputLocation inputLocation(address);
         if (!inputLocation.isValid())
         {
-            LOG_WARN(CONTEXT_RENDERER, "ShaderGPUResource_GL::loadAttributeLocation:  glGetAttribLocation for effect '" << effect.getName() << "' for attribute '" << varName << "' failed");
+            LOG_WARN(CONTEXT_RENDERER, "ShaderGPUResource_GL::loadAttributeLocation:  glGetAttribLocation for effect '{}' for attribute '{}' failed", effect.getName(), varName);
         }
 
         return inputLocation;
@@ -116,7 +116,7 @@ namespace ramses::internal
         const GLInputLocation inputLocation(address);
         if (!inputLocation.isValid())
         {
-            LOG_WARN(CONTEXT_RENDERER, "ShaderGPUResource_GL::loadUniformLocation:  for effect '" << effect.getName() << "' for uniform '" << varName << "' failed");
+            LOG_WARN(CONTEXT_RENDERER, "ShaderGPUResource_GL::loadUniformLocation:  for effect '{}' for uniform '{}' failed", effect.getName(), varName);
         }
 
         return inputLocation;
@@ -129,7 +129,7 @@ namespace ramses::internal
 
         if (sizeInBytes <= 0)
         {
-            LOG_WARN_P(CONTEXT_RENDERER, "ShaderGPUResource_GL::getBinaryInfo: invalid binary shader size ({}) retrieved from device.", sizeInBytes);
+            LOG_WARN(CONTEXT_RENDERER, "ShaderGPUResource_GL::getBinaryInfo: invalid binary shader size ({}) retrieved from device.", sizeInBytes);
             return false;
         }
 

@@ -53,7 +53,7 @@ namespace ramses::internal
     {
         if (m_packetMem.size() < 50)
         {
-            LOG_FATAL_P(CONTEXT_COMMUNICATION, "SingleSceneUpdateWriter::write: Packet size of {} is too small", m_packetMem.size());
+            LOG_FATAL(CONTEXT_COMMUNICATION, "SingleSceneUpdateWriter::write: Packet size of {} is too small", m_packetMem.size());
             return false;
         }
 
@@ -182,7 +182,7 @@ namespace ramses::internal
 
         if (!m_writeDoneFunc(m_packetWriter.getBytesWritten()))
         {
-            LOG_ERROR_P(CONTEXT_COMMUNICATION, "SingleSceneUpdateWriter::finalizePacket: Packet write failed (size {})", m_packetWriter.getBytesWritten());
+            LOG_ERROR(CONTEXT_COMMUNICATION, "SingleSceneUpdateWriter::finalizePacket: Packet write failed (size {})", m_packetWriter.getBytesWritten());
             return false;
         }
         const auto bytesWritten{m_packetWriter.getBytesWritten()};

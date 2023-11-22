@@ -87,7 +87,7 @@ createModule(
                             OpenGL/*.h
                             OpenGL/*.cpp
                             ${PLATFORM_SOURCES}
-    DEPENDENCIES            ramses-renderer-lib
+    DEPENDENCIES            ramses-renderer-internal
                             OpenGL
                             ${PLATFORM_LIBS}
 

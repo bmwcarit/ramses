@@ -60,13 +60,6 @@ namespace ramses::internal
             m_withTempDirectory = std::make_unique<WithTempDirectory>();
         }
 
-        bool saveToFileWithoutValidation(std::string_view filename)
-        {
-            SaveFileConfig configNoValidation;
-            configNoValidation.setValidationEnabled(false);
-            return m_testScene->saveToFile(filename, configNoValidation);
-        }
-
         bool recreateFromFile(std::string_view filename)
         {
             const auto orthoId = m_orthoCam->getSceneObjectId();
@@ -1180,7 +1173,7 @@ namespace ramses::internal
             frustum->getChild("nearPlane")->set<float>(newNearPlane);
             frustum->getChild("farPlane")->set<float>(newFarPlane);
             m_logicEngine->update();
-            EXPECT_TRUE(saveToFileWithoutValidation("camerabinding.bin"));
+            EXPECT_TRUE(m_testScene->saveToFile("camerabinding.bin"));
         }
         {
             EXPECT_TRUE(recreateFromFile("camerabinding.bin"));
@@ -1233,7 +1226,7 @@ namespace ramses::internal
     {
         {
             m_logicEngine->createCameraBinding(*m_orthoCam, "CameraBinding");
-            ASSERT_TRUE(saveToFileWithoutValidation("camerabinding.bin"));
+            ASSERT_TRUE(m_testScene->saveToFile("camerabinding.bin"));
         }
 
         {
@@ -1250,7 +1243,7 @@ namespace ramses::internal
     {
         {
             m_logicEngine->createCameraBinding(*m_perspectiveCam, "CameraBinding");
-            EXPECT_TRUE(saveToFileWithoutValidation("camerabinding.bin"));
+            EXPECT_TRUE(m_testScene->saveToFile("camerabinding.bin"));
         }
         {
             EXPECT_TRUE(recreateFromFile("camerabinding.bin"));
@@ -1263,7 +1256,7 @@ namespace ramses::internal
     {
         {
             m_logicEngine->createCameraBinding(*m_perspectiveCam, "CameraBinding");
-            EXPECT_TRUE(saveToFileWithoutValidation("camerabinding.bin"));
+            EXPECT_TRUE(m_testScene->saveToFile("camerabinding.bin"));
         }
         {
             EXPECT_TRUE(recreateFromFile("camerabinding.bin"));
@@ -1288,7 +1281,7 @@ namespace ramses::internal
             m_logicEngine->update();
 
             m_perspectiveCam->setViewport(11, 12, 13u, 14u);
-            EXPECT_TRUE(saveToFileWithoutValidation("camerabinding.bin"));
+            EXPECT_TRUE(m_testScene->saveToFile("camerabinding.bin"));
         }
 
         {
@@ -1359,7 +1352,7 @@ namespace ramses::internal
             ASSERT_TRUE(m_logicEngine->link(*script->getOutputs()->getChild("frustProps")->getChild("fP"), *cameraBinding.getInputs()->getChild("frustum")->getChild("farPlane")));
 
             m_logicEngine->update();
-            EXPECT_TRUE(saveToFileWithoutValidation("camerabinding.bin"));
+            EXPECT_TRUE(m_testScene->saveToFile("camerabinding.bin"));
         }
 
         // Modify 'linked' properties before loading to check if logic will overwrite them after load + update

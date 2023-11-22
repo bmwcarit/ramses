@@ -25,6 +25,7 @@
 #include "ramses/client/logic/TimerNode.h"
 #include "ramses/client/logic/AnchorPoint.h"
 #include "ramses/client/logic/SkinBinding.h"
+#include "ramses/client/logic/RenderBufferBinding.h"
 #include "ramses/client/PerspectiveCamera.h"
 #include "ramses/client/Appearance.h"
 #include "ramses/client/RenderPass.h"
@@ -99,7 +100,7 @@ namespace ramses::internal
         }
     };
 
-    static constexpr size_t EmptySerializedSizeTotal{ 164u };
+    static constexpr size_t EmptySerializedSizeTotal{ 172u };
 
     INSTANTIATE_TEST_SUITE_P(
         ALogicEngine_SerializedSizeTests,
@@ -124,6 +125,7 @@ namespace ramses::internal
         EXPECT_EQ(this->m_logicEngine->getSerializedSize<MeshNodeBinding>(), 0u);
         EXPECT_EQ(this->m_logicEngine->getSerializedSize<TimerNode>(), 0u);
         EXPECT_EQ(this->m_logicEngine->getSerializedSize<SkinBinding>(), 0u);
+        EXPECT_EQ(this->m_logicEngine->getSerializedSize<RenderBufferBinding>(), 0u);
     }
 
     TEST_P(ALogicEngine_SerializedSize, ChecksSerializedSizeWithInterface)
@@ -365,6 +367,13 @@ namespace ramses::internal
     {
         createSkinBinding();
         EXPECT_EQ(this->m_logicEngine->getSerializedSize<SkinBinding>(), 184u);
+        EXPECT_GT(this->m_logicEngine->getTotalSerializedSize(), EmptySerializedSizeTotal);
+    }
+
+    TEST_P(ALogicEngine_SerializedSize, ChecksSerializedSizeWithRenderBufferBinding)
+    {
+        this->m_logicEngine->createRenderBufferBinding(*m_renderBuffer, "rb");
+        EXPECT_EQ(this->m_logicEngine->getSerializedSize<RenderBufferBinding>(), 312u);
         EXPECT_GT(this->m_logicEngine->getTotalSerializedSize(), EmptySerializedSizeTotal);
     }
 }

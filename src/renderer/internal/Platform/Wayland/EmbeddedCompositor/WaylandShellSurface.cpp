@@ -9,7 +9,7 @@
 #include "internal/Platform/Wayland/EmbeddedCompositor/WaylandShellSurface.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/WaylandClient.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/NativeWaylandResource.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include <cassert>
 
 namespace ramses::internal
@@ -17,7 +17,7 @@ namespace ramses::internal
     WaylandShellSurface::WaylandShellSurface(IWaylandClient& client, INativeWaylandResource& shellConnectionResource, uint32_t id, IWaylandSurface& surface)
         : m_clientCredentials(client.getCredentials())
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::WaylandShellSurface  " << m_clientCredentials);
+        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::WaylandShellSurface  {}", m_clientCredentials);
 
         m_resource = client.resourceCreate(&wl_shell_surface_interface, shellConnectionResource.getVersion(), id);
         if (nullptr != m_resource)
@@ -26,14 +26,13 @@ namespace ramses::internal
         }
         else
         {
-            LOG_ERROR(CONTEXT_RENDERER, "WaylandShellSurface::WaylandShellSurface(): Could not create wayland resource  " << m_clientCredentials);
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandShellSurface::WaylandShellSurface(): Could not create wayland resource  {}", m_clientCredentials);
             client.postNoMemory();
         }
 
         if (surface.hasShellSurface())
         {
-            LOG_ERROR(CONTEXT_RENDERER,
-                      "WaylandShellSurface::WaylandShellSurface The surface already has a shell-surface attached  " << m_clientCredentials);
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandShellSurface::WaylandShellSurface The surface already has a shell-surface attached  {}", m_clientCredentials);
             shellConnectionResource.postError(WL_SHELL_ERROR_ROLE, "surface already has a shell-surface");
         }
         else
@@ -50,7 +49,7 @@ namespace ramses::internal
 
     WaylandShellSurface::~WaylandShellSurface()
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::~WaylandShellSurface  " << m_clientCredentials);
+        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::~WaylandShellSurface  {}", m_clientCredentials);
 
         if (nullptr != m_surface)
         {
@@ -182,7 +181,7 @@ namespace ramses::internal
 
     void WaylandShellSurface::shellSurfaceSetTitle([[maybe_unused]] IWaylandClient& client, const char* title)
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetTitle title: " << title);
+        LOG_INFO(CONTEXT_RENDERER, "WaylandShellSurface::shellSurfaceSetTitle title: {}", title);
 
         if (m_surface == nullptr)
         {

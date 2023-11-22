@@ -43,11 +43,6 @@ namespace ramses
         m_impl->setExporterVersion(major, minor, patch, fileFormatVersion);
     }
 
-    void SaveFileConfig::setValidationEnabled(bool validationEnabled)
-    {
-        m_impl->setValidationEnabled(validationEnabled);
-    }
-
     void SaveFileConfig::setLuaSavingMode(ELuaSavingMode mode)
     {
         m_impl->setLuaSavingMode(mode);

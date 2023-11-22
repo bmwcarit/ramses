@@ -258,13 +258,13 @@ namespace ramses::internal
 
         EXPECT_TRUE(this->camera->bindFrustumPlanes(*do1, *do2));
         EXPECT_TRUE(this->camera->isFrustumPlanesBound());
-        EXPECT_EQ(do1->impl().getDataReference(), this->camera->impl().getFrustrumPlanesHandle());
-        EXPECT_EQ(do2->impl().getDataReference(), this->camera->impl().getFrustrumNearFarPlanesHandle());
+        EXPECT_EQ(do1->impl().getDataReference(), this->camera->impl().getFrustumPlanesHandle());
+        EXPECT_EQ(do2->impl().getDataReference(), this->camera->impl().getFrustumNearFarPlanesHandle());
 
         EXPECT_TRUE(this->camera->unbindFrustumPlanes());
         EXPECT_FALSE(this->camera->isFrustumPlanesBound());
-        EXPECT_NE(do1->impl().getDataReference(), this->camera->impl().getFrustrumPlanesHandle());
-        EXPECT_NE(do2->impl().getDataReference(), this->camera->impl().getFrustrumNearFarPlanesHandle());
+        EXPECT_NE(do1->impl().getDataReference(), this->camera->impl().getFrustumPlanesHandle());
+        EXPECT_NE(do2->impl().getDataReference(), this->camera->impl().getFrustumNearFarPlanesHandle());
     }
 
     TYPED_TEST(ACamera, getsReferencedViewportValuesWhenBound)

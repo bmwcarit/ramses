@@ -43,7 +43,7 @@ namespace ramses::internal
     void ClientApplicationLogic::createScene(ClientScene& scene, bool enableLocalOnlyOptimization)
     {
         PlatformGuard guard(m_frameworkLock);
-        LOG_TRACE(CONTEXT_CLIENT, "ClientApplicationLogic::createScene:  '" << scene.getName() << "' with id '" << scene.getSceneId().getValue() << "'");
+        LOG_TRACE(CONTEXT_CLIENT, "ClientApplicationLogic::createScene:  '{}' with id '{}'", scene.getName(), scene.getSceneId().getValue());
         m_scenegraphProviderComponent->handleCreateScene(scene, enableLocalOnlyOptimization, *this);
     }
 
@@ -150,7 +150,7 @@ namespace ramses::internal
         PlatformGuard guard(m_frameworkLock);
         auto mr = m_resourceComponent->loadResource(hash);
         if (!mr)
-            LOG_WARN(CONTEXT_FRAMEWORK, "ResourceComponent::loadResource: Could not find or load requested resource: " << hash);
+            LOG_WARN(CONTEXT_FRAMEWORK, "ResourceComponent::loadResource: Could not find or load requested resource: {}", hash);
 
         return mr;
     }

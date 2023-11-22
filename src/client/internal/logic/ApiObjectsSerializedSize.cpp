@@ -23,6 +23,7 @@
 #include "ramses/client/logic/MeshNodeBinding.h"
 #include "ramses/client/logic/SkinBinding.h"
 #include "ramses/client/logic/TimerNode.h"
+#include "ramses/client/logic/RenderBufferBinding.h"
 
 #include "internal/logic/flatbuffers/generated/ApiObjectsGen.h"
 
@@ -40,6 +41,7 @@
 #include "impl/logic/MeshNodeBindingImpl.h"
 #include "impl/logic/SkinBindingImpl.h"
 #include "impl/logic/TimerNodeImpl.h"
+#include "impl/logic/RenderBufferBindingImpl.h"
 
 namespace ramses::internal
 {
@@ -202,6 +204,12 @@ namespace ramses::internal
     size_t ApiObjectsSerializedSize::GetSerializedSize<AnchorPoint>(const ApiObjects& apiObjects, ELuaSavingMode luaSavingMode)
     {
         return calculateSerializedSize<AnchorPoint, AnchorPointImpl>(apiObjects.getApiObjectContainer<AnchorPoint>(), luaSavingMode);
+    }
+
+    template<>
+    size_t ApiObjectsSerializedSize::GetSerializedSize<RenderBufferBinding>(const ApiObjects& apiObjects, ELuaSavingMode luaSavingMode)
+    {
+        return calculateSerializedSize<RenderBufferBinding, RenderBufferBindingImpl>(apiObjects.getApiObjectContainer<RenderBufferBinding>(), luaSavingMode);
     }
 
     template<>

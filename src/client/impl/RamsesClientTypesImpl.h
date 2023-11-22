@@ -55,12 +55,6 @@ namespace ramses
         "TextureSamplerCube",
         "TextureSamplerExternal",
     };
-
-    namespace internal
-    {
-        struct SceneObjectRegistryHandleTag {};
-        using SceneObjectRegistryHandle = ramses::internal::TypedMemoryHandle<SceneObjectRegistryHandleTag>;
-    }
 }
 
 MAKE_ENUM_CLASS_PRINTABLE(ramses::EDataType, "EDataType", ramses::DataTypeNames, ramses::EDataType::TextureSamplerExternal);

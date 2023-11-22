@@ -62,11 +62,11 @@ namespace ramses::internal
             const File socketFile(socketFullPath);
             if (socketFile.exists())
             {
-                LOG_INFO(CONTEXT_RENDERER, "WaylandEnvironmentUtils::LogEnvironmentState: Socket file " << socketFullPath << " exists.");
+                LOG_INFO(CONTEXT_RENDERER, "WaylandEnvironmentUtils::LogEnvironmentState: Socket file {} exists.", socketFullPath);
             }
             else
             {
-                LOG_WARN(CONTEXT_RENDERER, "WaylandEnvironmentUtils::LogEnvironmentState: Socket file " << socketFullPath << " does not exist.");
+                LOG_WARN(CONTEXT_RENDERER, "WaylandEnvironmentUtils::LogEnvironmentState: Socket file {} does not exist.", socketFullPath);
             }
         }
 
@@ -113,10 +113,8 @@ namespace ramses::internal
             const bool waylandDisplayFoundInEnvironmentVars = PlatformEnvironmentVariables::get("WAYLAND_DISPLAY", waylandDisplayEnvironmentVar);
             const bool waylandSocketFoundInEnvironmentVars  = PlatformEnvironmentVariables::get("WAYLAND_SOCKET",  waylandSocketEnvironmentVar);
 
-            LOG_INFO(CONTEXT_RENDERER, "WaylandEnvironmentUtils::LogEnvironmentState: Wayland display set on display config=" << waylandDisplayName
-                      << ", XDG_RUNTIME_DIR=" << xdgPathEnvironmentVar
-                      << ", WAYLAND_DISPLAY=" << waylandDisplayEnvironmentVar
-                      << ", WAYLAND_SOCKET=" << waylandSocketEnvironmentVar);
+            LOG_INFO(CONTEXT_RENDERER, "WaylandEnvironmentUtils::LogEnvironmentState: Wayland display set on display config={}, XDG_RUNTIME_DIR={}, WAYLAND_DISPLAY={}, WAYLAND_SOCKET={}",
+                waylandDisplayName, xdgPathEnvironmentVar, waylandDisplayEnvironmentVar, waylandSocketEnvironmentVar);
 
             if (!waylandDisplayName.empty())
             {

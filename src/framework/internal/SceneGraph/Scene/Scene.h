@@ -65,10 +65,10 @@ namespace ramses::internal
 
         explicit SceneT(const SceneInfo& sceneInfo = SceneInfo());
 
-        void                        preallocateSceneSize            (const SceneSizeInformation& sizeInfo) override;
+        void preallocateSceneSize (const SceneSizeInformation& sizeInfo) override;
 
-        [[nodiscard]] SceneId                     getSceneId                      () const final override;
-        [[nodiscard]] const std::string&          getName                         () const final override;
+        [[nodiscard]] SceneId            getSceneId                 () const final override;
+        [[nodiscard]] const std::string& getName                    () const final override;
 
         void setEffectTimeSync(FlushTime::Clock::time_point t) override;
         [[nodiscard]] FlushTime::Clock::time_point getEffectTimeSync() const override;
@@ -76,8 +76,8 @@ namespace ramses::internal
         // Renderables
         RenderableHandle            allocateRenderable              (NodeHandle nodeHandle, RenderableHandle handle) override;
         void                        releaseRenderable               (RenderableHandle renderableHandle) override;
-        [[nodiscard]] bool                        isRenderableAllocated           (RenderableHandle renderableHandle) const final override;
-        [[nodiscard]] uint32_t                      getRenderableCount              () const final override;
+        [[nodiscard]] bool          isRenderableAllocated           (RenderableHandle renderableHandle) const final override;
+        [[nodiscard]] uint32_t      getRenderableCount              () const final override;
         void                        setRenderableDataInstance       (RenderableHandle renderableHandle, ERenderableDataSlotType slot, DataInstanceHandle newDataInstance) override;
         void                        setRenderableStartIndex         (RenderableHandle renderableHandle, uint32_t startIndex) override;
         void                        setRenderableIndexCount         (RenderableHandle renderableHandle, uint32_t indexCount) override;
@@ -85,14 +85,14 @@ namespace ramses::internal
         void                        setRenderableVisibility         (RenderableHandle renderableHandle, EVisibilityMode visibility) override;
         void                        setRenderableInstanceCount      (RenderableHandle renderableHandle, uint32_t instanceCount) override;
         void                        setRenderableStartVertex        (RenderableHandle renderableHandle, uint32_t startVertex) override;
-        [[nodiscard]] const Renderable&           getRenderable                   (RenderableHandle renderableHandle) const final override;
-        [[nodiscard]] const RenderableMemoryPool&         getRenderables                  () const;
+        [[nodiscard]] const Renderable& getRenderable               (RenderableHandle renderableHandle) const final override;
+        [[nodiscard]] const RenderableMemoryPool& getRenderables    () const;
 
         // Render state
         RenderStateHandle           allocateRenderState             (RenderStateHandle stateHandle) override;
         void                        releaseRenderState              (RenderStateHandle stateHandle) override;
-        [[nodiscard]] bool                        isRenderStateAllocated          (RenderStateHandle stateHandle) const final override;
-        [[nodiscard]] uint32_t                      getRenderStateCount             () const final override;
+        [[nodiscard]] bool          isRenderStateAllocated          (RenderStateHandle stateHandle) const final override;
+        [[nodiscard]] uint32_t      getRenderStateCount             () const final override;
         void                        setRenderStateBlendFactors      (RenderStateHandle stateHandle, EBlendFactor srcColor, EBlendFactor destColor, EBlendFactor srcAlpha, EBlendFactor destAlpha) override;
         void                        setRenderStateBlendOperations   (RenderStateHandle stateHandle, EBlendOperation operationColor, EBlendOperation operationAlpha) override;
         void                        setRenderStateBlendColor        (RenderStateHandle stateHandle, const glm::vec4& color) override;
@@ -104,57 +104,57 @@ namespace ramses::internal
         void                        setRenderStateStencilFunc       (RenderStateHandle stateHandle, EStencilFunc func, uint8_t ref, uint8_t mask) override;
         void                        setRenderStateStencilOps        (RenderStateHandle stateHandle, EStencilOp sfail, EStencilOp dpfail, EStencilOp dppass) override;
         void                        setRenderStateColorWriteMask    (RenderStateHandle stateHandle, ColorWriteMask colorMask) override;
-        [[nodiscard]] const RenderState&          getRenderState                  (RenderStateHandle stateHandle) const final override;
-        [[nodiscard]] const RenderStateMemoryPool&              getRenderStates                 () const;
+        [[nodiscard]] const RenderState& getRenderState             (RenderStateHandle stateHandle) const final override;
+        [[nodiscard]] const RenderStateMemoryPool& getRenderStates  () const;
 
         // Camera
         CameraHandle                allocateCamera                  (ECameraProjectionType type, NodeHandle nodeHandle, DataInstanceHandle dataInstance, CameraHandle handle) override;
         void                        releaseCamera                   (CameraHandle cameraHandle) override;
-        [[nodiscard]] bool                        isCameraAllocated               (CameraHandle handle) const final override;
-        [[nodiscard]] uint32_t                      getCameraCount                  () const final override;
-        [[nodiscard]] const Camera&               getCamera                       (CameraHandle cameraHandle) const final override;
-        [[nodiscard]] const CameraMemoryPool&             getCameras                      () const;
+        [[nodiscard]] bool          isCameraAllocated               (CameraHandle handle) const final override;
+        [[nodiscard]] uint32_t      getCameraCount                  () const final override;
+        [[nodiscard]] const Camera& getCamera                       (CameraHandle cameraHandle) const final override;
+        [[nodiscard]] const CameraMemoryPool& getCameras            () const;
 
         // Nodes
         NodeHandle                  allocateNode                    (uint32_t childrenCount, NodeHandle handle) override;
         void                        releaseNode                     (NodeHandle nodeHandle) override;
-        [[nodiscard]] bool                        isNodeAllocated                 (NodeHandle node) const final override;
-        [[nodiscard]] uint32_t                      getNodeCount                    () const final override;
-        [[nodiscard]] NodeHandle                  getParent                       (NodeHandle nodeHandle) const final override;
+        [[nodiscard]] bool          isNodeAllocated                 (NodeHandle node) const final override;
+        [[nodiscard]] uint32_t      getNodeCount                    () const final override;
+        [[nodiscard]] NodeHandle    getParent                       (NodeHandle nodeHandle) const final override;
         void                        addChildToNode                  (NodeHandle parent, NodeHandle child) override;
         void                        removeChildFromNode             (NodeHandle parent, NodeHandle child) override;
-        [[nodiscard]] uint32_t                      getChildCount                   (NodeHandle parent) const final override;
-        [[nodiscard]] NodeHandle                  getChild                        (NodeHandle parent, uint32_t childNumber) const final override;
-        [[nodiscard]] const NodeMemoryPool&                   getNodes                        () const;
+        [[nodiscard]] uint32_t      getChildCount                   (NodeHandle parent) const final override;
+        [[nodiscard]] NodeHandle    getChild                        (NodeHandle parent, uint32_t childNumber) const final override;
+        [[nodiscard]] const NodeMemoryPool& getNodes                () const;
 
         // Transformation
         TransformHandle             allocateTransform               (NodeHandle nodeHandle, TransformHandle handle) override;
         void                        releaseTransform                (TransformHandle transform) override;
-        [[nodiscard]] uint32_t                      getTransformCount               () const final override;
-        [[nodiscard]] bool                        isTransformAllocated            (TransformHandle transformHandle) const final override;
-        [[nodiscard]] NodeHandle                  getTransformNode                (TransformHandle handle) const final override;
-        [[nodiscard]] const glm::vec3&              getTranslation                  (TransformHandle handle) const final override;
-        [[nodiscard]] const glm::vec4&              getRotation                     (TransformHandle handle) const final override;
-        [[nodiscard]] ERotationType         getRotationType           (TransformHandle handle) const final override;
-        [[nodiscard]] const glm::vec3&              getScaling                      (TransformHandle handle) const final override;
+        [[nodiscard]] uint32_t      getTransformCount               () const final override;
+        [[nodiscard]] bool          isTransformAllocated            (TransformHandle transformHandle) const final override;
+        [[nodiscard]] NodeHandle    getTransformNode                (TransformHandle handle) const final override;
+        [[nodiscard]] const glm::vec3& getTranslation               (TransformHandle handle) const final override;
+        [[nodiscard]] const glm::vec4& getRotation                  (TransformHandle handle) const final override;
+        [[nodiscard]] ERotationType    getRotationType              (TransformHandle handle) const final override;
+        [[nodiscard]] const glm::vec3& getScaling                   (TransformHandle handle) const final override;
         void                        setTranslation                  (TransformHandle handle, const glm::vec3& translation) override;
         void                        setRotation                     (TransformHandle handle, const glm::vec4& rotation, ERotationType rotationType) override;
         void                        setScaling                      (TransformHandle handle, const glm::vec3& scaling) override;
-        [[nodiscard]] const TransformMemoryPool&              getTransforms                   () const;
+        [[nodiscard]] const TransformMemoryPool& getTransforms      () const;
 
         DataLayoutHandle            allocateDataLayout              (const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle) override;
         void                        releaseDataLayout               (DataLayoutHandle layoutHandle) override;
-        [[nodiscard]] bool                        isDataLayoutAllocated           (DataLayoutHandle layoutHandle) const final override;
-        [[nodiscard]] uint32_t                      getDataLayoutCount              () const final override;
-        [[nodiscard]] const DataLayout&           getDataLayout                   (DataLayoutHandle layoutHandle) const final override;
-        [[nodiscard]] const DataLayoutMemoryPool&             getDataLayouts                  () const;
+        [[nodiscard]] bool          isDataLayoutAllocated           (DataLayoutHandle layoutHandle) const final override;
+        [[nodiscard]] uint32_t      getDataLayoutCount              () const final override;
+        [[nodiscard]] const DataLayout& getDataLayout               (DataLayoutHandle layoutHandle) const final override;
+        [[nodiscard]] const DataLayoutMemoryPool& getDataLayouts    () const;
 
         DataInstanceHandle          allocateDataInstance            (DataLayoutHandle finishedLayoutHandle, DataInstanceHandle instanceHandle) override;
         void                        releaseDataInstance             (DataInstanceHandle containerHandle) override;
-        [[nodiscard]] bool                        isDataInstanceAllocated         (DataInstanceHandle containerHandle) const final override;
-        [[nodiscard]] uint32_t                      getDataInstanceCount            () const final override;
-        [[nodiscard]] DataLayoutHandle            getLayoutOfDataInstance         (DataInstanceHandle containerHandle) const final override;
-        [[nodiscard]] const DataInstanceMemoryPool&           getDataInstances                () const;
+        [[nodiscard]] bool          isDataInstanceAllocated         (DataInstanceHandle containerHandle) const final override;
+        [[nodiscard]] uint32_t      getDataInstanceCount            () const final override;
+        [[nodiscard]] DataLayoutHandle getLayoutOfDataInstance      (DataInstanceHandle containerHandle) const final override;
+        [[nodiscard]] const DataInstanceMemoryPool& getDataInstances() const;
 
         [[nodiscard]] const float*         getDataFloatArray            (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
         [[nodiscard]] const glm::vec2*     getDataVector2fArray         (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
@@ -218,28 +218,28 @@ namespace ramses::internal
         // Texture sampler
         TextureSamplerHandle        allocateTextureSampler          (const TextureSampler& sampler, TextureSamplerHandle handle) override;
         void                        releaseTextureSampler           (TextureSamplerHandle handle) override;
-        [[nodiscard]] bool                        isTextureSamplerAllocated       (TextureSamplerHandle handle) const final override;
-        [[nodiscard]] uint32_t                      getTextureSamplerCount          () const final override;
-        [[nodiscard]] const TextureSampler&       getTextureSampler               (TextureSamplerHandle handle) const final override;
-        [[nodiscard]] const TextureSamplerMemoryPool&         getTextureSamplers              () const;
+        [[nodiscard]] bool          isTextureSamplerAllocated       (TextureSamplerHandle handle) const final override;
+        [[nodiscard]] uint32_t      getTextureSamplerCount          () const final override;
+        [[nodiscard]] const TextureSampler& getTextureSampler       (TextureSamplerHandle handle) const final override;
+        [[nodiscard]] const TextureSamplerMemoryPool& getTextureSamplers() const;
 
         // Render groups
         RenderGroupHandle       allocateRenderGroup             (uint32_t renderableCount, uint32_t nestedGroupCount, RenderGroupHandle groupHandle) override;
         void                    releaseRenderGroup              (RenderGroupHandle groupHandle) override;
-        [[nodiscard]] bool                    isRenderGroupAllocated          (RenderGroupHandle groupHandle) const final override;
-        [[nodiscard]] uint32_t                  getRenderGroupCount             () const final override;
+        [[nodiscard]] bool      isRenderGroupAllocated          (RenderGroupHandle groupHandle) const final override;
+        [[nodiscard]] uint32_t  getRenderGroupCount             () const final override;
         void                    addRenderableToRenderGroup      (RenderGroupHandle groupHandle, RenderableHandle renderableHandle, int32_t order) override;
         void                    removeRenderableFromRenderGroup (RenderGroupHandle groupHandle, RenderableHandle renderableHandle) override;
         void                    addRenderGroupToRenderGroup     (RenderGroupHandle groupHandleParent, RenderGroupHandle groupHandleChild, int32_t order) override;
         void                    removeRenderGroupFromRenderGroup(RenderGroupHandle groupHandleParent, RenderGroupHandle groupHandleChild) override;
-        [[nodiscard]] const RenderGroup&      getRenderGroup                  (RenderGroupHandle groupHandle) const final override;
-        [[nodiscard]] const RenderGroupMemoryPool&    getRenderGroups                 () const;
+        [[nodiscard]] const RenderGroup& getRenderGroup         (RenderGroupHandle groupHandle) const final override;
+        [[nodiscard]] const RenderGroupMemoryPool& getRenderGroups() const;
 
         //Render pass
         RenderPassHandle        allocateRenderPass              (uint32_t renderGroupCount, RenderPassHandle passHandle) override;
         void                    releaseRenderPass               (RenderPassHandle passHandle) override;
-        [[nodiscard]] bool                    isRenderPassAllocated           (RenderPassHandle pass) const final override;
-        [[nodiscard]] uint32_t                getRenderPassCount              () const final override;
+        [[nodiscard]] bool      isRenderPassAllocated           (RenderPassHandle pass) const final override;
+        [[nodiscard]] uint32_t  getRenderPassCount              () const final override;
         void                    setRenderPassClearColor         (RenderPassHandle passHandle, const glm::vec4& clearColor) override;
         void                    setRenderPassClearFlag          (RenderPassHandle passHandle, ClearFlags clearFlag) override;
         void                    setRenderPassCamera             (RenderPassHandle passHandle, CameraHandle cameraHandle) override;
@@ -250,93 +250,94 @@ namespace ramses::internal
         void                    retriggerRenderPassRenderOnce   (RenderPassHandle passHandle) override;
         void                    addRenderGroupToRenderPass      (RenderPassHandle passHandle, RenderGroupHandle groupHandle, int32_t order) override;
         void                    removeRenderGroupFromRenderPass (RenderPassHandle passHandle, RenderGroupHandle groupHandle) override;
-        [[nodiscard]] const RenderPass&       getRenderPass                   (RenderPassHandle passHandle) const final override;
-        [[nodiscard]] const RenderPassMemoryPool&     getRenderPasses                 () const;
+        [[nodiscard]] const RenderPass& getRenderPass           (RenderPassHandle passHandle) const final override;
+        [[nodiscard]] const RenderPassMemoryPool& getRenderPasses() const;
 
         //Blit pass
         BlitPassHandle          allocateBlitPass                (RenderBufferHandle sourceRenderBufferHandle, RenderBufferHandle destinationRenderBufferHandle, BlitPassHandle passHandle) override;
         void                    releaseBlitPass                 (BlitPassHandle passHandle) override;
-        [[nodiscard]] bool                    isBlitPassAllocated             (BlitPassHandle passHandle) const final override;
-        [[nodiscard]] uint32_t                  getBlitPassCount                () const final override;
+        [[nodiscard]] bool      isBlitPassAllocated             (BlitPassHandle passHandle) const final override;
+        [[nodiscard]] uint32_t  getBlitPassCount                () const final override;
         void                    setBlitPassRenderOrder          (BlitPassHandle passHandle, int32_t renderOrder) override;
         void                    setBlitPassEnabled              (BlitPassHandle passHandle, bool isEnabled) override;
         void                    setBlitPassRegions              (BlitPassHandle passHandle, const PixelRectangle& sourceRegion, const PixelRectangle& destinationRegion) override;
-        [[nodiscard]] const BlitPass&         getBlitPass                     (BlitPassHandle passHandle) const final override;
-        [[nodiscard]] const BlitPassMemoryPool&       getBlitPasses                   () const;
+        [[nodiscard]] const BlitPass& getBlitPass               (BlitPassHandle passHandle) const final override;
+        [[nodiscard]] const BlitPassMemoryPool& getBlitPasses   () const;
 
         //Pickable object
         PickableObjectHandle    allocatePickableObject          (DataBufferHandle geometryHandle, NodeHandle nodeHandle, PickableObjectId id, PickableObjectHandle pickableHandle) override;
         void                    releasePickableObject           (PickableObjectHandle pickableHandle) override;
-        [[nodiscard]] bool                    isPickableObjectAllocated       (PickableObjectHandle pickableHandle) const final override;
-        [[nodiscard]] uint32_t                  getPickableObjectCount          () const final override;
+        [[nodiscard]] bool      isPickableObjectAllocated       (PickableObjectHandle pickableHandle) const final override;
+        [[nodiscard]] uint32_t  getPickableObjectCount          () const final override;
         void                    setPickableObjectId             (PickableObjectHandle pickableHandle, PickableObjectId id) override;
         void                    setPickableObjectCamera         (PickableObjectHandle pickableHandle, CameraHandle cameraHandle) override;
         void                    setPickableObjectEnabled        (PickableObjectHandle pickableHandle, bool isEnabled) override;
-        [[nodiscard]] const PickableObject&   getPickableObject               (PickableObjectHandle pickableHandle) const final override;
-        [[nodiscard]] const PickableObjectMemoryPool& getPickableObjects              () const;
+        [[nodiscard]] const PickableObject& getPickableObject   (PickableObjectHandle pickableHandle) const final override;
+        [[nodiscard]] const PickableObjectMemoryPool& getPickableObjects() const;
 
         // Render targets
         RenderTargetHandle      allocateRenderTarget            (RenderTargetHandle targetHandle) override;
         void                    releaseRenderTarget             (RenderTargetHandle targetHandle) override;
-        [[nodiscard]] bool                    isRenderTargetAllocated         (RenderTargetHandle targetHandle) const final override;
-        [[nodiscard]] uint32_t                  getRenderTargetCount            () const final override;
+        [[nodiscard]] bool      isRenderTargetAllocated         (RenderTargetHandle targetHandle) const final override;
+        [[nodiscard]] uint32_t  getRenderTargetCount            () const final override;
         void                    addRenderTargetRenderBuffer     (RenderTargetHandle targetHandle, RenderBufferHandle bufferHandle) override;
-        [[nodiscard]] uint32_t                  getRenderTargetRenderBufferCount(RenderTargetHandle targetHandle) const final override;
-        [[nodiscard]] RenderBufferHandle      getRenderTargetRenderBuffer     (RenderTargetHandle targetHandle, uint32_t bufferIndex) const final override;
-        [[nodiscard]] const RenderTargetMemoryPool&   getRenderTargets                () const;
+        [[nodiscard]] uint32_t  getRenderTargetRenderBufferCount(RenderTargetHandle targetHandle) const final override;
+        [[nodiscard]] RenderBufferHandle getRenderTargetRenderBuffer(RenderTargetHandle targetHandle, uint32_t bufferIndex) const final override;
+        [[nodiscard]] const RenderTargetMemoryPool& getRenderTargets() const;
 
         // Render buffers
         RenderBufferHandle      allocateRenderBuffer            (const RenderBuffer& renderBuffer, RenderBufferHandle handle) override;
         void                    releaseRenderBuffer             (RenderBufferHandle handle) override;
-        [[nodiscard]] bool                    isRenderBufferAllocated         (RenderBufferHandle handle) const final override;
-        [[nodiscard]] uint32_t                  getRenderBufferCount            () const final override;
-        [[nodiscard]] const RenderBuffer&     getRenderBuffer                 (RenderBufferHandle handle) const final override;
-        [[nodiscard]] const RenderBufferMemoryPool&   getRenderBuffers                () const;
+        void                    setRenderBufferProperties       (RenderBufferHandle handle, uint32_t width, uint32_t height, uint32_t sampleCount) override;
+        [[nodiscard]] bool      isRenderBufferAllocated         (RenderBufferHandle handle) const final override;
+        [[nodiscard]] uint32_t  getRenderBufferCount            () const final override;
+        [[nodiscard]] const RenderBuffer& getRenderBuffer       (RenderBufferHandle handle) const final override;
+        [[nodiscard]] const RenderBufferMemoryPool& getRenderBuffers() const;
 
         // Data buffers
         DataBufferHandle        allocateDataBuffer              (EDataBufferType dataBufferType, EDataType dataType, uint32_t maximumSizeInBytes, DataBufferHandle handle) override;
         void                    releaseDataBuffer               (DataBufferHandle handle) override;
-        [[nodiscard]] uint32_t                  getDataBufferCount              () const final override;
+        [[nodiscard]] uint32_t  getDataBufferCount              () const final override;
         void                    updateDataBuffer                (DataBufferHandle handle, uint32_t offsetInBytes, uint32_t dataSizeInBytes, const std::byte* data) override;
-        [[nodiscard]] bool                    isDataBufferAllocated           (DataBufferHandle handle) const final override;
-        [[nodiscard]] const GeometryDataBuffer& getDataBuffer                 (DataBufferHandle handle) const final override;
-        [[nodiscard]] const DataBufferMemoryPool&      getDataBuffers                  () const;
+        [[nodiscard]] bool      isDataBufferAllocated           (DataBufferHandle handle) const final override;
+        [[nodiscard]] const GeometryDataBuffer& getDataBuffer   (DataBufferHandle handle) const final override;
+        [[nodiscard]] const DataBufferMemoryPool& getDataBuffers() const;
 
         //Texture buffers
         TextureBufferHandle     allocateTextureBuffer           (EPixelStorageFormat textureFormat, const MipMapDimensions& mipMapDimensions, TextureBufferHandle handle) override;
         void                    releaseTextureBuffer            (TextureBufferHandle handle) override;
-        [[nodiscard]] bool                    isTextureBufferAllocated        (TextureBufferHandle handle) const final override;
-        [[nodiscard]] uint32_t                  getTextureBufferCount           () const final override;
+        [[nodiscard]] bool      isTextureBufferAllocated        (TextureBufferHandle handle) const final override;
+        [[nodiscard]] uint32_t  getTextureBufferCount           () const final override;
         void                    updateTextureBuffer             (TextureBufferHandle handle, uint32_t mipLevel, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const std::byte* data) override;
-        [[nodiscard]] const TextureBuffer&    getTextureBuffer                (TextureBufferHandle handle) const final override;
-        [[nodiscard]] const TextureBufferMemoryPool&      getTextureBuffers               () const;
+        [[nodiscard]] const TextureBuffer& getTextureBuffer     (TextureBufferHandle handle) const final override;
+        [[nodiscard]] const TextureBufferMemoryPool& getTextureBuffers() const;
 
         DataSlotHandle          allocateDataSlot                (const DataSlot& dataSlot, DataSlotHandle handle) override;
         void                    releaseDataSlot                 (DataSlotHandle handle) override;
         void                    setDataSlotTexture              (DataSlotHandle handle, const ResourceContentHash& texture) override;
-        [[nodiscard]] bool                    isDataSlotAllocated             (DataSlotHandle handle) const final override;
-        [[nodiscard]] uint32_t                  getDataSlotCount                () const final override;
-        [[nodiscard]] const DataSlot&         getDataSlot                     (DataSlotHandle handle) const final override;
-        [[nodiscard]] const DataSlotMemoryPool&       getDataSlots                    () const;
+        [[nodiscard]] bool      isDataSlotAllocated             (DataSlotHandle handle) const final override;
+        [[nodiscard]] uint32_t  getDataSlotCount                () const final override;
+        [[nodiscard]] const DataSlot& getDataSlot               (DataSlotHandle handle) const final override;
+        [[nodiscard]] const DataSlotMemoryPool& getDataSlots    () const;
 
         SceneReferenceHandle    allocateSceneReference          (SceneId sceneId, SceneReferenceHandle handle) override;
         void                    releaseSceneReference           (SceneReferenceHandle handle) override;
         void                    requestSceneReferenceState      (SceneReferenceHandle handle, RendererSceneState state) override;
         void                    requestSceneReferenceFlushNotifications(SceneReferenceHandle handle, bool enable) override;
         void                    setSceneReferenceRenderOrder    (SceneReferenceHandle handle, int32_t renderOrder) override;
-        [[nodiscard]] bool                    isSceneReferenceAllocated       (SceneReferenceHandle handle) const final override;
-        [[nodiscard]] uint32_t                  getSceneReferenceCount          () const final override;
-        [[nodiscard]] const SceneReference&   getSceneReference               (SceneReferenceHandle handle) const final override;
-        [[nodiscard]] const SceneReferenceMemoryPool& getSceneReferences              () const;
+        [[nodiscard]] bool      isSceneReferenceAllocated       (SceneReferenceHandle handle) const final override;
+        [[nodiscard]] uint32_t  getSceneReferenceCount          () const final override;
+        [[nodiscard]] const SceneReference& getSceneReference   (SceneReferenceHandle handle) const final override;
+        [[nodiscard]] const SceneReferenceMemoryPool& getSceneReferences() const;
 
-        [[nodiscard]] SceneSizeInformation    getSceneSizeInformation         () const final  override;
+        [[nodiscard]] SceneSizeInformation getSceneSizeInformation() const final  override;
 
     protected:
-        [[nodiscard]] const TopologyNode&             getNode                         (NodeHandle handle) const;
-        TextureSampler&                 getTextureSamplerInternal       (TextureSamplerHandle handle);
-        RenderPass&                     getRenderPassInternal           (RenderPassHandle handle);
-        RenderGroup&                    getRenderGroupInternal          (RenderGroupHandle handle);
-        [[nodiscard]] const TopologyTransform&        getTransform                    (TransformHandle handle) const;
+        [[nodiscard]] const TopologyNode& getNode                         (NodeHandle handle) const;
+        TextureSampler&                   getTextureSamplerInternal       (TextureSamplerHandle handle);
+        RenderPass&                       getRenderPassInternal           (RenderPassHandle handle);
+        RenderGroup&                      getRenderGroupInternal          (RenderGroupHandle handle);
+        [[nodiscard]] const TopologyTransform& getTransform               (TransformHandle handle) const;
 
     private:
         template <typename TYPE>

@@ -10,7 +10,6 @@
 #include "internal/RendererLib/RendererScenes.h"
 #include "internal/RendererLib/RendererEventCollector.h"
 #include "SceneAllocateHelper.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
 #include "gtest/gtest.h"
 
 namespace ramses::internal
@@ -25,9 +24,6 @@ namespace ramses::internal
             , scene(rendererScenes.createScene(SceneInfo(SceneId(3u))))
             , sceneAllocator(scene)
         {
-            // caller is expected to have a display prefix for logs
-            ThreadLocalLog::SetPrefix(1);
-
             const DataLayoutHandle layout = sceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType::Int32) }, ResourceContentHash::Invalid());
             dataRef = sceneAllocator.allocateDataInstance(layout);
 

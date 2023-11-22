@@ -12,7 +12,6 @@
 #include "internal/RendererLib/RendererStatistics.h"
 #include "internal/RendererLib/RendererEventCollector.h"
 #include "internal/PlatformAbstraction/PlatformThread.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
 
 using namespace testing;
 
@@ -25,9 +24,6 @@ namespace ramses::internal
             : rendererScenes(eventCollector)
             , expirationMonitor(rendererScenes, eventCollector, statistics)
         {
-            // caller is expected to have a display prefix for logs
-            ThreadLocalLog::SetPrefix(1);
-
             rendererScenes.createScene(SceneInfo{ scene1 });
             rendererScenes.createScene(SceneInfo{ scene2 });
             rendererScenes.createScene(SceneInfo{ scene3 });

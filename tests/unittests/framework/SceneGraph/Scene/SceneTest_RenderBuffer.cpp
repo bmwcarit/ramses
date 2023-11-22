@@ -51,6 +51,21 @@ namespace ramses::internal
         EXPECT_FALSE(this->m_scene.isRenderBufferAllocated(buffer));
     }
 
+    TYPED_TEST(AScene, canSetRenderBufferProperties)
+    {
+        const RenderBufferHandle buffer(13u);
+        EXPECT_EQ(buffer, this->m_scene.allocateRenderBuffer({ 1u, 2u, EPixelStorageFormat::Depth16, ERenderBufferAccessMode::ReadWrite, 0u }, buffer));
+
+        this->m_scene.setRenderBufferProperties(buffer, 3u, 4u, 8u);
+
+        const RenderBuffer& renderBuffer = this->m_scene.getRenderBuffer(buffer);
+        EXPECT_EQ(3u, renderBuffer.width);
+        EXPECT_EQ(4u, renderBuffer.height);
+        EXPECT_EQ(EPixelStorageFormat::Depth16, renderBuffer.format);
+        EXPECT_EQ(ERenderBufferAccessMode::ReadWrite, renderBuffer.accessMode);
+        EXPECT_EQ(8u, renderBuffer.sampleCount);
+    }
+
     TYPED_TEST(AScene, canCreateMultipleRenderBuffers)
     {
         const RenderBufferHandle buffer1(13u);

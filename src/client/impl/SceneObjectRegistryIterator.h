@@ -18,9 +18,9 @@ namespace ramses::internal
     {
     public:
         SceneObjectRegistryIterator(const SceneObjectRegistry& registry, ERamsesObjectType type)
-            : m_objects(registry.m_objects[static_cast<int>(type)])
-            , m_objectsTotalCount(m_objects.getTotalCount())
-            , m_current(0u)
+            : m_objects{ registry.m_objects[static_cast<int>(type)] }
+            , m_current{ m_objects.cbegin() }
+            , m_objectsTotalCount{ m_objects.size() }
         {
             assert(RamsesObjectTypeUtils::IsConcreteType(type));
         }
@@ -29,18 +29,15 @@ namespace ramses::internal
         const T* getNext()
         {
             static_assert(std::is_base_of_v<SceneObject, T>);
-            assert((m_objectsTotalCount == m_objects.getTotalCount()) && "Container size changed while iterating!");
-            for (; m_current < m_objectsTotalCount; ++m_current)
-            {
-                if (m_objects.isAllocated(m_current))
-                {
-                    const SceneObject& obj = **m_objects.getMemory(m_current);
-                    ++m_current;
-                    return &RamsesObjectTypeUtils::ConvertTo<T>(obj);
-                }
-            }
+            assert((m_objectsTotalCount == m_objects.size()) && "Container size changed while iterating!");
 
-            return nullptr;
+            if (m_current == m_objects.cend())
+                return nullptr;
+
+            const auto obj = *m_current;
+            ++m_current;
+
+            return &RamsesObjectTypeUtils::ConvertTo<T>(*obj);
         }
 
         template <typename T = SceneObject>
@@ -51,8 +48,8 @@ namespace ramses::internal
         }
 
     private:
-        const SceneObjectRegistry::SceneObjectsPool&  m_objects;
-        const uint32_t                                m_objectsTotalCount;
-        SceneObjectRegistryHandle                     m_current;
+        const std::vector<SceneObject*>& m_objects;
+        std::vector<SceneObject*>::const_iterator m_current;
+        size_t m_objectsTotalCount = 0u;
     };
 }

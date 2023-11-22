@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "internal/Platform/Wayland/WaylandEGLExtensionProcs.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "internal/Core/Utils/StringUtils.h"
 
 #include <cassert>
@@ -98,7 +98,7 @@ namespace ramses::internal
         {
             return true;
         }
-        LOG_INFO(CONTEXT_RENDERER, "WaylandEGLExtensionProcs::CheckExtensionAvailable Extension " << extensionName << " not supported!");
+        LOG_INFO(CONTEXT_RENDERER, "WaylandEGLExtensionProcs::CheckExtensionAvailable Extension {} not supported!", extensionName);
         return false;
     }
 

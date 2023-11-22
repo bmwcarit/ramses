@@ -8,7 +8,7 @@
 //  -------------------------------------------------------------------------
 
 #include "internal/Platform/Wayland/EmbeddedCompositor/LinuxDmabuf.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 #include <unistd.h>
 
@@ -130,7 +130,7 @@ namespace ramses::internal
 
         m_numPlanes++;
 
-        LOG_INFO(CONTEXT_RENDERER, "LinuxDmabufBufferData::setPlaneData(): plane data is set successfully, no. planes :" << m_numPlanes);
+        LOG_INFO(CONTEXT_RENDERER, "LinuxDmabufBufferData::setPlaneData(): plane data is set successfully, no. planes :{}", m_numPlanes);
     }
 
     int32_t LinuxDmabufBufferData::getWidth()

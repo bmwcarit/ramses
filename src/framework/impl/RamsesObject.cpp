@@ -27,6 +27,7 @@
 #include "ramses/client/logic/AnimationNode.h"
 #include "ramses/client/logic/TimerNode.h"
 #include "ramses/client/logic/AnchorPoint.h"
+#include "ramses/client/logic/RenderBufferBinding.h"
 
 #include "ramses/client/Effect.h"
 #include "ramses/client/RamsesClient.h"
@@ -128,41 +129,43 @@ namespace ramses
         return dynamic_cast<T*>(this);
     }
 
-    template RAMSES_API const LogicObject*        RamsesObject::internalCast() const;
-    template RAMSES_API const LogicNode*          RamsesObject::internalCast() const;
-    template RAMSES_API const RamsesBinding*      RamsesObject::internalCast() const;
-    template RAMSES_API const LuaModule*          RamsesObject::internalCast() const;
-    template RAMSES_API const LuaScript*          RamsesObject::internalCast() const;
-    template RAMSES_API const LuaInterface*       RamsesObject::internalCast() const;
-    template RAMSES_API const NodeBinding*        RamsesObject::internalCast() const;
-    template RAMSES_API const AppearanceBinding*  RamsesObject::internalCast() const;
-    template RAMSES_API const CameraBinding*      RamsesObject::internalCast() const;
-    template RAMSES_API const RenderPassBinding*  RamsesObject::internalCast() const;
-    template RAMSES_API const RenderGroupBinding* RamsesObject::internalCast() const;
-    template RAMSES_API const MeshNodeBinding*    RamsesObject::internalCast() const;
-    template RAMSES_API const SkinBinding*        RamsesObject::internalCast() const;
-    template RAMSES_API const DataArray*          RamsesObject::internalCast() const;
-    template RAMSES_API const AnimationNode*      RamsesObject::internalCast() const;
-    template RAMSES_API const TimerNode*          RamsesObject::internalCast() const;
-    template RAMSES_API const AnchorPoint*        RamsesObject::internalCast() const;
+    template RAMSES_API const LogicObject*         RamsesObject::internalCast() const;
+    template RAMSES_API const LogicNode*           RamsesObject::internalCast() const;
+    template RAMSES_API const RamsesBinding*       RamsesObject::internalCast() const;
+    template RAMSES_API const LuaModule*           RamsesObject::internalCast() const;
+    template RAMSES_API const LuaScript*           RamsesObject::internalCast() const;
+    template RAMSES_API const LuaInterface*        RamsesObject::internalCast() const;
+    template RAMSES_API const NodeBinding*         RamsesObject::internalCast() const;
+    template RAMSES_API const AppearanceBinding*   RamsesObject::internalCast() const;
+    template RAMSES_API const CameraBinding*       RamsesObject::internalCast() const;
+    template RAMSES_API const RenderPassBinding*   RamsesObject::internalCast() const;
+    template RAMSES_API const RenderGroupBinding*  RamsesObject::internalCast() const;
+    template RAMSES_API const MeshNodeBinding*     RamsesObject::internalCast() const;
+    template RAMSES_API const SkinBinding*         RamsesObject::internalCast() const;
+    template RAMSES_API const DataArray*           RamsesObject::internalCast() const;
+    template RAMSES_API const AnimationNode*       RamsesObject::internalCast() const;
+    template RAMSES_API const TimerNode*           RamsesObject::internalCast() const;
+    template RAMSES_API const AnchorPoint*         RamsesObject::internalCast() const;
+    template RAMSES_API const RenderBufferBinding* RamsesObject::internalCast() const;
 
-    template RAMSES_API LogicObject*        RamsesObject::internalCast();
-    template RAMSES_API LogicNode*          RamsesObject::internalCast();
-    template RAMSES_API RamsesBinding*      RamsesObject::internalCast();
-    template RAMSES_API LuaModule*          RamsesObject::internalCast();
-    template RAMSES_API LuaScript*          RamsesObject::internalCast();
-    template RAMSES_API LuaInterface*       RamsesObject::internalCast();
-    template RAMSES_API NodeBinding*        RamsesObject::internalCast();
-    template RAMSES_API AppearanceBinding*  RamsesObject::internalCast();
-    template RAMSES_API CameraBinding*      RamsesObject::internalCast();
-    template RAMSES_API RenderPassBinding*  RamsesObject::internalCast();
-    template RAMSES_API RenderGroupBinding* RamsesObject::internalCast();
-    template RAMSES_API MeshNodeBinding*    RamsesObject::internalCast();
-    template RAMSES_API SkinBinding*        RamsesObject::internalCast();
-    template RAMSES_API DataArray*          RamsesObject::internalCast();
-    template RAMSES_API AnimationNode*      RamsesObject::internalCast();
-    template RAMSES_API TimerNode*          RamsesObject::internalCast();
-    template RAMSES_API AnchorPoint*        RamsesObject::internalCast();
+    template RAMSES_API LogicObject*         RamsesObject::internalCast();
+    template RAMSES_API LogicNode*           RamsesObject::internalCast();
+    template RAMSES_API RamsesBinding*       RamsesObject::internalCast();
+    template RAMSES_API LuaModule*           RamsesObject::internalCast();
+    template RAMSES_API LuaScript*           RamsesObject::internalCast();
+    template RAMSES_API LuaInterface*        RamsesObject::internalCast();
+    template RAMSES_API NodeBinding*         RamsesObject::internalCast();
+    template RAMSES_API AppearanceBinding*   RamsesObject::internalCast();
+    template RAMSES_API CameraBinding*       RamsesObject::internalCast();
+    template RAMSES_API RenderPassBinding*   RamsesObject::internalCast();
+    template RAMSES_API RenderGroupBinding*  RamsesObject::internalCast();
+    template RAMSES_API MeshNodeBinding*     RamsesObject::internalCast();
+    template RAMSES_API SkinBinding*         RamsesObject::internalCast();
+    template RAMSES_API DataArray*           RamsesObject::internalCast();
+    template RAMSES_API AnimationNode*       RamsesObject::internalCast();
+    template RAMSES_API TimerNode*           RamsesObject::internalCast();
+    template RAMSES_API AnchorPoint*         RamsesObject::internalCast();
+    template RAMSES_API RenderBufferBinding* RamsesObject::internalCast();
 
     template RAMSES_API const ClientObject* RamsesObject::internalCast() const;
     template RAMSES_API const RamsesObject* RamsesObject::internalCast() const;

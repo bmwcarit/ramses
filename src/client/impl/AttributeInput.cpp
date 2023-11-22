@@ -16,6 +16,16 @@ namespace ramses
     {
     }
 
+    AttributeInput::~AttributeInput() = default;
+
+    AttributeInput::AttributeInput(const AttributeInput& other) = default;
+
+    AttributeInput::AttributeInput(AttributeInput&& other) noexcept = default;
+
+    AttributeInput& AttributeInput::operator=(const AttributeInput& other) = default;
+
+    AttributeInput& AttributeInput::operator=(AttributeInput&& other) noexcept = default;
+
     EEffectAttributeSemantic AttributeInput::getSemantics() const
     {
         return m_impl->getAttributeSemantics();

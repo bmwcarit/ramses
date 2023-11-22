@@ -13,7 +13,7 @@
 #include "internal/RendererLib/DisplayConfig.h"
 #include "internal/Platform/EGL/Context_EGL.h"
 #include "internal/Platform/OpenGL/Device_GL.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include <optional>
 
 #ifdef DEVICE_EGL_EXTENSION_SUPPORTED
@@ -50,7 +50,7 @@ namespace ramses::internal
                         m_glesMinorVersion = minor;
                         break;
                     }
-                    LOG_ERROR_RP(
+                    LOG_ERROR(
                         CONTEXT_RENDERER, "Context_EGL::init(): Failed to create GLES 3.{} context. Ramses will crash if any scene uses GLES 3.{} features.", minor, minor);
                 }
             }
@@ -132,7 +132,7 @@ namespace ramses::internal
 
             if (context->init())
             {
-                LOG_INFO_RP(CONTEXT_RENDERER, "Context_EGL::init(): EGL 3.{} context creation succeeded (swap interval:{})", minorVersion, swapInterval);
+                LOG_INFO(CONTEXT_RENDERER, "Context_EGL::init(): EGL 3.{} context creation succeeded (swap interval:{})", minorVersion, swapInterval);
                 return context;
             }
 

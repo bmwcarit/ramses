@@ -115,9 +115,7 @@ namespace ramses::internal
 
         AddTriangles(*scene, *renderGroup);
 
-        SaveFileConfig config;
-        config.setValidationEnabled(false);
-        [[maybe_unused]] auto status = scene->saveToFile(folder + "/tempfile.ramses", config);
+        [[maybe_unused]] auto status = scene->saveToFile(folder + "/tempfile.ramses", {});
 
         client.destroy(*scene);
     }

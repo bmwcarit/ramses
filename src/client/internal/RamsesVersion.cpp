@@ -23,7 +23,7 @@ namespace ramses::internal
     {
         void WriteToStream(IOutputStream& stream, std::string_view versionString, std::string_view gitHash, EFeatureLevel featureLevel)
         {
-            LOG_INFO(CONTEXT_CLIENT, "RamsesVersion::WriteToStream: Version: " << versionString << " Git Hash: " << gitHash << " Feature Level: " << featureLevel);
+            LOG_INFO(CONTEXT_CLIENT, "RamsesVersion::WriteToStream: Version: {} Git Hash: {} Feature Level: {}", versionString, gitHash, featureLevel);
             StringOutputStream out;
             out << "[RamsesVersion:" << versionString << "]\n[GitHash:" << gitHash << "]\n[FeatureLevel:" << featureLevel << "]\n";
             stream.write(out.c_str(), out.size());
@@ -141,7 +141,7 @@ namespace ramses::internal
 
             if (!IsFeatureLevel(num))
             {
-                LOG_ERROR(CONTEXT_CLIENT, "RamsesVersion::ReadFromStream: Unknown feature level " << num << " in file, either file corrupt or file exported with future version");
+                LOG_ERROR(CONTEXT_CLIENT, "RamsesVersion::ReadFromStream: Unknown feature level {} in file, either file corrupt or file exported with future version", num);
                 return false;
             }
             outFeatureLevel = static_cast<EFeatureLevel>(num);

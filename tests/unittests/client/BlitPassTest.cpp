@@ -171,4 +171,50 @@ namespace ramses::internal
         blitpass.validate(report);
         EXPECT_TRUE(report.hasError());
     }
+
+    TEST_F(ABlitPass, failsValidationIfBlitRegionInvalidAfterRenderBufferSizeChanged)
+    {
+        EXPECT_TRUE(blitpass.setBlittingRegion(0u, 0u, 0u, 0u, 10u, 10u));
+        ValidationReport report;
+        blitpass.validate(report);
+        EXPECT_FALSE(report.hasIssue());
+
+        // make source RB too small
+        EXPECT_TRUE(sourceRenderBuffer.impl().setProperties(9u, 100u, 0u));
+
+        report.clear();
+        blitpass.validate(report);
+        ASSERT_TRUE(report.hasError());
+        EXPECT_EQ(&blitpass, report.getIssues().front().object);
+        EXPECT_EQ(EIssueType::Error, report.getIssues().front().type);
+        EXPECT_EQ("blitpass blit region out of source or destination buffer size", report.getIssues().front().message);
+
+        EXPECT_TRUE(sourceRenderBuffer.impl().setProperties(100u, 9u, 0u));
+        report.clear();
+        blitpass.validate(report);
+        EXPECT_TRUE(report.hasError());
+
+        // make big enough again
+        EXPECT_TRUE(sourceRenderBuffer.impl().setProperties(100u, 100u, 0u));
+        report.clear();
+        blitpass.validate(report);
+        EXPECT_FALSE(report.hasError());
+
+        // make dest RB too small
+        EXPECT_TRUE(destinationRenderBuffer.impl().setProperties(9u, 100u, 0u));
+        report.clear();
+        blitpass.validate(report);
+        EXPECT_TRUE(report.hasError());
+
+        EXPECT_TRUE(destinationRenderBuffer.impl().setProperties(100u, 9u, 0u));
+        report.clear();
+        blitpass.validate(report);
+        EXPECT_TRUE(report.hasError());
+
+        // make big enough again
+        EXPECT_TRUE(destinationRenderBuffer.impl().setProperties(100u, 100u, 0u));
+        report.clear();
+        blitpass.validate(report);
+        EXPECT_FALSE(report.hasError());
+    }
 }

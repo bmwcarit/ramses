@@ -22,6 +22,7 @@
 #include "ramses/client/logic/AnimationNode.h"
 #include "ramses/client/logic/AnimationNodeConfig.h"
 #include "ramses/client/logic/LuaInterface.h"
+#include "ramses/client/logic/RenderBufferBinding.h"
 
 #include "ramses/client/EffectDescription.h"
 #include "ramses/client/Effect.h"
@@ -42,6 +43,7 @@
 #include "impl/logic/NodeBindingImpl.h"
 #include "impl/logic/RenderGroupBindingImpl.h"
 #include "impl/logic/RenderPassBindingImpl.h"
+#include "impl/logic/RenderBufferBindingImpl.h"
 #include "internal/logic/ApiObjects.h"
 #include "internal/logic/FileUtils.h"
 #include "LogTestUtils.h"
@@ -56,8 +58,6 @@
 
 namespace ramses::internal
 {
-    const size_t SCENE_ISSUES = 6u;
-
     class ALogicEngine_Serialization : public ALogicEngineBase, public ::testing::TestWithParam<ramses::EFeatureLevel>
     {
     public:
@@ -127,15 +127,16 @@ namespace ramses::internal
             createRenderGroupBinding(logicEngine);
             createSkinBinding(*nodeBinding, *appearanceBinding, logicEngine);
             logicEngine.createMeshNodeBinding(*m_meshNode, "mb");
+            logicEngine.createRenderBufferBinding(*m_renderBuffer, "rb");
 
             EXPECT_TRUE(logicEngine.update());
-            EXPECT_TRUE(saveToFileWithoutValidation("LogicEngine.bin"));
+            EXPECT_TRUE(saveToFile("LogicEngine.bin"));
 
             EXPECT_TRUE(recreateFromFile("LogicEngine.bin"));
             expectNoError();
 
             const std::vector<std::string> names{ "module", "script", "nodeBinding", "appearanceBinding", "cameraBinding", "dataArray", "animNode",
-                "timerNode", "intf", "rpBinding", "anchor", "renderGroupBinding", "skin", "mb" };
+                "timerNode", "intf", "rpBinding", "anchor", "renderGroupBinding", "skin", "mb", "rb" };
 
             std::vector<LogicObject*> objects;
             for (const auto& name : names)
@@ -157,7 +158,7 @@ namespace ramses::internal
     TEST_P(ALogicEngine_Serialization, ProducesErrorWhenProvidingAFolderAsTargetForSaving)
     {
         fs::create_directories("folder");
-        EXPECT_FALSE(saveToFileWithoutValidation("folder"));
+        EXPECT_FALSE(saveToFile("folder"));
         EXPECT_EQ("Scene::saveToFile failed, could not open file for writing: 'folder'", getLastErrorMessage());
     }
 
@@ -209,14 +210,14 @@ namespace ramses::internal
 #ifndef _WIN32
     TEST_P(ALogicEngine_Serialization, CanBeDeserializedFromHardLink)
     {
-        ASSERT_TRUE(saveToFileWithoutValidation("testfile.bin"));
+        ASSERT_TRUE(saveToFile("testfile.bin"));
         fs::create_hard_link("testfile.bin", "hardlink");
         EXPECT_TRUE(recreateFromFile("hardlink"));
     }
 
     TEST_P(ALogicEngine_Serialization, CanBeDeserializedFromSymLink)
     {
-        ASSERT_TRUE(saveToFileWithoutValidation("testfile.bin"));
+        ASSERT_TRUE(saveToFile("testfile.bin"));
         fs::create_symlink("testfile.bin", "symlink");
         EXPECT_TRUE(recreateFromFile("symlink"));
     }
@@ -225,7 +226,7 @@ namespace ramses::internal
     TEST_P(ALogicEngine_Serialization, ProducesNoErrorIfDeserializedWithNoScriptsAndNoNodeBindings)
     {
         {
-            ASSERT_TRUE(saveToFileWithoutValidation("LogicEngine.bin"));
+            ASSERT_TRUE(saveToFile("LogicEngine.bin"));
         }
         {
             EXPECT_TRUE(recreateFromFile("LogicEngine.bin"));
@@ -239,7 +240,7 @@ namespace ramses::internal
             LogicEngine& logicEngine = *m_logicEngine;
             logicEngine.createNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "binding");
 
-            ASSERT_TRUE(saveToFileWithoutValidation("LogicEngine.bin"));
+            ASSERT_TRUE(saveToFile("LogicEngine.bin"));
         }
         {
             EXPECT_TRUE(recreateFromFile("LogicEngine.bin"));
@@ -264,7 +265,7 @@ namespace ramses::internal
                 end
             )", {}, "luascript");
 
-            ASSERT_TRUE(saveToFileWithoutValidation("LogicEngine.bin"));
+            ASSERT_TRUE(saveToFile("LogicEngine.bin"));
         }
         {
             EXPECT_TRUE(recreateFromFile("LogicEngine.bin"));
@@ -280,32 +281,6 @@ namespace ramses::internal
         }
     }
 
-    TEST_P(ALogicEngine_Serialization, ProducesErrorIfSavedWithValidationError)
-    {
-        // Put logic engine to a dirty state (create new object and don't call update)
-        NodeBinding* nodeBinding = m_logicEngine->createNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "binding");
-
-        std::vector<std::string> messages;
-        std::vector<ELogLevel> messageTypes;
-        ScopedLogContextLevel scopedLogs(CONTEXT_CLIENT, ELogLevel::Warn, [&](ELogLevel msgType, std::string_view message) {
-            messages.emplace_back(message);
-            messageTypes.emplace_back(msgType);
-        });
-
-        // Set a value and save -> causes warning
-        nodeBinding->getInputs()->getChild("visibility")->set<bool>(false);
-        ASSERT_TRUE(nodeBinding->impl().isDirty());
-        ASSERT_FALSE(saveToFile("LogicEngine.bin"));
-
-        ASSERT_EQ(SCENE_ISSUES + 3u, messages.size());
-        EXPECT_EQ("Saving logic engine content with manually updated binding values without calling update() will result in those values being lost!", messages[0]);
-        EXPECT_EQ("[binding [LogicObject ScnObjId=9]] Node [binding] has no ingoing links! Node should be deleted or properly linked!", messages[1]);
-        EXPECT_EQ("Failed to saveToFile() because validation errors were encountered! Refer to the documentation of saveToFile() for details how to address these gracefully.", messages.back());
-        EXPECT_EQ(ELogLevel::Warn, messageTypes[0]);
-        EXPECT_EQ(ELogLevel::Warn, messageTypes[1]);
-        EXPECT_EQ(ELogLevel::Error, messageTypes.back());
-    }
-
     TEST_P(ALogicEngine_Serialization, ProducesNoErrorIfDeserilizedSuccessfully)
     {
         saveAndLoadAllTypesOfObjects();
@@ -315,13 +290,13 @@ namespace ramses::internal
 
             {
                 auto moduleByName = m_logicEngine->findObject<LuaModule>("module");
-                auto moduleById = m_logicEngine->findObject(sceneObjectId_t{ 9u });
+                auto moduleById = m_logicEngine->findObject(sceneObjectId_t{ 10u });
                 ASSERT_NE(nullptr, moduleByName);
                 ASSERT_EQ(moduleById, moduleByName);
             }
             {
                 auto scriptByName = m_logicEngine->findObject<LuaScript>("script");
-                auto scriptById = m_logicEngine->findObject(sceneObjectId_t{ 10u });
+                auto scriptById = m_logicEngine->findObject(sceneObjectId_t{ 11u });
                 ASSERT_NE(nullptr, scriptByName);
                 ASSERT_EQ(scriptById, scriptByName);
                 const auto inputs = scriptByName->getInputs();
@@ -331,7 +306,7 @@ namespace ramses::internal
             }
             {
                 auto rNodeBindingByName = m_logicEngine->findObject<NodeBinding>("nodeBinding");
-                auto rNodeBindingById = m_logicEngine->findObject(sceneObjectId_t{ 11u });
+                auto rNodeBindingById = m_logicEngine->findObject(sceneObjectId_t{ 12u });
                 ASSERT_NE(nullptr, rNodeBindingByName);
                 ASSERT_EQ(rNodeBindingById, rNodeBindingByName);
                 const auto inputs = rNodeBindingByName->getInputs();
@@ -341,7 +316,7 @@ namespace ramses::internal
             }
             {
                 auto rCameraBindingByName = m_logicEngine->findObject<CameraBinding>("cameraBinding");
-                auto rCameraBindingById = m_logicEngine->findObject(sceneObjectId_t{ 13u });
+                auto rCameraBindingById = m_logicEngine->findObject(sceneObjectId_t{ 14u });
                 ASSERT_NE(nullptr, rCameraBindingByName);
                 ASSERT_EQ(rCameraBindingById, rCameraBindingByName);
                 const auto inputs = rCameraBindingByName->getInputs();
@@ -351,7 +326,7 @@ namespace ramses::internal
             }
             {
                 auto rAppearanceBindingByName = m_logicEngine->findObject<AppearanceBinding>("appearanceBinding");
-                auto rAppearanceBindingById = m_logicEngine->findObject(sceneObjectId_t{ 12u });
+                auto rAppearanceBindingById = m_logicEngine->findObject(sceneObjectId_t{ 13u });
                 ASSERT_NE(nullptr, rAppearanceBindingByName);
                 ASSERT_EQ(rAppearanceBindingById, rAppearanceBindingByName);
                 const auto inputs = rAppearanceBindingByName->getInputs();
@@ -366,7 +341,7 @@ namespace ramses::internal
             }
             {
                 const auto dataArrayByName = m_logicEngine->findObject<DataArray>("dataArray");
-                const auto dataArrayById = m_logicEngine->findObject(sceneObjectId_t{ 14u });
+                const auto dataArrayById = m_logicEngine->findObject(sceneObjectId_t{ 15u });
                 ASSERT_NE(nullptr, dataArrayByName);
                 ASSERT_EQ(dataArrayById, dataArrayByName);
                 EXPECT_EQ(EPropertyType::Float, dataArrayByName->getDataType());
@@ -375,7 +350,7 @@ namespace ramses::internal
                 EXPECT_EQ(expectedData, *m_logicEngine->findObject<DataArray>("dataArray")->getData<float>());
 
                 const auto animNodeByName = m_logicEngine->findObject<AnimationNode>("animNode");
-                const auto animNodeById = m_logicEngine->findObject(sceneObjectId_t{ 15u });
+                const auto animNodeById = m_logicEngine->findObject(sceneObjectId_t{ 16u });
                 ASSERT_NE(nullptr, animNodeByName);
                 ASSERT_EQ(animNodeById, animNodeByName);
                 ASSERT_EQ(1u, animNodeByName->getChannels().size());
@@ -384,7 +359,7 @@ namespace ramses::internal
             }
             {
                 auto rpBindingByName = m_logicEngine->findObject<RenderPassBinding>("rpBinding");
-                auto rpBindingById = m_logicEngine->findObject(sceneObjectId_t{ 18u });
+                auto rpBindingById = m_logicEngine->findObject(sceneObjectId_t{ 19u });
                 ASSERT_NE(nullptr, rpBindingByName);
                 ASSERT_EQ(rpBindingById, rpBindingByName);
                 const auto inputs = rpBindingByName->getInputs();
@@ -393,7 +368,7 @@ namespace ramses::internal
                 EXPECT_FALSE(rpBindingByName->impl().isDirty());
 
                 auto anchorByName = m_logicEngine->findObject<AnchorPoint>("anchor");
-                auto anchorById = m_logicEngine->findObject(sceneObjectId_t{ 19u });
+                auto anchorById = m_logicEngine->findObject(sceneObjectId_t{ 20u });
                 ASSERT_NE(nullptr, anchorByName);
                 ASSERT_EQ(anchorById, anchorByName);
                 const auto outputs = anchorByName->getOutputs();
@@ -402,7 +377,7 @@ namespace ramses::internal
             }
             {
                 auto rgBindingByName = m_logicEngine->findObject<RenderGroupBinding>("renderGroupBinding");
-                auto rgBindingById = m_logicEngine->findObject(sceneObjectId_t{ 20u });
+                auto rgBindingById = m_logicEngine->findObject(sceneObjectId_t{ 21u });
                 ASSERT_NE(nullptr, rgBindingByName);
                 ASSERT_EQ(rgBindingById, rgBindingByName);
                 const auto inputs = rgBindingByName->getInputs();
@@ -413,19 +388,29 @@ namespace ramses::internal
             }
             {
                 auto skinByName = m_logicEngine->findObject<SkinBinding>("skin");
-                auto skinById = m_logicEngine->findObject(sceneObjectId_t{ 21u });
+                auto skinById = m_logicEngine->findObject(sceneObjectId_t{ 22u });
                 ASSERT_NE(nullptr, skinByName);
                 ASSERT_EQ(skinById, skinByName);
             }
             {
                 auto meshBindingByName = m_logicEngine->findObject<MeshNodeBinding>("mb");
-                auto meshBindingById = m_logicEngine->findObject(sceneObjectId_t{ 22u });
+                auto meshBindingById = m_logicEngine->findObject(sceneObjectId_t{ 23u });
                 ASSERT_NE(nullptr, meshBindingByName);
                 ASSERT_EQ(meshBindingById, meshBindingByName);
                 const auto inputs = meshBindingByName->getInputs();
                 ASSERT_NE(nullptr, inputs);
                 EXPECT_EQ(4u, inputs->getChildCount());
                 EXPECT_FALSE(meshBindingByName->impl().isDirty());
+            }
+            {
+                auto rbBindingByName = m_logicEngine->findObject<RenderBufferBinding>("rb");
+                auto rbBindingById = m_logicEngine->findObject(sceneObjectId_t{ 24u });
+                ASSERT_NE(nullptr, rbBindingByName);
+                ASSERT_EQ(rbBindingById, rbBindingByName);
+                const auto inputs = rbBindingByName->getInputs();
+                ASSERT_NE(nullptr, inputs);
+                EXPECT_EQ(3u, inputs->getChildCount());
+                EXPECT_FALSE(rbBindingByName->impl().isDirty());
             }
         }
     }
@@ -443,7 +428,7 @@ namespace ramses::internal
             )", {}, "luascript");
 
             logicEngine.createNodeBinding(*m_node, ramses::ERotationType::Euler_XYZ, "binding");
-            ASSERT_TRUE(saveToFileWithoutValidation("LogicEngine.bin"));
+            ASSERT_TRUE(saveToFile("LogicEngine.bin"));
         }
         {
             m_logicEngine->createLuaScript(R"(
@@ -498,7 +483,7 @@ namespace ramses::internal
             EXPECT_TRUE(logicEngine.link(*srcOutput1, *tgtInput1));
             EXPECT_TRUE(logicEngine.linkWeak(*srcOutput2, *tgtInput2));
 
-            ASSERT_TRUE(saveToFileWithoutValidation("LogicEngine.bin"));
+            ASSERT_TRUE(saveToFile("LogicEngine.bin"));
         }
         {
             EXPECT_TRUE(recreateFromFile("LogicEngine.bin"));
@@ -561,7 +546,7 @@ namespace ramses::internal
         auto targetScript = m_logicEngine->createLuaScript(scriptSource, {}, "TargetScript");
 
         // Save logic engine state without links to file
-        ASSERT_TRUE(saveToFileWithoutValidation("LogicEngine.bin"));
+        ASSERT_TRUE(saveToFile("LogicEngine.bin"));
 
         // Create link (should be wiped after loading from file)
         auto output = sourceScript->getOutputs()->getChild("output");
@@ -615,7 +600,7 @@ namespace ramses::internal
             config.addDependency("mymath", *mymath);
             logicEngineForSaving.createLuaScript(script, config, "script");
 
-            ASSERT_TRUE(saveToFileWithoutValidation("LogicEngine.bin"));
+            ASSERT_TRUE(saveToFile("LogicEngine.bin"));
         }
 
         // Create a module with name colliding with the one from file - it should be deleted
@@ -655,7 +640,7 @@ namespace ramses::internal
             )", {}, "luascript");
             serializedId = script->getSceneObjectId();
 
-            ASSERT_TRUE(saveToFileWithoutValidation("LogicEngine.bin"));
+            ASSERT_TRUE(saveToFile("LogicEngine.bin"));
         }
 
         EXPECT_TRUE(recreateFromFile("LogicEngine.bin"));
@@ -713,7 +698,7 @@ namespace ramses::internal
             EXPECT_TRUE(skin->setUserId(25u, 26u));
             EXPECT_TRUE(meshBinding->setUserId(27u, 28u));
 
-            ASSERT_TRUE(saveToFileWithoutValidation("LogicEngine.bin"));
+            ASSERT_TRUE(saveToFile("LogicEngine.bin"));
         }
 
         EXPECT_TRUE(recreateFromFile("LogicEngine.bin"));
@@ -827,7 +812,7 @@ namespace ramses::internal
         }
 
         // just check that the iterating over all props works
-        EXPECT_EQ(50, propsCount);
+        EXPECT_EQ(54, propsCount);
     }
 
     TEST_P(ALogicEngine_Serialization, persistsPropertyImplToHLObjectMapping)
@@ -858,6 +843,6 @@ namespace ramses::internal
         }
 
         // just check that the iterating over all props works
-        EXPECT_EQ(50, propsCount);
+        EXPECT_EQ(54, propsCount);
     }
 }

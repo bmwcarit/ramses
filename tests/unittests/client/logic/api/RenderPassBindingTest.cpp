@@ -475,7 +475,7 @@ namespace ramses::internal
     {
         {
             m_logicEngine->createRenderPassBinding(*m_renderPass, "renderPass");
-            ASSERT_TRUE(saveToFileWithoutValidation("binding.bin"));
+            ASSERT_TRUE(saveToFile("binding.bin"));
         }
 
         {
@@ -506,7 +506,7 @@ namespace ramses::internal
             binding.getInputs()->getChild("renderOrder")->set(42);
             m_logicEngine->update();
             EXPECT_EQ(42, m_renderPass->getRenderOrder());
-            ASSERT_TRUE(saveToFileWithoutValidation("logic.bin"));
+            ASSERT_TRUE(saveToFile("logic.bin"));
         }
 
         {
@@ -552,7 +552,7 @@ namespace ramses::internal
             // or any set() calls to the corresponding RenderPassBinding input
             m_renderPass->setRenderOnce(true);
 
-            ASSERT_TRUE(saveToFileWithoutValidation("SomeValuesLinked.bin"));
+            ASSERT_TRUE(saveToFile("SomeValuesLinked.bin"));
         }
 
         {

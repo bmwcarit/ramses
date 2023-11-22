@@ -19,7 +19,7 @@
 #include "internal/RendererLib/DisplayConfig.h"
 #include "internal/RendererLib/PlatformBase/TextureUploadingAdapter_Base.h"
 #include "internal/RendererLib/PlatformBase/EmbeddedCompositor_Dummy.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {
@@ -52,21 +52,21 @@ namespace ramses::internal
     {
         if (m_rendererConfig.getSystemCompositorControlEnabled() && !createSystemCompositorController())
         {
-            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: will not create render backend components because system compositor controller creation failed");
+            LOG_ERROR(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: will not create render backend components because system compositor controller creation failed");
             return nullptr;
         }
 
         assert(!m_window);
         if (!createWindow(displayConfig, windowEventHandler))
         {
-            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: window creation failed");
+            LOG_ERROR(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: window creation failed");
             return nullptr;
         }
 
         assert(!m_context);
         if (!createContext(displayConfig))
         {
-            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: context creation failed");
+            LOG_ERROR(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: context creation failed");
             m_window.reset();
             return nullptr;
         }
@@ -76,7 +76,7 @@ namespace ramses::internal
         assert(!m_deviceExtension);
         if(!createDeviceExtension(displayConfig))
         {
-            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: device extension creation failed");
+            LOG_ERROR(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: device extension creation failed");
             m_window.reset();
             m_context.reset();
             return nullptr;
@@ -85,7 +85,7 @@ namespace ramses::internal
         assert(!m_device);
         if (!createDevice())
         {
-            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: device creation failed");
+            LOG_ERROR(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: device creation failed");
             m_deviceExtension.reset();
             m_context->disable();
             m_context.reset();
@@ -96,7 +96,7 @@ namespace ramses::internal
         assert(!m_embeddedCompositor);
         if (!createEmbeddedCompositor(displayConfig))
         {
-            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: embedded compositor creation failed");
+            LOG_ERROR(CONTEXT_RENDERER, "Platform_Base:createRenderBackend: embedded compositor creation failed");
             m_device.reset();
             m_deviceExtension.reset();
             m_context->disable();
@@ -144,14 +144,14 @@ namespace ramses::internal
         assert(!m_contextUploading);
         if (!createContextUploading())
         {
-            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createResourceUploadRenderBackend: context creation failed");
+            LOG_ERROR(CONTEXT_RENDERER, "Platform_Base:createResourceUploadRenderBackend: context creation failed");
             return nullptr;
         }
 
         m_contextUploading->enable();
         if (!createDeviceUploading())
         {
-            LOG_ERROR_R(CONTEXT_RENDERER, "Platform_Base:createResourceUploadRenderBackend: device creation failed");
+            LOG_ERROR(CONTEXT_RENDERER, "Platform_Base:createResourceUploadRenderBackend: device creation failed");
             m_contextUploading->disable();
             m_contextUploading.reset();
             return nullptr;

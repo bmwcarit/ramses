@@ -22,7 +22,8 @@ namespace ramses::internal
 
     bool RendererFactory::RegisterRendererFactory()
     {
-        FrameworkFactoryRegistry::GetInstance().registerRendererFactory(std::make_unique<RendererFactory>());
+        UniquePtrWithDeleter<IRendererFactory> rendererFactory(new RendererFactory, [](IRendererFactory* rendererFactory_) { delete rendererFactory_; });
+        FrameworkFactoryRegistry::GetInstance().registerRendererFactory(std::move(rendererFactory));
         return true;
     }
 }

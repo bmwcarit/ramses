@@ -115,8 +115,7 @@ namespace ramses::internal
         , m_futurePublicationMode(sceneConfig.getPublicationMode())
         , m_hlClient(ramsesClient)
     {
-        LOG_INFO(ramses::internal::CONTEXT_CLIENT, "Scene::Scene: sceneId " << scene.getSceneId()  <<
-                 ", publicationMode " << (sceneConfig.getPublicationMode() == EScenePublicationMode::LocalAndRemote ? "LocalAndRemote" : "LocalOnly"));
+        LOG_INFO(CONTEXT_CLIENT, "Scene::Scene: sceneId {}, publicationMode {}", scene.getSceneId(), sceneConfig.getPublicationMode() == EScenePublicationMode::LocalAndRemote ? "LocalAndRemote" : "LocalOnly");
         getClientImpl().getFramework().getPeriodicLogger().registerStatisticCollectionScene(m_scene.getSceneId(), m_scene.getStatisticCollection());
         const bool enableLocalOnlyOptimization = sceneConfig.getPublicationMode() == EScenePublicationMode::LocalOnly;
         getClientImpl().getClientApplication().createScene(scene, enableLocalOnlyOptimization);
@@ -316,7 +315,7 @@ namespace ramses::internal
 
         inStream >> m_lastSceneObjectId.getReference();
 
-        LOG_DEBUG_F(ramses::internal::CONTEXT_PROFILING, ([&](ramses::internal::StringOutputStream& sos) {
+        LOG_DEBUG_F(CONTEXT_PROFILING, ([&](ramses::internal::StringOutputStream& sos) {
                     sos << "SceneImpl::deserialize: HL scene object counts for SceneID " << m_scene.getSceneId() << "\n";
                     for (uint32_t i = 0; i < objectCounts.size(); i++)
                     {
@@ -461,7 +460,7 @@ namespace ramses::internal
             return false;
         case ERamsesObjectType::SceneReference: {
             auto& sceneReference = RamsesObjectTypeUtils::ConvertTo<ramses::SceneReference>(object);
-            LOG_INFO_P(ramses::internal::CONTEXT_CLIENT, "Scene::destroySceneReference: (master {} / ref {})", getSceneId(), sceneReference.getReferencedSceneId());
+            LOG_INFO(CONTEXT_CLIENT, "Scene::destroySceneReference: (master {} / ref {})", getSceneId(), sceneReference.getReferencedSceneId());
             m_sceneReferences.remove(sceneReference.getReferencedSceneId());
             return destroyObject(object);
         }
@@ -618,7 +617,7 @@ namespace ramses::internal
         }
         if (requestedPublicationMode != EScenePublicationMode::LocalOnly && !getClientImpl().getFramework().isConnected())
         {
-            LOG_INFO(ramses::internal::CONTEXT_CLIENT, "Scene(" << m_scene.getSceneId() << ")::publish(LocalAndRemote): Scene is only published locally until framework is connected (RamsesFramework::connect)");
+            LOG_INFO(CONTEXT_CLIENT, "Scene({})::publish(LocalAndRemote): Scene is only published locally until framework is connected (RamsesFramework::connect)", m_scene.getSceneId());
         }
         getClientImpl().getClientApplication().publishScene(m_scene.getSceneId(), requestedPublicationMode);
         return true;
@@ -684,32 +683,32 @@ namespace ramses::internal
     {
         if (!containsSceneObject(sourceRenderBuffer.impl()))
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "Scene(" << m_scene.getSceneId() << ")::createBlitPass failed, source render buffer is not from this scene.");
+            LOG_ERROR(CONTEXT_CLIENT, "Scene({})::createBlitPass failed, source render buffer is not from this scene.", m_scene.getSceneId());
             return nullptr;
         }
 
         if (!containsSceneObject(destinationRenderBuffer.impl()))
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "Scene(" << m_scene.getSceneId() << ")::createBlitPass failed, destination render buffer is not from this scene.");
+            LOG_ERROR(CONTEXT_CLIENT, "Scene({})::createBlitPass failed, destination render buffer is not from this scene.", m_scene.getSceneId());
             return nullptr;
         }
 
         if (sourceRenderBuffer.getBufferFormat() != destinationRenderBuffer.getBufferFormat())
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "Scene(" << m_scene.getSceneId() << ")::createBlitPass failed, source and destination buffers have different buffer formats");
+            LOG_ERROR(CONTEXT_CLIENT, "Scene({})::createBlitPass failed, source and destination buffers have different buffer formats", m_scene.getSceneId());
             return nullptr;
         }
 
         if (sourceRenderBuffer.getHeight() != destinationRenderBuffer.getHeight() ||
             sourceRenderBuffer.getWidth() != destinationRenderBuffer.getWidth())
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "Scene(" << m_scene.getSceneId() << ")::createBlitPass failed, source and destination buffers have different dimensions");
+            LOG_ERROR(CONTEXT_CLIENT, "Scene({})::createBlitPass failed, source and destination buffers have different dimensions", m_scene.getSceneId());
             return nullptr;
         }
 
         if (&sourceRenderBuffer == &destinationRenderBuffer)
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "Scene(" << m_scene.getSceneId() << ")::createBlitPass failed, source and destination cannot be the same buffer");
+            LOG_ERROR(CONTEXT_CLIENT, "Scene({})::createBlitPass failed, source and destination cannot be the same buffer", m_scene.getSceneId());
             return nullptr;
         }
 
@@ -723,17 +722,13 @@ namespace ramses::internal
     {
         if (!containsSceneObject(geometryBuffer.impl()))
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT,
-                      "Scene(" << m_scene.getSceneId()
-                               << ")::createPickableObject failed, geometry buffer is not from this scene.");
+            LOG_ERROR(CONTEXT_CLIENT, "Scene({})::createPickableObject failed, geometry buffer is not from this scene.", m_scene.getSceneId());
             return nullptr;
         }
 
         if (geometryBuffer.getDataType() != ramses::EDataType::Vector3F || 0 != (geometryBuffer.impl().getElementCount() % 3))
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT,
-                      "Scene(" << m_scene.getSceneId()
-                               << ")::createPickableObject failed, geometry buffer has the wrong format.");
+            LOG_ERROR(CONTEXT_CLIENT, "Scene({})::createPickableObject failed, geometry buffer has the wrong format.", m_scene.getSceneId());
             return nullptr;
         }
 
@@ -747,7 +742,7 @@ namespace ramses::internal
     {
         if (0 == width || 0 == height)
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "Scene(" << m_scene.getSceneId() << ")::createRenderBuffer failed: cannot create a render buffer with 0 width and/or height!");
+            LOG_ERROR(CONTEXT_CLIENT, "Scene({})::createRenderBuffer failed: cannot create a render buffer with 0 width and/or height!", m_scene.getSceneId());
             return nullptr;
         }
 
@@ -763,7 +758,7 @@ namespace ramses::internal
         rtDesc.validate(report);
         if (report.hasError())
         {
-            LOG_ERROR(CONTEXT_CLIENT, "Scene::createRenderTarget failed, RenderTargetDescription is invalid: " << report.toString());
+            LOG_ERROR(CONTEXT_CLIENT, "Scene::createRenderTarget failed, RenderTargetDescription is invalid: {}", report.toString());
             return nullptr;
         }
 
@@ -1251,7 +1246,7 @@ namespace ramses::internal
     {
         const auto timestampOfFlushCall = m_sendEffectTimeSync ? getIScene().getEffectTimeSync() :  ramses::internal::FlushTime::Clock::now();
 
-        LOG_DEBUG_P(CONTEXT_CLIENT, "Scene::flush: sceneVersion {}, prevSceneVersion {}, syncFlushTime {}", sceneVersion, m_nextSceneVersion, ramses::internal::asMilliseconds(timestampOfFlushCall));
+        LOG_DEBUG(CONTEXT_CLIENT, "Scene::flush: sceneVersion {}, prevSceneVersion {}, syncFlushTime {}", sceneVersion, m_nextSceneVersion, ramses::internal::asMilliseconds(timestampOfFlushCall));
 
         if (m_nextSceneVersion != InvalidSceneVersionTag && sceneVersion == InvalidSceneVersionTag)
         {
@@ -1264,9 +1259,18 @@ namespace ramses::internal
         m_commandBuffer.execute(ramses::internal::SceneCommandVisitor(*this));
         applyHierarchicalVisibility();
 
-        const ramses::internal::FlushTimeInformation flushTimeInfo { m_expirationTimestamp, timestampOfFlushCall, ramses::internal::FlushTime::Clock::getClockType(), m_sendEffectTimeSync };
-        m_sendEffectTimeSync          = false;
+        if (m_scene.haveResourcesChanged())
+        {
+            const auto maybeIssue = validateRenderBufferDependingObjects();
+            if (maybeIssue)
+            {
+                getErrorReporting().set(fmt::format("Scene::flush: Flushing scene failed: {}", maybeIssue->message), maybeIssue->object);
+                return false;
+            }
+        }
 
+        const ramses::internal::FlushTimeInformation flushTimeInfo { m_expirationTimestamp, timestampOfFlushCall, ramses::internal::FlushTime::Clock::getClockType(), m_sendEffectTimeSync };
+        m_sendEffectTimeSync = false;
         if (!getClientImpl().getClientApplication().flush(m_scene.getSceneId(), flushTimeInfo, sceneVersionInternal))
         {
             getErrorReporting().set("Scene::flush: Flushing scene failed, consult logs for more details.", *this);
@@ -1281,7 +1285,7 @@ namespace ramses::internal
     {
         const auto now   = ramses::internal::FlushTime::Clock::now();
         const auto nowMs = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
-        LOG_INFO_P(CONTEXT_CLIENT, "Scene({})::resetUniformTimeMs: {}", getSceneId(), nowMs.time_since_epoch().count());
+        LOG_INFO(CONTEXT_CLIENT, "Scene({})::resetUniformTimeMs: {}", getSceneId(), nowMs.time_since_epoch().count());
         m_sendEffectTimeSync = true;
         getIScene().setEffectTimeSync(now);
         return true;
@@ -1452,6 +1456,31 @@ namespace ramses::internal
         m_objectRegistry.clearDirtyNodes();
     }
 
+    std::optional<Issue> SceneImpl::validateRenderBufferDependingObjects() const
+    {
+        SceneObjectRegistryIterator itRT{ m_objectRegistry, ERamsesObjectType::RenderTarget };
+        SceneObjectRegistryIterator itBP{ m_objectRegistry, ERamsesObjectType::BlitPass };
+
+        ValidationReportImpl report;
+        for (auto* registryIter : { &itRT, &itBP })
+        {
+            while (const auto* obj = registryIter->getNext())
+            {
+                obj->impl().onValidate(report);
+                if (report.hasError())
+                {
+                    // get last error reported
+                    const auto& issues = report.getIssues();
+                    const auto it = std::find_if(issues.crbegin(), issues.crend(), [](const auto& issue) { return issue.type == EIssueType::Error; });
+                    assert(it != issues.crend());
+                    return *it;
+                }
+            }
+        }
+
+        return std::nullopt;
+    }
+
     void SceneImpl::setSceneVersionForNextFlush(sceneVersionTag_t sceneVersion)
     {
         assert(m_nextSceneVersion == InvalidSceneVersionTag);
@@ -1515,13 +1544,13 @@ namespace ramses::internal
     {
         if (!referencedScene.isValid())
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "Scene::createSceneReference: cannot reference a scene with invalid scene ID.");
+            LOG_ERROR(CONTEXT_CLIENT, "Scene::createSceneReference: cannot reference a scene with invalid scene ID.");
             return nullptr;
         }
 
         if (referencedScene == getSceneId())
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "Scene::createSceneReference: cannot self reference.");
+            LOG_ERROR(CONTEXT_CLIENT, "Scene::createSceneReference: cannot self reference.");
             return nullptr;
         }
 
@@ -1529,13 +1558,13 @@ namespace ramses::internal
         {
             if (getClientImpl().findSceneReference(scene->getSceneId(), referencedScene) != nullptr)
             {
-                LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "Scene::createSceneReference: there is already a SceneReference with sceneId "
-                    << referencedScene << " in master scene " << scene->getSceneId() << ", cannot create another one");
+                LOG_ERROR(CONTEXT_CLIENT, "Scene::createSceneReference: there is already a SceneReference with sceneId {} in master scene {}, cannot create another one",
+                    referencedScene, scene->getSceneId());
                 return nullptr;
             }
         }
 
-        LOG_INFO_P(ramses::internal::CONTEXT_CLIENT, "Scene::createSceneReference: creating scene reference (master {} / ref {})", getSceneId(), referencedScene);
+        LOG_INFO(CONTEXT_CLIENT, "Scene::createSceneReference: creating scene reference (master {} / ref {})", getSceneId(), referencedScene);
 
         auto pimpl = std::make_unique<SceneReferenceImpl>(*this, name);
         pimpl->initializeFrameworkData(referencedScene);
@@ -1621,7 +1650,7 @@ namespace ramses::internal
     {
         if (0u == numElements || nullptr == arrayData)
         {
-            LOG_ERROR(ramses::internal::CONTEXT_CLIENT, "Scene::createArrayResource: Array resource must have element count > 0 and data must not be nullptr!");
+            LOG_ERROR(CONTEXT_CLIENT, "Scene::createArrayResource: Array resource must have element count > 0 and data must not be nullptr!");
             return nullptr;
         }
 
@@ -1732,7 +1761,7 @@ namespace ramses::internal
         ramses::internal::ManagedResource res = getClientImpl().createManagedEffect(effectDesc, name, m_effectErrorMessages);
         if (!res)
         {
-            LOG_ERROR(CONTEXT_CLIENT, "Scene::createEffect: failed to create managed effect resource: " << m_effectErrorMessages);
+            LOG_ERROR(CONTEXT_CLIENT, "Scene::createEffect: failed to create managed effect resource: {}", m_effectErrorMessages);
             return nullptr;
         }
 
@@ -1797,32 +1826,6 @@ namespace ramses::internal
 
     bool SceneImpl::serialize(std::vector<std::byte>& outputBuffer, const SaveFileConfigImpl& config) const
     {
-        if (config.getValidationEnabled())
-        {
-            ValidationReportImpl report;
-            validate(report);
-
-            for (const auto& msg : report.getIssues())
-            {
-                if (msg.object)
-                {
-                    LOG_WARN_P(CONTEXT_CLIENT, "[{}] {}", msg.object->impl().getIdentificationString(), msg.message);
-                }
-                else
-                {
-                    LOG_WARN_P(CONTEXT_CLIENT, "{}", msg.message);
-                }
-            }
-
-            if (report.hasError())
-            {
-                getErrorReporting().set(
-                    "Failed to saveToFile() because validation errors were encountered! "
-                    "Refer to the documentation of saveToFile() for details how to address these gracefully.");
-                return false;
-            }
-        }
-
         ramses::internal::BinaryOutputStream outputStream;
         const EFeatureLevel featureLevel = m_hlClient.impl().getFramework().getFeatureLevel();
         ramses::internal::RamsesVersion::WriteToStream(outputStream, ::ramses_sdk::RAMSES_SDK_RAMSES_VERSION, ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH, featureLevel);
@@ -1855,7 +1858,7 @@ namespace ramses::internal
         return status;
     }
 
-    bool SceneImpl::saveToFile(std::string_view fileName, const SaveFileConfigImpl& config) const
+    bool SceneImpl::saveToFile(std::string_view fileName, const SaveFileConfigImpl& config)
     {
         if (fileName.empty())
         {
@@ -1863,7 +1866,25 @@ namespace ramses::internal
             return false;
         }
 
-        LOG_INFO_P(CONTEXT_CLIENT, "Scene::saveToFile: filename '{}', compress {}", fileName, config.getCompressionEnabled());
+        LOG_INFO(CONTEXT_CLIENT, "Scene::saveToFile: filename '{}', compress {}", fileName, config.getCompressionEnabled());
+
+        LOG_INFO(CONTEXT_CLIENT, "Scene::saveToFile: updating LogicEngine instances before saving to file");
+        SceneObjectRegistryIterator leIter{ m_objectRegistry, ramses::ERamsesObjectType::LogicEngine };
+        while (auto le = leIter.getNextNonConst<ramses::LogicEngine>())
+        {
+            if (!le->update())
+            {
+                getErrorReporting().set(fmt::format("Scene::saveToFile failed due to failed logic engine update: {}", getErrorReporting().getError()->message), le);
+                return false;
+            }
+        }
+
+        LOG_INFO(CONTEXT_CLIENT, "Scene::saveToFile: flushing scene before saving to file");
+        if (!flush(sceneVersionTag_t{}))
+        {
+            getErrorReporting().set(fmt::format("Scene::saveToFile failed due to failed scene flush: {}", getErrorReporting().getError()->message), *this);
+            return false;
+        }
 
         std::vector<std::byte> outputBuffer;
         if (!serialize(outputBuffer, config))
@@ -1888,7 +1909,7 @@ namespace ramses::internal
             return false;
         }
 
-        LOG_INFO_P(ramses::internal::CONTEXT_CLIENT, "Scene::saveToFile: done writing '{}'", fileName);
+        LOG_INFO(CONTEXT_CLIENT, "Scene::saveToFile: done writing '{}'", fileName);
 
         return true;
     }
@@ -1904,7 +1925,7 @@ namespace ramses::internal
             return;
 
         getClientImpl().getClientApplication().removeResourceFile(m_sceneFileHandle);
-        LOG_INFO(CONTEXT_CLIENT, "SceneImpl::closeSceneFile closed: " << m_sceneFileHandle);
+        LOG_INFO(CONTEXT_CLIENT, "SceneImpl::closeSceneFile closed: {}", m_sceneFileHandle);
         m_sceneFileHandle = ramses::internal::SceneFileHandle::Invalid();
     }
 

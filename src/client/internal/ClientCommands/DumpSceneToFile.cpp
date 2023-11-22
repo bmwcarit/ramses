@@ -50,12 +50,12 @@ namespace ramses::internal
         case 2:
             if (!command.sendViaDLT)
             {
-                LOG_ERROR_P(CONTEXT_RAMSH, "Expected [filename] or -sendViaDlt");
+                LOG_ERROR(CONTEXT_RAMSH, "Expected [filename] or -sendViaDlt");
                 return false;
             }
             break;
         default:
-            LOG_ERROR_P(CONTEXT_RAMSH, "None or too many arguments provided: {}", arguments.size() - 1);
+            LOG_ERROR(CONTEXT_RAMSH, "None or too many arguments provided: {}", arguments.size() - 1);
             return false;
         }
 
@@ -63,7 +63,7 @@ namespace ramses::internal
         ramses::internal::ArgumentConverter<uint64_t>::tryConvert(arguments[1], sceneId.getReference());
         if (!sceneId.isValid())
         {
-            LOG_ERROR_P(CONTEXT_RAMSH, "Invalid SceneId: {}", arguments[0]);
+            LOG_ERROR(CONTEXT_RAMSH, "Invalid SceneId: {}", arguments[0]);
             return false;
         }
 
@@ -73,7 +73,7 @@ namespace ramses::internal
             auto* scene = m_client.getScene(sceneId);
             if (!scene)
             {
-                LOG_ERROR_P(CONTEXT_RAMSH, "Scene not available: {}", sceneId);
+                LOG_ERROR(CONTEXT_RAMSH, "Scene not available: {}", sceneId);
                 return false;
             }
             scene->flush();

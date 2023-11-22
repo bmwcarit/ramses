@@ -94,7 +94,7 @@ namespace ramses::internal
         std::FILE* handle = std::fopen(m_path.string().c_str(), flags);
         if (handle == nullptr)
         {
-            LOG_ERROR_P(CONTEXT_FRAMEWORK, "File::open: fopen {} with flags {} failed, errno is {}", m_path.string(), flags, errno);
+            LOG_ERROR(CONTEXT_FRAMEWORK, "File::open: fopen {} with flags {} failed, errno is {}", m_path.string(), flags, errno);
             return false;
         }
 
@@ -109,7 +109,7 @@ namespace ramses::internal
             return false;
         if (std::fflush(m_handle) != 0)
         {
-            LOG_ERROR_P(CONTEXT_FRAMEWORK, "File::flush: fflush failed for {}, errno is {}", m_path.string(), errno);
+            LOG_ERROR(CONTEXT_FRAMEWORK, "File::flush: fflush failed for {}, errno is {}", m_path.string(), errno);
             return false;
         }
         return true;
@@ -122,7 +122,7 @@ namespace ramses::internal
 
         if (std::fclose(m_handle) != 0)
         {
-            LOG_ERROR_P(CONTEXT_FRAMEWORK, "File::close: fclose failed for {}, errno is {}", m_path.string(), errno);
+            LOG_ERROR(CONTEXT_FRAMEWORK, "File::close: fclose failed for {}, errno is {}", m_path.string(), errno);
             return false;
         }
         m_handle = nullptr;
@@ -152,12 +152,12 @@ namespace ramses::internal
 
         if (std::feof(m_handle) != 0)
         {
-            LOG_ERROR_P(CONTEXT_FRAMEWORK, "File::read: fread attempted to read {} bytes from {}, got only {} due to eof", length, m_path.string(), result);
+            LOG_ERROR(CONTEXT_FRAMEWORK, "File::read: fread attempted to read {} bytes from {}, got only {} due to eof", length, m_path.string(), result);
             numBytes = result;
             return EStatus::Eof;
         }
 
-        LOG_ERROR_P(CONTEXT_FRAMEWORK, "File::read: fread attempted to read {} bytes from {}, got only {} due to read error", length, m_path.string(), result);
+        LOG_ERROR(CONTEXT_FRAMEWORK, "File::read: fread attempted to read {} bytes from {}, got only {} due to read error", length, m_path.string(), result);
         return EStatus::Error;
     }
 
@@ -174,7 +174,7 @@ namespace ramses::internal
         const size_t result = std::fwrite(buffer, 1, length, m_handle);
         if (result != length)
         {
-            LOG_ERROR_P(CONTEXT_FRAMEWORK, "File::write: fwrite attempted to write {} bytes to {} and failed, {} bytes written", length, m_path.string(), result);
+            LOG_ERROR(CONTEXT_FRAMEWORK, "File::write: fwrite attempted to write {} bytes to {} and failed, {} bytes written", length, m_path.string(), result);
             return false;
         }
 
@@ -200,7 +200,7 @@ namespace ramses::internal
         // NOLINTNEXTLINE(google-runtime-int): long is the API type
         if (std::fseek(m_handle, static_cast<long>(offset), nativeOrigin) != 0)
         {
-            LOG_ERROR_P(CONTEXT_FRAMEWORK, "File::seek: fseek attempted to seek to {} bytes from {} of file {} and failed, errno is {}", offset, origin, m_path.string(), errno);
+            LOG_ERROR(CONTEXT_FRAMEWORK, "File::seek: fseek attempted to seek to {} bytes from {} of file {} and failed, errno is {}", offset, origin, m_path.string(), errno);
             return false;
         }
 
@@ -259,7 +259,7 @@ namespace ramses::internal
         const auto fileSize = std::filesystem::file_size(m_path, ec);
         if (ec)
         {
-            LOG_ERROR_P(CONTEXT_FRAMEWORK, "File::getSizeInBytes: can't get file size for {}, error code is {}", m_path.string(), ec.message());
+            LOG_ERROR(CONTEXT_FRAMEWORK, "File::getSizeInBytes: can't get file size for {}, error code is {}", m_path.string(), ec.message());
             return false;
         }
         size = static_cast<size_t>(fileSize);

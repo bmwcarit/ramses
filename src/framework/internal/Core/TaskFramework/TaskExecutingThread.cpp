@@ -15,7 +15,7 @@ namespace ramses::internal
 {
     TaskExecutingThread::TaskExecutingThread(IThreadAliveNotifier& aliveHandler)
             : m_pBlockingTaskQueue(nullptr)
-            , m_thread("R_Taskpool_Thrd")
+            , m_thread("Taskpool_Thrd")
             , m_aliveHandler(aliveHandler)
             , m_aliveIdentifier(m_aliveHandler.registerThread())
             , m_bThreadStarted(false)

@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "internal/RendererLib/RendererEventCollector.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {
@@ -38,7 +38,7 @@ namespace ramses::internal
 
     void RendererEventCollector::addDisplayEvent(ERendererEventType eventType, DisplayHandle displayHandle, const DisplayConfig& config)
     {
-        LOG_INFO(CONTEXT_RENDERER, eventType << " display=" << displayHandle);
+        LOG_INFO(CONTEXT_RENDERER, "{} display={}", eventType, displayHandle);
 
         RendererEvent event(eventType);
         event.displayHandle = displayHandle;
@@ -48,7 +48,7 @@ namespace ramses::internal
 
     void RendererEventCollector::addReadPixelsEvent(ERendererEventType eventType, DisplayHandle displayHandle, OffscreenBufferHandle offscreenBufferHandle, std::vector<uint8_t>&& pixelData)
     {
-        LOG_INFO(CONTEXT_RENDERER, eventType << " display=" << displayHandle);
+        LOG_INFO(CONTEXT_RENDERER, "{} display = {}", eventType, displayHandle);
 
         RendererEvent event(eventType);
         event.displayHandle = displayHandle;
@@ -72,7 +72,7 @@ namespace ramses::internal
 
     void RendererEventCollector::addSceneExpirationEvent(ERendererEventType eventType, SceneId sceneId)
     {
-        LOG_INFO(CONTEXT_RENDERER, eventType << " sceneId=" << sceneId);
+        LOG_INFO(CONTEXT_RENDERER, "{} sceneId={}", eventType, sceneId);
 
         RendererEvent event(eventType);
         event.sceneId = sceneId;
@@ -81,7 +81,7 @@ namespace ramses::internal
 
     void RendererEventCollector::addDataLinkEvent(ERendererEventType eventType, SceneId providerSceneId, SceneId consumerSceneId, DataSlotId providerdataId, DataSlotId consumerdataId)
     {
-        LOG_INFO(CONTEXT_RENDERER, eventType << " providerSceneId=" << providerSceneId << " providerDataId=" << providerdataId.getValue() << " consumerSceneId=" << consumerSceneId << " consumerDataId=" << consumerdataId.getValue());
+        LOG_INFO(CONTEXT_RENDERER, "{} providerSceneId={} providerDataId={} consumerSceneId={} consumerDataId={}", eventType, providerSceneId, providerdataId.getValue(), consumerSceneId, consumerdataId.getValue());
 
         RendererEvent event(eventType);
         event.providerSceneId = providerSceneId;
@@ -93,7 +93,7 @@ namespace ramses::internal
 
     void RendererEventCollector::addBufferEvent(ERendererEventType eventType, OffscreenBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerdataId)
     {
-        LOG_INFO(CONTEXT_RENDERER, eventType << " consumerSceneId=" << consumerSceneId.getValue() << " consumerDataId=" << consumerdataId.getValue() << " offscreenBufferHandle=" << providerBuffer);
+        LOG_INFO(CONTEXT_RENDERER, "{} consumerSceneId={} consumerDataId={} offscreenBufferHandle={}", eventType, consumerSceneId.getValue(), consumerdataId.getValue(), providerBuffer);
 
         RendererEvent event(eventType);
         event.offscreenBuffer = providerBuffer;
@@ -104,7 +104,7 @@ namespace ramses::internal
 
     void RendererEventCollector::addBufferEvent(ERendererEventType eventType, StreamBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerdataId)
     {
-        LOG_INFO(CONTEXT_RENDERER, eventType << " consumerSceneId=" << consumerSceneId.getValue() << " consumerDataId=" << consumerdataId.getValue() << " streamBufferHandle=" << providerBuffer);
+        LOG_INFO(CONTEXT_RENDERER, "{} consumerSceneId={} consumerDataId={} streamBufferHandle={}", eventType, consumerSceneId.getValue(), consumerdataId.getValue(), providerBuffer);
 
         RendererEvent event(eventType);
         event.streamBuffer = providerBuffer;
@@ -115,7 +115,7 @@ namespace ramses::internal
 
     void RendererEventCollector::addBufferEvent(ERendererEventType eventType, ExternalBufferHandle providerBuffer, SceneId consumerSceneId, DataSlotId consumerdataId)
     {
-        LOG_INFO(CONTEXT_RENDERER, eventType << " consumerSceneId=" << consumerSceneId.getValue() << " consumerDataId=" << consumerdataId.getValue() << " externalBufferHandle=" << providerBuffer);
+        LOG_INFO(CONTEXT_RENDERER, "{} consumerSceneId = {} consumerDataId = {} externalBufferHandle = {}", eventType, consumerSceneId.getValue(), consumerdataId.getValue(), providerBuffer);
 
         RendererEvent event(eventType);
         event.externalBuffer = providerBuffer;
@@ -136,7 +136,7 @@ namespace ramses::internal
 
     void RendererEventCollector::addOBEvent(ERendererEventType eventType, OffscreenBufferHandle buffer, DisplayHandle display, int dmaBufferFD, uint32_t dmaBufferStride)
     {
-        LOG_INFO(CONTEXT_RENDERER, eventType << " display=" << display << " bufferHandle=" << buffer << " dmaBufferFD=" << dmaBufferFD << " dmaBufferStride=" << dmaBufferStride);
+        LOG_INFO(CONTEXT_RENDERER, "{} display={} bufferHandle={} dmaBufferFD={} dmaBufferStride={}", eventType, display, buffer, dmaBufferFD, dmaBufferStride);
 
         RendererEvent event(eventType);
         event.offscreenBuffer = buffer;
@@ -148,7 +148,7 @@ namespace ramses::internal
 
     void RendererEventCollector::addSceneFlushEvent(ERendererEventType eventType, SceneId sceneId, SceneVersionTag sceneVersionTag)
     {
-        LOG_TRACE(CONTEXT_RENDERER, eventType << " sceneId=" << sceneId.getValue() << " sceneVersionTag=" << sceneVersionTag.getValue());
+        LOG_TRACE(CONTEXT_RENDERER, "{} sceneId={} sceneVersionTag={}", eventType, sceneId.getValue(), sceneVersionTag.getValue());
 
         RendererEvent event(eventType);
         event.sceneId = sceneId;
@@ -190,7 +190,7 @@ namespace ramses::internal
 
     void RendererEventCollector::addStreamSourceEvent(ERendererEventType eventType, WaylandIviSurfaceId streamSourceId)
     {
-        LOG_INFO(CONTEXT_RENDERER, eventType << " streamSource=" << streamSourceId);
+        LOG_INFO(CONTEXT_RENDERER, "{} streamSource={}", eventType, streamSourceId);
 
         RendererEvent event(eventType);
         event.streamSourceId = streamSourceId;

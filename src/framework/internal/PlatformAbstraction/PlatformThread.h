@@ -9,6 +9,7 @@
 #pragma once
 
 #include "internal/PlatformAbstraction/Runnable.h"
+#include "internal/Core/Utils/RamsesLogger.h"
 
 #include <cassert>
 #include <string>
@@ -45,9 +46,13 @@ namespace ramses::internal
 
     private:
         std::string m_name;
-        internal::Thread  m_thread;
+        internal::Thread m_thread;
         std::atomic<bool> m_isRunning {false};
         Runnable* m_runnable = nullptr;
+
+        // Logger stores global instance name as thread_local, temporary storage here allows assigning it to logger later when the thread starts
+        // so that all Ramses threads within single RamsesFramework use same global instance name.
+        std::string m_loggingInstanceName = RamsesLogger::GetPrefixInstance();
     };
 
     inline
@@ -91,11 +96,13 @@ namespace ramses::internal
 
         m_runnable = &runnable;
         m_isRunning = true;
-        m_thread = internal::Thread(m_name, [&]()
-                                            {
-                                                m_runnable->run();
-                                                m_isRunning = false;
-                                            });
+        m_thread = internal::Thread(fmt::format("R_{}", m_name), [&]() {
+            // set global instance and thread name to logger
+            RamsesLogger::SetPrefixes(m_loggingInstanceName, m_name);
+
+            m_runnable->run();
+            m_isRunning = false;
+            });
     }
 
     inline void PlatformThread::join()

@@ -10,6 +10,7 @@
 
 #include "ramses/client/SceneObject.h"
 #include "ramses/framework/TextureEnums.h"
+#include <vector>
 
 namespace ramses
 {
@@ -41,12 +42,11 @@ namespace ramses
         * @param offsetY            The vertical texel offset into the texture data
         * @param width              The horizontal subregion size in texels
         * @param height             The vertical subregion size in texels
-        * @param data               Pointer in memory to the data provided for update. The function makes
-        *                           a copy of the data into Texture2DBuffer data structures. Texture2DBuffer
-        *                           object does not take ownership of the memory data passed to it.
+        * @param data               Texel data provided for update. The data must be in row-major order wrt. provided width/height.
+        *                           Data will be copied internally and no longer needed after this call returns.
         * @return true for success, false otherwise (check log or #ramses::RamsesFramework::getLastError for details).
         */
-        bool updateData(size_t mipLevel, uint32_t offsetX, uint32_t offsetY, uint32_t width, uint32_t height, const void* data);
+        bool updateData(size_t mipLevel, uint32_t offsetX, uint32_t offsetY, uint32_t width, uint32_t height, const std::byte* data);
 
         /**
         * @brief Returns the number of mipmap levels created for the Texture2DBuffer (same as provided in

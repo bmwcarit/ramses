@@ -38,21 +38,21 @@ namespace ramses::internal
 
     void TestForkingController::startTestApplication(uint32_t testAppIdx)
     {
-        LOG_INFO(CONTEXT_RENDERER, "TestForkingController::startApplication starting test application :" << testAppIdx);
+        LOG_INFO(CONTEXT_RENDERER, "TestForkingController::startApplication starting test application :{}", testAppIdx);
         assert(testAppIdx < m_testPipes.size());
         sendForkRequest(testAppIdx);
     }
 
     void TestForkingController::waitForTestApplicationExit(uint32_t testAppIdx)
     {
-        LOG_INFO(CONTEXT_RENDERER, "TestForkingController::waitForTestApplicationExit waiting for test application to exit :" << testAppIdx);
+        LOG_INFO(CONTEXT_RENDERER, "TestForkingController::waitForTestApplicationExit waiting for test application to exit :{}", testAppIdx);
         assert(testAppIdx < m_testPipes.size());
         sendWaitForExitRequest(testAppIdx);
     }
 
     void TestForkingController::sendMessageToTestApplication(const BinaryOutputStream& os, uint32_t testAppIdx)
     {
-        LOG_INFO(CONTEXT_RENDERER, "TestForkingController::sendMessageToTestApplication :" << testAppIdx);
+        LOG_INFO(CONTEXT_RENDERER, "TestForkingController::sendMessageToTestApplication :{}", testAppIdx);
         assert(testAppIdx < m_testPipes.size());
 
         const auto dataSize = static_cast<uint32_t>(os.getSize());
@@ -111,7 +111,7 @@ namespace ramses::internal
         if (!m_testToForkerPipe.write(&message, sizeof(ETestForkerApplicationMessage))
             || !m_testToForkerPipe.write(&testAppIdx, sizeof(testAppIdx)))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "TestForkingController::sendForkRequest error " << NamedPipe::getSystemErrorStatus() << " when wrinting fork request pipe");
+            LOG_ERROR(CONTEXT_RENDERER, "TestForkingController::sendForkRequest error {} when wrinting fork request pipe", NamedPipe::getSystemErrorStatus());
         }
     }
 
@@ -122,7 +122,7 @@ namespace ramses::internal
         if (!m_testToForkerPipe.write(&message, sizeof(ETestForkerApplicationMessage))
             || !m_testToForkerPipe.write(&testAppIdx, sizeof(testAppIdx)))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "TestForkingController::sendWaitForExitRequest error " << NamedPipe::getSystemErrorStatus() << " when writing wait for test application exit pipe");
+            LOG_ERROR(CONTEXT_RENDERER, "TestForkingController::sendWaitForExitRequest error {} when writing wait for test application exit pipe", NamedPipe::getSystemErrorStatus());
         }
     }
 
@@ -134,7 +134,7 @@ namespace ramses::internal
         if (!m_testToForkerPipe.write(&message, sizeof(ETestForkerApplicationMessage))
             || !m_testToForkerPipe.write(&testAppIdx, sizeof(testAppIdx)))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "TestForkingController::killTestApplication error " << NamedPipe::getSystemErrorStatus());
+            LOG_ERROR(CONTEXT_RENDERER, "TestForkingController::killTestApplication error {}", NamedPipe::getSystemErrorStatus());
         }
     }
 }

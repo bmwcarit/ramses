@@ -26,6 +26,7 @@ namespace ramses::internal
 
     void RendererPeriodicLogSupplier::triggerLogMessageForPeriodicLog()
     {
-        m_commandBuffer.enqueueCommand(RendererCommand::LogInfo{ ERendererLogTopic::PeriodicLog, false, {} });
+        // periodic log renderer info stored in the command will be filled with actual values when dispatching the command
+        m_commandBuffer.enqueueCommand(RendererCommand::LogInfo{ ERendererLogTopic::PeriodicLog, false, {}, false, false, ELoopMode::UpdateAndRender, {} });
     }
 }

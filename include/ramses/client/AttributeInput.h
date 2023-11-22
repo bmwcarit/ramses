@@ -32,6 +32,36 @@ namespace ramses
         */
         [[nodiscard]] EEffectAttributeSemantic getSemantics() const;
 
+        /**
+        * @brief Destructor of AttributeInput.
+        */
+        ~AttributeInput();
+
+        /**
+         * @brief Copy constructor.
+         * @param other source to copy from
+         */
+        AttributeInput(const AttributeInput& other);
+
+        /**
+         * @brief Move constructor.
+         * @param other source to move from
+         */
+        AttributeInput(AttributeInput&& other) noexcept;
+
+
+        /**
+         * @brief Assignment operator.
+         * @param other source to assign from
+         */
+        AttributeInput& operator=(const AttributeInput& other);
+
+        /**
+         * @brief Move assignment operator.
+         * @param other source to move assign from
+         */
+        AttributeInput& operator=(AttributeInput&& other) noexcept;
+
     protected:
         /**
          * @brief Default constructor of AttributeInput.

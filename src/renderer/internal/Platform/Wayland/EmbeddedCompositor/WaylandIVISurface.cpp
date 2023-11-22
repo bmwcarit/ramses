@@ -12,7 +12,7 @@
 #include "internal/Platform/Wayland/EmbeddedCompositor/INativeWaylandResource.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/IWaylandSurface.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/IWaylandClient.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {
@@ -30,8 +30,8 @@ namespace ramses::internal
 
         if (surface->hasIviSurface())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "WaylandIVISurface::WaylandIVISurface: failed creating: " << iviSurfaceId
-                    << ". The wayland surface already has a surface with " << surface->getIviSurfaceId() << "attached!  " << m_clientCredentials);
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandIVISurface::WaylandIVISurface: failed creating: {}. The wayland surface already has a surface with {}attached!  {}",
+                iviSurfaceId, surface->getIviSurfaceId(), m_clientCredentials);
 
             iviApplicationConnectionResource.postError(IVI_APPLICATION_ERROR_IVI_ID, "surface already has a ivi-surface");
         }
@@ -42,8 +42,7 @@ namespace ramses::internal
                 m_resource = client.resourceCreate(&ivi_surface_interface, iviApplicationConnectionResource.getVersion(), id);
                 if (nullptr != m_resource)
                 {
-                    LOG_INFO(CONTEXT_RENDERER, "WaylandIVISurface::WaylandIVISurface: created successfully: " << iviSurfaceId
-                            << "  " << m_clientCredentials);
+                    LOG_INFO(CONTEXT_RENDERER, "WaylandIVISurface::WaylandIVISurface: created successfully: {}  {}", iviSurfaceId, m_clientCredentials);
 
                     m_resource->setImplementation(&m_iviSurfaceInterface, this, ResourceDestroyedCallback);
                     m_surface = surface;
@@ -56,8 +55,8 @@ namespace ramses::internal
                 }
                 else
                 {
-                    LOG_ERROR(CONTEXT_RENDERER, "WaylandIVISurface::WaylandIVISurface: failed creating " << iviSurfaceId
-                            << ". Failed creating wayland resource  " << m_clientCredentials);
+                    LOG_ERROR(CONTEXT_RENDERER, "WaylandIVISurface::WaylandIVISurface: failed creating {}. Failed creating wayland resource  {}",
+                        iviSurfaceId, m_clientCredentials);
                     client.postNoMemory();
                 }
             }
@@ -66,9 +65,9 @@ namespace ramses::internal
 
                 const auto credentialsForOtherClient = m_compositor.findSurfaceForStreamTexture(iviSurfaceId).getClientCredentials();
 
-                LOG_ERROR(CONTEXT_RENDERER, "WaylandIVISurface::WaylandIVISurface: failed creating " << iviSurfaceId
-                        << " for  " << m_clientCredentials
-                        << ". A wayland surface already exists with same ivi-surface id for " << credentialsForOtherClient);
+                LOG_ERROR(CONTEXT_RENDERER,
+                    "WaylandIVISurface::WaylandIVISurface: failed creating {} for  {}. A wayland surface already exists with same ivi-surface id for {}",
+                    iviSurfaceId, m_clientCredentials, credentialsForOtherClient);
 
                 iviApplicationConnectionResource.postError(IVI_APPLICATION_ERROR_IVI_ID, "ivi-id is already in use");
             }
@@ -82,8 +81,7 @@ namespace ramses::internal
 
     WaylandIVISurface::~WaylandIVISurface()
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandIVISurface::~WaylandIVISurface " << m_iviSurfaceId
-                << "  " << m_clientCredentials);
+        LOG_INFO(CONTEXT_RENDERER, "WaylandIVISurface::~WaylandIVISurface {}  {}", m_iviSurfaceId, m_clientCredentials);
 
         if (m_surface != nullptr)
         {
@@ -120,7 +118,7 @@ namespace ramses::internal
 
     void WaylandIVISurface::resourceDestroyed()
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandIVISurface::resourceDestroyed " << m_iviSurfaceId);
+        LOG_INFO(CONTEXT_RENDERER, "WaylandIVISurface::resourceDestroyed {}", m_iviSurfaceId);
 
         // wl_resource is destroyed outside by the Wayland library, so m_resource looses the ownership of the
         // Wayland resource, so that we don't call wl_resource_destroy.

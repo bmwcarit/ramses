@@ -28,6 +28,7 @@
 #include "ramses/client/logic/AnimationNode.h"
 #include "ramses/client/logic/TimerNode.h"
 #include "ramses/client/logic/AnchorPoint.h"
+#include "ramses/client/logic/RenderBufferBinding.h"
 
 #include "impl/ValidationReportImpl.h"
 #include "impl/logic/PropertyImpl.h"
@@ -46,6 +47,7 @@
 #include "impl/logic/AnimationNodeConfigImpl.h"
 #include "impl/logic/TimerNodeImpl.h"
 #include "impl/logic/AnchorPointImpl.h"
+#include "impl/logic/RenderBufferBindingImpl.h"
 
 #include "ramses/client/Scene.h"
 #include "ramses/client/Node.h"
@@ -64,6 +66,7 @@
 #include "internal/logic/flatbuffers/generated/DataArrayGen.h"
 #include "internal/logic/flatbuffers/generated/AnimationNodeGen.h"
 #include "internal/logic/flatbuffers/generated/TimerNodeGen.h"
+#include "internal/logic/flatbuffers/generated/RenderBufferBindingGen.h"
 
 #include "fmt/format.h"
 #include "TypeUtils.h"
@@ -274,6 +277,13 @@ namespace ramses::internal
         return &anchor;
     }
 
+    RenderBufferBinding* ApiObjects::createRenderBufferBinding(ramses::RenderBuffer& renderBuffer, std::string_view name)
+    {
+        auto impl = std::make_unique<RenderBufferBindingImpl>(m_scene, renderBuffer, name, sceneObjectId_t{});
+        impl->createRootProperties();
+        return &createAndRegisterObject<RenderBufferBinding, RenderBufferBindingImpl>(std::move(impl));
+    }
+
     bool ApiObjects::destroy(LogicObject& object, ErrorReporting& errorReporting)
     {
         auto luaScript = dynamic_cast<LuaScript*>(&object);
@@ -331,6 +341,10 @@ namespace ramses::internal
         auto anchor = dynamic_cast<AnchorPoint*>(&object);
         if (anchor)
             return destroyInternal(*anchor, errorReporting);
+
+        auto renderBufferBinding = dynamic_cast<RenderBufferBinding*>(&object);
+        if (renderBufferBinding)
+            return destroyAndUnregisterObject(*renderBufferBinding, errorReporting);
 
         errorReporting.set(fmt::format("Tried to destroy object '{}' with unknown type", object.getName()), &object);
 
@@ -518,6 +532,10 @@ namespace ramses::internal
             {
                 this->m_anchorPoints.push_back(&objRaw);
             }
+            else if constexpr (std::is_same_v<RenderBufferBinding, T>)
+            {
+                this->m_renderBufferBindings.push_back(&objRaw);
+            }
             else
             {
                 assert(!"unhandled type");
@@ -611,6 +629,10 @@ namespace ramses::internal
             else if constexpr (std::is_same_v<AnchorPoint, T>)
             {
                 eraseFromPool(objToDelete, this->m_anchorPoints);
+            }
+            else if constexpr (std::is_same_v<RenderBufferBinding, T>)
+            {
+                eraseFromPool(objToDelete, this->m_renderBufferBindings);
             }
             else
             {
@@ -715,7 +737,7 @@ namespace ramses::internal
                         anyInputLinked |= (input->hasIncomingLink());
 
                     if (!anyInputLinked)
-                        report.add(EIssueType::Warning, fmt::format("Node [{}] has no ingoing links! Node should be deleted or properly linked!", objAsNode->getName()), objAsNode);
+                        report.add(EIssueType::Warning, fmt::format("Node [{}] has no incoming links! Node should be deleted or properly linked!", objAsNode->getName()), objAsNode);
                 }
             }
         }
@@ -783,6 +805,10 @@ namespace ramses::internal
         else if constexpr (std::is_same_v<T, AnchorPoint>)
         {
             return m_anchorPoints;
+        }
+        else if constexpr (std::is_same_v<T, RenderBufferBinding>)
+        {
+            return m_renderBufferBindings;
         }
     }
 
@@ -907,6 +933,11 @@ namespace ramses::internal
         for (const auto& skinBinding : apiObjects.m_skinBindings)
             skinBindings.push_back(SkinBindingImpl::Serialize(skinBinding->impl(), builder, serializationMap));
 
+        std::vector<flatbuffers::Offset<rlogic_serialization::RenderBufferBinding>> rbBindings;
+        rbBindings.reserve(apiObjects.m_renderBufferBindings.size());
+        for (const auto& rbBinding : apiObjects.m_renderBufferBindings)
+            rbBindings.push_back(RenderBufferBindingImpl::Serialize(rbBinding->impl(), builder, serializationMap));
+
         // links must go last due to dependency on serialized properties
         const auto collectedLinks = apiObjects.collectPropertyLinks();
         std::vector<flatbuffers::Offset<rlogic_serialization::Link>> links;
@@ -934,6 +965,7 @@ namespace ramses::internal
         const auto fbRenderGroupBindings = builder.CreateVector(renderGroupBindings);
         const auto fbMeshNodeBindings = builder.CreateVector(meshNodeBindings);
         const auto fbSkinBindings = builder.CreateVector(skinBindings);
+        const auto fbRbBindings = builder.CreateVector(rbBindings);
 
         const auto logicEngine = rlogic_serialization::CreateApiObjects(
             builder,
@@ -951,7 +983,8 @@ namespace ramses::internal
             fbAnchorPoints,
             fbRenderGroupBindings,
             fbSkinBindings,
-            fbMeshNodeBindings
+            fbMeshNodeBindings,
+            fbRbBindings
             );
 
         builder.Finish(logicEngine);
@@ -1063,6 +1096,12 @@ namespace ramses::internal
             return nullptr;
         }
 
+        if (!apiObjects.renderBufferBindings())
+        {
+            errorReporting.set("Fatal error during loading from serialized data: missing render buffer bindings container!", nullptr);
+            return nullptr;
+        }
+
         const size_t logicObjectsTotalSize =
             static_cast<size_t>(apiObjects.luaModules()->size()) +
             static_cast<size_t>(apiObjects.luaScripts()->size()) +
@@ -1077,7 +1116,8 @@ namespace ramses::internal
             static_cast<size_t>(apiObjects.anchorPoints()->size()) +
             static_cast<size_t>(apiObjects.renderGroupBindings()->size()) +
             static_cast<size_t>(apiObjects.meshNodeBindings()->size()) +
-            static_cast<size_t>(apiObjects.skinBindings()->size());
+            static_cast<size_t>(apiObjects.skinBindings()->size()) +
+            static_cast<size_t>(apiObjects.renderBufferBindings()->size());
 
         deserialized->m_objectsOwningContainer.reserve(logicObjectsTotalSize);
         deserialized->m_logicObjects.reserve(logicObjectsTotalSize);
@@ -1260,6 +1300,18 @@ namespace ramses::internal
             deserialized->createAndRegisterObject<MeshNodeBinding, MeshNodeBindingImpl>(std::move(deserializedBinding));
         }
 
+        const auto& rbBindings = *apiObjects.renderBufferBindings();
+        deserialized->m_renderBufferBindings.reserve(rbBindings.size());
+        for (const auto* binding : rbBindings)
+        {
+            assert(binding);
+            std::unique_ptr<RenderBufferBindingImpl> deserializedBinding = RenderBufferBindingImpl::Deserialize(*binding, ramsesResolver, errorReporting, deserializationMap);
+            if (!deserializedBinding)
+                return nullptr;
+
+            deserialized->createAndRegisterObject<RenderBufferBinding, RenderBufferBindingImpl>(std::move(deserializedBinding));
+        }
+
         // links must go last due to dependency on deserialized properties
         const auto& links = *apiObjects.links();
         // TODO Violin move this code (serialization parts too) to LogicNodeDependencies
@@ -1311,7 +1363,8 @@ namespace ramses::internal
             std::any_of(m_renderPassBindings.cbegin(), m_renderPassBindings.cend(), [](const auto& b) { return b->m_impl.isDirty(); }) ||
             std::any_of(m_renderGroupBindings.cbegin(), m_renderGroupBindings.cend(), [](const auto& b) { return b->m_impl.isDirty(); }) ||
             std::any_of(m_meshNodeBindings.cbegin(), m_meshNodeBindings.cend(), [](const auto& b) { return b->m_impl.isDirty(); }) ||
-            std::any_of(m_skinBindings.cbegin(), m_skinBindings.cend(), [](const auto& b) { return b->m_impl.isDirty(); });
+            std::any_of(m_skinBindings.cbegin(), m_skinBindings.cend(), [](const auto& b) { return b->m_impl.isDirty(); }) ||
+            std::any_of(m_renderBufferBindings.cbegin(), m_renderBufferBindings.cend(), [](const auto& b) { return b->m_impl.isDirty(); });
     }
 
     int ApiObjects::getNumElementsInLuaStack() const
@@ -1379,35 +1432,37 @@ namespace ramses::internal
     template DataArray* ApiObjects::createDataArray<vec4i>(const std::vector<vec4i>&, std::string_view);
     template DataArray* ApiObjects::createDataArray<std::vector<float>>(const std::vector<std::vector<float>>&, std::string_view);
 
-    template ApiObjectContainer<LogicObject>&        ApiObjects::getApiObjectContainer<LogicObject>();
-    template ApiObjectContainer<LuaScript>&          ApiObjects::getApiObjectContainer<LuaScript>();
-    template ApiObjectContainer<LuaInterface>&       ApiObjects::getApiObjectContainer<LuaInterface>();
-    template ApiObjectContainer<LuaModule>&          ApiObjects::getApiObjectContainer<LuaModule>();
-    template ApiObjectContainer<NodeBinding>&        ApiObjects::getApiObjectContainer<NodeBinding>();
-    template ApiObjectContainer<AppearanceBinding>&  ApiObjects::getApiObjectContainer<AppearanceBinding>();
-    template ApiObjectContainer<CameraBinding>&      ApiObjects::getApiObjectContainer<CameraBinding>();
-    template ApiObjectContainer<RenderPassBinding>&  ApiObjects::getApiObjectContainer<RenderPassBinding>();
-    template ApiObjectContainer<RenderGroupBinding>& ApiObjects::getApiObjectContainer<RenderGroupBinding>();
-    template ApiObjectContainer<MeshNodeBinding>&    ApiObjects::getApiObjectContainer<MeshNodeBinding>();
-    template ApiObjectContainer<SkinBinding>&        ApiObjects::getApiObjectContainer<SkinBinding>();
-    template ApiObjectContainer<DataArray>&          ApiObjects::getApiObjectContainer<DataArray>();
-    template ApiObjectContainer<AnimationNode>&      ApiObjects::getApiObjectContainer<AnimationNode>();
-    template ApiObjectContainer<TimerNode>&          ApiObjects::getApiObjectContainer<TimerNode>();
-    template ApiObjectContainer<AnchorPoint>&        ApiObjects::getApiObjectContainer<AnchorPoint>();
+    template ApiObjectContainer<LogicObject>&         ApiObjects::getApiObjectContainer<LogicObject>();
+    template ApiObjectContainer<LuaScript>&           ApiObjects::getApiObjectContainer<LuaScript>();
+    template ApiObjectContainer<LuaInterface>&        ApiObjects::getApiObjectContainer<LuaInterface>();
+    template ApiObjectContainer<LuaModule>&           ApiObjects::getApiObjectContainer<LuaModule>();
+    template ApiObjectContainer<NodeBinding>&         ApiObjects::getApiObjectContainer<NodeBinding>();
+    template ApiObjectContainer<AppearanceBinding>&   ApiObjects::getApiObjectContainer<AppearanceBinding>();
+    template ApiObjectContainer<CameraBinding>&       ApiObjects::getApiObjectContainer<CameraBinding>();
+    template ApiObjectContainer<RenderPassBinding>&   ApiObjects::getApiObjectContainer<RenderPassBinding>();
+    template ApiObjectContainer<RenderGroupBinding>&  ApiObjects::getApiObjectContainer<RenderGroupBinding>();
+    template ApiObjectContainer<MeshNodeBinding>&     ApiObjects::getApiObjectContainer<MeshNodeBinding>();
+    template ApiObjectContainer<SkinBinding>&         ApiObjects::getApiObjectContainer<SkinBinding>();
+    template ApiObjectContainer<DataArray>&           ApiObjects::getApiObjectContainer<DataArray>();
+    template ApiObjectContainer<AnimationNode>&       ApiObjects::getApiObjectContainer<AnimationNode>();
+    template ApiObjectContainer<TimerNode>&           ApiObjects::getApiObjectContainer<TimerNode>();
+    template ApiObjectContainer<AnchorPoint>&         ApiObjects::getApiObjectContainer<AnchorPoint>();
+    template ApiObjectContainer<RenderBufferBinding>& ApiObjects::getApiObjectContainer<RenderBufferBinding>();
 
-    template const ApiObjectContainer<LogicObject>&        ApiObjects::getApiObjectContainer<LogicObject>() const;
-    template const ApiObjectContainer<LuaScript>&          ApiObjects::getApiObjectContainer<LuaScript>() const;
-    template const ApiObjectContainer<LuaInterface>&       ApiObjects::getApiObjectContainer<LuaInterface>() const;
-    template const ApiObjectContainer<LuaModule>&          ApiObjects::getApiObjectContainer<LuaModule>() const;
-    template const ApiObjectContainer<NodeBinding>&        ApiObjects::getApiObjectContainer<NodeBinding>() const;
-    template const ApiObjectContainer<AppearanceBinding>&  ApiObjects::getApiObjectContainer<AppearanceBinding>() const;
-    template const ApiObjectContainer<CameraBinding>&      ApiObjects::getApiObjectContainer<CameraBinding>() const;
-    template const ApiObjectContainer<RenderPassBinding>&  ApiObjects::getApiObjectContainer<RenderPassBinding>() const;
-    template const ApiObjectContainer<RenderGroupBinding>& ApiObjects::getApiObjectContainer<RenderGroupBinding>() const;
-    template const ApiObjectContainer<MeshNodeBinding>&    ApiObjects::getApiObjectContainer<MeshNodeBinding>() const;
-    template const ApiObjectContainer<SkinBinding>&        ApiObjects::getApiObjectContainer<SkinBinding>() const;
-    template const ApiObjectContainer<DataArray>&          ApiObjects::getApiObjectContainer<DataArray>() const;
-    template const ApiObjectContainer<AnimationNode>&      ApiObjects::getApiObjectContainer<AnimationNode>() const;
-    template const ApiObjectContainer<TimerNode>&          ApiObjects::getApiObjectContainer<TimerNode>() const;
-    template const ApiObjectContainer<AnchorPoint>&        ApiObjects::getApiObjectContainer<AnchorPoint>() const;
+    template const ApiObjectContainer<LogicObject>&         ApiObjects::getApiObjectContainer<LogicObject>() const;
+    template const ApiObjectContainer<LuaScript>&           ApiObjects::getApiObjectContainer<LuaScript>() const;
+    template const ApiObjectContainer<LuaInterface>&        ApiObjects::getApiObjectContainer<LuaInterface>() const;
+    template const ApiObjectContainer<LuaModule>&           ApiObjects::getApiObjectContainer<LuaModule>() const;
+    template const ApiObjectContainer<NodeBinding>&         ApiObjects::getApiObjectContainer<NodeBinding>() const;
+    template const ApiObjectContainer<AppearanceBinding>&   ApiObjects::getApiObjectContainer<AppearanceBinding>() const;
+    template const ApiObjectContainer<CameraBinding>&       ApiObjects::getApiObjectContainer<CameraBinding>() const;
+    template const ApiObjectContainer<RenderPassBinding>&   ApiObjects::getApiObjectContainer<RenderPassBinding>() const;
+    template const ApiObjectContainer<RenderGroupBinding>&  ApiObjects::getApiObjectContainer<RenderGroupBinding>() const;
+    template const ApiObjectContainer<MeshNodeBinding>&     ApiObjects::getApiObjectContainer<MeshNodeBinding>() const;
+    template const ApiObjectContainer<SkinBinding>&         ApiObjects::getApiObjectContainer<SkinBinding>() const;
+    template const ApiObjectContainer<DataArray>&           ApiObjects::getApiObjectContainer<DataArray>() const;
+    template const ApiObjectContainer<AnimationNode>&       ApiObjects::getApiObjectContainer<AnimationNode>() const;
+    template const ApiObjectContainer<TimerNode>&           ApiObjects::getApiObjectContainer<TimerNode>() const;
+    template const ApiObjectContainer<AnchorPoint>&         ApiObjects::getApiObjectContainer<AnchorPoint>() const;
+    template const ApiObjectContainer<RenderBufferBinding>& ApiObjects::getApiObjectContainer<RenderBufferBinding>() const;
 }

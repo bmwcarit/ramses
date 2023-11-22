@@ -127,6 +127,7 @@ namespace ramses::internal
         uint32_t                              m_screenshotHeight = 0U;
         bool                                  m_screenshotSaved  = false;
         bool                                  m_isRunning        = true;
+        ImGuiContext*                         m_context          = nullptr;
     };
 
     inline ramses::Scene* ImguiClientHelper::getScene()

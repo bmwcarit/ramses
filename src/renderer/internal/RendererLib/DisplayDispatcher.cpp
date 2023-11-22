@@ -9,7 +9,7 @@
 #include "internal/RendererLib/DisplayDispatcher.h"
 #include "internal/RendererLib/RendererCommandBuffer.h"
 #include "internal/RendererLib/RendererCommandUtils.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {
@@ -39,13 +39,13 @@ namespace ramses::internal
             return !std::holds_alternative<RendererCommand::UpdateScene>(c) && !std::holds_alternative<RendererCommand::LogInfo>(c);
         });
         if (logCommands)
-            LOG_INFO_P(CONTEXT_RENDERER, "DisplayDispatcher: dispatching {} commands (only other than scene update commands will be logged)", cmds.size());
+            LOG_INFO(CONTEXT_RENDERER, "DisplayDispatcher: dispatching {} commands (only other than scene update commands will be logged)", cmds.size());
 
         std::lock_guard<std::mutex> lock{ m_displaysAccessLock };
         for (auto&& cmd : cmds)
         {
             if (logCommands && !std::holds_alternative<RendererCommand::UpdateScene>(cmd))
-                LOG_INFO_P(CONTEXT_RENDERER, "DisplayDispatcher: dispatching command [{}]", RendererCommandUtils::ToString(cmd));
+                LOG_INFO(CONTEXT_RENDERER, "DisplayDispatcher: dispatching command [{}]", RendererCommandUtils::ToString(cmd));
 
             preprocessCommand(cmd);
             dispatchCommand(std::move(cmd));
@@ -61,7 +61,7 @@ namespace ramses::internal
 
         if (++m_cmdDispatchLoopsSinceLastEventDispatch > 300)
         {
-            LOG_WARN_P(CONTEXT_RENDERER, "DisplayDispatcher: detected no renderer events dispatched in more than {} loops, this could result in wrong behavior!"
+            LOG_WARN(CONTEXT_RENDERER, "DisplayDispatcher: detected no renderer events dispatched in more than {} loops, this could result in wrong behavior!"
                 " Use RamsesRenderer::dispatchEvents regularly to avoid this problem.", m_cmdDispatchLoopsSinceLastEventDispatch);
             m_cmdDispatchLoopsSinceLastEventDispatch = 0; // do not spam
         }
@@ -75,7 +75,7 @@ namespace ramses::internal
             {
                 const auto frameCounter = display.second.displayThread->getFrameCounter();
                 if (display.second.lastFrameCounter == frameCounter)
-                    LOG_WARN_P(CONTEXT_RENDERER, "Display {} potentially stuck at trace ID {}", display.first, display.second.displayBundle->traceId().load());
+                    LOG_WARN(CONTEXT_RENDERER, "Display {} potentially stuck at trace ID {}", display.first, display.second.displayBundle->traceId().load());
                 display.second.lastFrameCounter = frameCounter;
             }
         }
@@ -88,8 +88,8 @@ namespace ramses::internal
         assert(std::all_of(m_displays.cbegin(), m_displays.cend(), [](const auto& d) { return !d.second.displayThread; }));
         for (auto& display : m_displays)
         {
-            // in non-threaded mode overwrite the TLS log prefix before each display update
-            ThreadLocalLog::SetPrefix(static_cast<int>(display.first.asMemoryHandle()));
+            // in non-threaded mode use additional log prefix for each display update
+            RamsesLogger::SetPrefixAdditional(fmt::format("Display{}", display.first));
 
             // avoid unnecessary context switch if running only single display
             if (m_displays.size() > 1u || m_forceContextEnableNextLoop)
@@ -97,11 +97,12 @@ namespace ramses::internal
 
             display.second.displayBundle->doOneLoop(m_loopMode, sleepTime);
         }
+        RamsesLogger::SetPrefixAdditional({});
 
         m_forceContextEnableNextLoop = false;
     }
 
-    void DisplayDispatcher::preprocessCommand(const RendererCommand::Variant& cmd)
+    void DisplayDispatcher::preprocessCommand(RendererCommand::Variant& cmd)
     {
         if (std::holds_alternative<RendererCommand::CreateDisplay>(cmd))
         {
@@ -130,11 +131,11 @@ namespace ramses::internal
             {
                 return RendererCommandUtils::Copy(c);
             });
-            LOG_INFO_P(CONTEXT_RENDERER, "DisplayDispatcher: pushing {} stashed broadcast commands to newly created display {}", stashedCommands.size(), displayHandle);
+            LOG_INFO(CONTEXT_RENDERER, "DisplayDispatcher: pushing {} stashed broadcast commands to newly created display {}", stashedCommands.size(), displayHandle);
             m_displays[displayHandle].displayBundle->pushAndConsumeCommands(stashedCommands);
 
             // push commands stashed for this specific display (e.g. set scene state)
-            LOG_INFO_P(CONTEXT_RENDERER, "DisplayDispatcher: pushing {} stashed commands to newly created display {}", m_stashedCommandsForNewDisplays[displayHandle].size(), displayHandle);
+            LOG_INFO(CONTEXT_RENDERER, "DisplayDispatcher: pushing {} stashed commands to newly created display {}", m_stashedCommandsForNewDisplays[displayHandle].size(), displayHandle);
             m_displays[displayHandle].displayBundle->pushAndConsumeCommands(m_stashedCommandsForNewDisplays[displayHandle]);
             m_stashedCommandsForNewDisplays.erase(displayHandle);
         }
@@ -152,7 +153,7 @@ namespace ramses::internal
             if (!m_sceneDisplayTrackerForCommands.determineDisplayFromRendererCommand(cmd)->isValid())
             {
                 const auto refScene = std::get<RendererCommand::ReceiveScene>(cmd).info.sceneID;
-                LOG_INFO_P(CONTEXT_RENDERER, "DisplayDispatcher: missing scene {} display ownership when processing {}, assuming a referenced scene.", refScene, RendererCommandUtils::ToString(cmd));
+                LOG_INFO(CONTEXT_RENDERER, "DisplayDispatcher: missing scene {} display ownership when processing {}, assuming a referenced scene.", refScene, RendererCommandUtils::ToString(cmd));
                 for (const auto& display : m_displays)
                 {
                     const auto& displayBundle = *display.second.displayBundle;
@@ -160,26 +161,34 @@ namespace ramses::internal
                     if (masterScene.isValid())
                     {
                         const auto masterDisplay = m_sceneDisplayTrackerForCommands.getSceneOwnership(masterScene);
-                        LOG_INFO_P(CONTEXT_RENDERER, "DisplayDispatcher: found master scene {} for referenced scene {} when processing {}, setting display ownership to display {}",
+                        LOG_INFO(CONTEXT_RENDERER, "DisplayDispatcher: found master scene {} for referenced scene {} when processing {}, setting display ownership to display {}",
                             masterScene, refScene, RendererCommandUtils::ToString(cmd), masterDisplay);
                         m_sceneDisplayTrackerForCommands.setSceneOwnership(refScene, masterDisplay);
                     }
                 }
                 if (!m_sceneDisplayTrackerForCommands.getSceneOwnership(refScene).isValid())
                 {
-                    LOG_ERROR_P(CONTEXT_RENDERER, "DisplayDispatcher: could not find master scene for referenced scene {} when processing {}", refScene, RendererCommandUtils::ToString(cmd));
+                    LOG_ERROR(CONTEXT_RENDERER, "DisplayDispatcher: could not find master scene for referenced scene {} when processing {}", refScene, RendererCommandUtils::ToString(cmd));
                 }
             }
+        }
+        else if (std::holds_alternative<RendererCommand::LogInfo>(cmd))
+        {
+            // fill in global renderer info to be logged by displays
+            auto& logCmd = std::get<RendererCommand::LogInfo>(cmd);
+            logCmd.displaysThreaded = m_threadedDisplays;
+            logCmd.displaysThreadsRunning = m_displayThreadsUpdating;
+            logCmd.rendererLoopMode = m_loopMode;
         }
     }
 
     DisplayDispatcher::Display DisplayDispatcher::createDisplayBundle(DisplayHandle displayHandle, const DisplayConfig& dispConfig)
     {
         Display bundle;
-        LOG_INFO_P(CONTEXT_RENDERER, "DisplayDispatcher: creating platform for display {}", displayHandle);
+        LOG_INFO(CONTEXT_RENDERER, "DisplayDispatcher: creating platform for display {}", displayHandle);
         bundle.platform = m_platformFactory->createPlatform(m_rendererConfig, dispConfig);
 
-        LOG_INFO_P(CONTEXT_RENDERER, "DisplayDispatcher: creating display bundle of components for display {}", displayHandle);
+        LOG_INFO(CONTEXT_RENDERER, "DisplayDispatcher: creating display bundle of components for display {}", displayHandle);
         bundle.displayBundle = DisplayBundleShared{ std::make_unique<DisplayBundle>(
             displayHandle,
             m_rendererSceneSender,
@@ -189,7 +198,7 @@ namespace ramses::internal
         };
         if (m_threadedDisplays)
         {
-            LOG_INFO_P(CONTEXT_RENDERER, "DisplayDispatcher: creating update/render thread for display {}", displayHandle);
+            LOG_INFO(CONTEXT_RENDERER, "DisplayDispatcher: creating update/render thread for display {}", displayHandle);
             bundle.displayThread = std::make_unique<DisplayThread>(bundle.displayBundle, displayHandle, m_notifier);
         }
 
@@ -208,13 +217,13 @@ namespace ramses::internal
                 {
                     // Special case for commands that are to be dispatched only after their corresponding display is created, therefore cannot fail.
                     // This makes it possible that scene mapping/state can be set before display is even created.
-                    LOG_INFO_P(CONTEXT_RENDERER, "DisplayDispatcher cannot dispatch command yet, display does not exist, will dispatch when display created. Command=[{}]", RendererCommandUtils::ToString(cmd));
+                    LOG_INFO(CONTEXT_RENDERER, "DisplayDispatcher cannot dispatch command yet, display does not exist, will dispatch when display created. Command=[{}]", RendererCommandUtils::ToString(cmd));
                     m_stashedCommandsForNewDisplays[*cmdDisplay].push_back(std::move(cmd));
                 }
                 else
                 {
                     // cannot dispatch, generate fail event
-                    LOG_ERROR_P(CONTEXT_RENDERER, "DisplayDispatcher cannot dispatch command, display unknown. Command=[{}]", RendererCommandUtils::ToString(cmd));
+                    LOG_ERROR(CONTEXT_RENDERER, "DisplayDispatcher cannot dispatch command, display unknown. Command=[{}]", RendererCommandUtils::ToString(cmd));
                     auto failEvent = RendererCommandUtils::GenerateFailEventForCommand(cmd);
                     if (failEvent.eventType != ERendererEventType::Invalid)
                     {
@@ -234,7 +243,17 @@ namespace ramses::internal
         {
             // command is to be broadcast, dispatch a copy to each display
             for (auto& display : m_displays)
-                display.second.pendingCommands.push_back(RendererCommandUtils::Copy(cmd));
+            {
+                auto cmdCopy = RendererCommandUtils::Copy(cmd);
+
+                if (std::holds_alternative<RendererCommand::LogInfo>(cmdCopy))
+                {
+                    // fill displays framerate, it is available only here in dispatcher and displayThread but not display components
+                    std::get<RendererCommand::LogInfo>(cmdCopy).minFrameTime = (m_minFrameDurationsPerDisplay.count(display.first) != 0u ? m_minFrameDurationsPerDisplay[display.first] : DefaultMinFrameDuration);
+                }
+
+                display.second.pendingCommands.push_back(std::move(cmdCopy));
+            }
 
             RendererCommandUtils::AddAndConsolidateCommandToStash(std::move(cmd), m_stashedBroadcastCommandsForNewDisplays);
         }
@@ -315,7 +334,7 @@ namespace ramses::internal
                         }
                         else
                         {
-                            LOG_INFO_P(CONTEXT_RENDERER,
+                            LOG_INFO(CONTEXT_RENDERER,
                                        "DisplayDispatcher::dispatchSceneControlEvents: filtering scene state change event from non-owner display {}, scene {} change state to {}.",
                                        display.first,
                                        evt.sceneId,

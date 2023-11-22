@@ -671,9 +671,7 @@ namespace ramses::internal
                 end
             )", config2, "script2");
 
-            SaveFileConfig configNoValidation;
-            configNoValidation.setValidationEnabled(false);
-            EXPECT_TRUE(saveToFileWithoutValidation("scriptmodules.tmp"));
+            EXPECT_TRUE(saveToFile("scriptmodules.tmp"));
         }
 
         ASSERT_TRUE(recreateFromFile("scriptmodules.tmp"));
@@ -850,9 +848,7 @@ namespace ramses::internal
 
             EXPECT_TRUE(otherLogicEngine.update());
 
-            SaveFileConfig configNoValidation;
-            configNoValidation.setValidationEnabled(false);
-            ASSERT_TRUE(saveToFileWithoutValidation("moduleWithInterface.bin"));
+            ASSERT_TRUE(saveToFile("moduleWithInterface.bin"));
         }
 
         ASSERT_TRUE(recreateFromFile("moduleWithInterface.bin"));

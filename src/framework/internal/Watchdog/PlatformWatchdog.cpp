@@ -37,7 +37,7 @@ namespace ramses::internal
         {
             if (nullptr != m_watchdogCallback)
             {
-                LOG_TRACE(CONTEXT_FRAMEWORK, "notify watchdog from thread " << EnumToString(m_thread));
+                LOG_TRACE(CONTEXT_FRAMEWORK, "notify watchdog from thread {}", EnumToString(m_thread));
                 m_watchdogCallback->notifyThread(m_thread);
             }
             m_lastNotificationTime = timeNow;

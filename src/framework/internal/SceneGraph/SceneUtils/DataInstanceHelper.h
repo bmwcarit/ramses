@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include "internal/SceneGraph/SceneAPI/Handles.h"
 #include "impl/DataTypesImpl.h"
-
+#include "internal/SceneGraph/SceneAPI/Handles.h"
+#include "internal/SceneGraph/SceneUtils/ISceneDataArrayAccessor.h"
 #include "internal/PlatformAbstraction/VariantWrapper.h"
 
 namespace ramses::internal
@@ -37,5 +37,16 @@ namespace ramses::internal
     public:
         static void GetInstanceFieldData(const IScene& scene, DataInstanceHandle dataInstance, DataFieldHandle dataField, DataInstanceValueVariant& value);
         static void SetInstanceFieldData(IScene& scene, DataInstanceHandle dataInstance, DataFieldHandle dataField, const DataInstanceValueVariant& value);
+
+        template <typename T>
+        static const T& GetReferencedData(const IScene& scene, DataInstanceHandle dataInstance, DataFieldHandle dataField = DataFieldHandle{ 0u });
     };
+
+    template <typename T>
+    const T& DataInstanceHelper::GetReferencedData(const IScene& scene, DataInstanceHandle dataInstance, DataFieldHandle dataField)
+    {
+        const auto dataRefHandle = scene.getDataReference(dataInstance, dataField);
+        const T* dataArray = ISceneDataArrayAccessor::GetDataArray<T>(&scene, dataRefHandle, DataFieldHandle{ 0u });
+        return *dataArray;
+    }
 }

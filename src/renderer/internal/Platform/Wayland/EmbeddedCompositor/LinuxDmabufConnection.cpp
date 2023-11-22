@@ -19,7 +19,7 @@
 
 #include "internal/Platform/Wayland/EmbeddedCompositor/LinuxDmabufConnection.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/LinuxDmabufParams.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include "internal/Core/Utils/Warnings.h"
 
 namespace ramses::internal
@@ -37,20 +37,20 @@ namespace ramses::internal
 
         if (m_resource)
         {
-            LOG_INFO(CONTEXT_RENDERER, "LinuxDmabufConnection::LinuxDmabufConnection(): DMA BUF interface is now provided  " << m_clientCredentials);
+            LOG_INFO(CONTEXT_RENDERER, "LinuxDmabufConnection::LinuxDmabufConnection(): DMA BUF interface is now provided  {}", m_clientCredentials);
 
             m_resource->setImplementation(&m_dmabufInterface, this, ResourceDestroyedCallback);
         }
         else
         {
-            LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufConnection::LinuxDmabufConnection(): Could not create wayland resource  " << m_clientCredentials);
+            LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufConnection::LinuxDmabufConnection(): Could not create wayland resource  {}", m_clientCredentials);
             client.postNoMemory();
         }
     }
 
     LinuxDmabufConnection::~LinuxDmabufConnection()
     {
-        LOG_INFO(CONTEXT_RENDERER, "LinuxDmabufConnection::~LinuxDmabufConnection(): Connection destroyed  " << m_clientCredentials);
+        LOG_INFO(CONTEXT_RENDERER, "LinuxDmabufConnection::~LinuxDmabufConnection(): Connection destroyed  {}", m_clientCredentials);
 
         if (nullptr != m_resource)
         {

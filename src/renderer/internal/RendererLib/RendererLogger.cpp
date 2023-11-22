@@ -33,7 +33,7 @@
 #include "internal/RendererLib/RenderExecutorLogger.h"
 #include "internal/RendererLib/RendererEventCollector.h"
 #include "internal/RendererLib/PlatformBase/DeviceResourceMapper.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {
@@ -63,11 +63,11 @@ namespace ramses::internal
         }
     }
 
-    void RendererLogger::LogTopic(const RendererSceneUpdater& updater, ERendererLogTopic topic, bool verbose, NodeHandle nodeHandleFilter)
+    void RendererLogger::LogTopic(const RendererSceneUpdater& updater, const RendererCommand::LogInfo& cmd)
     {
-        RendererLogContext context(verbose ? ERendererLogLevelFlag_Details : ERendererLogLevelFlag_Info);
-        context.setNodeHandleFilter(nodeHandleFilter);
-        switch (topic)
+        RendererLogContext context(cmd.verbose ? ERendererLogLevelFlag_Details : ERendererLogLevelFlag_Info);
+        context.setNodeHandleFilter(cmd.nodeFilter);
+        switch (cmd.topic)
         {
         case ERendererLogTopic::Displays:
             LogDisplays(updater, context);
@@ -106,13 +106,13 @@ namespace ramses::internal
             LogEventQueue(updater, context);
             break;
         case ERendererLogTopic::PeriodicLog:
-            LogPeriodicInfo(updater);
+            LogPeriodicInfo(updater, cmd);
             break;
         default:
-            context << "Log topic " << topic << " not found!" << RendererLogContext::NewLine;
+            context << "Log topic " << cmd.topic << " not found!" << RendererLogContext::NewLine;
             break;
         }
-        if (topic != ERendererLogTopic::PeriodicLog)
+        if (cmd.topic != ERendererLogTopic::PeriodicLog)
         {
             Log(CONTEXT_RENDERER, context);
         }
@@ -1037,15 +1037,21 @@ namespace ramses::internal
         EndSection("RENDERER EVENTS", context);
     }
 
-    void RendererLogger::LogPeriodicInfo(const RendererSceneUpdater& updater)
+    void RendererLogger::LogPeriodicInfo(const RendererSceneUpdater& updater, const RendererCommand::LogInfo& cmd)
     {
         LOG_INFO_F(CONTEXT_PERIODIC, ([&](StringOutputStream& sos)
         {
             sos.reserve(2048);
 
+            sos << "Display: threaded=" << cmd.displaysThreaded
+                << " dispThreadsRunning=" << cmd.displaysThreadsRunning
+                << " loopMode=" << (cmd.rendererLoopMode == ELoopMode::UpdateAndRender ? "UpdAndRnd" : "UpdOnly")
+                << " targetFPS=" << std::round(1000000.0 / cmd.minFrameTime.count())
+                << " skub=" << updater.m_skipUnmodifiedScenes;
+
             SceneIdVector knownSceneIds;
             updater.m_sceneStateExecutor.m_scenesStateInfo.getKnownSceneIds(knownSceneIds);
-            sos << "Renderer: " << knownSceneIds.size() << " scene(s):";
+            sos << "\n" << knownSceneIds.size() << " scene(s):";
             for(const auto& sceneId : knownSceneIds)
             {
                 const ESceneState sceneState = updater.m_sceneStateExecutor.getSceneState(sceneId);
@@ -1088,8 +1094,7 @@ namespace ramses::internal
             sos << "\nTime budgets:"
                 << " sceneResourceUpload " << int64_t(updater.m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneResourcesUpload).count()) << "us"
                 << " resourceUpload " << int64_t(updater.m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::ResourcesUpload).count()) << "us"
-                << " obRender " << int64_t(updater.m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::OffscreenBufferRender).count()) << "us"
-                << " skub=" << updater.m_skipUnmodifiedScenes;
+                << " obRender " << int64_t(updater.m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::OffscreenBufferRender).count()) << "us";
             sos << "\n";
             updater.m_renderer.getProfilerStatistics().writeLongestFrameTimingsToStream(sos);
             sos << "\n";

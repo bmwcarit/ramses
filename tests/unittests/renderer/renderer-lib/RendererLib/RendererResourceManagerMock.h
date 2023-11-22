@@ -47,6 +47,7 @@ namespace ramses::internal{
         MOCK_METHOD(void, uploadAndUnloadPendingResources, (), (override));
         MOCK_METHOD(void, uploadRenderTargetBuffer, (RenderBufferHandle renderBufferHandle, SceneId sceneId, const RenderBuffer& renderBuffer), (override));
         MOCK_METHOD(void, unloadRenderTargetBuffer, (RenderBufferHandle renderBufferHandle, SceneId sceneId), (override));
+        MOCK_METHOD(void, updateRenderTargetBufferProperties, (RenderBufferHandle renderBufferHandle, SceneId sceneId, const RenderBuffer& renderBuffer), (override));
         MOCK_METHOD(void, uploadRenderTarget, (RenderTargetHandle renderTarget, const RenderBufferHandleVector& rtBufferHandles, SceneId sceneId), (override));
         MOCK_METHOD(void, unloadRenderTarget, (RenderTargetHandle renderTarget, SceneId sceneId), (override));
         MOCK_METHOD(void, uploadOffscreenBuffer, (OffscreenBufferHandle bufferHandle, uint32_t width, uint32_t height, uint32_t sampleCount, bool isDoubleBuffered, EDepthBufferType depthStencilBufferType), (override));

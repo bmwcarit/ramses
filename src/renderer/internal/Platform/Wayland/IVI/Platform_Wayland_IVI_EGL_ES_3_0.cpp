@@ -11,7 +11,7 @@
 #include "internal/Platform/Wayland/IVI/SystemCompositorController/SystemCompositorController_Wayland_IVI.h"
 #include "internal/RendererLib/RendererConfig.h"
 #include "internal/RendererLib/DisplayConfig.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {

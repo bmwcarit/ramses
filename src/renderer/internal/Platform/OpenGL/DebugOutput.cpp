@@ -10,7 +10,7 @@
 
 #include "internal/RendererLib/PlatformInterface/IContext.h"
 
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include <array>
 #include <cassert>
 
@@ -45,35 +45,24 @@ namespace ramses::internal
     {
         assert(userParam);
 
-        // NOTE (tobias) work around case where callback is called from another thread
-        // despite requesting synchronous dispatch via GL_DEBUG_OUTPUT_SYNCHRONOUS. This
-        // can happen when the driver is bugger or does not support synchronous operation.
-        // Prevent assert on log by ensuring there is always a valig TLS log prefix but
-        // set it to a very clear invalid value.
-        if (ThreadLocalLog::GetPrefixUnchecked() == -1)
-        {
-            ThreadLocalLog::SetPrefix(-2);
-            LOG_WARN(CONTEXT_RENDERER, "Detected broken OpenGL driver ignoring GL_DEBUG_OUTPUT_SYNCHRONOUS!");
-        }
-
         switch (type)
         {
         case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
         case GL_DEBUG_TYPE_ERROR:
-            LOG_ERROR(CONTEXT_RENDERER, "OpenGL error: " << message);
+            LOG_ERROR(CONTEXT_RENDERER, "OpenGL error: {}", message);
             *(const_cast<bool*>(static_cast<const bool*>(userParam))) = true;
             break;
         case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
         case GL_DEBUG_TYPE_PORTABILITY:
         case GL_DEBUG_TYPE_PERFORMANCE:
-            LOG_WARN(CONTEXT_RENDERER, "OpenGL warning: " << message);
+            LOG_WARN(CONTEXT_RENDERER, "OpenGL warning: {}", message);
             break;
         case GL_DEBUG_TYPE_MARKER:
         case GL_DEBUG_TYPE_PUSH_GROUP:
         case GL_DEBUG_TYPE_POP_GROUP:
         case GL_DEBUG_TYPE_OTHER:
         default:
-            LOG_TRACE(CONTEXT_RENDERER, "OpenGL info: " << message);
+            LOG_TRACE(CONTEXT_RENDERER, "OpenGL info: {}", message);
         }
     }
 

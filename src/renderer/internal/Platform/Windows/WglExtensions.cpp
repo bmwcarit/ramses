@@ -64,7 +64,7 @@ namespace ramses::internal
         const char* contextExtensionsNativeString = procs.wglGetExtensionsStringARB(hiddenWindow.displayHandle);
         if (0 != contextExtensionsNativeString)
         {
-            LOG_INFO(CONTEXT_RENDERER, "WglExtensions::WglExtensions:  " << contextExtensionsNativeString);
+            LOG_INFO(CONTEXT_RENDERER, "WglExtensions::WglExtensions:  {}", contextExtensionsNativeString);
             Context_Base::ParseContextExtensionsHelper(contextExtensionsNativeString, m_extensionNames);
         }
         else

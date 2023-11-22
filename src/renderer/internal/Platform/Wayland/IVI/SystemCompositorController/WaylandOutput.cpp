@@ -28,14 +28,14 @@ namespace ramses::internal
         // GENIVI uses the proxy-id of an wl_output as it's screen-id.
         m_screenId = wl_proxy_get_id(reinterpret_cast<wl_proxy*>(m_output));
 
-        LOG_INFO(CONTEXT_RENDERER, "WaylandOutput::WaylandOutput screen-id: " << m_screenId);
+        LOG_INFO(CONTEXT_RENDERER, "WaylandOutput::WaylandOutput screen-id: {}", m_screenId);
 
         wl_output_add_listener(m_output, &m_outputListener, this);
     }
 
     WaylandOutput::~WaylandOutput()
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandOutput::~WaylandOutput screen-id: " << m_screenId);
+        LOG_INFO(CONTEXT_RENDERER, "WaylandOutput::~WaylandOutput screen-id: {}", m_screenId);
 
         if (nullptr != m_output)
         {
@@ -48,9 +48,8 @@ namespace ramses::internal
         if (0 != (flags & WL_OUTPUT_MODE_CURRENT))
         {
             LOG_INFO(CONTEXT_RENDERER,
-                     "WaylandOutput::outputHandleMode screen-id: " << m_screenId
-                                                                   << " resolution: " << width << " x " << height
-                                                                   << " refresh rate: " << refresh);
+                     "WaylandOutput::outputHandleMode screen-id: {} resolution: {} x {} refresh rate: {}",
+                     m_screenId, width, height, refresh);
         }
     }
 

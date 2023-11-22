@@ -21,7 +21,7 @@ namespace ramses::internal
     {
         android_LogPriority logLevel;
 
-        switch(logMessage.getLogLevel())
+        switch(logMessage.m_logLevel)
         {
         case ELogLevel::Trace:
             logLevel = ANDROID_LOG_VERBOSE;
@@ -47,16 +47,16 @@ namespace ramses::internal
         }
 
         constexpr size_t maxLogSize = 1023;
-        const std::string& str = logMessage.getStream().data();
+        const std::string& str = logMessage.m_message;
         if (str.size() <= maxLogSize)
-            __android_log_write(logLevel, logMessage.getContext().getContextName(), str.c_str());
+            __android_log_write(logLevel, logMessage.m_context.getContextName(), str.c_str());
         else
         {
             // create modifyable copy of msg
             std::string modStr = str;
             InplaceStringTokenizer::TokenizeToMultilineCStrings(modStr, maxLogSize, '\n',
                 [&](const char* tok) {
-                    __android_log_write(logLevel, logMessage.getContext().getContextName(), tok);
+                    __android_log_write(logLevel, logMessage.m_context.getContextName(), tok);
                 });
         }
     }

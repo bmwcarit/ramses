@@ -46,7 +46,7 @@ namespace ramses::internal
         void                 unreferenceResourcesForScene   (SceneId sceneId, const ResourceContentHashVector& resources) override;
 
         void                 provideResourceData(const ManagedResource& mr) override;
-        [[nodiscard]] bool                 hasResourcesToBeUploaded() const override;
+        [[nodiscard]] bool   hasResourcesToBeUploaded() const override;
         void                 uploadAndUnloadPendingResources() override;
 
         [[nodiscard]] DeviceResourceHandle getResourceDeviceHandle(const ResourceContentHash& hash) const override;
@@ -60,6 +60,7 @@ namespace ramses::internal
 
         void                 uploadRenderTargetBuffer(RenderBufferHandle renderBufferHandle, SceneId sceneId, const RenderBuffer& renderBuffer) override;
         void                 unloadRenderTargetBuffer(RenderBufferHandle renderBufferHandle, SceneId sceneId) override;
+        void                 updateRenderTargetBufferProperties(RenderBufferHandle renderBufferHandle, SceneId sceneId, const RenderBuffer& renderBuffer) override;
 
         void                 uploadRenderTarget(RenderTargetHandle renderTarget, const RenderBufferHandleVector& rtBufferHandles, SceneId sceneId) override;
         void                 unloadRenderTarget(RenderTargetHandle renderTarget, SceneId sceneId) override;

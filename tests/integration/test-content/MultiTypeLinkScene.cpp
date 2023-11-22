@@ -75,8 +75,7 @@ namespace ramses::internal
 
             scene.createTransformationDataConsumer(*groupNode, TransformationConsumerId);
 
-            const std::array<uint8_t, 4> pxData{ {0xff, 0x0, 0x0, 0xff} };
-            std::vector<MipLevelData> mipLevelData{ MipLevelData(4, pxData.data()) };
+            std::vector<MipLevelData> mipLevelData{ {std::byte{0xff}, std::byte{0x0}, std::byte{0x0}, std::byte{0xff}} };
             const ramses::Texture2D& texture = *m_scene.createTexture2D(ramses::ETextureFormat::RGBA8, 1u, 1u, mipLevelData, false, {});
             const ramses::TextureSampler& sampler = createSampler(texture);
             SetSampler(appearance2, sampler);
@@ -93,8 +92,7 @@ namespace ramses::internal
             providerNode->setTranslation({ 1.5f, -2.f, 5.f });
             scene.createTransformationDataProvider(*providerNode, TransformationProviderId);
 
-            const std::array<uint8_t, 4> pxData{ { 0x0, 0xff, 0x0, 0xff } };
-            const std::vector<MipLevelData> mipLevelData{ MipLevelData(4, pxData.data()) };
+            const std::vector<MipLevelData> mipLevelData{ { std::byte{0x0}, std::byte{0xff}, std::byte{0x0}, std::byte{0xff} } };
             const ramses::Texture2D& texture = *m_scene.createTexture2D(ramses::ETextureFormat::RGBA8, 1u, 1u, mipLevelData, false, {});
             const ramses::TextureSampler& sampler = createSampler(texture);
             SetSampler(appearance2, sampler);

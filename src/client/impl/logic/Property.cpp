@@ -142,7 +142,7 @@ namespace ramses
     {
         if (index >= getOutgoingLinksCount())
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "Failed to get outgoing link: zero-based index #{} exceeds the total count of outgoing links which is {}.", index, getOutgoingLinksCount());
+            LOG_ERROR(CONTEXT_CLIENT, "Failed to get outgoing link: zero-based index #{} exceeds the total count of outgoing links which is {}.", index, getOutgoingLinksCount());
             return std::nullopt;
         }
 
@@ -154,7 +154,7 @@ namespace ramses
     {
         if (index >= getOutgoingLinksCount())
         {
-            LOG_ERROR_P(CONTEXT_CLIENT, "Failed to get outgoing link: zero-based index #{} exceeds the total count of outgoing links which is {}.", index, getOutgoingLinksCount());
+            LOG_ERROR(CONTEXT_CLIENT, "Failed to get outgoing link: zero-based index #{} exceeds the total count of outgoing links which is {}.", index, getOutgoingLinksCount());
             return std::nullopt;
         }
 

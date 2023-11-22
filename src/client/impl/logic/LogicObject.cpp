@@ -7,20 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "ramses/client/logic/LogicObject.h"
-#include "ramses/client/logic/LuaModule.h"
-#include "ramses/client/logic/LuaScript.h"
-#include "ramses/client/logic/LuaInterface.h"
-#include "ramses/client/logic/NodeBinding.h"
-#include "ramses/client/logic/CameraBinding.h"
-#include "ramses/client/logic/AppearanceBinding.h"
-#include "ramses/client/logic/RenderPassBinding.h"
-#include "ramses/client/logic/RenderGroupBinding.h"
-#include "ramses/client/logic/MeshNodeBinding.h"
-#include "ramses/client/logic/SkinBinding.h"
-#include "ramses/client/logic/DataArray.h"
-#include "ramses/client/logic/AnimationNode.h"
-#include "ramses/client/logic/TimerNode.h"
-#include "ramses/client/logic/AnchorPoint.h"
 #include "impl/logic/LogicObjectImpl.h"
 
 namespace ramses
@@ -40,5 +26,4 @@ namespace ramses
     {
         return m_impl;
     }
-
 }

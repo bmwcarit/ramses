@@ -93,7 +93,7 @@ namespace ramses::internal
             const uint32_t resourceSizeToWarnAboutInBytes = 100 * 1024 * 1024;
             if (info.decompressedSize > resourceSizeToWarnAboutInBytes)
             {
-                LOG_WARN(CONTEXT_FRAMEWORK, "ResourceTableOfContents::readTOCPosAndTOCFromStream: Loading a resource that is larger than " << resourceSizeToWarnAboutInBytes << " bytes, hash: " << info.hash << " (" << info.decompressedSize << " bytes)");
+                LOG_WARN(CONTEXT_FRAMEWORK, "ResourceTableOfContents::readTOCPosAndTOCFromStream: Loading a resource that is larger than {} bytes, hash: {} ({} bytes)", resourceSizeToWarnAboutInBytes, info.hash, info.decompressedSize);
             }
         }
 

@@ -87,6 +87,8 @@ jobs:
             cmake_args+=" -Dramses-sdk_ENABLE_DEFAULT_WINDOW_TYPE=OFF"
             cmake_args+=" -Dramses-sdk_BUILD_FULL_SHARED_LIB=OFF"
             cmake_args+=" -Dramses-sdk_BUILD_HEADLESS_SHARED_LIB=ON"
+            # temporarily disable building tests for MacOS platform
+            cmake_args+=" -Dramses-sdk_BUILD_TESTS=OFF"
         fi
 
         if [[ "${{matrix.target-platform}}" == "iphone"* ]]; then

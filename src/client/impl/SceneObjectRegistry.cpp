@@ -13,7 +13,6 @@
 #include "impl/ObjectIteratorImpl.h"
 #include "impl/NodeImpl.h"
 #include "impl/RamsesObjectTypeUtils.h"
-#include "internal/PlatformAbstraction/PlatformStringUtils.h"
 
 namespace ramses::internal
 {
@@ -23,9 +22,7 @@ namespace ramses::internal
         assert(!containsObject(object));
 
         const ERamsesObjectType type = object.impl().getType();
-        const SceneObjectRegistryHandle handle = m_objects[static_cast<int>(type)].allocate();
-        *m_objects[static_cast<int>(type)].getMemory(handle) = &object;
-        object.impl().setObjectRegistryHandle(handle);
+        m_objects[static_cast<int>(type)].push_back(&object);
 
         trackSceneObjectById(object);
     }
@@ -44,39 +41,38 @@ namespace ramses::internal
             m_objectsById.erase(sceneObjectId);
         }
 
-        const SceneObjectRegistryHandle handle = object.impl().getObjectRegistryHandle();
-        const auto type = static_cast<int>(object.impl().getType());
-        m_objects[type].release(handle);
+        auto& objects = m_objects[static_cast<int>(object.impl().getType())];
+        auto it = std::find(objects.begin(), objects.end(), &object);
+        assert(it != objects.end());
+        objects.erase(it);
 
-        auto it = std::find_if(m_objectsOwningContainer.begin(), m_objectsOwningContainer.end(), [&object](auto& ro) { return ro.get() == &object; });
-        assert(it != m_objectsOwningContainer.end());
-        m_objectsOwningContainer.erase(it);
+        auto it2 = std::find_if(m_objectsOwningContainer.begin(), m_objectsOwningContainer.end(), [&object](auto& ro) { return ro.get() == &object; });
+        assert(it2 != m_objectsOwningContainer.end());
+        m_objectsOwningContainer.erase(it2);
     }
 
-    void SceneObjectRegistry::reserveAdditionalGeneralCapacity(uint32_t additionalCount)
+    void SceneObjectRegistry::reserveAdditionalGeneralCapacity(size_t additionalCount)
     {
         m_objectsOwningContainer.reserve(m_objectsOwningContainer.size() + additionalCount);
     }
 
-    void SceneObjectRegistry::reserveAdditionalObjectCapacity(ERamsesObjectType type, uint32_t additionalCount)
+    void SceneObjectRegistry::reserveAdditionalObjectCapacity(ERamsesObjectType type, size_t additionalCount)
     {
         assert(RamsesObjectTypeUtils::IsConcreteType(type));
         const auto index = static_cast<int>(type);
-        m_objects[index].preallocateSize(m_objects[index].getActualCount() + additionalCount);
+        m_objects[index].reserve(m_objects[index].size() + additionalCount);
     }
 
-    uint32_t SceneObjectRegistry::getNumberOfObjects(ERamsesObjectType type) const
+    size_t SceneObjectRegistry::getNumberOfObjects(ERamsesObjectType type) const
     {
         assert(RamsesObjectTypeUtils::IsConcreteType(type));
-        return m_objects[static_cast<int>(type)].getActualCount();
+        return m_objects[static_cast<int>(type)].size();
     }
 
     bool SceneObjectRegistry::containsObject(const SceneObject& object) const
     {
-        const SceneObjectRegistryHandle handle = object.impl().getObjectRegistryHandle();
-        const ERamsesObjectType type = object.impl().getType();
-        const SceneObjectsPool& objectsPool = m_objects[static_cast<int>(type)];
-        return objectsPool.isAllocated(handle) && (*objectsPool.getMemory(handle) == &object);
+        const auto& objects = m_objects[static_cast<int>(object.impl().getType())];
+        return std::find(objects.begin(), objects.end(), &object) != objects.end();
     }
 
     void SceneObjectRegistry::trackSceneObjectById(SceneObject& object)
@@ -97,9 +93,9 @@ namespace ramses::internal
             return it->second;
 
         auto& logicEngines = m_objects[static_cast<uint32_t>(ERamsesObjectType::LogicEngine)];
-        for (auto& le : logicEngines)
+        for (auto* le : logicEngines)
         {
-            auto obj = (*le.second)->as<LogicEngine>()->findObject(id);
+            auto obj = le->as<LogicEngine>()->findObject(id);
             if (obj)
                 return obj;
         }
@@ -118,14 +114,12 @@ namespace ramses::internal
         assert(objects.empty());
 
         // preallocate memory in container
-        uint32_t objectCount = 0u;
+        size_t objectCount = 0u;
         for (size_t i = 0u; i < RamsesObjectTypeCount; ++i)
         {
             const auto type = ERamsesObjectType(i);
             if (RamsesObjectTypeUtils::IsConcreteType(type) && RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, ofType))
-            {
-                objectCount += m_objects[i].getActualCount();
-            }
+                objectCount += m_objects[i].size();
         }
         objects.reserve(objectCount);
 
@@ -133,16 +127,7 @@ namespace ramses::internal
         {
             const auto type = ERamsesObjectType(i);
             if (RamsesObjectTypeUtils::IsConcreteType(type) && RamsesObjectTypeUtils::IsTypeMatchingBaseType(type, ofType))
-            {
-                const SceneObjectsPool& objectsPool = m_objects[i];
-                for (SceneObjectRegistryHandle handle(0u); handle < objectsPool.getTotalCount(); ++handle)
-                {
-                    if (objectsPool.isAllocated(handle))
-                    {
-                        objects.push_back(*objectsPool.getMemory(handle));
-                    }
-                }
-            }
+                objects.insert(objects.end(), m_objects[i].begin(), m_objects[i].end());
         }
     }
 

@@ -9,7 +9,6 @@
 #include "gtest/gtest.h"
 #include "internal/RendererLib/RendererEventCollector.h"
 #include "internal/RendererLib/Enums/EKeyModifier.h"
-#include "internal/Core/Utils/ThreadLocalLog.h"
 
 using namespace testing;
 
@@ -18,12 +17,6 @@ namespace ramses::internal
     class ARendererEventCollector : public testing::Test
     {
     protected:
-        ARendererEventCollector()
-        {
-            // caller is expected to have a display prefix for logs
-            ThreadLocalLog::SetPrefix(1);
-        }
-
         void TearDown() override
         {
             // make sure all test cases dispatch all collected events

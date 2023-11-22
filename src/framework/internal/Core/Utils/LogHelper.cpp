@@ -93,7 +93,7 @@ namespace ramses::internal
                     }
                     else
                     {
-                        LOG_WARN(CONTEXT_FRAMEWORK, "LogHelper::ParseContextFilters: Skip unknown log level '" << logLevelStr << "'");
+                        LOG_WARN(CONTEXT_FRAMEWORK, "LogHelper::ParseContextFilters: Skip unknown log level '{}'", logLevelStr);
                     }
                 }
                 currentCommandStart = currentCommandEnd + 1;

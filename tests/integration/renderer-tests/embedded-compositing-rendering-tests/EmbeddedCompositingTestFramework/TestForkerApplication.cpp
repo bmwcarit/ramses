@@ -46,7 +46,7 @@ namespace ramses::internal
             LOG_ERROR(CONTEXT_RENDERER, "TestForkerApplication::handleIncomingMessage request pipe closed, stopping forker application");
             return false;
         case EReadFromPipeStatus_Failure:
-            LOG_ERROR(CONTEXT_RENDERER, "TestForkerApplication::handleIncomingMessage request pipe error " << NamedPipe::getSystemErrorStatus() << ", stopping");
+            LOG_ERROR(CONTEXT_RENDERER, "TestForkerApplication::handleIncomingMessage request pipe error {}, stopping", NamedPipe::getSystemErrorStatus());
             return false;
         case EReadFromPipeStatus_Empty:
             return true;

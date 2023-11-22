@@ -47,9 +47,17 @@ namespace ramses::internal
     {
         const RenderBufferHandle rb(13u);
         const DeviceResourceHandle deviceHandle(123u);
-        registry.addRenderBuffer(rb, deviceHandle, 0u, false);
+        const RenderBuffer props{ 16u, 8u, EPixelStorageFormat::R16F, ERenderBufferAccessMode::ReadWrite, 2u };
+        registry.addRenderBuffer(rb, deviceHandle, 10u, props);
 
         EXPECT_EQ(deviceHandle, registry.getRenderBufferDeviceHandle(rb));
+
+        EXPECT_EQ(10u, registry.getRenderBufferByteSize(rb));
+        EXPECT_EQ(props.width, registry.getRenderBufferProperties(rb).width);
+        EXPECT_EQ(props.height, registry.getRenderBufferProperties(rb).height);
+        EXPECT_EQ(props.format, registry.getRenderBufferProperties(rb).format);
+        EXPECT_EQ(props.accessMode, registry.getRenderBufferProperties(rb).accessMode);
+        EXPECT_EQ(props.sampleCount, registry.getRenderBufferProperties(rb).sampleCount);
 
         RenderBufferHandleVector rbs;
         registry.getAllRenderBuffers(rbs);

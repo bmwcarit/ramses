@@ -76,7 +76,7 @@ namespace ramses::internal
         auto dataArray = otherEngine.createDataArray(SomeDataVector<TypeParam>(), "dataarray");
 
         EXPECT_FALSE(this->m_logicEngine->destroy(*dataArray));
-        EXPECT_EQ("Failed to destroy object 'dataarray [LogicObject ScnObjId=10]', cannot find it in this LogicEngine instance.", this->getLastErrorMessage());
+        EXPECT_EQ(fmt::format("Failed to destroy object 'dataarray [LogicObject ScnObjId={}]', cannot find it in this LogicEngine instance.", dataArray->getSceneObjectId()), this->getLastErrorMessage());
     }
 
     TYPED_TEST(ADataArray, ChangesName)
@@ -118,7 +118,7 @@ namespace ramses::internal
             otherEngine.createDataArray(data4, "dataarray4");
             otherEngine.createDataArray(data5, "dataarray5");
 
-            ASSERT_TRUE(this->saveToFileWithoutValidation("LogicEngine.bin"));
+            ASSERT_TRUE(this->saveToFile("LogicEngine.bin"));
         }
 
         ASSERT_TRUE(this->recreateFromFile("LogicEngine.bin"));

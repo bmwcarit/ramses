@@ -24,6 +24,7 @@
 #include "ramses/client/logic/RenderGroupBindingElements.h"
 #include "ramses/client/logic/MeshNodeBinding.h"
 #include "ramses/client/logic/SkinBinding.h"
+#include "ramses/client/logic/RenderBufferBinding.h"
 
 #include "impl/logic/AnchorPointImpl.h"
 #include "impl/logic/LogicNodeImpl.h"
@@ -41,6 +42,7 @@
 #include "impl/RenderGroupImpl.h"
 #include "impl/RenderPassImpl.h"
 #include "impl/MeshNodeImpl.h"
+#include "impl/RenderBufferImpl.h"
 #include "impl/RamsesClientImpl.h"
 #include "impl/RamsesFrameworkImpl.h"
 #include "impl/EFeatureLevelImpl.h"
@@ -59,6 +61,7 @@
 #include "ramses/client/UniformInput.h"
 #include "ramses/client/Appearance.h"
 #include "ramses/client/Effect.h"
+#include "ramses/client/RenderBuffer.h"
 #include "ramses/client/ramses-utils.h"
 #include "internal/Core/Utils/LogMacros.h"
 
@@ -272,6 +275,17 @@ namespace ramses::internal
             jointsAsImpls.push_back(&j->impl());
 
         return m_apiObjects->createSkinBinding(std::move(jointsAsImpls), inverseBindMatrices, appearanceBinding.impl(), *actualUniformInputOpt, name);
+    }
+
+    RenderBufferBinding* LogicEngineImpl::createRenderBufferBinding(ramses::RenderBuffer& renderBuffer, std::string_view name)
+    {
+        if (!isFromTheSameSceneAs(renderBuffer.impl()))
+        {
+            getErrorReporting().set(fmt::format("Failed to create RenderBufferBinding, object is from sceneId={} but LogicEngine is from sceneId={}", renderBuffer.impl().getSceneImpl().getSceneId(), getSceneImpl().getSceneId()), *this);
+            return nullptr;
+        }
+
+        return m_apiObjects->createRenderBufferBinding(renderBuffer, name);
     }
 
     template <typename T>
@@ -531,7 +545,7 @@ namespace ramses::internal
             return false;
         }
 
-        LOG_INFO_P(CONTEXT_CLIENT, "Loading logic engine content from '{}'", dataSourceDescription);
+        LOG_INFO(CONTEXT_CLIENT, "Loading logic engine content from '{}'", dataSourceDescription);
 
         if (nullptr == logicEngine->apiObjects())
         {

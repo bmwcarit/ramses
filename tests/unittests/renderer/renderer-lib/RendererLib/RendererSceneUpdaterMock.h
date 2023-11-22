@@ -48,6 +48,6 @@ namespace ramses::internal
         MOCK_METHOD(void, setLimitFlushesForceApply, (size_t limitForPendingFlushesForceApply), (override));
         MOCK_METHOD(void, setLimitFlushesForceUnsubscribe, (size_t limitForPendingFlushesForceUnsubscribe), (override));
         MOCK_METHOD(void, setSkippingOfUnmodifiedScenes, (bool enable), (override));
-        MOCK_METHOD(void, logRendererInfo, (ERendererLogTopic topic, bool verbose, NodeHandle nodeFilter), (const, override));
+        MOCK_METHOD(void, logRendererInfo, (const RendererCommand::LogInfo& cmd), (const, override));
     };
 }

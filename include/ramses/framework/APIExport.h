@@ -31,3 +31,7 @@
 #endif
 
 #endif
+
+// Add macro/define for exporting non-API symbols into shared libs
+// when needed.
+#define RAMSES_IMPL_EXPORT RAMSES_API

@@ -22,6 +22,7 @@
 #include "ramses/client/logic/AnimationNode.h"
 #include "ramses/client/logic/TimerNode.h"
 #include "ramses/client/logic/AnchorPoint.h"
+#include "ramses/client/logic/RenderBufferBinding.h"
 
 #include "impl/logic/LogicEngineImpl.h"
 #include "impl/logic/LuaConfigImpl.h"
@@ -157,6 +158,11 @@ namespace ramses
         return m_impl.createSkinBinding(joints, inverseBindMatrices, appearanceBinding, jointMatInput, name);
     }
 
+    RenderBufferBinding* LogicEngine::createRenderBufferBinding(ramses::RenderBuffer& renderBuffer, std::string_view name)
+    {
+        return m_impl.createRenderBufferBinding(renderBuffer, name);
+    }
+
     template <typename T>
     DataArray* LogicEngine::createDataArrayInternal(const std::vector<T>& data, std::string_view name)
     {
@@ -240,85 +246,90 @@ namespace ramses
         return m_impl.getApiObjects().getAllPropertyLinks();
     }
 
-    template RAMSES_API Collection<LogicObject>        LogicEngine::getLogicObjectsInternal<LogicObject>() const;
-    template RAMSES_API Collection<LuaScript>          LogicEngine::getLogicObjectsInternal<LuaScript>() const;
-    template RAMSES_API Collection<LuaModule>          LogicEngine::getLogicObjectsInternal<LuaModule>() const;
-    template RAMSES_API Collection<LuaInterface>       LogicEngine::getLogicObjectsInternal<LuaInterface>() const;
-    template RAMSES_API Collection<NodeBinding>        LogicEngine::getLogicObjectsInternal<NodeBinding>() const;
-    template RAMSES_API Collection<AppearanceBinding>  LogicEngine::getLogicObjectsInternal<AppearanceBinding>() const;
-    template RAMSES_API Collection<CameraBinding>      LogicEngine::getLogicObjectsInternal<CameraBinding>() const;
-    template RAMSES_API Collection<RenderPassBinding>  LogicEngine::getLogicObjectsInternal<RenderPassBinding>() const;
-    template RAMSES_API Collection<RenderGroupBinding> LogicEngine::getLogicObjectsInternal<RenderGroupBinding>() const;
-    template RAMSES_API Collection<MeshNodeBinding>    LogicEngine::getLogicObjectsInternal<MeshNodeBinding>() const;
-    template RAMSES_API Collection<SkinBinding>        LogicEngine::getLogicObjectsInternal<SkinBinding>() const;
-    template RAMSES_API Collection<DataArray>          LogicEngine::getLogicObjectsInternal<DataArray>() const;
-    template RAMSES_API Collection<AnimationNode>      LogicEngine::getLogicObjectsInternal<AnimationNode>() const;
-    template RAMSES_API Collection<TimerNode>          LogicEngine::getLogicObjectsInternal<TimerNode>() const;
-    template RAMSES_API Collection<AnchorPoint>        LogicEngine::getLogicObjectsInternal<AnchorPoint>() const;
+    template RAMSES_API Collection<LogicObject>         LogicEngine::getLogicObjectsInternal<LogicObject>() const;
+    template RAMSES_API Collection<LuaScript>           LogicEngine::getLogicObjectsInternal<LuaScript>() const;
+    template RAMSES_API Collection<LuaModule>           LogicEngine::getLogicObjectsInternal<LuaModule>() const;
+    template RAMSES_API Collection<LuaInterface>        LogicEngine::getLogicObjectsInternal<LuaInterface>() const;
+    template RAMSES_API Collection<NodeBinding>         LogicEngine::getLogicObjectsInternal<NodeBinding>() const;
+    template RAMSES_API Collection<AppearanceBinding>   LogicEngine::getLogicObjectsInternal<AppearanceBinding>() const;
+    template RAMSES_API Collection<CameraBinding>       LogicEngine::getLogicObjectsInternal<CameraBinding>() const;
+    template RAMSES_API Collection<RenderPassBinding>   LogicEngine::getLogicObjectsInternal<RenderPassBinding>() const;
+    template RAMSES_API Collection<RenderGroupBinding>  LogicEngine::getLogicObjectsInternal<RenderGroupBinding>() const;
+    template RAMSES_API Collection<MeshNodeBinding>     LogicEngine::getLogicObjectsInternal<MeshNodeBinding>() const;
+    template RAMSES_API Collection<SkinBinding>         LogicEngine::getLogicObjectsInternal<SkinBinding>() const;
+    template RAMSES_API Collection<DataArray>           LogicEngine::getLogicObjectsInternal<DataArray>() const;
+    template RAMSES_API Collection<AnimationNode>       LogicEngine::getLogicObjectsInternal<AnimationNode>() const;
+    template RAMSES_API Collection<TimerNode>           LogicEngine::getLogicObjectsInternal<TimerNode>() const;
+    template RAMSES_API Collection<AnchorPoint>         LogicEngine::getLogicObjectsInternal<AnchorPoint>() const;
+    template RAMSES_API Collection<RenderBufferBinding> LogicEngine::getLogicObjectsInternal<RenderBufferBinding>() const;
 
-    template RAMSES_API const LogicObject*        LogicEngine::findLogicObjectInternal<LogicObject>(std::string_view) const;
-    template RAMSES_API const LuaScript*          LogicEngine::findLogicObjectInternal<LuaScript>(std::string_view) const;
-    template RAMSES_API const LuaModule*          LogicEngine::findLogicObjectInternal<LuaModule>(std::string_view) const;
-    template RAMSES_API const LuaInterface*       LogicEngine::findLogicObjectInternal<LuaInterface>(std::string_view) const;
-    template RAMSES_API const NodeBinding*        LogicEngine::findLogicObjectInternal<NodeBinding>(std::string_view) const;
-    template RAMSES_API const AppearanceBinding*  LogicEngine::findLogicObjectInternal<AppearanceBinding>(std::string_view) const;
-    template RAMSES_API const CameraBinding*      LogicEngine::findLogicObjectInternal<CameraBinding>(std::string_view) const;
-    template RAMSES_API const RenderPassBinding*  LogicEngine::findLogicObjectInternal<RenderPassBinding>(std::string_view) const;
-    template RAMSES_API const RenderGroupBinding* LogicEngine::findLogicObjectInternal<RenderGroupBinding>(std::string_view) const;
-    template RAMSES_API const MeshNodeBinding*    LogicEngine::findLogicObjectInternal<MeshNodeBinding>(std::string_view) const;
-    template RAMSES_API const SkinBinding*        LogicEngine::findLogicObjectInternal<SkinBinding>(std::string_view) const;
-    template RAMSES_API const DataArray*          LogicEngine::findLogicObjectInternal<DataArray>(std::string_view) const;
-    template RAMSES_API const AnimationNode*      LogicEngine::findLogicObjectInternal<AnimationNode>(std::string_view) const;
-    template RAMSES_API const TimerNode*          LogicEngine::findLogicObjectInternal<TimerNode>(std::string_view) const;
-    template RAMSES_API const AnchorPoint*        LogicEngine::findLogicObjectInternal<AnchorPoint>(std::string_view) const;
+    template RAMSES_API const LogicObject*         LogicEngine::findLogicObjectInternal<LogicObject>(std::string_view) const;
+    template RAMSES_API const LuaScript*           LogicEngine::findLogicObjectInternal<LuaScript>(std::string_view) const;
+    template RAMSES_API const LuaModule*           LogicEngine::findLogicObjectInternal<LuaModule>(std::string_view) const;
+    template RAMSES_API const LuaInterface*        LogicEngine::findLogicObjectInternal<LuaInterface>(std::string_view) const;
+    template RAMSES_API const NodeBinding*         LogicEngine::findLogicObjectInternal<NodeBinding>(std::string_view) const;
+    template RAMSES_API const AppearanceBinding*   LogicEngine::findLogicObjectInternal<AppearanceBinding>(std::string_view) const;
+    template RAMSES_API const CameraBinding*       LogicEngine::findLogicObjectInternal<CameraBinding>(std::string_view) const;
+    template RAMSES_API const RenderPassBinding*   LogicEngine::findLogicObjectInternal<RenderPassBinding>(std::string_view) const;
+    template RAMSES_API const RenderGroupBinding*  LogicEngine::findLogicObjectInternal<RenderGroupBinding>(std::string_view) const;
+    template RAMSES_API const MeshNodeBinding*     LogicEngine::findLogicObjectInternal<MeshNodeBinding>(std::string_view) const;
+    template RAMSES_API const SkinBinding*         LogicEngine::findLogicObjectInternal<SkinBinding>(std::string_view) const;
+    template RAMSES_API const DataArray*           LogicEngine::findLogicObjectInternal<DataArray>(std::string_view) const;
+    template RAMSES_API const AnimationNode*       LogicEngine::findLogicObjectInternal<AnimationNode>(std::string_view) const;
+    template RAMSES_API const TimerNode*           LogicEngine::findLogicObjectInternal<TimerNode>(std::string_view) const;
+    template RAMSES_API const AnchorPoint*         LogicEngine::findLogicObjectInternal<AnchorPoint>(std::string_view) const;
+    template RAMSES_API const RenderBufferBinding* LogicEngine::findLogicObjectInternal<RenderBufferBinding>(std::string_view) const;
 
-    template RAMSES_API LogicObject*        LogicEngine::findLogicObjectInternal<LogicObject>(std::string_view);
-    template RAMSES_API LuaScript*          LogicEngine::findLogicObjectInternal<LuaScript>(std::string_view);
-    template RAMSES_API LuaModule*          LogicEngine::findLogicObjectInternal<LuaModule>(std::string_view);
-    template RAMSES_API LuaInterface*       LogicEngine::findLogicObjectInternal<LuaInterface>(std::string_view);
-    template RAMSES_API NodeBinding*        LogicEngine::findLogicObjectInternal<NodeBinding>(std::string_view);
-    template RAMSES_API AppearanceBinding*  LogicEngine::findLogicObjectInternal<AppearanceBinding>(std::string_view);
-    template RAMSES_API CameraBinding*      LogicEngine::findLogicObjectInternal<CameraBinding>(std::string_view);
-    template RAMSES_API RenderPassBinding*  LogicEngine::findLogicObjectInternal<RenderPassBinding>(std::string_view);
-    template RAMSES_API RenderGroupBinding* LogicEngine::findLogicObjectInternal<RenderGroupBinding>(std::string_view);
-    template RAMSES_API MeshNodeBinding*    LogicEngine::findLogicObjectInternal<MeshNodeBinding>(std::string_view);
-    template RAMSES_API SkinBinding*        LogicEngine::findLogicObjectInternal<SkinBinding>(std::string_view);
-    template RAMSES_API DataArray*          LogicEngine::findLogicObjectInternal<DataArray>(std::string_view);
-    template RAMSES_API AnimationNode*      LogicEngine::findLogicObjectInternal<AnimationNode>(std::string_view);
-    template RAMSES_API TimerNode*          LogicEngine::findLogicObjectInternal<TimerNode>(std::string_view);
-    template RAMSES_API AnchorPoint*        LogicEngine::findLogicObjectInternal<AnchorPoint>(std::string_view);
+    template RAMSES_API LogicObject*         LogicEngine::findLogicObjectInternal<LogicObject>(std::string_view);
+    template RAMSES_API LuaScript*           LogicEngine::findLogicObjectInternal<LuaScript>(std::string_view);
+    template RAMSES_API LuaModule*           LogicEngine::findLogicObjectInternal<LuaModule>(std::string_view);
+    template RAMSES_API LuaInterface*        LogicEngine::findLogicObjectInternal<LuaInterface>(std::string_view);
+    template RAMSES_API NodeBinding*         LogicEngine::findLogicObjectInternal<NodeBinding>(std::string_view);
+    template RAMSES_API AppearanceBinding*   LogicEngine::findLogicObjectInternal<AppearanceBinding>(std::string_view);
+    template RAMSES_API CameraBinding*       LogicEngine::findLogicObjectInternal<CameraBinding>(std::string_view);
+    template RAMSES_API RenderPassBinding*   LogicEngine::findLogicObjectInternal<RenderPassBinding>(std::string_view);
+    template RAMSES_API RenderGroupBinding*  LogicEngine::findLogicObjectInternal<RenderGroupBinding>(std::string_view);
+    template RAMSES_API MeshNodeBinding*     LogicEngine::findLogicObjectInternal<MeshNodeBinding>(std::string_view);
+    template RAMSES_API SkinBinding*         LogicEngine::findLogicObjectInternal<SkinBinding>(std::string_view);
+    template RAMSES_API DataArray*           LogicEngine::findLogicObjectInternal<DataArray>(std::string_view);
+    template RAMSES_API AnimationNode*       LogicEngine::findLogicObjectInternal<AnimationNode>(std::string_view);
+    template RAMSES_API TimerNode*           LogicEngine::findLogicObjectInternal<TimerNode>(std::string_view);
+    template RAMSES_API AnchorPoint*         LogicEngine::findLogicObjectInternal<AnchorPoint>(std::string_view);
+    template RAMSES_API RenderBufferBinding* LogicEngine::findLogicObjectInternal<RenderBufferBinding>(std::string_view);
 
-    template RAMSES_API const LogicObject*        LogicEngine::findLogicObjectInternal<LogicObject>(sceneObjectId_t) const;
-    template RAMSES_API const LuaScript*          LogicEngine::findLogicObjectInternal<LuaScript>(sceneObjectId_t) const;
-    template RAMSES_API const LuaModule*          LogicEngine::findLogicObjectInternal<LuaModule>(sceneObjectId_t) const;
-    template RAMSES_API const LuaInterface*       LogicEngine::findLogicObjectInternal<LuaInterface>(sceneObjectId_t) const;
-    template RAMSES_API const NodeBinding*        LogicEngine::findLogicObjectInternal<NodeBinding>(sceneObjectId_t) const;
-    template RAMSES_API const AppearanceBinding*  LogicEngine::findLogicObjectInternal<AppearanceBinding>(sceneObjectId_t) const;
-    template RAMSES_API const CameraBinding*      LogicEngine::findLogicObjectInternal<CameraBinding>(sceneObjectId_t) const;
-    template RAMSES_API const RenderPassBinding*  LogicEngine::findLogicObjectInternal<RenderPassBinding>(sceneObjectId_t) const;
-    template RAMSES_API const RenderGroupBinding* LogicEngine::findLogicObjectInternal<RenderGroupBinding>(sceneObjectId_t) const;
-    template RAMSES_API const MeshNodeBinding*    LogicEngine::findLogicObjectInternal<MeshNodeBinding>(sceneObjectId_t) const;
-    template RAMSES_API const SkinBinding*        LogicEngine::findLogicObjectInternal<SkinBinding>(sceneObjectId_t) const;
-    template RAMSES_API const DataArray*          LogicEngine::findLogicObjectInternal<DataArray>(sceneObjectId_t) const;
-    template RAMSES_API const AnimationNode*      LogicEngine::findLogicObjectInternal<AnimationNode>(sceneObjectId_t) const;
-    template RAMSES_API const TimerNode*          LogicEngine::findLogicObjectInternal<TimerNode>(sceneObjectId_t) const;
-    template RAMSES_API const AnchorPoint*        LogicEngine::findLogicObjectInternal<AnchorPoint>(sceneObjectId_t) const;
+    template RAMSES_API const LogicObject*         LogicEngine::findLogicObjectInternal<LogicObject>(sceneObjectId_t) const;
+    template RAMSES_API const LuaScript*           LogicEngine::findLogicObjectInternal<LuaScript>(sceneObjectId_t) const;
+    template RAMSES_API const LuaModule*           LogicEngine::findLogicObjectInternal<LuaModule>(sceneObjectId_t) const;
+    template RAMSES_API const LuaInterface*        LogicEngine::findLogicObjectInternal<LuaInterface>(sceneObjectId_t) const;
+    template RAMSES_API const NodeBinding*         LogicEngine::findLogicObjectInternal<NodeBinding>(sceneObjectId_t) const;
+    template RAMSES_API const AppearanceBinding*   LogicEngine::findLogicObjectInternal<AppearanceBinding>(sceneObjectId_t) const;
+    template RAMSES_API const CameraBinding*       LogicEngine::findLogicObjectInternal<CameraBinding>(sceneObjectId_t) const;
+    template RAMSES_API const RenderPassBinding*   LogicEngine::findLogicObjectInternal<RenderPassBinding>(sceneObjectId_t) const;
+    template RAMSES_API const RenderGroupBinding*  LogicEngine::findLogicObjectInternal<RenderGroupBinding>(sceneObjectId_t) const;
+    template RAMSES_API const MeshNodeBinding*     LogicEngine::findLogicObjectInternal<MeshNodeBinding>(sceneObjectId_t) const;
+    template RAMSES_API const SkinBinding*         LogicEngine::findLogicObjectInternal<SkinBinding>(sceneObjectId_t) const;
+    template RAMSES_API const DataArray*           LogicEngine::findLogicObjectInternal<DataArray>(sceneObjectId_t) const;
+    template RAMSES_API const AnimationNode*       LogicEngine::findLogicObjectInternal<AnimationNode>(sceneObjectId_t) const;
+    template RAMSES_API const TimerNode*           LogicEngine::findLogicObjectInternal<TimerNode>(sceneObjectId_t) const;
+    template RAMSES_API const AnchorPoint*         LogicEngine::findLogicObjectInternal<AnchorPoint>(sceneObjectId_t) const;
+    template RAMSES_API const RenderBufferBinding* LogicEngine::findLogicObjectInternal<RenderBufferBinding>(sceneObjectId_t) const;
 
-    template RAMSES_API LogicObject*        LogicEngine::findLogicObjectInternal<LogicObject>(sceneObjectId_t);
-    template RAMSES_API LuaScript*          LogicEngine::findLogicObjectInternal<LuaScript>(sceneObjectId_t);
-    template RAMSES_API LuaModule*          LogicEngine::findLogicObjectInternal<LuaModule>(sceneObjectId_t);
-    template RAMSES_API LuaInterface*       LogicEngine::findLogicObjectInternal<LuaInterface>(sceneObjectId_t);
-    template RAMSES_API NodeBinding*        LogicEngine::findLogicObjectInternal<NodeBinding>(sceneObjectId_t);
-    template RAMSES_API AppearanceBinding*  LogicEngine::findLogicObjectInternal<AppearanceBinding>(sceneObjectId_t);
-    template RAMSES_API CameraBinding*      LogicEngine::findLogicObjectInternal<CameraBinding>(sceneObjectId_t);
-    template RAMSES_API RenderPassBinding*  LogicEngine::findLogicObjectInternal<RenderPassBinding>(sceneObjectId_t);
-    template RAMSES_API RenderGroupBinding* LogicEngine::findLogicObjectInternal<RenderGroupBinding>(sceneObjectId_t);
-    template RAMSES_API MeshNodeBinding*    LogicEngine::findLogicObjectInternal<MeshNodeBinding>(sceneObjectId_t);
-    template RAMSES_API SkinBinding*        LogicEngine::findLogicObjectInternal<SkinBinding>(sceneObjectId_t);
-    template RAMSES_API DataArray*          LogicEngine::findLogicObjectInternal<DataArray>(sceneObjectId_t);
-    template RAMSES_API AnimationNode*      LogicEngine::findLogicObjectInternal<AnimationNode>(sceneObjectId_t);
-    template RAMSES_API TimerNode*          LogicEngine::findLogicObjectInternal<TimerNode>(sceneObjectId_t);
-    template RAMSES_API AnchorPoint*        LogicEngine::findLogicObjectInternal<AnchorPoint>(sceneObjectId_t);
+    template RAMSES_API LogicObject*         LogicEngine::findLogicObjectInternal<LogicObject>(sceneObjectId_t);
+    template RAMSES_API LuaScript*           LogicEngine::findLogicObjectInternal<LuaScript>(sceneObjectId_t);
+    template RAMSES_API LuaModule*           LogicEngine::findLogicObjectInternal<LuaModule>(sceneObjectId_t);
+    template RAMSES_API LuaInterface*        LogicEngine::findLogicObjectInternal<LuaInterface>(sceneObjectId_t);
+    template RAMSES_API NodeBinding*         LogicEngine::findLogicObjectInternal<NodeBinding>(sceneObjectId_t);
+    template RAMSES_API AppearanceBinding*   LogicEngine::findLogicObjectInternal<AppearanceBinding>(sceneObjectId_t);
+    template RAMSES_API CameraBinding*       LogicEngine::findLogicObjectInternal<CameraBinding>(sceneObjectId_t);
+    template RAMSES_API RenderPassBinding*   LogicEngine::findLogicObjectInternal<RenderPassBinding>(sceneObjectId_t);
+    template RAMSES_API RenderGroupBinding*  LogicEngine::findLogicObjectInternal<RenderGroupBinding>(sceneObjectId_t);
+    template RAMSES_API MeshNodeBinding*     LogicEngine::findLogicObjectInternal<MeshNodeBinding>(sceneObjectId_t);
+    template RAMSES_API SkinBinding*         LogicEngine::findLogicObjectInternal<SkinBinding>(sceneObjectId_t);
+    template RAMSES_API DataArray*           LogicEngine::findLogicObjectInternal<DataArray>(sceneObjectId_t);
+    template RAMSES_API AnimationNode*       LogicEngine::findLogicObjectInternal<AnimationNode>(sceneObjectId_t);
+    template RAMSES_API TimerNode*           LogicEngine::findLogicObjectInternal<TimerNode>(sceneObjectId_t);
+    template RAMSES_API AnchorPoint*         LogicEngine::findLogicObjectInternal<AnchorPoint>(sceneObjectId_t);
+    template RAMSES_API RenderBufferBinding* LogicEngine::findLogicObjectInternal<RenderBufferBinding>(sceneObjectId_t);
 
     template RAMSES_API DataArray* LogicEngine::createDataArrayInternal<float>(const std::vector<float>&, std::string_view);
     template RAMSES_API DataArray* LogicEngine::createDataArrayInternal<vec2f>(const std::vector<vec2f>&, std::string_view);
@@ -345,4 +356,5 @@ namespace ramses
     template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<AnimationNode>(ELuaSavingMode) const;
     template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<TimerNode>(ELuaSavingMode) const;
     template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<AnchorPoint>(ELuaSavingMode) const;
+    template RAMSES_API size_t LogicEngine::getSerializedSizeInternal<RenderBufferBinding>(ELuaSavingMode) const;
 }

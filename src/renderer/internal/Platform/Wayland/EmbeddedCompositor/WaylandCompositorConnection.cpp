@@ -12,7 +12,7 @@
 #include "internal/Platform/Wayland/EmbeddedCompositor/WaylandRegion.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/WaylandClient.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/INativeWaylandResource.h"
-#include "internal/Core/Utils/ThreadLocalLogForced.h"
+#include "internal/Core/Utils/LogMacros.h"
 #include <cassert>
 
 namespace ramses::internal
@@ -28,11 +28,11 @@ namespace ramses::internal
         if (nullptr != m_resource)
         {
             m_resource->setImplementation(&m_compositorInterface, this, ResourceDestroyedCallback);
-            LOG_INFO(CONTEXT_RENDERER, "WaylandCompositorConnection::WaylandCompositorConnection(): Compositor interface is now provided " << m_clientCredentials);
+            LOG_INFO(CONTEXT_RENDERER, "WaylandCompositorConnection::WaylandCompositorConnection(): Compositor interface is now provided {}", m_clientCredentials);
         }
         else
         {
-            LOG_ERROR(CONTEXT_RENDERER, "WaylandCompositorConnection::WaylandCompositorConnection(): could not create wayland resource " << m_clientCredentials);
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandCompositorConnection::WaylandCompositorConnection(): could not create wayland resource {}", m_clientCredentials);
             client.postNoMemory();
         }
     }
@@ -44,7 +44,7 @@ namespace ramses::internal
 
     WaylandCompositorConnection::~WaylandCompositorConnection()
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandCompositorConnection::~WaylandCompositorConnection Connection destroyed " << m_clientCredentials);
+        LOG_INFO(CONTEXT_RENDERER, "WaylandCompositorConnection::~WaylandCompositorConnection Connection destroyed {}", m_clientCredentials);
 
         m_embeddedCompositor.removeWaylandCompositorConnection(*this);
         if (nullptr != m_resource)

@@ -137,7 +137,7 @@ namespace ramses::internal
         const auto it = m_displayFramebuffers.find(displayId);
         if (it == m_displayFramebuffers.cend())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "RamsesRenderer::getDisplayFramebuffer: there is no display with ID " << displayId);
+            LOG_ERROR(CONTEXT_RENDERER, "RamsesRenderer::getDisplayFramebuffer: there is no display with ID {}", displayId);
             return displayBufferId_t::Invalid();
         }
         return it->second;
@@ -583,7 +583,7 @@ namespace ramses::internal
 
     bool RamsesRendererImpl::logRendererInfo()
     {
-        m_pendingRendererCommands.push_back(RendererCommand::LogInfo{ ERendererLogTopic::All, true, {} });
+        m_pendingRendererCommands.push_back(RendererCommand::LogInfo{ ERendererLogTopic::All, true, {}, false, false, ELoopMode::UpdateAndRender, {} });
         return true;
     }
 

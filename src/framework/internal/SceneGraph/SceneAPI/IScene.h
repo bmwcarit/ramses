@@ -276,6 +276,7 @@ namespace ramses::internal
         // Render buffers
         virtual RenderBufferHandle          allocateRenderBuffer            (const RenderBuffer& renderBuffer, RenderBufferHandle handle) = 0;
         virtual void                        releaseRenderBuffer             (RenderBufferHandle handle) = 0;
+        virtual void                        setRenderBufferProperties       (RenderBufferHandle handle, uint32_t width, uint32_t height, uint32_t sampleCount) = 0;
         [[nodiscard]] virtual bool                isRenderBufferAllocated   (RenderBufferHandle handle) const = 0;
         [[nodiscard]] virtual uint32_t            getRenderBufferCount      () const = 0;
         [[nodiscard]] virtual const RenderBuffer& getRenderBuffer           (RenderBufferHandle handle) const = 0;

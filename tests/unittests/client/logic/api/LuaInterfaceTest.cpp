@@ -951,7 +951,7 @@ namespace ramses::internal
                 end
             )", "intf", config);
 
-            EXPECT_TRUE(saveToFileWithoutValidation("temp.ramses"));
+            EXPECT_TRUE(saveToFile("temp.ramses"));
         }
 
         ASSERT_TRUE(recreateFromFile("temp.ramses"));
@@ -1050,7 +1050,7 @@ namespace ramses::internal
             otherEngine.link(*intf->getOutputs()->getChild("param2")->getChild("y")->getChild(0u), *inputsScript->getInputs()->getChild("param2")->getChild("y")->getChild(0u));
             otherEngine.link(*intf->getOutputs()->getChild("param2")->getChild("y")->getChild(1u), *inputsScript->getInputs()->getChild("param2")->getChild("y")->getChild(1u));
 
-            ASSERT_TRUE(saveToFileWithoutValidation("interface.ramses"));
+            ASSERT_TRUE(saveToFile("interface.ramses"));
         }
 
         ASSERT_TRUE(recreateFromFile("interface.ramses"));
@@ -1058,7 +1058,7 @@ namespace ramses::internal
         const auto loadedIntf = m_logicEngine->findObject<LuaInterface>("intf");
         ASSERT_NE(nullptr, loadedIntf);
 
-        EXPECT_EQ(10u, loadedIntf->getSceneObjectId().getValue());
+        EXPECT_EQ(11u, loadedIntf->getSceneObjectId().getValue());
         EXPECT_EQ(loadedIntf->getInputs(), loadedIntf->getOutputs());
         ASSERT_EQ(2u, loadedIntf->getInputs()->getChildCount());
         const auto param1 = loadedIntf->getInputs()->getChild("param1");
@@ -1080,12 +1080,6 @@ namespace ramses::internal
         ASSERT_EQ(2u, param2y->getChildCount());
         EXPECT_EQ(EPropertyType::String, param2y->getChild(0u)->getType());
         EXPECT_EQ(EPropertyType::String, param2y->getChild(1u)->getType());
-    }
-
-    TEST_F(ALuaInterface_Serialization, FailsToSaveToFileIfInterfaceOutputsNotLinked)
-    {
-        createTestInterface(m_minimalInterface, "intf name");
-        EXPECT_FALSE(saveToFile("interface.ramses"));
     }
 
     TEST_F(ALuaInterface_Serialization, CanSerializeWithNoIssue)

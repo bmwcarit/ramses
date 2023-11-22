@@ -141,6 +141,7 @@ namespace ramses::internal
         // Render buffers
         RenderBufferHandle          allocateRenderBuffer            (const RenderBuffer& renderBuffer, RenderBufferHandle handle) override;
         void                        releaseRenderBuffer             (RenderBufferHandle handle) override;
+        void                        setRenderBufferProperties       (RenderBufferHandle handle, uint32_t width, uint32_t height, uint32_t sampleCount) override;
         void                        addRenderTargetRenderBuffer     (RenderTargetHandle targetHandle, RenderBufferHandle bufferHandle) override;
 
         // Data buffers

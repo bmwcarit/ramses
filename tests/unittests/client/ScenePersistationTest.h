@@ -108,9 +108,7 @@ namespace ramses::internal
         void checkSceneFile(const char* filename)
         {
             std::vector<std::byte> buffer;
-            SaveFileConfigImpl config;
-            config.setValidationEnabled(false);
-            EXPECT_TRUE(m_scene.impl().serialize(buffer, config));
+            EXPECT_TRUE(m_scene.impl().serialize(buffer, {}));
             EXPECT_FALSE(buffer.empty());
 
             ramses::internal::File f(filename);
@@ -129,7 +127,6 @@ namespace ramses::internal
         {
             SaveFileConfig config;
             config.setCompressionEnabled(withCompression);
-            config.setValidationEnabled(false);
             ASSERT_TRUE(m_scene.saveToFile("someTemporaryFile.ram", config));
 
             checkSceneFile("someTemporaryFile.ram");
