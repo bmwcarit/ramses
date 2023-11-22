@@ -22,19 +22,16 @@ jobs:
     strategy:
       matrix:
         target-platform: [host-os]
-        # temporarily disable MacOS builds for 28 RC3 release
-        # os: [ubuntu-20.04, ubuntu-22.04, windows-2022, macos-12]
-        os: [ubuntu-20.04, ubuntu-22.04, windows-2022]
+        os: [ubuntu-20.04, ubuntu-22.04, windows-2022, macos-12]
         type: [Debug, Release]
         compiler: [default]
         include:
-          # temporarily disable iOS builds for 28 RC3 release
-          # - target-platform: iphoneos
-          #   os: macos-12
-          #   type: Debug
-          # - target-platform: iphonesimulator
-          #   os: macos-12
-          #   type: Debug
+          - target-platform: iphoneos
+            os: macos-12
+            type: Debug
+          - target-platform: iphonesimulator
+            os: macos-12
+            type: Debug
         # Test with Clang too
           - os: ubuntu-20.04
             type: Debug
@@ -90,6 +87,8 @@ jobs:
             cmake_args+=" -Dramses-sdk_ENABLE_DEFAULT_WINDOW_TYPE=OFF"
             cmake_args+=" -Dramses-sdk_BUILD_FULL_SHARED_LIB=OFF"
             cmake_args+=" -Dramses-sdk_BUILD_HEADLESS_SHARED_LIB=ON"
+            # temporarily disable building tests for MacOS platform
+            cmake_args+=" -Dramses-sdk_BUILD_TESTS=OFF"
         fi
 
         if [[ "${{matrix.target-platform}}" == "iphone"* ]]; then
