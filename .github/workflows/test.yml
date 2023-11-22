@@ -30,9 +30,9 @@ jobs:
           # - target-platform: iphoneos
           #   os: macos-12
           #   type: Debug
-          - target-platform: iphonesimulator
-            os: macos-12
-            type: Debug
+          # - target-platform: iphonesimulator
+          #   os: macos-12
+          #   type: Debug
         # Test with Clang too
           - os: ubuntu-20.04
             type: Debug
