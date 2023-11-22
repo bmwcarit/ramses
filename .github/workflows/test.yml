@@ -22,11 +22,13 @@ jobs:
     strategy:
       matrix:
         target-platform: [host-os]
-        os: [ubuntu-20.04, ubuntu-22.04, windows-2022, macos-12]
+        # temporarily disable MacOS builds for 28 RC3 release
+        # os: [ubuntu-20.04, ubuntu-22.04, windows-2022, macos-12]
+        os: [ubuntu-20.04, ubuntu-22.04, windows-2022]
         type: [Debug, Release]
         compiler: [default]
         include:
-          # temporarily disable iOS build for 28 RC3 release
+          # temporarily disable iOS builds for 28 RC3 release
           # - target-platform: iphoneos
           #   os: macos-12
           #   type: Debug
