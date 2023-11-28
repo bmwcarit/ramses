@@ -248,7 +248,7 @@ namespace ramses::internal
         if (indicesFieldSemantics == ramses::internal::EFixedSemantics::Indices)
         {
             getIScene().setDataResource(m_attributeInstance, field, arrayResource.getLowlevelResourceHash(), ramses::internal::DataBufferHandle::Invalid(), 0u, 0u, 0u);
-            m_indicesCount = arrayResource.getElementCount();
+            m_indicesCount = static_cast<uint32_t>(arrayResource.getElementCount());
 
             return true;
         }
@@ -287,7 +287,7 @@ namespace ramses::internal
 
             getIScene().setDataResource(m_attributeInstance, field, ramses::internal::ResourceContentHash::Invalid(), dataBufferHandle, 0u, 0u, 0u);
 
-            m_indicesCount = dataBuffer.getElementCount();
+            m_indicesCount = static_cast<uint32_t>(dataBuffer.getElementCount());
 
             return true;
         }

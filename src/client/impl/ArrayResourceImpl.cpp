@@ -19,9 +19,9 @@ namespace ramses::internal
 
     ArrayResourceImpl::~ArrayResourceImpl() = default;
 
-    void ArrayResourceImpl::initializeFromFrameworkData(uint32_t elementCount, ramses::EDataType elementType)
+    void ArrayResourceImpl::initializeFromFrameworkData(size_t elementCount, ramses::EDataType elementType)
     {
-        m_elementCount = elementCount;
+        m_elementCount = static_cast<uint32_t>(elementCount);
         m_elementType = elementType;
     }
 
@@ -49,7 +49,7 @@ namespace ramses::internal
         return true;
     }
 
-    uint32_t ArrayResourceImpl::getElementCount() const
+    size_t ArrayResourceImpl::getElementCount() const
     {
         return m_elementCount;
     }

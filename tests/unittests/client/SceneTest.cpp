@@ -1918,4 +1918,31 @@ namespace ramses::internal
         EXPECT_TRUE(loadedScene->findObject<Node>("boundNode")->getTranslation(nodeTr));
         EXPECT_EQ(glm::vec3(111, 222, 333), nodeTr);
     }
+
+    TEST(SceneAPILog, log_export)
+    {
+        static ramses::RamsesFrameworkConfig config(ramses::EFeatureLevel::EFeatureLevel_01);
+        config.setLogLevel(ramses::ELogLevel::Trace);
+        ramses::RamsesFramework ramsesFramework{config};
+        ramses::RamsesClient&   client = *ramsesFramework.createClient("example client");
+        ramses::Scene*          scene  = client.createScene(ramses::sceneId_t(123u), "example scene");
+
+        ramses::SaveFileConfig saveConfig;
+        saveConfig.setMetadataString(R"({
+"generator" : "test"
+})");
+        ASSERT_TRUE(scene->saveToFile("saveToFile_empty.ramses", saveConfig));
+        ASSERT_TRUE(std::filesystem::remove("saveToFile_empty.ramses"));
+    }
+
+    TEST(SceneAPILog, log_create_node)
+    {
+        ramses::RamsesFrameworkConfig config{ramses::EFeatureLevel::EFeatureLevel_01};
+        config.setLogLevel(ramses::ELogLevel::Trace);
+        ramses::RamsesFramework ramsesFramework{config};
+        ramses::RamsesClient&   client = *ramsesFramework.createClient("example client");
+        ramses::Scene*          scene  = client.createScene(ramses::sceneId_t(123u), "example scene");
+
+        scene->createNode("{}");
+    }
 }

@@ -27,7 +27,7 @@ public:
     {
         ramses::RamsesFrameworkConfig frameworkConfig{ramses::EFeatureLevel_Latest};
         frameworkConfig.setPeriodicLogInterval(std::chrono::seconds(0));
-        frameworkConfig.setLogLevel(ramses::ELogLevel::Off);
+        frameworkConfig.setLogLevel(ramses::ELogLevel::Info);
         m_framework = std::make_unique<ramses::RamsesFramework>(frameworkConfig);
 
         m_ramsesClient = m_framework->createClient("example client");

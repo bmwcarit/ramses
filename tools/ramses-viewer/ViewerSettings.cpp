@@ -54,9 +54,9 @@ namespace ramses::internal
     {
         auto* gui = static_cast<ViewerSettings*>(handler->UserData);
         int flag = 0;
-        if (IniReadFlag(line, "ShowSceneViewerWindow=%d", &flag))
+        if (IniReadFlag(line, "ShowWindow=%d", &flag))
         {
-            gui->showSceneViewerWindow = (flag != 0);
+            gui->showWindow = (flag != 0);
         }
         else if (IniReadFlag(line, "ShowLogicWindow=%d", &flag))
         {
@@ -83,7 +83,7 @@ namespace ramses::internal
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg) 3rd party interface
         buf->appendf("[%s][Settings]\n", handler->TypeName);
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg) 3rd party interface
-        buf->appendf("ShowSceneViewerWindow=%d\n", gui->showSceneViewerWindow ? 1 : 0);
+        buf->appendf("ShowWindow=%d\n", gui->showWindow ? 1 : 0);
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg) 3rd party interface
         buf->appendf("ShowLogicWindow=%d\n", gui->showLogicWindow ? 1 : 0);
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg) 3rd party interface

@@ -23,6 +23,8 @@ namespace ramses::internal
     public:
         RenderTargetScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition, uint32_t vpWidth = IntegrationScene::DefaultViewportWidth, uint32_t vpHeight = IntegrationScene::DefaultViewportHeight);
 
+        void setState(uint32_t state);
+
         enum
         {
             PERSPECTIVE_PROJECTION = 0,
@@ -39,15 +41,20 @@ namespace ramses::internal
             RENDERBUFFER_FORMAT_RGB16F,
             RENDERBUFFER_FORMAT_RGB32F,
             RENDERBUFFER_FORMAT_RGBA16F,
-            RENDERBUFFER_FORMAT_RGBA32F
+            RENDERBUFFER_FORMAT_RGBA32F,
+
+            RENDERBUFFER_LOGIC_LOWRES,
+            RENDERBUFFER_LOGIC_HIGHRES
         };
 
     private:
-        const ramses::RenderBuffer& createRenderBuffer(uint32_t state);
+        ramses::RenderBuffer* createRenderBuffer(uint32_t state);
         ramses::Camera* createCamera(uint32_t state);
         void initInputRenderPass(uint32_t state);
         void initFinalRenderPass();
+        void createLogic();
 
-        const ramses::RenderBuffer& m_renderBuffer;
+        ramses::Camera& m_camera;
+        ramses::RenderBuffer& m_renderBuffer;
     };
 }

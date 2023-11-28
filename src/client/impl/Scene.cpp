@@ -165,7 +165,7 @@ namespace ramses
         return m_impl.getUniformTimeMs();
     }
 
-    ArrayBuffer* Scene::createArrayBuffer(EDataType dataType, uint32_t maxNumElements, std::string_view name /*= {}*/)
+    ArrayBuffer* Scene::createArrayBuffer(EDataType dataType, size_t maxNumElements, std::string_view name /*= {}*/)
     {
         auto dataBufferObject = m_impl.createArrayBuffer(dataType, maxNumElements, name);
         LOG_HL_CLIENT_API3(LOG_API_RAMSESOBJECT_PTR_STRING(dataBufferObject), maxNumElements, dataType, name);
@@ -422,7 +422,7 @@ namespace ramses
     }
 
     template <typename T>
-    ArrayResource* Scene::createArrayResourceInternal(uint32_t numElements, const T* arrayData, std::string_view name)
+    ArrayResource* Scene::createArrayResourceInternal(size_t numElements, const T* arrayData, std::string_view name)
     {
         auto arr = m_impl.createArrayResource<T>(numElements, arrayData, name);
         LOG_HL_CLIENT_API4(LOG_API_RESOURCE_PTR_STRING(arr), numElements, GetEDataType<T>(), LOG_API_GENERIC_PTR_STRING(arrayData), name);
@@ -482,13 +482,13 @@ namespace ramses
         return m_impl;
     }
 
-    template RAMSES_API ArrayResource* Scene::createArrayResourceInternal<uint16_t>(uint32_t, const uint16_t*, std::string_view);
-    template RAMSES_API ArrayResource* Scene::createArrayResourceInternal<uint32_t>(uint32_t, const uint32_t*, std::string_view);
-    template RAMSES_API ArrayResource* Scene::createArrayResourceInternal<float>(uint32_t, const float*, std::string_view);
-    template RAMSES_API ArrayResource* Scene::createArrayResourceInternal<vec2f>(uint32_t, const vec2f*, std::string_view);
-    template RAMSES_API ArrayResource* Scene::createArrayResourceInternal<vec3f>(uint32_t, const vec3f*, std::string_view);
-    template RAMSES_API ArrayResource* Scene::createArrayResourceInternal<vec4f>(uint32_t, const vec4f*, std::string_view);
-    template RAMSES_API ArrayResource* Scene::createArrayResourceInternal<std::byte>(uint32_t, const std::byte*, std::string_view);
+    template RAMSES_API ArrayResource* Scene::createArrayResourceInternal<uint16_t>(size_t, const uint16_t*, std::string_view);
+    template RAMSES_API ArrayResource* Scene::createArrayResourceInternal<uint32_t>(size_t, const uint32_t*, std::string_view);
+    template RAMSES_API ArrayResource* Scene::createArrayResourceInternal<float>(size_t, const float*, std::string_view);
+    template RAMSES_API ArrayResource* Scene::createArrayResourceInternal<vec2f>(size_t, const vec2f*, std::string_view);
+    template RAMSES_API ArrayResource* Scene::createArrayResourceInternal<vec3f>(size_t, const vec3f*, std::string_view);
+    template RAMSES_API ArrayResource* Scene::createArrayResourceInternal<vec4f>(size_t, const vec4f*, std::string_view);
+    template RAMSES_API ArrayResource* Scene::createArrayResourceInternal<std::byte>(size_t, const std::byte*, std::string_view);
 
     template RAMSES_API SceneObject*            Scene::findObjectByNameInternal<SceneObject>(std::string_view);
     template RAMSES_API LogicEngine*            Scene::findObjectByNameInternal<LogicEngine>(std::string_view);

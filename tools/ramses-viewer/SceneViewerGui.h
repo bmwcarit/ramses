@@ -48,14 +48,17 @@ namespace ramses::internal
     struct MipMap;
 
     class ViewerGuiApp;
+    class LogicViewerGui;
     struct ViewerSettings;
 
     class SceneViewerGui
     {
     public:
         SceneViewerGui(ViewerGuiApp& app, ramses::Scene& scene, std::string& errorMessage, ProgressMonitor& progressMonitor);
-        void draw();
+        void drawContents();
+        void handleShortcuts();
 
+        void drawFileMenuItems();
         void drawGlobalContextMenuItems();
 
     private:
@@ -71,8 +74,6 @@ namespace ramses::internal
         [[nodiscard]] const ramses::internal::DataSlot* findDataSlot(ramses::internal::TextureSamplerHandle handle) const;
         [[nodiscard]] const ramses::internal::DataSlot* findDataSlot(ramses::internal::ResourceContentHash hash) const;
 
-        void drawInspectionWindow();
-        void drawMenuBar();
         void drawMenuItemCopyTexture2D();
         void drawMenuItemStorePng();
         void drawMenuItemExportShaderSources();
@@ -115,7 +116,7 @@ namespace ramses::internal
         static void DrawSceneReference(SceneReferenceImpl& obj);
         void drawDataSlot(const ramses::internal::DataSlot& obj);
 
-        void drawFile();
+        void drawSaveFile();
         void drawSceneObjects();
         void drawSceneObjectsFilter();
         void drawNodeHierarchy();
@@ -174,6 +175,8 @@ namespace ramses::internal
         bool                      m_compressFile = false;
         bool                      m_alwaysOverwrite = false;
         bool                      m_nodeVisibilityChanged = false;
+
+        bool m_saveToFile = false;
 
         ImguiImageCache m_imageCache;
 

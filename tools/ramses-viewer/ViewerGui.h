@@ -35,6 +35,8 @@ namespace ramses::internal
         void openErrorPopup(const std::string& message);
 
     private:
+        void drawWindow();
+
         void drawMenuBar();
         void drawMenuItemShowWindow();
         void drawMenuItemDisplaySettings();

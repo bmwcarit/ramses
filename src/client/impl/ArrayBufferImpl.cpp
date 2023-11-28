@@ -22,12 +22,12 @@ namespace ramses::internal
 
     ArrayBufferImpl::~ArrayBufferImpl() = default;
 
-    void ArrayBufferImpl::initializeFrameworkData(ramses::EDataType dataType, uint32_t numElements)
+    void ArrayBufferImpl::initializeFrameworkData(ramses::EDataType dataType, size_t numElements)
     {
         assert(!m_dataBufferHandle.isValid());
         const ramses::internal::EDataBufferType dataBufferType = DataTypeUtils::DeductBufferTypeFromDataType(dataType);
         const ramses::internal::EDataType dataTypeInternal = DataTypeUtils::ConvertDataTypeToInternal(dataType);
-        const uint32_t maximumSizeInBytes = EnumToSize(dataTypeInternal) * numElements;
+        const uint32_t maximumSizeInBytes = EnumToSize(dataTypeInternal) * static_cast<uint32_t>(numElements);
         m_dataBufferHandle = getIScene().allocateDataBuffer(dataBufferType, dataTypeInternal, maximumSizeInBytes, {});
     }
 
@@ -44,16 +44,16 @@ namespace ramses::internal
         return m_dataBufferHandle;
     }
 
-    uint32_t ArrayBufferImpl::getElementCount() const
+    size_t ArrayBufferImpl::getElementCount() const
     {
         const GeometryDataBuffer& dataBuffer = getIScene().getDataBuffer(m_dataBufferHandle);
-        return static_cast<uint32_t>(dataBuffer.data.size()) / EnumToSize(dataBuffer.dataType);
+        return dataBuffer.data.size() / EnumToSize(dataBuffer.dataType);
     }
 
-    uint32_t ArrayBufferImpl::getUsedElementCount() const
+    size_t ArrayBufferImpl::getUsedElementCount() const
     {
         const GeometryDataBuffer& dataBuffer = getIScene().getDataBuffer(m_dataBufferHandle);
-        return static_cast<uint32_t>(dataBuffer.usedSize) / EnumToSize(dataBuffer.dataType);
+        return dataBuffer.usedSize / EnumToSize(dataBuffer.dataType);
     }
 
     ramses::EDataType ArrayBufferImpl::getDataType() const
@@ -62,10 +62,10 @@ namespace ramses::internal
         return DataTypeUtils::ConvertDataTypeFromInternal(dataBuffer.dataType);
     }
 
-    bool ArrayBufferImpl::getData(std::byte* buffer, uint32_t numElements) const
+    bool ArrayBufferImpl::getData(std::byte* buffer, size_t numElements) const
     {
         const auto& dataBuffer = getIScene().getDataBuffer(m_dataBufferHandle);
-        const uint32_t dataSizeToCopy = std::min<uint32_t>(numElements * EnumToSize(dataBuffer.dataType), static_cast<uint32_t>(dataBuffer.data.size()));
+        const auto dataSizeToCopy = std::min<size_t>(numElements * EnumToSize(dataBuffer.dataType), dataBuffer.data.size());
         PlatformMemory::Copy(buffer, dataBuffer.data.data(), dataSizeToCopy);
 
         return true;
@@ -142,30 +142,30 @@ namespace ramses::internal
             report.add(EIssueType::Warning, "DataBuffer is not used anywhere, destroy it if not needed.", &getRamsesObject());
     }
 
-    bool ArrayBufferImpl::updateData(uint32_t firstElement, uint32_t numElements, const std::byte* bufferData)
+    bool ArrayBufferImpl::updateData(size_t firstElement, size_t numElements, const std::byte* bufferData)
     {
         const GeometryDataBuffer& dataBuffer = getIScene().getDataBuffer(m_dataBufferHandle);
         const size_t maximumSizeInBytes = dataBuffer.data.size();
-        const uint32_t offsetInBytes = firstElement * EnumToSize(dataBuffer.dataType);
-        const uint32_t dataSizeInBytes = numElements * EnumToSize(dataBuffer.dataType);
+        const size_t offsetInBytes = firstElement * EnumToSize(dataBuffer.dataType);
+        const size_t dataSizeInBytes = numElements * EnumToSize(dataBuffer.dataType);
         if (offsetInBytes + dataSizeInBytes > maximumSizeInBytes)
         {
             getErrorReporting().set("DataBuffer::update failed - trying to write data beyond maximum size", *this);
             return false;
         }
 
-        getIScene().updateDataBuffer(m_dataBufferHandle, offsetInBytes, dataSizeInBytes, bufferData);
+        getIScene().updateDataBuffer(m_dataBufferHandle, static_cast<uint32_t>(offsetInBytes), static_cast<uint32_t>(dataSizeInBytes), bufferData);
 
         return true;
     }
 
-    uint32_t ArrayBufferImpl::getMaximumNumberOfElements() const
+    size_t ArrayBufferImpl::getMaximumNumberOfElements() const
     {
         const GeometryDataBuffer& dataBuffer = getIScene().getDataBuffer(m_dataBufferHandle);
-        return static_cast<uint32_t>(dataBuffer.data.size()) / EnumToSize(dataBuffer.dataType);
+        return dataBuffer.data.size() / EnumToSize(dataBuffer.dataType);
     }
 
-    uint32_t ArrayBufferImpl::getUsedNumberOfElements() const
+    size_t ArrayBufferImpl::getUsedNumberOfElements() const
     {
         const GeometryDataBuffer& dataBuffer = getIScene().getDataBuffer(m_dataBufferHandle);
         return dataBuffer.usedSize / EnumToSize(dataBuffer.dataType);

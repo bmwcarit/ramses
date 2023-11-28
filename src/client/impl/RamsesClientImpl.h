@@ -132,7 +132,7 @@ namespace ramses::internal
         ramses::SceneReference* findSceneReference(sceneId_t masterSceneId, sceneId_t referencedSceneId);
 
         // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-        ramses::internal::ManagedResource createManagedArrayResource(uint32_t numElements, ramses::EDataType type, const void* arrayData, std::string_view name);
+        ramses::internal::ManagedResource createManagedArrayResource(size_t numElements, ramses::EDataType type, const void* arrayData, std::string_view name);
         template <typename MipDataStorageType>
         ramses::internal::ManagedResource createManagedTexture(ramses::internal::EResourceType textureType, uint32_t width, uint32_t height, uint32_t depth, ETextureFormat format, const std::vector<MipDataStorageType>& mipLevelData, bool generateMipChain, const TextureSwizzle& swizzle, std::string_view name);
         ramses::internal::ManagedResource createManagedEffect(const EffectDescription& effectDesc, std::string_view name, std::string& errorMessages);

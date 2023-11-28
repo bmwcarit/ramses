@@ -62,6 +62,9 @@
 #include "internal/Core/Utils/File.h"
 #include "glm/gtc/type_ptr.hpp"
 #include "impl/TextureEnumsImpl.h"
+#include <filesystem>
+namespace fs = std::filesystem;
+
 namespace ramses::internal
 {
     namespace
@@ -315,12 +318,18 @@ namespace ramses::internal
         : m_scene(scene)
         , m_validationCache(app.getValidationReport())
         , m_loadedSceneFile(app.getSceneFile())
-        , m_filename(app.getSceneFile())
         , m_lastErrorMessage(errorMessage)
         , m_imageCache(app.getImguiClientHelper()->getScene())
         , m_settings(*app.getSettings())
         , m_progressMonitor(progressMonitor)
     {
+        // can't write to the open scene file -> propose another name
+        fs::path p(app.getSceneFile());
+        auto newName = p.stem();
+        newName += "_copy.ramses";
+        p.replace_filename(newName);
+        m_filename = p.string();
+
         ramses::internal::StringOutputStream dummyStream;
         SceneDumper sceneDumper(scene.impl());
         sceneDumper.dumpUnrequiredObjects(dummyStream);
@@ -1705,7 +1714,7 @@ namespace ramses::internal
     void SceneViewerGui::drawArrayResource(ArrayResourceImpl& obj)
     {
         drawResource(obj);
-        ImGui::Text("%s[%u]", EnumToString(obj.getElementType()), obj.getElementCount());
+        ImGui::Text("%s[%lu]", EnumToString(obj.getElementType()), obj.getElementCount());
         drawRefs<ramses::Geometry>("Used by Geometry", obj, [&](const ramses::Geometry* ref) {
             auto&          iScene     = m_scene.impl().getIScene();
             const auto&    layout     = iScene.getDataLayout(ref->impl().getAttributeDataLayout());
@@ -1723,7 +1732,7 @@ namespace ramses::internal
 
     void SceneViewerGui::drawArrayBuffer(ArrayBufferImpl& obj)
     {
-        ImGui::Text("%s[%u]", EnumToString(obj.getDataType()), obj.getElementCount());
+        ImGui::Text("%s[%lu]", EnumToString(obj.getDataType()), obj.getElementCount());
         drawRefs<ramses::Geometry>("Used by Geometry", obj, [&](const ramses::Geometry* ref) {
             auto&          iScene     = m_scene.impl().getIScene();
             const auto&    layout     = iScene.getDataLayout(ref->impl().getAttributeDataLayout());
@@ -2132,14 +2141,19 @@ namespace ramses::internal
         }
     }
 
-    void SceneViewerGui::drawFile()
+    void SceneViewerGui::drawSaveFile()
     {
-        if (ImGui::CollapsingHeader("File"))
+        if (m_saveToFile)
+            ImGui::OpenPopup("Save scene to file");
+        m_saveToFile = false;
+
+        bool askOverwrite = false;
+
+        if (ImGui::BeginPopupModal("Save scene to file", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
         {
             ImGui::Checkbox("Compress scene file", &m_compressFile);
             ImGui::InputText("##filename", &m_filename);
-            ImGui::SameLine();
-            if (ImGui::Button("Save"))
+            if (ImGui::Button("Save", ImVec2(120, 0)))
             {
                 File file = File(m_filename);
                 if (m_loadedSceneFile == m_filename)
@@ -2148,48 +2162,49 @@ namespace ramses::internal
                 }
                 else if (file.exists() && !m_alwaysOverwrite)
                 {
-                    ImGui::OpenPopup("Overwrite?");
+                    askOverwrite = true;
                 }
                 else
                 {
                     saveSceneToFile();
+                    ImGui::CloseCurrentPopup();
                 }
             }
-
-            if (ImGui::BeginPopupModal("Overwrite?", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+            ImGui::SetItemDefaultFocus();
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel", ImVec2(120, 0)))
             {
-                ImGui::Text("File exists:\n%s\nOverwrite?", m_filename.c_str());
-                ImGui::Separator();
-
-                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
-                ImGui::Checkbox("Don't ask me next time", &m_alwaysOverwrite);
-                ImGui::PopStyleVar();
-
-                if (ImGui::Button("OK", ImVec2(120, 0)))
-                {
-                    saveSceneToFile();
-                    ImGui::CloseCurrentPopup();
-                }
-                ImGui::SetItemDefaultFocus();
-                ImGui::SameLine();
-                if (ImGui::Button("Cancel", ImVec2(120, 0)))
-                {
-                    ImGui::CloseCurrentPopup();
-                }
-                ImGui::EndPopup();
+                ImGui::CloseCurrentPopup();
             }
+            ImGui::EndPopup();
         }
-    }
 
-    void SceneViewerGui::draw()
-    {
-        drawInspectionWindow();
+        auto popupTitle = fmt::format("Overwrite {}?", fs::path(m_filename).filename().string());
 
-        if (m_nodeVisibilityChanged)
+        if (askOverwrite)
+            ImGui::OpenPopup(popupTitle.c_str());
+
+        if (ImGui::BeginPopupModal(popupTitle.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize))
         {
-            // refresh resource information in next interation
-            m_nodeVisibilityChanged = false; // TODO: won't work if node visibility changed by logic gui
-            m_resourceInfo->clear();
+            ImGui::Text("File exists:\n%s\nOverwrite?", m_filename.c_str());
+            ImGui::Separator();
+
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+            ImGui::Checkbox("Don't ask me next time", &m_alwaysOverwrite);
+            ImGui::PopStyleVar();
+
+            if (ImGui::Button("OK", ImVec2(120, 0)))
+            {
+                saveSceneToFile();
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SetItemDefaultFocus();
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel", ImVec2(120, 0)))
+            {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
         }
     }
 
@@ -2200,45 +2215,41 @@ namespace ramses::internal
         drawMenuItemExportShaderSources();
     }
 
-    void SceneViewerGui::drawInspectionWindow()
+    void SceneViewerGui::handleShortcuts()
     {
-        if (m_settings.showSceneViewerWindow)
+        if (ImGui::IsKeyPressed(ramses::EKeyCode_S) && ImGui::GetIO().KeyCtrl)
         {
-            const auto featureLevel = m_scene.getRamsesClient().getRamsesFramework().getFeatureLevel();
-            const std::string windowTitle =
-                m_scene.getName().empty()
-                    ? fmt::format("Scene[{}] (FeatureLevel 0{})", m_scene.getSceneId().getValue(), featureLevel)
-                    : fmt::format("Scene[{}]: {} (FeatureLevel 0{})", m_scene.getSceneId().getValue(), m_scene.getName(), featureLevel);
-
-            if (!ImGui::Begin(windowTitle.c_str(), &m_settings.showSceneViewerWindow, ImGuiWindowFlags_MenuBar))
-            {
-                ImGui::End();
-                return;
-            }
-            drawMenuBar();
-            drawFile();
-            drawSceneObjects();
-            drawNodeHierarchy();
-            drawResources();
-            drawRenderHierarchy();
-            drawErrors();
-            ImGui::End();
+            m_saveToFile = true;
         }
     }
 
-    void SceneViewerGui::drawMenuBar()
+    void SceneViewerGui::drawContents()
     {
-        if (ImGui::BeginMenuBar())
+        drawSceneObjects();
+        drawNodeHierarchy();
+        drawResources();
+        drawRenderHierarchy();
+        drawErrors();
+
+        drawSaveFile();
+
+        if (m_nodeVisibilityChanged)
         {
-            if (ImGui::BeginMenu("Tools"))
-            {
-                drawMenuItemCopyTexture2D();
-                drawMenuItemStorePng();
-                drawMenuItemExportShaderSources();
-                ImGui::EndMenu();
-            }
-            ImGui::EndMenuBar();
+            // refresh resource information in next interation
+            m_nodeVisibilityChanged = false; // TODO: won't work if node visibility changed by logic gui
+            m_resourceInfo->clear();
         }
+    }
+
+    void SceneViewerGui::drawFileMenuItems()
+    {
+        if (ImGui::MenuItem("Save", "Ctrl+S"))
+        {
+            m_saveToFile = true;
+        }
+        drawMenuItemCopyTexture2D();
+        drawMenuItemStorePng();
+        drawMenuItemExportShaderSources();
     }
 
     void SceneViewerGui::drawMenuItemCopyTexture2D()

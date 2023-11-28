@@ -537,7 +537,7 @@ namespace ramses
         */
         template <typename T>
         ArrayResource* createArrayResource(
-            uint32_t numElements,
+            size_t numElements,
             const T* arrayData,
             std::string_view name = {});
 
@@ -651,7 +651,7 @@ namespace ramses
         * @param[in] name The optional name of the created array buffer.
         * @return A pointer to the created array buffer.
         */
-        ArrayBuffer* createArrayBuffer(EDataType dataType, uint32_t maxNumElements, std::string_view name = {});
+        ArrayBuffer* createArrayBuffer(EDataType dataType, size_t maxNumElements, std::string_view name = {});
 
         /**
         * @brief Create a new Texture2DBuffer. The created object is a mutable buffer object that can be used
@@ -889,7 +889,7 @@ namespace ramses
 
     private:
         /// Internal implementation of #createArrayResource
-        template <typename T> ArrayResource* createArrayResourceInternal(uint32_t numElements, const T* arrayData, std::string_view name);
+        template <typename T> ArrayResource* createArrayResourceInternal(size_t numElements, const T* arrayData, std::string_view name);
 
         template <typename T> [[nodiscard]] const T* findObjectByNameInternal(std::string_view name) const;
         template <typename T> [[nodiscard]] T* findObjectByNameInternal(std::string_view name);
@@ -901,7 +901,7 @@ namespace ramses
         static void StaticTypeCheck();
     };
 
-    template <typename T> ArrayResource* Scene::createArrayResource(uint32_t numElements, const T* arrayData, std::string_view name)
+    template <typename T> ArrayResource* Scene::createArrayResource(size_t numElements, const T* arrayData, std::string_view name)
     {
         static_assert(IsArrayResourceDataType<T>(), "Unsupported data type!");
         return createArrayResourceInternal<T>(numElements, arrayData, name);

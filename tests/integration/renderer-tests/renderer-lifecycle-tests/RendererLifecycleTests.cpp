@@ -20,6 +20,7 @@
 #include "TestScenes/TextureSamplerScene.h"
 #include "TestScenes/TransformationLinkScene.h"
 #include "TestScenes/VisibilityScene.h"
+#include "TestScenes/RenderTargetScene.h"
 
 // These includes are needed because of ramses API usage
 #include "ramses/renderer/IRendererEventHandler.h"
@@ -1955,6 +1956,35 @@ namespace ramses::internal
         testScenesAndRenderer.unpublish(sceneId1);
         testScenesAndRenderer.unpublish(sceneId2);
         testScenesAndRenderer.unpublish(sceneId3);
+        testScenesAndRenderer.destroyRenderer();
+    }
+
+    TEST_F(ARendererLifecycleTest, ChangeResolutionOfRenderTargetUsingLogic)
+    {
+        const sceneId_t sceneId = createScene<RenderTargetScene>(RenderTargetScene::RENDERBUFFER_LOGIC_LOWRES);
+        testScenesAndRenderer.initializeRenderer();
+        displayId_t display = createDisplayForWindow();
+
+        // render initial low res
+        testScenesAndRenderer.publish(sceneId);
+        testScenesAndRenderer.flush(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        ASSERT_TRUE(testScenesAndRenderer.getSceneToState(sceneId, RendererSceneState::Rendered));
+        ASSERT_TRUE(checkScreenshot(display, "ARenderTargetSizeChange_Low"));
+
+        // unmap scene, change resolution of render target and render again
+        ASSERT_TRUE(testScenesAndRenderer.getSceneToState(sceneId, RendererSceneState::Available));
+        testScenesAndRenderer.getScenesRegistry().setSceneState<RenderTargetScene>(sceneId, RenderTargetScene::RENDERBUFFER_LOGIC_HIGHRES);
+        testScenesAndRenderer.flush(sceneId);
+        ASSERT_TRUE(testScenesAndRenderer.getSceneToState(sceneId, RendererSceneState::Rendered));
+        ASSERT_TRUE(checkScreenshot(display, "ARenderTargetSizeChange_High"));
+
+        // change back to lowres while scene rendered -> such change is not valid for already uploaded render buffer but it will change viewport
+        testScenesAndRenderer.getScenesRegistry().setSceneState<RenderTargetScene>(sceneId, RenderTargetScene::RENDERBUFFER_LOGIC_LOWRES);
+        testScenesAndRenderer.flush(sceneId);
+        ASSERT_TRUE(checkScreenshot(display, "ARenderTargetSizeChange_Invalid"));
+
+        testScenesAndRenderer.unpublish(sceneId);
         testScenesAndRenderer.destroyRenderer();
     }
 }

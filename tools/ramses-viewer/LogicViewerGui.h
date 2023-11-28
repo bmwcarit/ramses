@@ -32,22 +32,20 @@ namespace ramses::internal
         *        If it does not exist the LogicViewerGui will provide a UI to save the default settings
         */
         explicit LogicViewerGui(ViewerGuiApp& app, std::string& errorMessage);
-        void draw();
+
+        void drawWindow();
+        void drawContents();
 
         void drawGlobalContextMenuItems();
+        void drawMenuItemReload();
 
         void handleShortcuts();
 
     private:
-        void drawMenuItemReload();
 
-        void drawWindow();
-        void drawMenuBar();
         void drawCurrentView();
         void drawUpdateReport();
         void drawSaveDefaultLuaFile();
-
-        static void DrawDataArray(const ramses::DataArray* obj, std::string_view context = std::string_view());
 
         void reloadConfiguration();
         void loadLuaFile(const std::string& filename);
@@ -55,11 +53,9 @@ namespace ramses::internal
 
         ViewerSettings& m_settings;
         LogicViewer& m_viewer;
-        ramses::LogicEngine& m_logicEngine;
 
         std::string& m_lastErrorMessage;
         std::string m_filename;
-        size_t m_updateReportInterval = 60u;
     };
 }
 

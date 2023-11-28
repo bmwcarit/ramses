@@ -50,7 +50,7 @@
 
 // Client side macros
 #define LOG_HL_CLIENT_API_STR(...) \
-        LOG_API_LOGLEVEL(ramses::internal::CONTEXT_HLAPI_CLIENT, __VA_ARGS__)
+        LOG_API_LOGLEVEL(ramses::internal::CONTEXT_HLAPI_CLIENT, "{}", __VA_ARGS__)
 
 #define LOG_HL_CLIENT_API_NOARG(retval) \
         LOG_HL_CLIENT_API_STR(LOG_API_BASE(retval))

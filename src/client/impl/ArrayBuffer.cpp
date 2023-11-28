@@ -21,7 +21,7 @@ namespace ramses
     {
     }
 
-    template <typename T> bool ArrayBuffer::updateDataInternal(uint32_t firstElement, uint32_t numElements, const T* bufferData)
+    template <typename T> bool ArrayBuffer::updateDataInternal(size_t firstElement, size_t numElements, const T* bufferData)
     {
         if (GetEDataType<T>() != m_impl.getDataType())
         {
@@ -35,12 +35,12 @@ namespace ramses
         return status;
     }
 
-    uint32_t ArrayBuffer::getMaximumNumberOfElements() const
+    size_t ArrayBuffer::getMaximumNumberOfElements() const
     {
         return m_impl.getMaximumNumberOfElements();
     }
 
-    uint32_t ArrayBuffer::getUsedNumberOfElements() const
+    size_t ArrayBuffer::getUsedNumberOfElements() const
     {
         return m_impl.getUsedNumberOfElements();
     }
@@ -50,7 +50,7 @@ namespace ramses
         return m_impl.getDataType();
     }
 
-    template <typename T> bool ArrayBuffer::getDataInternal(T* buffer, uint32_t numElements) const
+    template <typename T> bool ArrayBuffer::getDataInternal(T* buffer, size_t numElements) const
     {
         if (GetEDataType<T>() != m_impl.getDataType())
         {
@@ -72,19 +72,19 @@ namespace ramses
         return m_impl;
     }
 
-    template RAMSES_API bool ArrayBuffer::updateDataInternal<uint16_t>(uint32_t, uint32_t, const uint16_t*);
-    template RAMSES_API bool ArrayBuffer::updateDataInternal<uint32_t>(uint32_t, uint32_t, const uint32_t*);
-    template RAMSES_API bool ArrayBuffer::updateDataInternal<float>(uint32_t, uint32_t, const float*);
-    template RAMSES_API bool ArrayBuffer::updateDataInternal<vec2f>(uint32_t, uint32_t, const vec2f*);
-    template RAMSES_API bool ArrayBuffer::updateDataInternal<vec3f>(uint32_t, uint32_t, const vec3f*);
-    template RAMSES_API bool ArrayBuffer::updateDataInternal<vec4f>(uint32_t, uint32_t, const vec4f*);
-    template RAMSES_API bool ArrayBuffer::updateDataInternal<std::byte>(uint32_t, uint32_t, const std::byte*);
+    template RAMSES_API bool ArrayBuffer::updateDataInternal<uint16_t>(size_t, size_t, const uint16_t*);
+    template RAMSES_API bool ArrayBuffer::updateDataInternal<uint32_t>(size_t, size_t, const uint32_t*);
+    template RAMSES_API bool ArrayBuffer::updateDataInternal<float>(size_t, size_t, const float*);
+    template RAMSES_API bool ArrayBuffer::updateDataInternal<vec2f>(size_t, size_t, const vec2f*);
+    template RAMSES_API bool ArrayBuffer::updateDataInternal<vec3f>(size_t, size_t, const vec3f*);
+    template RAMSES_API bool ArrayBuffer::updateDataInternal<vec4f>(size_t, size_t, const vec4f*);
+    template RAMSES_API bool ArrayBuffer::updateDataInternal<std::byte>(size_t, size_t, const std::byte*);
 
-    template RAMSES_API bool ArrayBuffer::getDataInternal<uint16_t>(uint16_t*, uint32_t) const;
-    template RAMSES_API bool ArrayBuffer::getDataInternal<uint32_t>(uint32_t*, uint32_t) const;
-    template RAMSES_API bool ArrayBuffer::getDataInternal<float>(float*, uint32_t) const;
-    template RAMSES_API bool ArrayBuffer::getDataInternal<vec2f>(vec2f*, uint32_t) const;
-    template RAMSES_API bool ArrayBuffer::getDataInternal<vec3f>(vec3f*, uint32_t) const;
-    template RAMSES_API bool ArrayBuffer::getDataInternal<vec4f>(vec4f*, uint32_t) const;
-    template RAMSES_API bool ArrayBuffer::getDataInternal<std::byte>(std::byte*, uint32_t) const;
+    template RAMSES_API bool ArrayBuffer::getDataInternal<uint16_t>(uint16_t*, size_t) const;
+    template RAMSES_API bool ArrayBuffer::getDataInternal<uint32_t>(uint32_t*, size_t) const;
+    template RAMSES_API bool ArrayBuffer::getDataInternal<float>(float*, size_t) const;
+    template RAMSES_API bool ArrayBuffer::getDataInternal<vec2f>(vec2f*, size_t) const;
+    template RAMSES_API bool ArrayBuffer::getDataInternal<vec3f>(vec3f*, size_t) const;
+    template RAMSES_API bool ArrayBuffer::getDataInternal<vec4f>(vec4f*, size_t) const;
+    template RAMSES_API bool ArrayBuffer::getDataInternal<std::byte>(std::byte*, size_t) const;
 }

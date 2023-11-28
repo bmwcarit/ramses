@@ -22,11 +22,11 @@ namespace ramses::internal
         ArrayResourceImpl(ResourceHashUsage arrayHash, SceneImpl& scene, std::string_view name);
         ~ArrayResourceImpl() override;
 
-        void initializeFromFrameworkData(uint32_t elementCount, ramses::EDataType elementType);
+        void initializeFromFrameworkData(size_t elementCount, ramses::EDataType elementType);
         bool serialize(IOutputStream& outStream, SerializationContext& serializationContext) const override;
         bool deserialize(IInputStream& inStream, DeserializationContext& serializationContext) override;
 
-        [[nodiscard]] uint32_t          getElementCount() const;
+        [[nodiscard]] size_t            getElementCount() const;
         [[nodiscard]] ramses::EDataType getElementType() const;
 
     private:

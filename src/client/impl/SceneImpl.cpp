@@ -1487,7 +1487,7 @@ namespace ramses::internal
         m_nextSceneVersion = sceneVersion;
     }
 
-    ArrayBuffer* SceneImpl::createArrayBuffer(ramses::EDataType dataType, uint32_t maxNumElements, std::string_view name)
+    ArrayBuffer* SceneImpl::createArrayBuffer(ramses::EDataType dataType, size_t maxNumElements, std::string_view name)
     {
         if (!IsArrayResourceDataType(dataType))
         {
@@ -1646,7 +1646,7 @@ namespace ramses::internal
     }
 
     template <typename T>
-    ramses::ArrayResource* SceneImpl::createArrayResource(uint32_t numElements, const T* arrayData, std::string_view name)
+    ramses::ArrayResource* SceneImpl::createArrayResource(size_t numElements, const T* arrayData, std::string_view name)
     {
         if (0u == numElements || nullptr == arrayData)
         {
@@ -1955,11 +1955,11 @@ namespace ramses::internal
         m_resources.insert({ resourceWithNewId.getResourceId(), &resourceWithNewId });
     }
 
-    template ramses::ArrayResource* SceneImpl::createArrayResource<uint16_t>(uint32_t, const uint16_t*, std::string_view);
-    template ramses::ArrayResource* SceneImpl::createArrayResource<uint32_t>(uint32_t, const uint32_t*, std::string_view);
-    template ramses::ArrayResource* SceneImpl::createArrayResource<float>(uint32_t, const float*, std::string_view);
-    template ramses::ArrayResource* SceneImpl::createArrayResource<vec2f>(uint32_t, const vec2f*, std::string_view);
-    template ramses::ArrayResource* SceneImpl::createArrayResource<vec3f>(uint32_t, const vec3f*, std::string_view);
-    template ramses::ArrayResource* SceneImpl::createArrayResource<vec4f>(uint32_t, const vec4f*, std::string_view);
-    template ramses::ArrayResource* SceneImpl::createArrayResource<std::byte>(uint32_t, const std::byte*, std::string_view);
+    template ramses::ArrayResource* SceneImpl::createArrayResource<uint16_t>(size_t, const uint16_t*, std::string_view);
+    template ramses::ArrayResource* SceneImpl::createArrayResource<uint32_t>(size_t, const uint32_t*, std::string_view);
+    template ramses::ArrayResource* SceneImpl::createArrayResource<float>(size_t, const float*, std::string_view);
+    template ramses::ArrayResource* SceneImpl::createArrayResource<vec2f>(size_t, const vec2f*, std::string_view);
+    template ramses::ArrayResource* SceneImpl::createArrayResource<vec3f>(size_t, const vec3f*, std::string_view);
+    template ramses::ArrayResource* SceneImpl::createArrayResource<vec4f>(size_t, const vec4f*, std::string_view);
+    template ramses::ArrayResource* SceneImpl::createArrayResource<std::byte>(size_t, const std::byte*, std::string_view);
 }
