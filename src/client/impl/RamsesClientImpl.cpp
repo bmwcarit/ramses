@@ -739,7 +739,7 @@ namespace ramses::internal
         }
     }
 
-    ramses::internal::ManagedResource RamsesClientImpl::createManagedArrayResource(uint32_t numElements, ramses::EDataType type, const void* arrayData, std::string_view name)
+    ramses::internal::ManagedResource RamsesClientImpl::createManagedArrayResource(size_t numElements, ramses::EDataType type, const void* arrayData, std::string_view name)
     {
         if (0u == numElements || nullptr == arrayData)
         {
@@ -750,7 +750,7 @@ namespace ramses::internal
         ramses::internal::EDataType elementType = DataTypeUtils::ConvertDataTypeToInternal(type);
         ramses::internal::EResourceType resourceType = DataTypeUtils::DeductResourceTypeFromDataType(type);
 
-        auto resource = new ramses::internal::ArrayResource(resourceType, numElements, elementType, arrayData, name);
+        auto resource = new ramses::internal::ArrayResource(resourceType, static_cast<uint32_t>(numElements), elementType, arrayData, name);
         return manageResource(resource);
     }
 

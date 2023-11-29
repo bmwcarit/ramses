@@ -18,7 +18,7 @@ namespace ramses
     {
     }
 
-    uint32_t ArrayResource::getNumberOfElements() const
+    size_t ArrayResource::getNumberOfElements() const
     {
         return m_impl.getElementCount();
     }

@@ -1,5 +1,13 @@
 # Ramses Changelog
 
+28.0.0-rc4
+-------------------
+### Changed <a name=28.0.0-rc4.Changed></a>
+- `ArrayResource` and `ArrayBuffer` use `size_t` instead of `uint32_t` for number of elements for consistency with other API and STL
+
+### Fixed <a name=28.0.0-rc4.Fixed></a>
+- Fixed abort() with trace logs enabled and API calls containing strings with format string characters ("{}")
+
 28.0.0-rc3
 -------------------
 ### Added <a name=28.0.0-rc3.Added></a>

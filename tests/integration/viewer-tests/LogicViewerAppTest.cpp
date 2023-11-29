@@ -114,21 +114,19 @@ end
 )";
 
 const auto iniFile = R"(
-[Window][LogicEngine[10]]
+[Window][Logic]
+Pos=0,0
+Size=540,720
+Collapsed=0
+
+[Window][Scene[1]: simple triangle scene (FeatureLevel 01)]
 Pos=0,0
 Size=540,720
 Collapsed=0
 
 [ramses-viewer][Settings]
-ShowInterfaces=1
-ShowScripts=1
-ShowAnimationNodes=1
-ShowTimerNodes=1
-ShowDataArrays=1
-ShowRamsesBindings=1
+ShowLogicWindow=1
 ShowUpdateReport=0
-ShowLinkedInputs=1
-ShowOutputs=1
 LuaPreferObjectIds=0
 LuaPreferIdentifiers=0
 )";
@@ -153,9 +151,7 @@ public:
 
     [[nodiscard]] int32_t updateReport() const
     {
-        // there's an extra line in the view section if update report is enabled
-        const bool showUpdateReport = m_settings ? m_settings->showUpdateReport : false;
-        return 86 + yMiddle + (showUpdateReport ? 20 : 0);
+        return 66 + yMiddle ;
     }
 
 private:
@@ -802,6 +798,7 @@ namespace ramses::internal
 
     TEST_F(ALogicViewerAppUI, reloadConfiguration)
     {
+        m_app->getSettings()->showLogicWindow = false;
         const int32_t xFile = 25;
         auto* script = m_app->getLogicViewer()->getLogic().findObject<ramses::LuaScript>("allTypesScript");
         ASSERT_TRUE(script != nullptr);
@@ -817,7 +814,7 @@ namespace ramses::internal
 
         SaveFile(R"(rlogic.scripts.allTypesScript.IN.paramString.value = "World")");
         EXPECT_TRUE(click(xFile, ui.titleBar + ui.yMiddle));
-        EXPECT_TRUE(click(xFile, ui.titleBar + ui.buttonHeight + ui.yMiddle));
+        EXPECT_TRUE(click(xFile, ui.titleBar + ui.buttonHeight + 4*ui.smallButtonHeight + ui.yMiddle));
         EXPECT_EQ("World", prop->get<std::string>().value());
 
         SaveFile(R"(rlogic.scripts.allTypesScript.IN.paramString.value = "Foo")");
@@ -828,7 +825,7 @@ namespace ramses::internal
     TEST_F(ALogicViewerAppUI, reloadConfigurationWithHiddenUI)
     {
         auto* settings = m_app->getSettings();
-        settings->showGui = false;
+        settings->showWindow = false;
         auto* script = m_app->getLogicViewer()->getLogic().findObject<ramses::LuaScript>("allTypesScript");
         ASSERT_TRUE(script != nullptr);
         auto* prop = script->getOutputs()->getChild("paramString");
@@ -882,7 +879,7 @@ namespace ramses::internal
         EXPECT_TRUE(CompareImage("screenshot.png", "ALogicViewerApp_yellow.png"));
 
         // Modify the "blue" input 0 -> 1
-        EXPECT_TRUE(dragX(100, 100 + 10, ui.titleBar + 2 * ui.buttonHeight + 2 * ui.smallButtonHeight + ui.yMiddle));
+        EXPECT_TRUE(dragX(100, 100 + 10, ui.titleBar + 1 * ui.buttonHeight + 2 * ui.smallButtonHeight + ui.yMiddle));
         EXPECT_EQ(Result(), m_app->getLogicViewer()->call("screenshot"));
         EXPECT_TRUE(CompareImage("screenshot.png", "ALogicViewerApp_white.png"));
 
@@ -894,29 +891,12 @@ namespace ramses::internal
 
     TEST_F(ALogicViewerAppUI, settings)
     {
-        const int xSettings = 75;
-
         auto* settings = m_app->getSettings();
         EXPECT_TRUE(settings->showLogicWindow);
-        EXPECT_TRUE(contextMenuSelect(700, 350, 2));
+        EXPECT_TRUE(contextMenuSelect(700, 350, 1));
         EXPECT_FALSE(settings->showLogicWindow);
-        EXPECT_TRUE(contextMenuSelect(700, 350, 2));
+        EXPECT_TRUE(contextMenuSelect(700, 350, 1));
         EXPECT_TRUE(settings->showLogicWindow);
-
-        EXPECT_FALSE(settings->luaPreferObjectIds);
-        EXPECT_TRUE(click(xSettings, ui.titleBar + ui.yMiddle));
-        EXPECT_TRUE(click(xSettings, ui.titleBar + ui.buttonHeight + 2 * ui.smallButtonHeight + 3 * ui.hline + ui.yMiddle));
-        EXPECT_TRUE(settings->luaPreferObjectIds);
-
-        EXPECT_FALSE(settings->luaPreferIdentifiers);
-        EXPECT_TRUE(click(xSettings, ui.titleBar + ui.yMiddle));
-        EXPECT_TRUE(click(xSettings, ui.titleBar + ui.buttonHeight + 1 * ui.smallButtonHeight + 3 * ui.hline + ui.yMiddle));
-        EXPECT_TRUE(settings->luaPreferIdentifiers);
-
-        EXPECT_FALSE(settings->showUpdateReport);
-        EXPECT_TRUE(click(xSettings, ui.titleBar + ui.yMiddle));
-        EXPECT_TRUE(click(xSettings, ui.titleBar + ui.buttonHeight + 0 * ui.smallButtonHeight + ui.hline + ui.yMiddle));
-        EXPECT_TRUE(settings->showUpdateReport);
     }
 
     class ALogicViewerAppUIClearColor : public ALogicViewerAppUIBase, public ::testing::TestWithParam<bool>
@@ -963,28 +943,18 @@ namespace ramses::internal
 
     TEST_F(ALogicViewerAppUIUpdateReport, updateReport)
     {
-        setup(R"([Window][LogicEngine[10]]
+        setup(R"([Window][Logic]
 Pos=0,0
 Size=540,720
 Collapsed=0
 
 [ramses-viewer][Settings]
-ShowInterfaces=1
-ShowScripts=1
-ShowAnimationNodes=1
-ShowTimerNodes=1
-ShowDataArrays=1
-ShowRamsesBindings=1
-ShowUpdateReport=1
-ShowLinkedInputs=1
-ShowOutputs=1
+ShowLogicWindow=1
 LuaPreferObjectIds=0
 LuaPreferIdentifiers=0
 )");
+        m_app->getSettings()->showUpdateReportDetails = true;
         const int32_t mouseX = 100;
-        EXPECT_TRUE(click(mouseX, ui.updateReport()));
-        EXPECT_TRUE(click(mouseX, ui.updateReport() + 2 * ui.buttonHeight + 7 * ui.smallButtonHeight + ui.hline));
-        EXPECT_TRUE(click(mouseX, ui.updateReport() + 2 * ui.buttonHeight + 6 * ui.smallButtonHeight + ui.hline));
 
         const auto& report = m_app->getLogicViewer()->getUpdateReport();
 

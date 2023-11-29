@@ -44,14 +44,16 @@ namespace ramses::internal
     {
         if (ImGui::IsKeyPressed(ramses::EKeyCode_F11))
         {
-            m_settings.showGui = !m_settings.showGui;
+            m_settings.showWindow = !m_settings.showWindow;
         }
 
-        if (ImGui::IsKeyPressed(ramses::EKeyCode_F10))
+        if (ImGui::IsKeyPressed(ramses::EKeyCode_F10) && m_app.getLogicViewer())
         {
-            m_settings.showSceneViewerWindow = !m_settings.showSceneViewerWindow;
+            m_settings.showLogicWindow = !m_settings.showLogicWindow;
         }
 
+        if (m_sceneGui)
+            m_sceneGui->handleShortcuts();
         if (m_logicGui)
             m_logicGui->handleShortcuts();
 
@@ -75,14 +77,39 @@ namespace ramses::internal
         drawErrorPopup();
         drawProgressPopup();
 
-        if (m_settings.showGui)
+        if (m_settings.showWindow)
+            drawWindow();
+        if (m_logicGui && m_settings.showLogicWindow)
+            m_logicGui->drawWindow();
+    }
+
+    void ViewerGui::drawWindow()
+    {
+        const auto featureLevel = m_app.getScene()->getRamsesClient().getRamsesFramework().getFeatureLevel();
+        const std::string windowTitle =
+            m_app.getScene()->getName().empty()
+                ? fmt::format("Scene[{}] (FeatureLevel 0{})", m_app.getScene()->getSceneId().getValue(), featureLevel)
+                : fmt::format("Scene[{}]: {} (FeatureLevel 0{})", m_app.getScene()->getSceneId().getValue(), m_app.getScene()->getName(), featureLevel);
+
+        if (!ImGui::Begin(windowTitle.c_str(), &m_settings.showWindow, ImGuiWindowFlags_MenuBar))
         {
-            drawMenuBar();
-            if (m_sceneGui)
-                m_sceneGui->draw();
-            if (m_logicGui)
-                m_logicGui->draw();
+            ImGui::End();
+            return;
         }
+
+        drawMenuBar();
+        if (m_logicGui && !m_settings.showLogicWindow)
+        {
+            ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+            bool showInline = true;
+            if (ImGui::CollapsingHeader("Logic", &showInline))
+                m_logicGui->drawContents();
+            m_settings.showLogicWindow = !showInline;
+        }
+
+        if (m_sceneGui)
+            m_sceneGui->drawContents();
+        ImGui::End();
     }
 
     void ViewerGui::setSceneTexture(ramses::TextureSampler* sampler, uint32_t width, uint32_t height)
@@ -94,26 +121,44 @@ namespace ramses::internal
 
     void ViewerGui::drawMenuBar()
     {
-        if (ImGui::BeginMainMenuBar())
+        if (ImGui::BeginMenuBar())
         {
+            if (ImGui::BeginMenu("File"))
+            {
+                if (m_sceneGui)
+                    m_sceneGui->drawFileMenuItems();
+                if (m_logicGui)
+                {
+                    ImGui::Separator();
+                    m_logicGui->drawMenuItemReload();
+                }
+                ImGui::EndMenu();
+            }
             if (ImGui::BeginMenu("Settings"))
             {
                 drawMenuItemShowWindow();
                 drawMenuItemDisplaySettings();
                 ImGui::EndMenu();
             }
-            ImGui::EndMainMenuBar();
+            ImGui::EndMenuBar();
         }
     }
 
     void ViewerGui::drawMenuItemShowWindow()
     {
-        ImGui::MenuItem("Show Gui", "F11", &m_settings.showGui);
-        ImGui::MenuItem("Show Scene Inspection Window", "F10", &m_settings.showSceneViewerWindow, m_settings.showGui);
-        ImGui::MenuItem("Show Logic Window", nullptr, &m_settings.showLogicWindow, m_settings.showGui);
+        ImGui::MenuItem("Show Scene Window", "F11", &m_settings.showWindow);
+        if (m_app.getLogicViewer())
+            ImGui::MenuItem("Show Logic Window", "F10", &m_settings.showLogicWindow);
         if (m_app.getGuiMode() == ViewerGuiApp::GuiMode::On)
         {
-            ImGui::MenuItem("Show Scene in Window", nullptr, &m_settings.showSceneInWindow, m_settings.showGui);
+            ImGui::MenuItem("Show Scene in Window", nullptr, &m_settings.showSceneInWindow);
+        }
+        if (m_app.getLogicViewer())
+        {
+            if (ImGui::MenuItem("Show LogicEngine Update Report", nullptr, &m_settings.showUpdateReport))
+            {
+                m_app.getLogicViewer()->enableUpdateReport(m_settings.showUpdateReport, m_settings.updateReportInterval);
+            }
         }
     }
 
@@ -140,6 +185,10 @@ namespace ramses::internal
                 m_renderer->setFramerateLimit(m_displayId, fps);
                 m_renderer->flush();
             }
+
+            ImGui::Separator();
+            ImGui::MenuItem("Lua: prefer identifiers (scripts.foo)", nullptr, &m_settings.luaPreferIdentifiers);
+            ImGui::MenuItem("Lua: prefer object ids (scripts[1])", nullptr, &m_settings.luaPreferObjectIds);
         }
     }
 

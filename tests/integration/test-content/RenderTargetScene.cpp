@@ -21,19 +21,30 @@
 #include "ramses/client/MeshNode.h"
 #include "ramses/client/Appearance.h"
 #include "ramses/client/RenderTargetDescription.h"
+#include "ramses/client/logic/LogicEngine.h"
+#include "ramses/client/logic/RenderBufferBinding.h"
+#include "ramses/client/logic/CameraBinding.h"
+#include "ramses/client/logic/LuaInterface.h"
+#include "ramses/client/logic/Property.h"
 #include <cassert>
 
 namespace ramses::internal
 {
     RenderTargetScene::RenderTargetScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
-        : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
-        , m_renderBuffer(createRenderBuffer(state))
+        : IntegrationScene{ scene, cameraPosition, vpWidth, vpHeight }
+        , m_camera{ *createCamera(state) }
+        , m_renderBuffer{ *createRenderBuffer(state) }
     {
         initInputRenderPass(state);
         initFinalRenderPass();
+        if (state == RENDERBUFFER_LOGIC_LOWRES || state == RENDERBUFFER_LOGIC_HIGHRES)
+        {
+            createLogic();
+            setState(state);
+        }
     }
 
-    const ramses::RenderBuffer& RenderTargetScene::createRenderBuffer(uint32_t state)
+    ramses::RenderBuffer* RenderTargetScene::createRenderBuffer(uint32_t state)
     {
         ramses::ERenderBufferFormat bufferFormat = ramses::ERenderBufferFormat::RGBA8;
 
@@ -41,6 +52,8 @@ namespace ramses::internal
         {
         case PERSPECTIVE_PROJECTION:
         case ORTHOGRAPHIC_PROJECTION:
+        case RENDERBUFFER_LOGIC_LOWRES:
+        case RENDERBUFFER_LOGIC_HIGHRES:
             bufferFormat = ramses::ERenderBufferFormat::RGBA8;
             break;
         case RENDERBUFFER_FORMAT_RGBA4:
@@ -85,9 +98,9 @@ namespace ramses::internal
             break;
         }
 
-        const ramses::RenderBuffer* renderBuffer = m_scene.createRenderBuffer(16u, 16u, bufferFormat, ramses::ERenderBufferAccessMode::ReadWrite);
+        ramses::RenderBuffer* renderBuffer = m_scene.createRenderBuffer(16u, 16u, bufferFormat, ramses::ERenderBufferAccessMode::ReadWrite);
         assert(renderBuffer != nullptr);
-        return *renderBuffer;
+        return renderBuffer;
     }
 
     ramses::Camera* RenderTargetScene::createCamera(uint32_t state)
@@ -115,6 +128,8 @@ namespace ramses::internal
         case RENDERBUFFER_FORMAT_RGB32F:
         case RENDERBUFFER_FORMAT_RGBA16F:
         case RENDERBUFFER_FORMAT_RGBA32F:
+        case RENDERBUFFER_LOGIC_LOWRES:
+        case RENDERBUFFER_LOGIC_HIGHRES:
         {
             ramses::OrthographicCamera* camera = m_scene.createOrthographicCamera();
             camera->setFrustum(-1.f, 1.f, -1.f, 1.f, 1.f, 10.f);
@@ -154,7 +169,7 @@ namespace ramses::internal
         renderPass->addRenderGroup(*renderGroup);
         renderGroup->addMeshNode(*meshNode);
 
-        renderPass->setCamera(*createCamera(state));
+        renderPass->setCamera(m_camera);
 
         ramses::RenderTargetDescription rtDesc;
         rtDesc.addRenderBuffer(m_renderBuffer);
@@ -213,5 +228,36 @@ namespace ramses::internal
         ramses::RenderGroup* renderGroup = m_scene.createRenderGroup();
         renderPass->addRenderGroup(*renderGroup);
         renderGroup->addMeshNode(*meshNode);
+    }
+
+    void RenderTargetScene::createLogic()
+    {
+        const std::string_view intfSrc = R"(
+            function interface(inputs)
+                inputs.res = Type:Int32()
+            end
+        )";
+
+        // resolution interface links to camera viewport and renderbuffer resolution
+        auto logic = m_scene.createLogicEngine("logic");
+        auto camBinding = logic->createCameraBinding(m_camera);
+        auto rbBinding = logic->createRenderBufferBinding(m_renderBuffer);
+        auto intf = logic->createLuaInterface(intfSrc, "logicIntf");
+        logic->link(*intf->getOutputs()->getChild(0u), *camBinding->getInputs()->getChild("viewport")->getChild("width"));
+        logic->link(*intf->getOutputs()->getChild(0u), *camBinding->getInputs()->getChild("viewport")->getChild("height"));
+        logic->link(*intf->getOutputs()->getChild(0u), *rbBinding->getInputs()->getChild("width"));
+        logic->link(*intf->getOutputs()->getChild(0u), *rbBinding->getInputs()->getChild("height"));
+    }
+
+    void RenderTargetScene::setState(uint32_t state)
+    {
+        if (state != RENDERBUFFER_LOGIC_LOWRES && state != RENDERBUFFER_LOGIC_HIGHRES)
+            return;
+
+        auto logicIntf = m_scene.findObject<ramses::LogicObject>("logicIntf")->as<ramses::LuaInterface>();
+        assert(logicIntf);
+        logicIntf->getInputs()->getChild("res")->set(state == RENDERBUFFER_LOGIC_LOWRES ? 4 : 64);
+
+        m_scene.findObject<ramses::LogicEngine>("logic")->update();
     }
 }

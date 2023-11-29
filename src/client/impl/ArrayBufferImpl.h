@@ -22,22 +22,22 @@ namespace ramses::internal
         ArrayBufferImpl(SceneImpl& scene, std::string_view databufferName);
         ~ArrayBufferImpl() override;
 
-        void initializeFrameworkData(ramses::EDataType dataType, uint32_t numElements);
+        void initializeFrameworkData(ramses::EDataType dataType, size_t numElements);
         void deinitializeFrameworkData() override;
         bool serialize(IOutputStream& outStream, SerializationContext& serializationContext) const override;
         bool deserialize(IInputStream& inStream, DeserializationContext& serializationContext) override;
 
         void onValidate(ValidationReportImpl& report) const override;
 
-        bool updateData(uint32_t firstElement, uint32_t numElements, const std::byte* bufferData);
+        bool updateData(size_t firstElement, size_t numElements, const std::byte* bufferData);
 
         [[nodiscard]] DataBufferHandle getDataBufferHandle() const;
-        [[nodiscard]] uint32_t getMaximumNumberOfElements() const;
-        [[nodiscard]] uint32_t getElementCount() const;
-        [[nodiscard]] uint32_t getUsedNumberOfElements() const;
-        [[nodiscard]] uint32_t getUsedElementCount() const;
+        [[nodiscard]] size_t getMaximumNumberOfElements() const;
+        [[nodiscard]] size_t getElementCount() const;
+        [[nodiscard]] size_t getUsedNumberOfElements() const;
+        [[nodiscard]] size_t getUsedElementCount() const;
         [[nodiscard]] ramses::EDataType getDataType() const;
-        [[nodiscard]] bool getData(std::byte* buffer, uint32_t numElements) const;
+        [[nodiscard]] bool getData(std::byte* buffer, size_t numElements) const;
 
     private:
         DataBufferHandle m_dataBufferHandle;

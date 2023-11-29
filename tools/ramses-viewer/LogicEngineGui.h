@@ -39,9 +39,6 @@ namespace ramses::internal
     public:
         explicit LogicEngineGui(const ViewerSettings& settings);
 
-        template <class T>
-        void drawCollection(ramses::LogicEngine& logicEngine, std::string_view ns, const char* headline);
-
         template<class T, class C>
         void drawCollection(ramses::Collection<T> collection, std::string_view ns, const char* headline, const C& cb);
 
@@ -77,33 +74,6 @@ namespace ramses::internal
 
         const ViewerSettings& m_settings;
     };
-
-    template <class T>
-    inline void LogicEngineGui::drawCollection(ramses::LogicEngine& logicEngine, std::string_view ns, const char* headline)
-    {
-        const bool openCollection = ImGui::CollapsingHeader(headline);
-        if (ImGui::BeginPopupContextItem(fmt::format("{}ContextMenu", ns).c_str()))
-        {
-            if (ImGui::MenuItem(fmt::format("{}: Copy all inputs", headline).c_str()))
-            {
-                copyInputs(ns, logicEngine.getCollection<T>());
-            }
-            ImGui::EndPopup();
-        }
-        if (openCollection)
-        {
-            for (auto* obj : logicEngine.getCollection<T>())
-            {
-                const bool open = DrawTreeNode(obj);
-                drawNodeContextMenu(obj, ns);
-                if (open)
-                {
-                    draw(obj);
-                    ImGui::TreePop();
-                }
-            }
-        }
-    }
 
     template<class T, class C>
     void LogicEngineGui::drawCollection(ramses::Collection<T> collection, std::string_view ns, const char* headline, const C& cbDrawItem)

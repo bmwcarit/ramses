@@ -146,11 +146,10 @@ namespace ramses::internal
     LogicViewerGui::LogicViewerGui(ViewerGuiApp& app, std::string& errorMessage)
         : m_settings(*app.getSettings())
         , m_viewer(*app.getLogicViewer())
-        , m_logicEngine(m_viewer.getLogic())
         , m_lastErrorMessage(errorMessage)
         , m_filename(app.getLuaFile())
     {
-        m_viewer.enableUpdateReport(m_settings.showUpdateReport, m_updateReportInterval);
+        m_viewer.enableUpdateReport(m_settings.showUpdateReport, m_settings.updateReportInterval);
     }
 
     void LogicViewerGui::handleShortcuts()
@@ -172,17 +171,9 @@ namespace ramses::internal
         }
     }
 
-    void LogicViewerGui::draw()
-    {
-        if (m_settings.showLogicWindow)
-        {
-            drawWindow();
-        }
-    }
-
     void LogicViewerGui::drawMenuItemReload()
     {
-        if (ImGui::MenuItem("Reload configuration", "F5"))
+        if (ImGui::MenuItem("Reload lua configuration", "F5"))
         {
             reloadConfiguration();
         }
@@ -216,54 +207,23 @@ namespace ramses::internal
 
     void LogicViewerGui::drawWindow()
     {
-        const auto windowTitle = m_logicEngine.getName().empty()
-            ? fmt::format("LogicEngine[{}]", m_logicEngine.getSceneObjectId().getValue())
-            : fmt::format("LogicEngine[{}]: {}", m_logicEngine.getSceneObjectId().getValue(), m_logicEngine.getName());
-        if (!ImGui::Begin(windowTitle.c_str(), &m_settings.showLogicWindow, ImGuiWindowFlags_MenuBar))
+        if (!ImGui::Begin("Logic", &m_settings.showLogicWindow))
         {
             ImGui::End();
             return;
         }
+        drawContents();
+        ImGui::End();
+    }
 
-        drawMenuBar();
+    void LogicViewerGui::drawContents()
+    {
         drawCurrentView();
 
         if (m_settings.showUpdateReport)
         {
+            ImGui::Separator();
             drawUpdateReport();
-        }
-
-        ImGui::End();
-    }
-
-    void LogicViewerGui::drawMenuBar()
-    {
-        if (ImGui::BeginMenuBar())
-        {
-            if (ImGui::BeginMenu("File"))
-            {
-                drawMenuItemReload();
-                ImGui::EndMenu();
-            }
-
-            if (ImGui::BeginMenu("Settings"))
-            {
-                if (ImGui::MenuItem("Show Update Report", nullptr, &m_settings.showUpdateReport))
-                {
-                    m_viewer.enableUpdateReport(m_settings.showUpdateReport, m_updateReportInterval);
-                    ImGui::MarkIniSettingsDirty();
-                }
-                ImGui::Separator();
-                auto changed = ImGui::MenuItem("Lua: prefer identifiers (scripts.foo)", nullptr, &m_settings.luaPreferIdentifiers);
-                changed = ImGui::MenuItem("Lua: prefer object ids (scripts[1])", nullptr, &m_settings.luaPreferObjectIds) || changed;
-                ImGui::EndMenu();
-
-                if (changed)
-                {
-                    ImGui::MarkIniSettingsDirty();
-                }
-            }
-            ImGui::EndMenuBar();
         }
     }
 
@@ -306,32 +266,30 @@ namespace ramses::internal
         {
             ImGui::TextUnformatted("no views defined in configuration file");
         }
-
-        if (m_settings.showUpdateReport)
-        {
-            ImGui::Separator();
-            ImGui::TextUnformatted(fmt::format("Average Update Time: {} ms", m_viewer.getUpdateReport().getTotalTime().average).c_str());
-            ImGui::SameLine();
-            HelpMarker("Time it took to update the whole logic nodes network (LogicEngine::update()).");
-        }
     }
 
     void LogicViewerGui::drawUpdateReport()
     {
-        const bool open = ImGui::CollapsingHeader("Update Report");
-        if (open)
+        ImGui::TextUnformatted(fmt::format("Average Update Time: {} ms", m_viewer.getUpdateReport().getTotalTime().average).c_str());
+        ImGui::SameLine();
+        HelpMarker("Time it took to update the whole logic nodes network (LogicEngine::update()).");
+        ImGui::SameLine();
+        if (ImGui::SmallButton(m_settings.showUpdateReportDetails ? "Hide Details" : "Show Details"))
+            m_settings.showUpdateReportDetails = !m_settings.showUpdateReportDetails;
+
+        if (m_settings.showUpdateReportDetails)
         {
-            auto interval = static_cast<int>(m_updateReportInterval);
+            auto interval = static_cast<int>(m_settings.updateReportInterval);
             bool refresh = m_viewer.isUpdateReportEnabled();
             if (ImGui::Checkbox("Auto Refresh", &refresh))
             {
-                m_viewer.enableUpdateReport(refresh, m_updateReportInterval);
+                m_viewer.enableUpdateReport(refresh, m_settings.updateReportInterval);
             }
             ImGui::SetNextItemWidth(100);
             if (ImGui::DragInt("Refresh Interval", &interval, 0.5f, 1, 1000, "%d Frames"))
             {
-                m_updateReportInterval = static_cast<size_t>(interval);
-                m_viewer.enableUpdateReport(refresh, m_updateReportInterval);
+                m_settings.updateReportInterval = static_cast<size_t>(interval);
+                m_viewer.enableUpdateReport(refresh, m_settings.updateReportInterval);
             }
             const auto& report = m_viewer.getUpdateReport();
             const auto& executed = report.getNodesExecuted();
@@ -341,7 +299,8 @@ namespace ramses::internal
             ImGui::Separator();
             ImGui::TextUnformatted("Summary:");
             ImGui::SameLine();
-            HelpMarker("Timing data is collected and summarized for {} frames.\n'min', 'max', 'avg' show the minimum, maximum, and average value for the measured interval.", m_updateReportInterval);
+            HelpMarker("Timing data is collected and summarized for {} frames.\n'min', 'max', 'avg' show the minimum, maximum, and average value for the measured interval.",
+                m_settings.updateReportInterval);
             ImGui::Indent();
 
             const auto& updateTime = report.getTotalTime();
@@ -440,22 +399,6 @@ namespace ramses::internal
                 ImGui::CloseCurrentPopup();
             }
             ImGui::EndPopup();
-        }
-    }
-
-    void LogicViewerGui::DrawDataArray(const ramses::DataArray* obj, std::string_view context)
-    {
-        if (obj != nullptr)
-        {
-            if (!context.empty())
-            {
-                ImGui::TextUnformatted(
-                    fmt::format("{}: [{}]: {} Type:{}[{}]", context.data(), obj->getSceneObjectId().getValue(), obj->getName(), GetLuaPrimitiveTypeName(obj->getDataType()), obj->getNumElements()).c_str());
-            }
-            else
-            {
-                ImGui::TextUnformatted(fmt::format("[{}]: {} Type:{}[{}]", obj->getSceneObjectId().getValue(), obj->getName(), GetLuaPrimitiveTypeName(obj->getDataType()), obj->getNumElements()).c_str());
-            }
         }
     }
 

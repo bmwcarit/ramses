@@ -52,7 +52,7 @@ namespace ramses
         * @return true for success, false otherwise (check log or #ramses::RamsesFramework::getLastError for details).
         */
         template <typename T>
-        bool updateData(uint32_t firstElement, uint32_t numElements, const T* bufferData);
+        bool updateData(size_t firstElement, size_t numElements, const T* bufferData);
 
         /**
         * @brief Returns the maximum number of data elements that can be stored in the data buffer.
@@ -62,7 +62,7 @@ namespace ramses
         *
         * @return Maximum number of elements
         */
-        [[nodiscard]] uint32_t getMaximumNumberOfElements() const;
+        [[nodiscard]] size_t getMaximumNumberOfElements() const;
 
         /**
         * @brief Returns the used number of data elements.
@@ -73,7 +73,7 @@ namespace ramses
         *
         * @return Used size in number of elements
         */
-        [[nodiscard]] uint32_t getUsedNumberOfElements() const;
+        [[nodiscard]] size_t getUsedNumberOfElements() const;
 
         /**
         * @brief Returns the data type associated with the buffer data
@@ -95,7 +95,7 @@ namespace ramses
         * @return true for success, false otherwise (check log or #ramses::RamsesFramework::getLastError for details).
         */
         template <typename T>
-        bool getData(T* buffer, uint32_t numElements) const;
+        bool getData(T* buffer, size_t numElements) const;
 
         /**
          * Get the internal data for implementation specifics of ArrayBuffer.
@@ -127,18 +127,18 @@ namespace ramses
 
     private:
         /// Internal implementation of #updateData
-        template <typename T> bool updateDataInternal(uint32_t firstElement, uint32_t numElements, const T* bufferData);
+        template <typename T> bool updateDataInternal(size_t firstElement, size_t numElements, const T* bufferData);
         /// Internal implementation of #getData
-        template <typename T> bool getDataInternal(T* buffer, uint32_t numElements) const;
+        template <typename T> bool getDataInternal(T* buffer, size_t numElements) const;
     };
 
-    template <typename T> bool ArrayBuffer::updateData(uint32_t firstElement, uint32_t numElements, const T* bufferData)
+    template <typename T> bool ArrayBuffer::updateData(size_t firstElement, size_t numElements, const T* bufferData)
     {
         static_assert(IsArrayResourceDataType<T>(), "Unsupported data type!");
         return updateDataInternal<T>(firstElement, numElements, bufferData);
     }
 
-    template <typename T> bool ArrayBuffer::getData(T* buffer, uint32_t numElements) const
+    template <typename T> bool ArrayBuffer::getData(T* buffer, size_t numElements) const
     {
         static_assert(IsArrayResourceDataType<T>(), "Unsupported data type!");
         return getDataInternal<T>(buffer, numElements);

@@ -33,7 +33,7 @@ namespace ramses
         /**
         * @brief Returns number of elements of the array.
         */
-        [[nodiscard]] uint32_t getNumberOfElements() const;
+        [[nodiscard]] size_t getNumberOfElements() const;
 
         /**
         * @brief Returns the data type of the data array.

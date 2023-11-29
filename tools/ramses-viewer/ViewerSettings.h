@@ -19,21 +19,21 @@ namespace ramses::internal
 {
     struct ViewerSettings
     {
-        // scene viewer settings
-        bool showGui = true;
+        bool showWindow = true;
 
-        bool showSceneViewerWindow = true;
-        bool showSceneInWindow = false;
+        bool showSceneInWindow = false; // show the scene in an imgui window instead of background
 
         const std::array<float, 6> zoomLevels = {(1.f / 4.f), (1.f / 3.f), (1.f / 2.f), (2.f / 3.f), (3.f / 4.f), 1.f};
         int zoomIx = 4;
 
-        // Logic viewer settings
-        bool showLogicWindow    = true;
+        bool showLogicWindow    = false;
         bool showUpdateReport   = true;
+        bool showUpdateReportDetails = false;
 
         bool luaPreferObjectIds   = false;
         bool luaPreferIdentifiers = false;
+
+        size_t updateReportInterval = 60u;
 
         glm::vec4 clearColor{ 0, 0, 0, 1 };
 

@@ -570,3 +570,4 @@ List of all logic examples
     examples/logic/13_render_order
     examples/logic/14_skinbinding
     examples/logic/15_meshnodebinding
+    examples/logic/16_renderbufferbinding
