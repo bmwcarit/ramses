@@ -12,7 +12,7 @@
 #include "internal/Ramsh/RamshCommunicationChannelConsoleSignalHandler.h"
 #include "internal/Ramsh/Ramsh.h"
 #include "internal/Ramsh/RamshTools.h"
-#include "internal/Core/Utils/RamsesLogger.h"
+#include "impl/RamsesLoggerImpl.h"
 #include "internal/PlatformAbstraction/PlatformEnvironmentVariables.h"
 #include "internal/Core/Utils/LogMacros.h"
 #include "internal/PlatformAbstraction/ConsoleInput.h"

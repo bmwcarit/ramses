@@ -10,7 +10,7 @@
 
 #include "internal/Core/Utils/LogMessage.h"
 #include "internal/Core/Utils/LogContext.h"
-#include "internal/Core/Utils/RamsesLogger.h"
+#include "impl/RamsesLoggerImpl.h"
 #include "internal/PlatformAbstraction/Collections/StringOutputStream.h"
 #include "internal/PlatformAbstraction/FmtBase.h"
 

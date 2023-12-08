@@ -10,7 +10,7 @@
 #include "internal/Ramsh/Ramsh.h"
 #include "internal/Ramsh/RamshTools.h"
 #include "internal/Core/Utils/LogMacros.h"
-#include "internal/Core/Utils/RamsesLogger.h"
+#include "impl/RamsesLoggerImpl.h"
 
 #include <string>
 

@@ -1,5 +1,10 @@
 # Ramses Changelog
 
+28.0.0-rc5
+-------------------
+### Fixed <a name=28.0.0-rc5.Fixed></a>
+- Fixed renderer logging configuration caused by 2 logger instances
+
 28.0.0-rc4
 -------------------
 ### Changed <a name=28.0.0-rc4.Changed></a>

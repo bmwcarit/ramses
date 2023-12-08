@@ -104,10 +104,4 @@ namespace ramses::internal
         std::vector<LogAppenderBase*> m_logAppenders;
         LogContext& m_fileTransferContext;
     };
-
-    inline RamsesLogger& GetRamsesLogger()
-    {
-        static RamsesLogger logger;
-        return logger;
-    }
 }

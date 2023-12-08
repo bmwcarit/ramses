@@ -9,7 +9,7 @@
 #include "RendererTestUtils.h"
 #include "internal/Core/Utils/StringUtils.h"
 #include "EmbeddedCompositingTests.h"
-#include "internal/Core/Utils/RamsesLogger.h"
+#include "impl/RamsesLoggerImpl.h"
 #include "EmbeddedCompositingTestFramework/TestForkingController.h"
 #include "ramses/framework/RamsesFrameworkConfig.h"
 #include <pwd.h>

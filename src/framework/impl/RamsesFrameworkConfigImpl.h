@@ -9,7 +9,7 @@
 #pragma once
 
 #include "TCPConfig.h"
-#include "internal/Core/Utils/RamsesLogger.h"
+#include "impl/RamsesLoggerImpl.h"
 #include "ramses/framework/IThreadWatchdogNotification.h"
 #include "ramses/framework/EFeatureLevel.h"
 #include "impl/ThreadWatchdogConfig.h"

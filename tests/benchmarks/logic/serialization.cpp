@@ -9,7 +9,7 @@
 #include "benchmarksetup.h"
 #include "ramses/client/logic/LuaScript.h"
 #include "ramses/client/logic/Property.h"
-#include "internal/Core/Utils/RamsesLogger.h"
+#include "impl/RamsesLoggerImpl.h"
 
 #include "fmt/format.h"
 #include <fstream>

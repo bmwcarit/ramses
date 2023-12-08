@@ -13,7 +13,7 @@
 #include "impl/RamsesFrameworkConfigImpl.h"
 #include "internal/Ramsh/RamshStandardSetup.h"
 #include "internal/Ramsh/RamshCommandExit.h"
-#include "internal/Core/Utils/RamsesLogger.h"
+#include "impl/RamsesLoggerImpl.h"
 #include "internal/Core/Utils/StatisticCollection.h"
 #include "internal/Core/Utils/LogMacros.h"
 #include <memory>

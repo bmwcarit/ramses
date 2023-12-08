@@ -7,7 +7,6 @@
 //  -------------------------------------------------------------------------
 
 #include "internal/Core/Utils/LogMacros.h"
-#include "internal/Core/Utils/RamsesLogger.h"
 
 namespace ramses::internal
 {

@@ -148,7 +148,7 @@ namespace ramses::internal
     {
         ImGui::MenuItem("Show Scene Window", "F11", &m_settings.showWindow);
         if (m_app.getLogicViewer())
-            ImGui::MenuItem("Show Logic Window", "F10", &m_settings.showLogicWindow);
+            ImGui::MenuItem(m_settings.showWindow ? "Undock Logic Window" : "Show Logic Window", "F10", &m_settings.showLogicWindow);
         if (m_app.getGuiMode() == ViewerGuiApp::GuiMode::On)
         {
             ImGui::MenuItem("Show Scene in Window", nullptr, &m_settings.showSceneInWindow);
