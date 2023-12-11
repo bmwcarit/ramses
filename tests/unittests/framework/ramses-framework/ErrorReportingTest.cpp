@@ -11,7 +11,7 @@
 #include "impl/ErrorReporting.h"
 #include "impl/RamsesObjectImpl.h"
 #include "ramses/framework/RamsesObject.h"
-#include "internal/Core/Utils/RamsesLogger.h"
+#include "impl/RamsesLoggerImpl.h"
 #include "internal/Core/Utils/LogMacros.h"
 #include "internal/Core/Utils/ThreadBarrier.h"
 #include "LogTestUtils.h"

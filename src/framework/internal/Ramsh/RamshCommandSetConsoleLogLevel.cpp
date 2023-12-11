@@ -9,7 +9,7 @@
 #include "internal/Ramsh/RamshCommandSetConsoleLogLevel.h"
 #include "internal/Ramsh/Ramsh.h"
 #include "internal/Core/Utils/LogMacros.h"
-#include "internal/Core/Utils/RamsesLogger.h"
+#include "impl/RamsesLoggerImpl.h"
 #include "internal/Core/Utils/LogHelper.h"
 
 namespace ramses::internal

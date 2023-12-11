@@ -40,8 +40,9 @@ def main(build_dir, headless_only):
         # run c++filt to demangle output from nm
         cppfilt_command = ['c++filt', '-r']
         cppfilt_process_result = subprocess.run(cppfilt_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, input=nm_process_result.stdout)
-        cppfilt_process_output_std = cppfilt_process_result.stdout.decode('utf-8')
+        return cppfilt_process_result.stdout.decode('utf-8')
 
+    def find_api_symbols(symbols):
         ignore_list = [
             # ignore ramses internal and Impl
             r'ramses::internal::',
@@ -53,22 +54,44 @@ def main(build_dir, headless_only):
         # 0000000000001d30 T ramses::Appearance::unbindInput(ramses::UniformInput const&)
         symbol_regex = re.compile(rf"^([0-9A-Fa-f]+)(\s+)[TB](\s+)({ignore_regex}.*)", re.MULTILINE)
 
-        lib_symbols = [s.group(4) for s in re.finditer(symbol_regex, cppfilt_process_output_std)]
+        return [s.group(4) for s in re.finditer(symbol_regex, symbols)]
 
-        return lib_symbols
+    def check_missing_api_symbols(static_lib_symbols, shared_lib_symbols):
+        static_lib_symbols = find_api_symbols(static_lib_symbols)
+        shared_lib_symbols = find_api_symbols(shared_lib_symbols)
+        missing_symbols = [s for s in static_lib_symbols if s not in shared_lib_symbols]
+        if len(static_lib_symbols) == 0:
+            raise Exception("No API symbols found in static lib (internal error)")
+        if len(shared_lib_symbols) == 0:
+            raise Exception("No API symbols found in shared lib (internal error)")
+        if len(missing_symbols) > 0:
+            raise Exception(f"FOUND MISSING SYMBOLS: {missing_symbols}")
 
-    static_lib_symbols = file_to_symbols(client_static_lib_dir, False)
-    static_lib_symbols += file_to_symbols(framework_static_lib_dir, False)
+    def check_unique_exports(headless, full):
+        # check interface between headless and full shared lib
+        symbols = [
+            'ramses::internal::ErrorReporting',
+            'ramses::internal::FrameworkFactoryRegistry',
+            'ramses::internal::RamsesFrameworkImpl',
+            'ramses::internal::GetRamsesLogger',
+        ]
+        for s in symbols:
+            if s not in headless:
+                raise Exception(f"Symbol missing in headless-shared-lib: {s}")
+            if s in full:
+                raise Exception(f"Unexpected symbol in full-shared-lib:: {s}")
+
+    static_lib_headless_symbols = file_to_symbols(client_static_lib_dir, False)
+    static_lib_headless_symbols += file_to_symbols(framework_static_lib_dir, False)
+    shared_lib_headless_symbols = file_to_symbols(headless_shared_lib_dir, True)
+
+    check_missing_api_symbols(static_lib_headless_symbols, shared_lib_headless_symbols)
+
     if not headless_only:
-        static_lib_symbols += file_to_symbols(renderer_static_lib_dir, False)
-
-    shared_lib_symbols = file_to_symbols(headless_shared_lib_dir, True)
-    if not headless_only:
-        shared_lib_symbols += file_to_symbols(full_shared_lib_dir, True)
-
-    missing_symbols = [s for s in static_lib_symbols if s not in shared_lib_symbols]
-    if len(missing_symbols) > 0:
-        raise Exception(f"FOUND MISSING SYMBOLS: {missing_symbols}")
+        static_lib_symbols = file_to_symbols(renderer_static_lib_dir, False)
+        shared_lib_symbols = file_to_symbols(full_shared_lib_dir, True)
+        check_missing_api_symbols(static_lib_symbols, shared_lib_symbols)
+        check_unique_exports(shared_lib_headless_symbols, shared_lib_symbols)
 
 
 if __name__ == "__main__":

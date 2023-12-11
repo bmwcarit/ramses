@@ -1,32 +1,18 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2016 BMW Car IT GmbH
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#pragma once
-
 #include "impl/RamsesLoggerImpl.h"
 
 namespace ramses::internal
 {
-    class ScopedConsoleLogDisable
+    RamsesLogger& GetRamsesLogger()
     {
-    public:
-        ScopedConsoleLogDisable()
-            : m_logLevel(GetRamsesLogger().getConsoleLogLevel())
-        {
-            GetRamsesLogger().setConsoleLogLevel(ELogLevel::Off);
-        }
-
-        ~ScopedConsoleLogDisable()
-        {
-            GetRamsesLogger().setConsoleLogLevel(m_logLevel);
-        }
-
-    private:
-        ELogLevel m_logLevel;
-    };
+        static RamsesLogger logger;
+        return logger;
+    }
 }

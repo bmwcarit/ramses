@@ -15,7 +15,7 @@
 #include <gtest/gtest.h>
 #include "internal/Ramsh/RamshTools.h"
 #include "internal/PlatformAbstraction/PlatformThread.h"
-#include "internal/Core/Utils/RamsesLogger.h"
+#include "impl/RamsesLoggerImpl.h"
 
 namespace ramses::internal
 {

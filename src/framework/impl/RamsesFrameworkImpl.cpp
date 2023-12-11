@@ -13,7 +13,7 @@
 #include "ramses-sdk-build-config.h"
 #include "internal/Communication/TransportCommon/CommunicationSystemFactory.h"
 #include "internal/Communication/TransportCommon/ICommunicationSystem.h"
-#include "internal/Core/Utils/RamsesLogger.h"
+#include "impl/RamsesLoggerImpl.h"
 #include "impl/RamsesFrameworkConfigImpl.h"
 #include "ramses/framework/RamsesFrameworkConfig.h"
 #include "internal/Ramsh/RamshStandardSetup.h"

@@ -9,7 +9,7 @@
 #pragma once
 
 #include "internal/Core/Utils/LogContext.h"
-#include "internal/Core/Utils/RamsesLogger.h"
+#include "impl/RamsesLoggerImpl.h"
 
 namespace ramses::internal
 {

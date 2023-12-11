@@ -9,7 +9,7 @@
 #pragma once
 
 #include "internal/PlatformAbstraction/Runnable.h"
-#include "internal/Core/Utils/RamsesLogger.h"
+#include "impl/RamsesLoggerImpl.h"
 
 #include <cassert>
 #include <string>

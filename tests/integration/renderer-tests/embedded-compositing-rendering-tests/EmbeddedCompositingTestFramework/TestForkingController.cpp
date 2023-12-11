@@ -9,7 +9,7 @@
 #include "TestForkingController.h"
 #include "TestForkerApplication.h"
 #include "EmbeddedCompositingTestMessages.h"
-#include "internal/Core/Utils/RamsesLogger.h"
+#include "impl/RamsesLoggerImpl.h"
 
 #include <sys/wait.h>
 

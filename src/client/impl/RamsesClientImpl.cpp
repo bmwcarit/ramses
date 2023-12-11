@@ -47,7 +47,6 @@
 #include "internal/PlatformAbstraction/Collections/HashMap.h"
 #include "internal/PlatformAbstraction/PlatformTime.h"
 #include "internal/Core/Utils/LogMacros.h"
-#include "internal/Core/Utils/RamsesLogger.h"
 #include "ClientFactory.h"
 #include "impl/FrameworkFactoryRegistry.h"
 #include "internal/Ramsh/Ramsh.h"

@@ -9,7 +9,7 @@
 #include "internal/Core/Utils/AndroidLogger/AndroidLogAppender.h"
 #include "internal/Core/Utils/LogMessage.h"
 #include "internal/Core/Utils/LogContext.h"
-#include "internal/Core/Utils/RamsesLogger.h"
+#include "impl/RamsesLoggerImpl.h"
 #include "internal/Core/Utils/InplaceStringTokenizer.h"
 #include <string>
 
