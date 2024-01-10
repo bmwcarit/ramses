@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2020 BMW AG
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,8 +24,7 @@ namespace ramses
     class IRendererSceneControlEventHandler;
 
     /**
-    * @brief   Control states of scenes
-    * @ingroup RendererAPI
+    * @brief   RendererSceneControl controls the states of scenes.
     * @details Where #ramses::RamsesRenderer is used to configure general rendering (create displays, control looping and other
     *          global rendering states), RendererSceneControl is used to configure which content should be rendered and where.
     *          Scenes can be assigned to display buffers, shown, hidden, data linked, etc.
@@ -35,6 +34,7 @@ namespace ramses
     *          via #dispatchEvents.
     *          Some commands can fail immediately by returning false, in such case there will be no callback,
     *          because the command will not even be submitted.
+    * @ingroup RendererAPI
     */
     class RAMSES_API RendererSceneControl
     {

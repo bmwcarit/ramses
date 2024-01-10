@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2014 BMW Car IT GmbH
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -18,8 +18,8 @@ namespace ramses
     }
 
     /**
-     * @ingroup CoreAPI
      * @brief The Resource is the base class of all resources, such as arrays and textures.
+     * @ingroup CoreAPI
      */
     class RAMSES_API Resource : public SceneObject
     {

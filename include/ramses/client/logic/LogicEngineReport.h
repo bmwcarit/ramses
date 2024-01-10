@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2021 BMW AG
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -25,8 +25,10 @@ namespace ramses
     /**
     * A collection of results from #ramses::LogicEngine::update which can be used
     * for debugging or profiling logic node networks.
+    *
     * Can be obtained using #ramses::LogicEngine::getLastUpdateReport after an update with enabled reporting
     * (#ramses::LogicEngine::enableUpdateReport).
+    * @ingroup LogicAPI
     */
     class RAMSES_API LogicEngineReport
     {

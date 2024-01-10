@@ -40,7 +40,7 @@ namespace ramses::internal
         explicit LogicEngineGui(const ViewerSettings& settings);
 
         template<class T, class C>
-        void drawCollection(ramses::Collection<T> collection, std::string_view ns, const char* headline, const C& cb);
+        void drawCollection(LogicEngine& engine, std::string_view ns, const char* headline, const C& cb);
 
         void draw(ramses::LuaInterface* obj);
         void draw(ramses::LuaScript* obj);
@@ -63,12 +63,11 @@ namespace ramses::internal
          * copies all node inputs to clipboard (lua syntax)
          */
         template <class T>
-        void copyInputs(const std::string_view& ns, Collection<T> collection);
+        void copyInputs(LogicEngine& engine, const std::string_view& ns, Collection<T> collection);
 
     private:
         static bool DrawTreeNode(ramses::LogicObject* obj);
 
-        void drawNodeContextMenu(ramses::LogicNode* obj, const std::string_view& ns);
         void drawOutProperty(const ramses::Property* prop, size_t index);
         static void DrawDataArray(const ramses::DataArray* obj, std::string_view context = std::string_view());
 
@@ -76,14 +75,16 @@ namespace ramses::internal
     };
 
     template<class T, class C>
-    void LogicEngineGui::drawCollection(ramses::Collection<T> collection, std::string_view ns, const char* headline, const C& cbDrawItem)
+    void LogicEngineGui::drawCollection(LogicEngine& engine, std::string_view ns, const char* headline, const C& cbDrawItem)
     {
+        auto collection = engine.getCollection<T>();
+
         const bool openCollection = ImGui::TreeNode(headline);
         if (ImGui::BeginPopupContextItem(fmt::format("{}ContextMenu", ns).c_str()))
         {
             if (ImGui::MenuItem(fmt::format("{}: Copy all inputs", headline).c_str()))
             {
-                copyInputs(ns, collection);
+                copyInputs(engine, ns, collection);
             }
             ImGui::EndPopup();
         }
@@ -98,15 +99,12 @@ namespace ramses::internal
     }
 
     template <class T>
-    inline void LogicEngineGui::copyInputs(const std::string_view& ns, Collection<T> collection)
+    inline void LogicEngineGui::copyInputs(LogicEngine& engine, const std::string_view& ns, Collection<T> collection)
     {
-        LogicViewerLog::PathVector path;
-        path.push_back(LogicViewer::ltnModule);
-        path.push_back(ns);
         LogicViewerLog log(m_settings);
         for (auto* node : collection)
         {
-            log.logInputs(node, path);
+            log.logInputs(engine, node, ns);
         }
         ImGui::SetClipboardText(log.getText().c_str());
     }

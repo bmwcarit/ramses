@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2021 BMW AG
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -22,7 +22,8 @@ namespace ramses::internal
 namespace ramses
 {
     /**
-    * Animation node can be used to animate properties in logic network.
+    * @brief Animation node can be used to animate properties in logic network.
+    *
     * Animation node itself is a logic node and has a set of input and output properties:
     * - Fixed inputs:
     *     - progress (float)  - point within [0;1] normalized range of where to jump to in the animation
@@ -38,7 +39,7 @@ namespace ramses
     *                    will be represented as output property with name of the channel (#ramses::AnimationChannel::name)
     *                    and a value of type matching element in #ramses::AnimationChannel::keyframes.
     *                    If the data type of keyframes is #ramses::EPropertyType::Array (i.e. each keyframe is represented
-    *                    by an array of floats), the output property is also of array type and contains a corresponding
+    *                    by an array of floats), the output property is also of array type and contains corresponding
     *                    number of children properties of type #ramses::EPropertyType::Float.
     *                    Channel value output is a result of keyframes interpolation based on the 'progress' input above,
     *                    it can be linked to another logic node input to use the animation result.
@@ -48,7 +49,7 @@ namespace ramses
     *         - [channelName] (struct)
     *             - timestamps (array of float) - each element represents a timestamp value
     *             - keyframes (array of T) - each element represents a keyframe value
-    *                                      - type T is data type matching this channel original keyframes
+    *                                      - type T is the data type matching this channel's original keyframes
     *
     * During update when 'progress' input is set the following logic is executed:
     *     - calculate local animation time based on progress
@@ -57,13 +58,14 @@ namespace ramses
     *         - interpolate between them according to the interpolation type of that channel,
     *         - and finally set this value to the channel's output property.
     *
-    * Note that all channel outputs will always have a value determined by corresponding keyframes, this includes
+    * Note that all channel outputs will always have a value determined by corresponding keyframes,
     * also when the time falls outside of the first/last animation timestamps:
     *     - channel output value equals first keyframe for any time at or before the first keyframe timestamp
     *     - channel output value equals last keyframe for any time at or after the last keyframe timestamp
-    * This can be useful for example when needing to initialize the outputs before playing the animation yet,
+    * This can be useful for example when it is needed to initialize the outputs before playing the animation,
     * when updating the animation node with progress 0, the logic will execute and update outputs to their
     * first keyframes.
+    * @ingroup LogicAPI
     */
     class RAMSES_API AnimationNode : public LogicNode
     {

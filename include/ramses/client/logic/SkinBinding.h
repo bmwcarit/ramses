@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2022 BMW AG
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -59,6 +59,7 @@ namespace ramses
     * The changes via binding objects are applied to the bound objects right away when calling ramses::LogicEngine::update(),
     * however keep in mind that Ramses has a mechanism for bundling scene changes and applying them at once using ramses::Scene::flush,
     * so the changes will be applied all the way only after calling this method on the ramses scene.
+     * @ingroup LogicAPI
     */
     class RAMSES_API SkinBinding : public RamsesBinding
     {

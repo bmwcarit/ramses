@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2019 BMW Car IT GmbH
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -21,10 +21,9 @@ namespace ramses
     class Camera;
 
     /**
-    * @ingroup CoreAPI
     * @brief PickableObject provides a way to specify a 'pickable' area.
-    * @details The purpose of the PickableObject is to enable user to add 'pickable' components to a scene.
-    *          When this area is picked (see ramses::RamsesRenderer API) a message is sent to RamsesClient with list of picked objects,
+    * @details The purpose of the PickableObject is to enable the user to add 'pickable' components to a scene.
+    *          When this area is picked (see ramses::RamsesRenderer API) a message is sent to RamsesClient with the list of picked objects,
     *          these can be dispatched and handled using ramses::IRendererEventHandler::objectsPicked.
     *          Geometry specifies a triangle list (see ramses::Scene::createPickableObject for geometry requirements).
     *          PickableObject is a ramses::Node and as such can be placed in scene transformation topology,
@@ -34,16 +33,17 @@ namespace ramses
     *          In order to create a valid PickableObject it is mandatory to set a Camera. This is needed for the intersection algorithm
     *          to determine whether it was picked, the camera is needed to unproject the rasterized triangles.
     *          Typically the camera will be same as the one used to render the actual renderable but in some cases
-    *          it makes sense to have different camera for rendering and picking.
+    *          it makes sense to have different cameras for rendering and picking.
     *
     *          Usage example: we have a Ramses scene with a 3D car made of multiple MeshNodes within a transformation node topology,
     *          we want to make the car pickable:
     *              1) Precompute a simplified geometry representation of the car (e.g. a bounding box) so that it can be represented as a single geometry
-    *                 with minimum amount of triangles (reduce overhead of intersection computation).
+    *                 with a minimum number of triangles (reduce overhead of intersection computation).
     *              2) Create a PickableObject with the simplified geometry.
     *              3) Set the PickableObject's parent node to be the 3D car's root node. This way the pickable geometry will always be transformed together with the car.
     *              4) Assign the camera used to render the car to our PickableObject - the pickable geometry was computed from the car's geometry
-    *                 and therefore should use same camera for both rendering and picking.
+    *                 and therefore should use the same camera for both rendering and picking.
+    * @ingroup CoreAPI
     */
     class RAMSES_API PickableObject : public Node
     {

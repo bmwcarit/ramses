@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2015 BMW Car IT GmbH
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -21,10 +21,10 @@ namespace ramses
     class Scene;
 
     /**
-    * @ingroup CoreAPI
     * @brief The SceneIterator traverses scenes in a RamsesClient.
     *
-    * It provides a way to traverse all scenes created with a given client.
+    * SceneIterator provides a way to traverse all scenes created with a given client.
+    * @ingroup CoreAPI
     */
     class RAMSES_API SceneIterator
     {

@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2020 BMW AG
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -18,9 +18,9 @@ namespace ramses
     }
 
     /**
+     * @brief #ramses::TextureSamplerMS is used to sample multisampled data when bound
+     *      to a #ramses::Appearance uniform input (#ramses::Appearance::setInputTexture called with #ramses::TextureSamplerMS).
      * @ingroup CoreAPI
-     * @brief The #ramses::TextureSamplerMS is used to sample multisampled data when bound
-     *      to a #ramses::Appearance uniform input (#ramses::Appearance::setInputTexture called with #ramses::TextureSamplerMS)
      */
     class RAMSES_API TextureSamplerMS : public SceneObject
     {

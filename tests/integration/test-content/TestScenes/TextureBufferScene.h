@@ -38,7 +38,9 @@ namespace ramses::internal
             EState_PartialUpdateMipMap_RG8,
             EState_ClientTextureResource_RGBA8,
             EState_SwitchBackToClientTexture,
-            EState_SwitchBackToExistingTextureBufferAndUpdate
+            EState_SwitchBackToExistingTextureBufferAndUpdate,
+            EState_UpdateAndRecreate,
+            EState_UpdateAndRecreate1,
         };
 
         void setState(uint32_t state);

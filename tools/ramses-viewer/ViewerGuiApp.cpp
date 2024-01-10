@@ -16,6 +16,7 @@
 #include "internal/PlatformAbstraction/PlatformThread.h"
 #include "internal/Core/Utils/LogMacros.h"
 #include <map>
+#include "roboto.h"
 
 namespace ramses::internal
 {
@@ -45,6 +46,19 @@ namespace ramses::internal
     ViewerGuiApp::ViewerGuiApp()
     {
         m_displayConfig.setResizable(true);
+
+        auto* fontAtlas = ImGui::GetIO().Fonts;
+        fontAtlas->AddFontDefault();
+        for (int fontSize = 16; fontSize <= 22; fontSize += 2)
+        {
+            ImFontConfig fontConfig;
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg) no suitable replacement
+            snprintf(fontConfig.Name, sizeof(fontConfig.Name), "Roboto Regular, %d px", fontSize);
+            fontAtlas->AddFontFromMemoryCompressedTTF(roboto_ttf_compressed_data, roboto_ttf_compressed_size, static_cast<float>(fontSize), &fontConfig);
+        }
+
+        if (getSettings()->font < fontAtlas->Fonts.Size)
+            ImGui::GetIO().FontDefault = fontAtlas->Fonts[getSettings()->font];
     }
 
     void ViewerGuiApp::registerOptions(CLI::App& cli)

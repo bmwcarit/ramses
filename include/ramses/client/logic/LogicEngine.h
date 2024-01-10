@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2020 BMW AG
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -79,13 +79,13 @@ namespace ramses
     };
 
     /**
-    * @ingroup LogicAPI
     * Central object which creates and manages the lifecycle and execution
     * of scripts, bindings, and all other objects supported by the Ramses Logic library.
     *
     * - Use the create[Type] methods to create various objects, use #destroy() to delete them.
-    * - Use #link and #unlink to connect data properties between these objects
-    * - use #update() to trigger the execution of all objects
+    * - Use #link and #unlink to connect data properties between these objects.
+    * - Use #update() to trigger the execution of all objects.
+    * @ingroup LogicAPI
     */
     class RAMSES_API LogicEngine : public SceneObject
     {

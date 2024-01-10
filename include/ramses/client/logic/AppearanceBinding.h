@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2020 BMW AG
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -45,7 +45,7 @@ namespace ramses
      * - any uniform with attached semantics (e.g. display resolution) - see ramses::EEffectUniformSemantic docs
      *
      * Uniform types which are not supported are not available when queried over #ramses::LogicNode::getInputs.
-     *
+     * @ingroup LogicAPI
      */
     class RAMSES_API AppearanceBinding : public RamsesBinding
     {

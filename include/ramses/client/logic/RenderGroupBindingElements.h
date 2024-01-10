@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2022 BMW AG
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -26,10 +26,12 @@ namespace ramses::internal
 namespace ramses
 {
     /**
-     * RenderGroupBindingElements is a helper class holding a set of references to elements to be provided when constructing #ramses::RenderGroupBinding.
+     * #RenderGroupBindingElements is a helper class holding a set of references to elements to be provided when constructing #ramses::RenderGroupBinding.
      * These elements are either ramses::MeshNode or ramses::RenderGroup.
+     *
      * Note that ramses::RenderGroup can contain other (nested) ramses::RenderGroup objects, in such case the parent ramses::RenderGroup corresponds
      * to the #ramses::RenderGroupBinding to be created and the nested ramses::RenderGroup is the element provided here.
+     * @ingroup LogicAPI
      */
     class RAMSES_API RenderGroupBindingElements
     {

@@ -24,8 +24,8 @@ namespace ramses::internal
 namespace ramses
 {
     /**
-     * The #RenderBufferBinding binds to a Ramses object instance of #ramses::RenderBuffer and exposes a set of input properties
-     * allowing to change some parameters of the #ramses::RenderBuffer.
+     * #RenderBufferBinding binds to a Ramses object instance of #ramses::RenderBuffer and exposes a set of input properties
+     * allowing to change some parameters of #ramses::RenderBuffer.
      *
      * Important note: #ramses::RenderBuffer (unlike most other scene objects that can be bound to logic node network) is a static object
      * in the sense that once it is allocated on Ramses renderer side it cannot be changed. This means that #RenderBufferBinding can be
@@ -60,6 +60,7 @@ namespace ramses
      *     in that render target
      *   - if #ramses::RenderBuffer is used as source/destination in a #ramses::BlitPass and becomes out of bounds for the pass's blitting region
      * - renderer will produce an error log if a #ramses::RenderBuffer change comes after it was already allocated (see above for details)
+     * @ingroup LogicAPI
      */
     class RAMSES_API RenderBufferBinding : public RamsesBinding
     {

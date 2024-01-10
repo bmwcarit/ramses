@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2016 BMW Car IT GmbH
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,9 +20,9 @@ namespace ramses
     }
 
     /**
-     * @ingroup RendererAPI
      * @brief Provide default implementation for IBinaryShaderCache interface, to be used in RamsesRenderer by setting in RendererConfig.
      *        Also provides functions to serialize binary shaders to file and deserialize binary shaders from file.
+     * @ingroup RendererAPI
      */
     class RAMSES_API BinaryShaderCache : public IBinaryShaderCache
     {

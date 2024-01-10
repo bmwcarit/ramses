@@ -38,7 +38,7 @@ check-filter:
   - check: cppcoreguidelines-pro-type-vararg
     exclude:
       # ImGui uses va_args in its api
-      - ^tools/ramses-viewer/SceneViewerGui.cpp$
+      - ^tools/ramses-viewer/.*Gui.cpp$
       - ^tools/ramses-imgui/src/ImguiWidgets.cpp$
   - check: hicpp-signed-bitwise
     exclude:

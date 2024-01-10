@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2018 BMW Car IT GmbH
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,8 +16,8 @@
 namespace ramses
 {
     /**
-    * @ingroup TextAPI
     * @brief Interface for font instance that can be used to query glyph metadata and bitmaps
+    * @ingroup TextAPI
     */
     class RAMSES_API IFontInstance
     {

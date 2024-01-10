@@ -313,6 +313,11 @@ if(ramses-sdk_BUILD_TOOLS)
                                 imgui/*.cpp
                                 imgui/misc/cpp/*.cpp
         )
+
+    add_executable(imgui_binary_to_compressed EXCLUDE_FROM_ALL
+        imgui/misc/fonts/binary_to_compressed_c.cpp
+        )
+    folderizeTarget(imgui_binary_to_compressed)
 endif()
 
 

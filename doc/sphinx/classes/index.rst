@@ -1,6 +1,6 @@
 ..
     -------------------------------------------------------------------------
-    Copyright (C) 2021 BMW AG
+    Copyright (C) 2023 BMW AG
     -------------------------------------------------------------------------
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -35,11 +35,9 @@ Class Index
 
     logic
 
-
 .. toctree::
     :maxdepth: 3
     :caption: Ramses Utils
 
     utils
-
 

@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2015 BMW Car IT GmbH
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,12 +19,12 @@ namespace ramses
     }
 
     /**
-    * @ingroup CoreAPI
     * @brief RenderBuffer can be used with RenderTarget as buffer for writing or with TextureSampler as buffer for reading.
     *
     * @details A RenderBuffer can be used by one or more RenderTargets for rendering content into it.
-    *          There are two basic types of RenderBuffers - color and depth, depth buffer can have additionally stencil data.
+    *          There are two basic types of RenderBuffers - color and depth, depth buffer can additionally have stencil data.
     *          A RenderBuffer can be used by one or more TextureSamplers for sampling data from it in a shader.
+    * @ingroup CoreAPI
     */
     class RAMSES_API RenderBuffer : public SceneObject
     {

@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2014 BMW Car IT GmbH
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -34,9 +34,9 @@ namespace ramses
 
     /**
     * @brief Entry point of RAMSES client API.
-    * @ingroup CoreAPI
     *
     * The RAMSES client class handles application state and and is a factory for scenes and client resources.
+    * @ingroup CoreAPI
     */
     class RAMSES_API RamsesClient : public RamsesObject
     {

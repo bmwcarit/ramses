@@ -131,6 +131,7 @@ namespace ramses::internal
                 {
                     ImGui::Separator();
                     m_logicGui->drawMenuItemReload();
+                    m_logicGui->drawMenuItemSaveDefaultLua();
                 }
                 ImGui::EndMenu();
             }
@@ -189,6 +190,10 @@ namespace ramses::internal
             ImGui::Separator();
             ImGui::MenuItem("Lua: prefer identifiers (scripts.foo)", nullptr, &m_settings.luaPreferIdentifiers);
             ImGui::MenuItem("Lua: prefer object ids (scripts[1])", nullptr, &m_settings.luaPreferObjectIds);
+            ImGui::MenuItem("Lua: use simplified logic accessor (R.logic())", nullptr, &m_settings.luaPreferSimplified);
+
+            ImGui::Separator();
+            drawFontSelector("UI Font");
         }
     }
 
@@ -203,6 +208,27 @@ namespace ramses::internal
         ImGui::SameLine();
         ImGui::TextUnformatted(name);
         return modified;
+    }
+
+    void ViewerGui::drawFontSelector(const char* label)
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        ImFont* font_current = ImGui::GetFont();
+        if (ImGui::BeginCombo(label, font_current->GetDebugName()))
+        {
+            for (int n = 0; n < io.Fonts->Fonts.Size; n++)
+            {
+                ImFont* font = io.Fonts->Fonts[n];
+                ImGui::PushID(font);
+                if (ImGui::Selectable(font->GetDebugName(), font == font_current))
+                {
+                    io.FontDefault = font;
+                    m_settings.font = n;
+                }
+                ImGui::PopID();
+            }
+            ImGui::EndCombo();
+        }
     }
 
     void ViewerGui::drawErrorPopup()

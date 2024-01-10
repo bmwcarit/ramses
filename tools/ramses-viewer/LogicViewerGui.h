@@ -38,13 +38,14 @@ namespace ramses::internal
 
         void drawGlobalContextMenuItems();
         void drawMenuItemReload();
+        void drawMenuItemSaveDefaultLua();
 
         void handleShortcuts();
 
     private:
 
         void drawCurrentView();
-        void drawUpdateReport();
+        void drawUpdateReport(LogicEngine& engine);
         void drawSaveDefaultLuaFile();
 
         void reloadConfiguration();
@@ -56,6 +57,8 @@ namespace ramses::internal
 
         std::string& m_lastErrorMessage;
         std::string m_filename;
+
+        bool m_saveDefaultLuaFile = false;
     };
 }
 

@@ -105,28 +105,47 @@ Options
 Lua configuration API
 ==============================================
 
-The :program:`ramses-viewer` exposes a lua module ``rlogic`` that allows to interact with the viewer's
-logic engine instance. ``rlogic`` mimics the Ramses Logic C++ API and provides some extra interfaces to take
-screenshots and define interactive views.
+The :program:`ramses-viewer` exposes a lua module ``R`` that allows to interact with the scene's
+logic engine instance(s). It also provides interfaces to take screenshots and define interactive views.
 
 --------------------------------------------------
+Logic Engine
+--------------------------------------------------
+
+``R.logic`` provides access to the scene's logic engines. They can be found by name or scene object id.
+Alternatively all logic engine instances can be returned.
+
+Example:
+
+.. code-block:: lua
+
+    -- returns all LogicEngines (also convenient if there's only 1 logic engine)
+    -- there's no guarantee for a specific order
+    engine0, engine1 = R.logic()
+
+    -- returns the LogicEngine with the name `foo` or nil if it does not exist
+    R.logic["foo"]
+
+    -- returns the LogicEngine with the scene object id `42` or nil if it does not exist
+    R.logic[42]
+
 Logic Nodes
---------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The module ``rlogic`` provides members to access all Logic Node types:
+The Logic Engine object has members to access all Logic Node types:
 
-* ``rlogic.interfaces`` (:cpp:class:`ramses::LuaInterface`)
-* ``rlogic.scripts`` (:cpp:class:`ramses::LuaScript`)
-* ``rlogic.animationNodes`` (:cpp:class:`ramses::AnimationNode`)
-* ``rlogic.timerNodes`` (:cpp:class:`ramses::TimerNode`)
-* ``rlogic.nodeBindings`` (:cpp:class:`ramses::NodeBinding`)
-* ``rlogic.appearanceBindings`` (:cpp:class:`ramses::AppearanceBinding`)
-* ``rlogic.cameraBindings`` (:cpp:class:`ramses::CameraBinding`)
-* ``rlogic.renderPassBindings`` (:cpp:class:`ramses::RenderPassBinding`)
-* ``rlogic.renderGroupBindings`` (:cpp:class:`ramses::RenderGroupBinding`)
-* ``rlogic.meshNodeBindings`` (:cpp:class:`ramses::MeshNodeBinding`)
-* ``rlogic.anchorPoints`` (:cpp:class:`ramses::AnchorPoint`)
-* ``rlogic.skinBindings`` (:cpp:class:`ramses::SkinBinding`)
+* ``R.logic().interfaces`` (:cpp:class:`ramses::LuaInterface`)
+* ``R.logic().scripts`` (:cpp:class:`ramses::LuaScript`)
+* ``R.logic().animationNodes`` (:cpp:class:`ramses::AnimationNode`)
+* ``R.logic().timerNodes`` (:cpp:class:`ramses::TimerNode`)
+* ``R.logic().nodeBindings`` (:cpp:class:`ramses::NodeBinding`)
+* ``R.logic().appearanceBindings`` (:cpp:class:`ramses::AppearanceBinding`)
+* ``R.logic().cameraBindings`` (:cpp:class:`ramses::CameraBinding`)
+* ``R.logic().renderPassBindings`` (:cpp:class:`ramses::RenderPassBinding`)
+* ``R.logic().renderGroupBindings`` (:cpp:class:`ramses::RenderGroupBinding`)
+* ``R.logic().meshNodeBindings`` (:cpp:class:`ramses::MeshNodeBinding`)
+* ``R.logic().anchorPoints`` (:cpp:class:`ramses::AnchorPoint`)
+* ``R.logic().skinBindings`` (:cpp:class:`ramses::SkinBinding`)
 
 The Logic Node instances can be either found by name or by object id.
 Alternatively the node list can be iterated.
@@ -136,26 +155,26 @@ Example:
 .. code-block:: lua
 
     -- returns the LuaScript node with the name `foo` or nil if it does not exist
-    rlogic.scripts.foo
+    R.logic().scripts.foo
 
     -- returns the LuaScript node with the object id `42` or nil if it does not exist
-    rlogic.scripts[42]
+    R.logic().scripts[42]
 
     -- returns the LuaScript node with the name `name with spaces` or nil if it does not exist
-    rlogic.scripts["name with spaces"]
+    R.logic().scripts["name with spaces"]
 
     -- iterates through all LuaScript instances
-    for script in rlogic.scripts() do
+    for script in R.logic().scripts() do
         print(script)
     end
 
 .. note::
-    Ramses Logic does not guarantee unique names.
+    Ramses does not guarantee unique names.
     Also empty names are possible.
 
---------------------------------------------------
+
 Logic Properties
---------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Logic Nodes own Logic Properties. They are accessed like this:
 
@@ -167,25 +186,42 @@ Example:
 
 .. code-block:: lua
 
-    rlogic.scripts.foo.IN.integerProperty.value = 6
-    rlogic.scripts.foo.IN.stringProperty.value = "Hello World"
-    rlogic.scripts.foo.IN.structProperty.vec3iChild.value = { 42, 44, 0 }
-    rlogic.scripts.foo.IN.arrayProperty[1].integerChild.value = 5
+    R.logic().scripts.foo.IN.integerProperty.value = 6
+    R.logic().scripts.foo.IN.stringProperty.value = "Hello World"
+    R.logic().scripts.foo.IN.structProperty.vec3iChild.value = { 42, 44, 0 }
+    R.logic().scripts.foo.IN.arrayProperty[1].integerChild.value = 5
 
     -- returns the property's value
-    rlogic.scripts.foo.IN.integerProperty.value
+    R.logic().scripts.foo.IN.integerProperty.value
     -- returns the property object
-    rlogic.scripts.foo.IN.integerProperty
+    R.logic().scripts.foo.IN.integerProperty
 
 .. note::
     Properties can be readonly if they are output properties or linked to an output property.
     Trying to set values to them will cause a runtime error.
 
+
+Logic Engine Update
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The logic engine is automatically updated (:cpp:func:`ramses::LogicEngine::update()`) before
+a new frame is drawn or before a screenshot is stored.
+In batch mode (:option:`ramses-viewer --exec` :option:`ramses-viewer --exec-lua`) it's sometimes useful to explicitly update
+the logic engine state by calling ``R.logic().update()``:
+
+.. code-block:: lua
+
+    R.logic().scripts.foo.IN.color.value = "red"
+    R.logic().update()
+    if not R.logic().scripts.foo.OUT.color.value == {255, 0, 0} then
+        error("unexpected value")
+    end
+
 --------------------------------------------------
 Views
 --------------------------------------------------
 
-``rlogic.views`` can be used to demonstrate typical scene configurations to the user.
+``R.views`` can be used to demonstrate typical scene configurations to the user.
 If the lua script defines views, the user can simply switch between them in the UI
 and does not need to know how to configure all the corresponding properties.
 
@@ -235,41 +271,24 @@ Example:
     }
 
     -- assigns the view list
-    rlogic.views = {simpleView, animatedView, interactiveView}
+    R.views = {simpleView, animatedView, interactiveView}
 
 --------------------------------------------------
 Screenshots
 --------------------------------------------------
 
-Screenshots can be taken by the ``rlogic.screenshot(filename)`` function.
+Screenshots can be taken by the ``R.screenshot(filename)`` function.
 The :program:`ramses-viewer` will implicitly update the logic state before.
 
 .. code-block:: lua
 
-    rlogic.scripts.foo.IN.color.value = "red"
-    rlogic.screenshot(foo_red.png)
-    rlogic.scripts.foo.IN.color.value = "green"
-    rlogic.screenshot(foo_green.png)
+    R.logic().scripts.foo.IN.color.value = "red"
+    R.screenshot(foo_red.png)
+    R.logic().scripts.foo.IN.color.value = "green"
+    R.screenshot(foo_green.png)
 
 .. note::
 
     To exclude the Viewer's UI from the screenshot you can set the :option:`ramses-viewer --gui` to either `on` or `off`.
     In `on` mode the Viewer creates an offscreen buffer for the scene.
     That's why the screenshot's size is independent of the window size and does not contain the Viewer's UI.
-
---------------------------------------------------
-Logic Engine Update
---------------------------------------------------
-
-The logic engine is automatically updated (:cpp:func:`ramses::LogicEngine::update()`) before
-a new frame is drawn or before a screenshot is stored.
-In batch mode (:option:`ramses-viewer --exec` :option:`ramses-viewer --exec-lua`) it's sometimes useful to explicitly update
-the logic engine state by calling ``rlogic.update()``:
-
-.. code-block:: lua
-
-    rlogic.scripts.foo.IN.color.value = "red"
-    rlogic.update()
-    if not rlogic.scripts.foo.OUT.color.value == {255, 0, 0} then
-        error("unexpected value")
-    end

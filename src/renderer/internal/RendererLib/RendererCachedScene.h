@@ -68,6 +68,7 @@ namespace ramses::internal
         void                        setBlitPassEnabled(BlitPassHandle passHandle, bool isEnabled) override;
 
         TextureBufferHandle         allocateTextureBuffer           (EPixelStorageFormat textureFormat, const MipMapDimensions& mipMapDimensions, TextureBufferHandle handle) override;
+        void                        releaseTextureBuffer(TextureBufferHandle handle) override;
         void                        updateTextureBuffer             (TextureBufferHandle handle, uint32_t mipLevel, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const std::byte* data) override;
 
         const RenderingPassInfoVector&      getSortedRenderingPasses        () const;

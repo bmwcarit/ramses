@@ -25,8 +25,12 @@ namespace ramses::internal
     public:
         using ScreenshotFunc = std::function<bool(const std::string&)>;
 
+        friend struct LogicCollectionWrapper;
+        friend struct LogicWrapper;
+
         // global tokens
-        static const char* const ltnModule;
+        static const char* const ltnRoot;
+        static const char* const ltnLogic;
         static const char* const ltnScript;
         static const char* const ltnInterface;
         static const char* const ltnAnimation;
@@ -112,7 +116,7 @@ namespace ramses::internal
             sol::optional<sol::table> m_tbl;
         };
 
-        LogicViewer(ramses::LogicEngine& logicEngine, ScreenshotFunc screenshotFunc);
+        LogicViewer(ramses::Scene& scene, ScreenshotFunc screenshotFunc);
 
         [[nodiscard]] Result loadLuaFile(const std::string& filename);
 
@@ -121,8 +125,6 @@ namespace ramses::internal
         [[nodiscard]] Result call(const std::string& functionName);
 
         [[nodiscard]] const std::string& getLuaFilename() const;
-
-        [[nodiscard]] ramses::LogicEngine& getLogic();
 
         [[nodiscard]] Result update();
 
@@ -140,19 +142,23 @@ namespace ramses::internal
 
         [[nodiscard]] bool isUpdateReportEnabled() const;
 
-        [[nodiscard]] const UpdateReportSummary& getUpdateReport() const;
+        [[nodiscard]] const UpdateReportSummary& getUpdateReport(const LogicEngine& logicEngine);
 
         /**
          * saves a simple default lua configuration that can be used as a starting point
          */
         [[nodiscard]] Result saveDefaultLuaFile(const std::string& filename, const ViewerSettings& settings);
 
+        [[nodiscard]] std::vector<LogicEngine*> getLogicEngines() const;
+
     private:
-        void updateEngine();
+        void updateAllEngines();
+        void updateEngine(ramses::LogicEngine& engine);
 
         void load(sol::load_result&& loadResult);
 
-        ramses::LogicEngine& m_logicEngine;
+        std::vector<ramses::LogicEngine*> m_logicEngines;
+
         ScreenshotFunc       m_screenshotFunc;
         std::string          m_luaFilename;
         sol::state           m_sol;
@@ -162,12 +168,12 @@ namespace ramses::internal
         std::chrono::steady_clock::time_point m_startTime;
 
         bool                m_updateReportEnabled = false;
-        UpdateReportSummary m_updateReportSummary;
+        std::unordered_map<sceneObjectId_t, UpdateReportSummary> m_updateReports;
     };
 
-    inline LogicEngine& LogicViewer::getLogic()
+    inline std::vector<LogicEngine*> LogicViewer::getLogicEngines() const
     {
-        return m_logicEngine;
+        return m_logicEngines;
     }
 
     inline const std::string& LogicViewer::getLuaFilename() const
@@ -182,8 +188,11 @@ namespace ramses::internal
 
     inline void LogicViewer::enableUpdateReport(bool enable, size_t interval)
     {
-        m_logicEngine.enableUpdateReport(enable);
-        m_updateReportSummary.setInterval(interval);
+        for (auto* logic : m_logicEngines)
+        {
+            logic->enableUpdateReport(enable);
+            m_updateReports[logic->getSceneObjectId()].setInterval(interval);
+        }
         m_updateReportEnabled = enable;
     }
 
@@ -192,9 +201,9 @@ namespace ramses::internal
         return m_updateReportEnabled;
     }
 
-    inline const UpdateReportSummary& LogicViewer::getUpdateReport() const
+    inline const UpdateReportSummary& LogicViewer::getUpdateReport(const LogicEngine& logicEngine)
     {
-        return m_updateReportSummary;
+        return m_updateReports[logicEngine.getSceneObjectId()];
     }
 
     inline size_t LogicViewer::getCurrentView() const

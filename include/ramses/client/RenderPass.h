@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2015 BMW Car IT GmbH
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -23,7 +23,6 @@ namespace ramses
     class RenderTarget;
 
     /**
-     * @ingroup CoreAPI
      * @brief The RenderPass is a container used to collect meshes which are supposed
      * to be rendered together.
      * @details A RenderPass has a Camera which is used for all MeshNodes
@@ -32,6 +31,7 @@ namespace ramses
      * of the RenderPass. RenderPass objects are ordered together using a render order,
      * which is also shared with BlitPass objects, i.e, RenderPass and BlitPass objects
      * can all be ordered relative to each other.
+     * @ingroup CoreAPI
      */
     class RAMSES_API RenderPass : public SceneObject
     {

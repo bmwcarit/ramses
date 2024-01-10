@@ -129,6 +129,9 @@ def test_cmake_configuration(cli_context, build_dir, expect_success, **cmake_opt
         # step 3: build list of expected tests based on cmake options
         expected_tests = ['ramses-framework-test_UNITTEST', 'ramses-client-test_UNITTEST']
 
+        if full_shared_lib:
+            expected_tests += ['ramses-shared-lib-tests_RNDSANDWICHTEST_SWRAST']
+
         if examples and logic:
             expected_tests += [
                 '00_minimal_UNITTEST',

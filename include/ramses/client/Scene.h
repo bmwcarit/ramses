@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2014 BMW Car IT GmbH
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -68,10 +68,10 @@ namespace ramses
     class LogicEngine;
 
     /**
-     * @ingroup CoreAPI
      * @brief The Scene holds a scene graph.
      * It is the essential class for distributing
      * content to the ramses system.
+     * @ingroup CoreAPI
     */
     class RAMSES_API Scene : public ClientObject
     {

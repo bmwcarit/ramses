@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2016 BMW Car IT GmbH
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -26,11 +26,12 @@ namespace ramses
     * Users can implement this callback to receive alive notifications about ramses threads.
     *
     * In order to receive alive notification of ramses threads, one must provide a pointer to
-    * an implementation of this interface to RamsesFrameworkConfig::setWatchdogNotificationCallBack
+    * an implementation of this interface to RamsesFrameworkConfig::setWatchdogNotificationCallBack.
     * Before calling notifyThread with a certain threadID a registerThread call for that id will
     * be invoked. Before stopping notifications of a certain threadID the unregisterThread method will
     * be invoked -  therefore do not expect alive messages for a certain threadID after an unregisterThread
     * call for that threadID.
+    * @ingroup CoreAPI
     */
     class RAMSES_API IThreadWatchdogNotification
     {

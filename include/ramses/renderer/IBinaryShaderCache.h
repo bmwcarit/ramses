@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2015 BMW Car IT GmbH
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,7 +14,6 @@
 namespace ramses
 {
     /**
-    * @ingroup RendererAPI
     * @brief An interface used to exchange Binary Shader Cache with the RamsesRenderer. The RamsesRenderer will not
     *        delete this class, it is owned by the application.
     *
@@ -67,6 +66,7 @@ namespace ramses
     *      |                  |                            |  glProgramBinary(C, F, data) |
     *      |                  |                            |----------------------------->|
     *
+    * @ingroup RendererAPI
     */
     class RAMSES_API IBinaryShaderCache
     {

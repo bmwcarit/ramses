@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2017 BMW Car IT GmbH
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,14 +20,14 @@ namespace ramses
     }
 
     /**
-     * @ingroup CoreAPI
      * @brief The ArrayBuffer is a data object used to provide vertex or index data to #ramses::Geometry::setInputBuffer
      *        and #ramses::Geometry::setIndices. The buffer data of an ArrayBuffer is not filled initially and can be fully
-     *        or partially updated in between scene flushes.
+     *        or partially updated between scene flushes.
      *
      * @details If an #ArrayBuffer object is created with type #ramses::EDataType::ByteBlob then an element
      *          is defined as one byte, rather than a logical vertex element. Hence, all functions of #ArrayBuffer
      *          referring to element refer to a single byte within byte array.
+     * @ingroup CoreAPI
      */
     class RAMSES_API ArrayBuffer : public SceneObject
     {

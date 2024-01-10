@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2017 BMW Car IT GmbH
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,11 +20,11 @@ namespace ramses
     class RenderBuffer;
 
     /**
-     * @ingroup CoreAPI
      * @brief The BlitPass blits contents of one RendeBuffer to another. The source and destination
-     * RenderBuffer objects must have same type, format and dimensions. BlitPass objects are ordered together
+     * RenderBuffer objects must have the same type, format and dimensions. BlitPass objects are ordered
      * using a render order, which is also shared with RenderPass objects, i.e, BlitPass and RenderPass objects
      * can all be ordered relative to each other.
+     * @ingroup CoreAPI
      */
     class RAMSES_API BlitPass : public SceneObject
     {

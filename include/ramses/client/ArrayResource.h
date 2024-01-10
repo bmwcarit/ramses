@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2020 BMW AG
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,13 +19,13 @@ namespace ramses
     }
 
     /**
-    * @ingroup CoreAPI
     * @brief The #ArrayResource stores a data array of a given type. The data is immutable.
-    *        The resource can be used as input for a #ramses::Geometry.
+    *        The resource can be used as an input for a #ramses::Geometry.
     *
     * @details If an #ArrayResource object is created with type #ramses::EDataType::ByteBlob then an element
     *          is defined as one byte, rather than a logical vertex element. Hence, number of elements is
-    *          the same as size in bytes.
+    *          the same as the size in bytes.
+    * @ingroup CoreAPI
     */
     class RAMSES_API ArrayResource : public Resource
     {

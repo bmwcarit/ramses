@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2017 BMW Car IT GmbH
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,13 +20,15 @@ namespace ramses
     }
 
     /**
-    * @ingroup CoreAPI
     * @brief The Texture2DBuffer is a mutable texture buffer used to hold texture data with the possibility
-    * to perform partial updates. This object _must_ be initialized with data, otherwise the contents of it
+    * to perform partial updates.
+    *
+    * This object _must_ be initialized with data, otherwise the contents of it
     * are not specified (garbage data or black, depending on driver behavior).
     * The number of mipmap levels is user given value and the size of the mipchain is computed
     * according to OpenGL specification (each further mipMap level has half the size of the previous
-    * mipMap level). Refer to documentation of glTexStorage2D for more details.
+    * mipMap level). Refer to the documentation of glTexStorage2D for more details.
+    * @ingroup CoreAPI
     */
     class RAMSES_API Texture2DBuffer : public SceneObject
     {

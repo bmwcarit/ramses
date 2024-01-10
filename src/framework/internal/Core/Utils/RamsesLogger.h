@@ -100,7 +100,7 @@ namespace ramses::internal
         std::unique_ptr<DltLogAppender> m_dltLogAppender;
         std::unique_ptr<LogAppenderBase> m_platformLogAppender;
         std::unique_ptr<UserLogAppender> m_userLogAppender;
-        std::vector<std::unique_ptr<LogContext>> m_logContexts;
+        std::map<std::string, std::unique_ptr<LogContext>> m_logContexts;
         std::vector<LogAppenderBase*> m_logAppenders;
         LogContext& m_fileTransferContext;
     };

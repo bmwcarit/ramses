@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2020 BMW AG
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,7 +19,6 @@ namespace ramses
     }
 
     /**
-    * @ingroup CoreAPI
     * @brief The SceneReference object refers to another ramses scene using its sceneId.
     * @details The SceneReference object references a scene, which might be otherwise unknown
     *          to this RamsesClient, but is or expected to be known to a RamsesRenderer subscribed to its master scene
@@ -28,7 +27,7 @@ namespace ramses
     *          results of those requests are reported asynchronously in form of event callbacks, see #ramses::IClientEventHandler.
     *
     *          There cannot be multiple instances of SceneReference referring to the same sceneId, however SceneReference
-    *          can be destroyed using #ramses::Scene::destroy and re-created with same sceneId in another scene,
+    *          can be destroyed using #ramses::Scene::destroy and re-created with the same sceneId in another scene,
     *          i.e. change its 'master' scene.
     *          It is recommended to get SceneReference to #ramses::RendererSceneState::Available state and wait for confirmation
     *          (#ramses::IClientEventHandler::sceneReferenceStateChanged) before destroying it, otherwise the scene remains on renderer
@@ -37,6 +36,7 @@ namespace ramses
     *          Even though recommended, setting referenced scene to Available before destroying is not strictly required,
     *          so it is possible to change its master scene regardless of its actual state on renderer side (even if actively rendered)
     *          but this should be done only with extra caution and understanding of the consequences mentioned above.
+    * @ingroup CoreAPI
     */
     class RAMSES_API SceneReference : public SceneObject
     {

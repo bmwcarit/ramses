@@ -9,8 +9,6 @@
 #pragma once
 
 #include "ramses/client/logic/LogicEngine.h"
-#include "ramses/client/logic/Collection.h"
-#include "LogicViewer.h"
 #include <string>
 
 namespace ramses::internal
@@ -26,31 +24,34 @@ namespace ramses::internal
 
         template<class T> void logAllInputs(ramses::LogicEngine& logicEngine, std::string_view headline, std::string_view ltn);
 
-        using PathVector = std::vector<std::string_view>;
-        void logInputs(ramses::LogicNode* obj, const PathVector& path);
-        void logProperty(ramses::Property* prop, const std::string& prefix, PathVector& path);
+        void logInputs(ramses::LogicEngine& engine, ramses::LogicNode* obj, std::string_view ltn);
 
         [[nodiscard]] const std::string& getText() const
         {
             return m_text;
         }
 
+        void setIndent(std::string indent)
+        {
+            m_indent = std::move(indent);
+        }
+
     private:
+        using PathVector = std::vector<std::string_view>;
+        void logProperty(ramses::Property* prop, const std::string& prefix, PathVector& path);
+
         const ViewerSettings& m_settings;
         std::string m_text;
+        std::string m_indent;
     };
 
     template<class T>
     inline void LogicViewerLog::logAllInputs(ramses::LogicEngine& logicEngine, std::string_view headline, std::string_view ltn)
     {
-        PathVector path;
-        const std::string indent = "    ";
-        std::string name = indent + LogicViewer::ltnModule + "." + ltn.data();
-        path.push_back(name);
-        logText(indent + headline.data());
+        logText(m_indent + headline.data());
         for (auto* node : logicEngine.getCollection<T>())
         {
-            logInputs(node, path);
+            logInputs(logicEngine, node, ltn);
         }
     }
 }

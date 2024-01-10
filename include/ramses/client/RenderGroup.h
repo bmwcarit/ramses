@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2015 BMW Car IT GmbH
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,9 +20,10 @@ namespace ramses
     class MeshNode;
 
     /**
-    * @ingroup CoreAPI
     * @brief The RenderGroup is a container used to collect renderables which are supposed
-    * to be rendered together. Renderables added to it can be ordered within the RenderGroup
+    * to be rendered together.
+    *
+    * Renderables added to it can be ordered within the RenderGroup
     * so that they will be rendered in given order. RenderGroup can then be added to a RenderPass
     * (again with optional order of RenderGroup within the RenderPass) so a hierarchical ordering
     * of renderables can be achieved.
@@ -31,6 +32,7 @@ namespace ramses
     * renderables in all nested RenderGroups will be rendered within the RenderPass as well.
     * The order inside a nested RenderGroup is local, i.e. all its renderables/RenderGroups are
     * rendered before the next renderable/RenderGroup of its parent RenderGroup.
+    * @ingroup CoreAPI
     */
     class RAMSES_API RenderGroup : public SceneObject
     {

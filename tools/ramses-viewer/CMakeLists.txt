@@ -6,6 +6,15 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/roboto.h
+    COMMAND $<TARGET_FILE:imgui_binary_to_compressed> ${PROJECT_SOURCE_DIR}/examples/ramses-example-text-languages/res/ramses-example-text-languages-Roboto-Regular.ttf roboto_ttf > ${CMAKE_CURRENT_BINARY_DIR}/roboto.h
+    COMMENT "Generate roboto.h"
+    )
+
+add_custom_target(roboto_gen DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/roboto.h)
+folderizeTarget(roboto_gen)
+
 add_library(ramses-viewer-lib INTERFACE)
 target_sources(ramses-viewer-lib INTERFACE
     LogicViewer.h
@@ -43,6 +52,8 @@ target_sources(ramses-viewer-gui-lib INTERFACE
     ViewerGuiApp.cpp
 )
 target_link_libraries(ramses-viewer-gui-lib INTERFACE ramses-viewer-lib ramses-imgui)
+target_include_directories(ramses-viewer-gui-lib INTERFACE ${CMAKE_CURRENT_BINARY_DIR})
+add_dependencies(ramses-viewer-gui-lib roboto_gen)
 
 if(TARGET ramses-renderer)
     createModule(

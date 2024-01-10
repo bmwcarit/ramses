@@ -92,7 +92,7 @@ namespace ramses::internal
             m_sortTime.add(report.getTopologySortExecutionTime());
             m_linkActivations.add(report.getTotalLinkActivations());
             const auto totalTime = report.getTotalUpdateExecutionTime();
-            if (totalTime > m_totalTime.maxValue)
+            if (totalTime >= m_totalTime.maxValue)
             {
                 m_report = std::move(report);
             }
