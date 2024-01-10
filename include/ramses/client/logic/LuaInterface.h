@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2022 BMW AG
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,7 +24,7 @@ namespace ramses
     class Property;
 
     /**
-    * LuaInterface encapsulates forms an additional layer to a logic network (whole or its parts) and it exposes only relevant
+    * #LuaInterface encapsulates a logic network (whole or its parts) and forms an additional layer to expose only relevant
     * inputs to the user of that network. Those input variables can be used to represent scenes in an abstract way.
     * LuaInterface instances are created by the #ramses::LogicEngine class.
     *
@@ -33,11 +33,12 @@ namespace ramses
     * - A Lua interface contains only one global function: interface()
     * - The interface() function takes only one parameter that represents both inputs and outputs, e.g., interface(INOUT_PARAMS)
     *
-    * Violating any of these requirements will result in error, which can be obtained by calling #ramses::RamsesFramework::getLastError().
+    * Violating any of these requirements will result in an error, which can be obtained by calling #ramses::RamsesFramework::getLastError().
     * For other than interface definition purposes, see #ramses::LuaModule and #ramses::LuaScript for details.
     *
     * See also the full documentation at https://ramses-logic.readthedocs.io/en/latest/api.html for more details on Lua and
     * its interaction with C++.
+    * @ingroup LogicAPI
     */
     class RAMSES_API LuaInterface : public LogicNode
     {

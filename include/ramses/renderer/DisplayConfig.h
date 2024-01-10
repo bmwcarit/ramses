@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2015 BMW Car IT GmbH
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -22,8 +22,8 @@ namespace ramses
     class ValidationReport;
 
     /**
+    * @brief DisplayConfig holds a set of parameters to be used to initialize a display.
     * @ingroup RendererAPI
-    * @brief The DisplayConfig holds a set of parameters to be used to initialize a display.
     */
     class RAMSES_API DisplayConfig
     {

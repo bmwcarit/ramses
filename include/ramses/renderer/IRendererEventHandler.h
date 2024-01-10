@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2015 BMW Car IT GmbH
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -166,6 +166,7 @@ namespace ramses
     /**
     * @brief Convenience empty implementation of IRendererEventHandler that can be used to derive from
     *        when only subset of event handling methods need to be implemented.
+    * @ingroup RendererAPI
     */
     class RAMSES_API RendererEventHandlerEmpty : public IRendererEventHandler
     {

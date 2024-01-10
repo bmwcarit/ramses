@@ -1,51 +1,41 @@
 # Ramses Changelog
 
-28.0.0-rc5
+28.0.0
 -------------------
-### Fixed <a name=28.0.0-rc5.Fixed></a>
-- Fixed renderer logging configuration caused by 2 logger instances
+### Added <a name=28.0.0.Added></a>
 
-28.0.0-rc4
--------------------
-### Changed <a name=28.0.0-rc4.Changed></a>
-- `ArrayResource` and `ArrayBuffer` use `size_t` instead of `uint32_t` for number of elements for consistency with other API and STL
-
-### Fixed <a name=28.0.0-rc4.Fixed></a>
-- Fixed abort() with trace logs enabled and API calls containing strings with format string characters ("{}")
-
-28.0.0-rc3
--------------------
-### Added <a name=28.0.0-rc3.Added></a>
-- added `ramses-viewer` tool. It replaces `ramses-scene-viewer` and `ramses-logic-viewer`
-- added `RenderBufferBinding` which can be used in logic to modify `RenderBuffer` properties before it is allocated on renderer
-- added `RamsesFrameworkConfig::setLoggingInstanceName` to set a global instance name used as prefix in all Ramses logs
-
-### Changed <a name=28.0.0-rc3.Changed></a>
-- Headless shared lib always gets built
-- removed automatic validation when saving scene to a file (also removed the parameter from SaveFileConfig)
-- Modernized `MipLevelData` and `CubeMipLevelData`. Data are no longer stored with raw pointers
-  - Updated `RamsesUtils::GenerateMipMapsTexture2D` and `RamsesUtils::GenerateMipMapsTextureCube` to return a pointer of vector of the respective mip level data
-  - Updated `RamsesUtils::DeleteGeneratedMipMaps` for deleting the vector pointers
-- `Texture2DBuffer::updateData` now takes std::bytes
-- `Scene::saveToFile` implicitly updates all logic engine instances and flushes the scene before saving, the method is therefore no longer const
-
-### Removed <a name=28.0.0-rc3.Removed></a>
-- removed `ramses-scene-viewer` - use `ramses-viewer` instead
-- removed `ramses-logic-viewer` - use `ramses-viewer` instead
-- removed `ramses-logic-viewer-headless` - use `ramses-viewer-headless` instead
-- removed cmake option `ramses-sdk_BUILD_HEADLESS_SHARED_LIB` for enabling headless shared lib since it always gets built now
-
-28.0.0-rc2
--------------------
-### Added <a name=28.0.0-rc2.Added></a>
-
+- Integrated Ramses logic
+  - If you want to exclude logic, disable it over CMake (ramses-sdk_ENABLE_LOGIC=OFF)
+  - The version which was merged is 1.4.2. You can find the changelog/docs of Logic [here](https://ramses-logic.readthedocs.io/en/v1.4.2/)
+  - Moved all types from `rlogic` namespace to `ramses` namespace
+- Added support for feature levels. RamsesFramework has to be constructed with a feature level specified
+  (using RamsesFrameworkConfig), see EFeatureLevel for more information.
+  - Added `RamsesFramework::getFeatureLevel` to easily query EFeatureLevel
+- Unified math types usage across API to use GLM aliases: vec2/3/4f, vec2/3/4i, matrix22/33/44f, quat
+- Added support for rotation by quaternion: `Node::setRotation(const quat&)`, `Node::getRotationType`
+- Added `DisplayConfig::setDeviceType()` and `DisplayConfig::getDeviceType()` to select device type for display creation
+- Added `DisplayConfig::setWindowType()` and `DisplayConfig::getWindowType()` to select window type for display creation
+- Added `ramses-viewer`, `ramses-viewer-headless` (replaces `ramses-scene-viewer`, `ramses-logic-viewer`, `ramses-logic-viewer-headless`)
+  - Default GUI mode changed to `overlay` (`--no-offscreen` in former ramses-logic-viewer)
+  - Added support for multiple logic engines per scene. Legacy lua configuration files need to be changed like this:
+    - replace `rlogic.screenshot` by `R.screenshot`
+    - replace `rlogic.views` by `R.views`
+    - replace `rlogic.` by `R.logic().` or `R.logic[<name>].`
+  - added font settings
+  - renamed some command line options:
+    - `--no-validation`: removed short option (-nv)
+    - `--no-skub`: removed short option (-ns)
+    - Renamed `-x,--screenshot-file` to `-x,--screenshot`
+    - Scene file can be applied as positional argument
+- Added other data types used in API to EDataType enum: EDataType::Int32, EDataType::Vector2/3/4I, EDataType::Matrix22/33/44F
+- Added `RenderBufferBinding` which can be used in logic to modify `RenderBuffer` properties before it is allocated on renderer
+- Added `RamsesFrameworkConfig::setLoggingInstanceName` to set a global instance name used as prefix in all Ramses logs
 - Added periodic statistics logs with more details and `EStatisticsLogMode` to select the log mode
   - If detailed statistics is selected, the slowest executed nodes are shown
-- Added support for creating renderer with iOS window
+- Added experimental support for creating renderer with iOS window
 - Added native support for bool uniforms, no need to use int32_t anymore to set them
-  - existing application code using `Appearance::setInputValue` with `int32_t` type to set boolean shader uniforms must change to use `bool` type now!
-- Supported bool for the data container `ramses::DataObject`
-- Added `RamsesFramework::getFeatureLevel()` to easily query EFeatureLevel
+  - Existing application code using `Appearance::setInputValue` with `int32_t` type to set boolean shader uniforms must change to use `bool` type now!
+- Added support for `bool` type in data container `ramses::DataObject`
 - Added `RamsesClient::getRamsesFramework()` to be able to get reference to `RamsesFramework` from `RamsesClient`
   - this can be used for example to get feature level just by having a `Scene` instance: myScene.getRamsesClient().getRamsesFramework().getFeatureLevel()
 - Added `SceneObject::getScene()` to get reference to owning `Scene` from any object created from that Scene
@@ -54,17 +44,20 @@
 - Added a non-const version of `Property::getIncomingLink()` and `Property::getOutgoingLink()`
 - Added support for 16bit and 32bit depth render buffers: `ERenderBufferFormat::Depth16`, `ERenderBufferFormat::Depth32`
 - Added common cast operators for ramses and logic objects: `T* RamsesObject::as<T>()` `T ramses::object_cast<T>(RamsesObject*)`
+- Added ramses-sdk_TEXT_SUPPORT, a CMake option to disable text support.
+  - Disabled by default on iOS and MacOS builds.
+  - Other platforms remain unaffected by the option.
+- Exposed stream buffer API (previously available only via DCSM)
+  - Added `RamsesRenderer::createStreamBuffer` and `RamsesRenderer::destroyStreamBuffer`.
+  - Added `RendererSceneControl::linkStreamBuffer` and corresponding callback `IRendererSceneControlEventHandler::streamBufferLinked`.
+- Added options to RamsesFrameworkConfig API that previously required command line parsing
+- Added [[nodiscard]] flag for const getters.
 
-### Changed <a name=28.0.0-rc2.Changed></a>
+### Changed <a name=28.0.0.Changed></a>
 
-- Modernized mipLevelData from C-style array to vector for `Scene::createTexture2D()`, `Scene::createTexture3D()` and `Scene::createTextureCube()`
-- Scene::findObject now also searches for logic objects in all existing logic engines
-- Switched from fmt 7.0.1 to 10.1.1
-- Switched from google-benchmark 1.5.2 to 1.8.3
-- Switched from google-flatbuffers 1.12.0 to 23.5.9
-- LogicEngine is now part of Scene and can only be created using Scene::createLogicEngine
+- LogicEngine is now part of Scene and can only be created using `Scene::createLogicEngine`
   - LogicEngine is now a SceneObject of type ERamsesObjectType::LogicEngine and its lifecycle is managed by Scene as for any other SceneObject. LogicEngine is no longer a move-able type.
-  - removed the ramses::Scene argument from all loading functions in LogicEngine: loadFromFile, loadFromFileDescriptor, loadFromBuffer (is now implicit)
+  - Removed the ramses::Scene argument from all loading functions in LogicEngine: loadFromFile, loadFromFileDescriptor, loadFromBuffer (is now implicit)
 - LogicObject now derives from SceneObject and therefore RamsesObject
   - `LogicObject::getId` is renamed to `LogicObject::getLogicObjectId`
   - `LogicObject::setName/getName` are removed, methods with same name and functionality (but different return type!) are in base class RamsesObject
@@ -72,14 +65,24 @@
 - RamsesObject.h and RamsesObjectTypes.h moved from `client` include folder to `framework`, update include paths accordingly
 - `RamsesObject::getName` returns `std::string_view` instead of `const char*`
 - Reworked API error handling for all public Ramses classes:
-  - removed `status_t`, `StatusOK`, `StatusObject::getStatusMessage`, `LogicEngine::getErrors`, `ErrorData` and the whole `StatusObject` class
-  - all API methods that can fail (at API call time) return `bool` (true for success)
-  - errors are now collected centrally in `RamsesFramework`
+  - Removed `status_t`, `StatusOK`, `StatusObject::getStatusMessage`, `LogicEngine::getErrors`, `ErrorData` and the whole `StatusObject` class
+  - All API methods that can fail (at API call time) return `bool` (true for success)
+  - Errors are now collected centrally in `RamsesFramework`
   - `RamsesFramework::getLastError` can be used to get the last error that occurred (as optional), calling it will clear the error
-  - configs and other not managed objects (`RamsesFrameworkConfig`, `RendererConfig`, `DisplayConfig`,`SceneConfig`, `RenderTargetDescription`, `EffectDescription`, `EffectInput`)
+  - Configs and other not managed objects (`RamsesFrameworkConfig`, `RendererConfig`, `DisplayConfig`,`SceneConfig`, `RenderTargetDescription`, `EffectDescription`, `EffectInput`)
     no longer inherit from `StatusObject`. Their methods also return `bool` but error messages are only logged (not tracked with `getLastError`).
   - `RenderTargetDescription::addRenderBuffer` has optional argument to get human readable description of error if failed
 - Export whole API classes in shared libs, instead of exporting only public functions
+- Headless shared lib always gets built
+- `Scene::saveToFile` implicitly updates all logic engine instances and flushes the scene before saving, the method is therefore no longer const
+- `Scene::findObject` now also searches for logic objects in all existing logic engines
+- Updated fmt from 7.0.1 to 10.1.1
+- Updated google-benchmark from 1.5.2 to 1.8.3
+- Updated google-flatbuffers from 1.12.0 to 23.5.9
+- Upgraded the minimum version of the C++ standard in Ramses to 17.
+  - All modern compilers support C++ 17 meanwhile.
+  - Some of the dependencies of Ramses have also switched to C++17.
+  - Some tools and linters work better and detect more issues with a higher version of the standard.
 - Changed default publishing mode of scenes from EScenePublicationMode::LocalAndRemote to EScenePublicationMode::LocalOnly
   - local-only scenes cannot be sent over network, as the name suggests
   - local-only scenes must be periodically flushed in order to get to Ready/Rendered state if using RendererSceneControl
@@ -95,47 +98,58 @@
   - Renderer API headers are found under "ramses/renderer"
   - Added a script scripts/migrate_to_28_0_0.py that can migrate all includes in a codebase to new format
 - Forbade to use the default constructors of `UniformInput` and `AttributeInput` to create objects but objects can be
-  - created via copy and move constructors, or
-  - obtained via `getUniformInput`, `getAttributeInput`, `findUniformInput`, and `findAttributeInput`
+  - Created via copy and move constructors, or
+  - Obtained via `getUniformInput`, `getAttributeInput`, `findUniformInput`, and `findAttributeInput`
 - Changed to return `optional<UniformInput>` or `optional<AttributeInput>` objects in `getUniformInput`, `getAttributeInput`, `findUniformInput`, and `findAttributeInput`
   - Removed `EffectInput::isValid` because `UniformInput` and `AttributeInput` objects are always valid now
   - Changed `EffectInput::getDataType` to return `EDataType` instead of `optional<EDataType>`
 - DisplayConfig::validate produces warnings or errors if suboptimal or wrong settings are set, e.g., incompatible window and device types are set
-- Remove the 4096 upper limit of offscreen buffer size in RamsesRenderer. The buffer size is limited by the OpenGL driver.
 - Changed LogHandlerFunc to use `std::string_view` instead of `const std::string&`
 - ramses-logic logs are output to DLT (context 'RCLI')
-- Changed clear flags parameters from `uint32_t` to `ramses::ClearFlags` (`ramses::Flags<ramses::EClearFlag>`)
 - Remove cmake option `ramses-sdk_BUILD_IVI_TEST_APPS`
   - ivi-gears and ivi-simple-dmabuf-egl are now controlled with option for building tools
 - Remove check for cmake variable `ramses-sdk_DISABLE_WAYLAND_IVI_EXTENSION`. The extensions are built if the required
   dependencies are available
-- Changed key modifier flags parameters from `uint32_t`to `ramses::KeyModifiers` (`ramses::Flags<ramses::EKeyModifier>`)
 - Moved `ramses-client-api/TextureEnums.h` to `ramses/framework/TextureEnums.h`
 - Moved `ramses-client-api/ERotationType.h` to `ramses/framework/ERotationType.h`
 - Moved `ramses-client-api/EVisibilityMode.h` to `ramses/framework/EVisibilityMode.h`
 - Moved `ramses-client-api/EScenePublicationMode.h` to `ramses/framework/EScenePublicationMode.h`
+- Replaced `Scene::findObjectByName(..)`/`Scene::findObjectById(..)` by `T* Scene::findObject<T>(..)`
+- Replaced `LogicEngine::findByName(..)`/`LogicEngine::findLogicObjectById(..)` by `T* LogicEngine::findObject<T>(..)`
+- Added SaveFileConfig parameter to `ramses::Scene::saveToFile()`, removed compression flag
+  - Compression flag is part of SaveFileConfig and is disabled by default
+- Changed interfaces to load/create scenes: Added sceneId and verification flag to `ramses::SceneConfig`
+- Changed scene validation interface to report a list of messages (see `ramses::RamsesObject::validate(ValidationReport&)`)
+- Replaced `const std::vector<WarningData>& LogicEngine::validate()` by common Ramses validation (`ramses::RamsesObject::validate(ValidationReport&)`)
+- The scene validation will not return `StatusOK` if effects have shader warnings, and these warnings will appear in the validation report with a severity of `EValidationSeverity::Warning`
+- Remove the 4096 upper limit of offscreen buffer size in RamsesRenderer. The buffer size is limited by the OpenGL driver.
+- Draw mode is checked against geometry shader input type (Appearance::setDrawMode) also when effect was loaded from file
+  (previously it was checked only when effect created in same session without loading).
+- Modernized `MipLevelData` and `CubeMipLevelData`. Data are no longer stored with raw pointers
+  - Updated `RamsesUtils::GenerateMipMapsTexture2D` and `RamsesUtils::GenerateMipMapsTextureCube` to return a pointer of vector of the respective mip level data
+  - Updated `RamsesUtils::DeleteGeneratedMipMaps` for deleting the vector pointers
+- `Texture2DBuffer::updateData` now takes std::bytes
+- Modernized mipLevelData from C-style array to vector for `Scene::createTexture2D()`, `Scene::createTexture3D()` and `Scene::createTextureCube()`
+- Changed clear flags parameters from `uint32_t` to `ramses::ClearFlags` (`ramses::Flags<ramses::EClearFlag>`)
+- Changed key modifier flags parameters from `uint32_t` to `ramses::KeyModifiers` (`ramses::Flags<ramses::EKeyModifier>`)
 - MeshNode instance count can be zero (nothing drawn) to match OpenGL behavior
 - OpenGL drawcalls are always using glDrawElementsInstanced even for instance count 1
 - `ETextureAddressMode` enum is now explicitly typed to uint8_t
 - `ETextureSamplingMethod` enum is now explicitly typed to uint8_t
 - `ETextureFormat` enum is now explicitly typed to uint8_t
-- The scene validation will not return `StatusOK` if effects have shader warnings, and these warnings will appear in the validation report with a severity of `EValidationSeverity::Warning`
 - `DisplayConfig::setX11WindowHandle`: changed parameter from `unsigned long` to `X11WindowHandle`
 - `IFontInstance::getAllSupportedCharacters()`: changed return type set from `unsigned long` to `char32_t`
-- Replaced `Scene::findObjectByName(..)`/`Scene::findObjectById(..)` by `T* Scene::findObject<T>(..)`
-- Replaced `LogicEngine::findByName(..)`/`LogicEngine::findLogicObjectById(..)` by `T* LogicEngine::findObject<T>(..)`
-- Changed scene validation interface to report a list of messages (see `ramses::RamsesObject::validate(ValidationReport&)`)
-- Replaced `const std::vector<WarningData>& LogicEngine::validate()` by common Ramses validation (`ramses::RamsesObject::validate(ValidationReport&)`)
-- Added SaveFileConfig parameter to `ramses::Scene::saveToFile()`, removed compression flag
-  - compression flag is part of SaveFileConfig and is disabled by default
-  - by default `saveToFile()` will fail, if the scene has validation errors (warnings will be ignored)
-- Changed interfaces to load/create scenes: Added sceneId and verification flag to `ramses::SceneConfig`
-- ramses-scene-viewer:
-  - changed default gui mode to "overlay" (no offscreen buffer)
-- ramses-logic-viewer:
-  - disabled offscreen rendering by default, cli option is changed from `--no-offscreen` to `--offscreen`
+- Renamed standalone renderer executable to `ramses-renderer-standalone` and renamed some command line options:
+  - Renamed -nd,--numDisplays to --displays
+  - Renamed -sm,--sceneMappings to -m,--scene-mapping
+  - Renamed -nomap,--disableAutoMapping to --no-auto-show
+  - -skub,--skub: removed short option(-skub)
+- Ramses shared lib with renderer is always called ramses-shared-lib (without platform dependant postfix)
+  - Contents are controlled using cmake variables ramses-sdk_ENABLE_WINDOW_TYPE_*
+- Ramses client only shared lib is renamed to ramses-shared-lib-headless
+- Ramses examples, demos, tests and tools are enabled by default only if ramses is a top level project, otherwise
+  they must be explicitly enabled using respective cmake options
 - Renamed ramses::EClearFlags to ramses::EClearFlag
-- Renamed standalone renderer executable to `ramses-renderer-standalone`
 - Renamed `ERamsesObjectType::ArrayBufferObject` to `ERamsesObjectType::ArrayBuffer` to match the class name
 - Renamed the classes for bindings to Ramses objects
   - Renamed `RamsesAppearanceBinding` to `AppearanceBinding`
@@ -145,101 +159,14 @@
   - Renamed `RamsesRenderGroupBinding` to `RenderGroupBinding` and `RamsesRenderGroupBindingElements` to `RenderGroupBindingElements`
   - Renamed `RamsesMeshNodeBinding` to `MeshNodeBinding`
 - Renamed `GeometryBinding` to `Geometry`
-
-### Removed <a name=28.0.0-rc2.Removed></a>
-
-- Removed `IRendererResourceCache`, `DefaultRendererResourceCache` and `RendererConfig::setRendererResourceCache()`
-- Removed `resourceCacheFlag_t` type and updated relavant classes and implementations
-  - Removed `ResourceCacheFlag_DoNotCache`
-  - Removed resourceCacheFlag_t optional argument from all Scene::create*Resource
-  - Removed `resourceCacheFlagTag`
-- Removed default rotation convention from Node::setRotation(vec3f,rotationType)
-- Removed support for 32-bit architectures.
-- Removed `LogicEngine::setStatisticsLogLevel`: periodic log level is always set to Info
-- Removed obsolete `RamsesLogicVersion`, use `RamsesVersion` instead
-- Removed `SceneObject::getSceneId()`, use `SceneObject::getScene().getSceneId()` instead
-- Removed `DisplayConfig::keepEffectsUploaded()` and `--delete-effects` cli option. Effects are always kept uploaded now.
-- Removed `DisplayConfig::setWindowBorderless()` and `--borderless` cli option.
-- Removed ERamsesObjectType::NUMBER_OF_TYPES
-- Removed ETextureFormat::Invalid
-- Removed ramses::AllFeatureLevels array
-- Removed ramses-logic logging API:
-  - `Logger::SetVerbosityLimit()`: Use RamsesFrameworkConfig to set loglevel for context 'RCLI' (Info by default)
-  - `Logger::SetLogHandler()`: Use RamsesFramework::SetLogHandler()
-  - `Logger::SetDefaultLogging()`: Use RamsesFrameworkConfig::setLogLevelConsole(ELogLevel::Off) to disable console output
-- Removed cmake option `ramses-sdk_BUILD_DAEMON`. Now `ramses-deamon` is controlled by cmake option for tools `ramses-sdk_BUILD_TOOLS`
-- Removed `ERenderBufferType` from all API (removed RenderBuffer::getBufferType, changed Scene::createRenderBuffer)
-- Removed `ramses::RamsesUtils::TryConvert<T>`. Use `ramses::object_cast<T>` instead.
-- Removed deprecated method overload `LogicEngine::createLuaInterface` without LuaConfig parameter in favor of providing an empty `LuaConfig` as the default argument.
-  Now modules declaration will always be verified (also when not explicitly providing `LuaConfig`).
-- Removed `LogicEngine::saveToFile()`, `LogicEngine::load*` and `LogicEngine::GetFeatureLevelFrom*` methods. Logic is stored in the ramses scene.
-- Removed logic object ID and related API: `LogicObject::getLogicObjectId`, `LogicEngine::findObjectById`
-  - use sceneObjectId_t instead as a unique numerical Id for objects
-- Removed `logicfile` command line parameter from ramses-logic-viewer
-
-### Fixed <a name=28.0.0-rc2.Fixed></a>
-
-- RamsesMeshNodeBinding now fails update if it receives invalid value (e.g. negative index count)
-- Fixed RamsesNodeBinding visibility property inconsistency if saved with Ramses node 3-state visibility as 'Off'
-  but properties 'enable'=false and 'visible'=true
-- Added checks to prevent crash when logging due to Fmt issue (triggered by some string_views on Ubuntu 20)
-
-28.0.0-rc1
--------------------
-### Added <a name=28.0.0-rc1.Added></a>
-
-- Added Ramses logic to the Ramses repository
-  - If you want to exclude logic, disable it over CMake (ramses-sdk_ENABLE_LOGIC=OFF)
-  - The version which was merged is 1.4.2. You can find the changelog/docs of Logic [here](https://ramses-logic.readthedocs.io/en/v1.4.2/)
-  - Moved all types from rlogic namespace to ramses namespace
-- Added support for feature levels, RamsesFramework can now be constructed with a feature level specified
-  (using RamsesFrameworkConfig), see EFeatureLevel for more information.
-- Added ramses-sdk_TEXT_SUPPORT, a CMake option to disable text support.
-  - Disabled by default on iOS and MacOS builds.
-  - Other platforms remain unaffected by the option.
-- Added [[nodiscard]] flag for const getters.
-- Added createStreamBuffer and destroyStreamBuffer to RamsesRenderer.
-- Added linkStreamBuffer to RendererSceneControl, and streamBufferLinked to IRendererSceneControlEventHandler.
-- Added glm math type aliases: vec2/3/4f, vec2/3/4i, matrix22/33/44f, quat
-- Added options to RamsesFrameworkConfig API that previously required command line parsing
-- Added rotation by quaternion: ramses::Node::setRotation(const quat&)
-- Added Node::getRotationType()
-- Added DisplayConfig::setDeviceType() and DisplayConfig::getDeviceType() to select device type for display creation
-- Added DisplayConfig::setWindowType() and DisplayConfig::getWindowType() to select window type for display creation
-
-### Changed <a name=28.0.0-rc1.Changed></a>
-
-- RamsesFrameworkConfig constructor needs a mandatory argument to specify feature level (see EFeatureLevel for more information)
-- Replaced uint32_t with size_t throughout the API where applicable: `Appearance`, `Effect`, `EffectDescription`, `Node`, `RamsesUtils`, `Scene`, `Texture2DBuffer`, `UniformInput`,  `IRendererSceneControlEventHandler::objectsPicked()`.
-- Ramses shared lib with renderer is always called ramses-shared-lib (without platform dependant postfix)
-  - Contents are controlled using cmake variables ramses-sdk_ENABLE_WINDOW_TYPE_*
-- Ramses client only shared lib is renamed to ramses-shared-lib-headless
-- Ramses examples, demos, tests and tools are enabled by default only if ramses is a top level project, otherwise
-  they must be explicitly enabled using respective cmake options
+- Replaced uint32_t with size_t in all the API for parameters describing amount or number of elements (for better match with STL containers):
+  - `Appearance`, `Effect`, `EffectDescription`, `Node`, `RamsesUtils`, `Scene`, `Texture2DBuffer`, `UniformInput`,
+    `ArrayResource`, `ArrayBuffer`, `IRendererSceneControlEventHandler::objectsPicked()`.
 - Changed enums to enum classes.
 - Renamed enum values for `ramses::ERendererEventResult`: OK -> Ok, FAIL -> Failed, INDIRECT -> Indirect
 - Replaced all enum to string methods by: `const char* ramses::toString(T)`
-- Upgraded the minimum version of the C++ standard in Ramses to 17.
-  - All modern compilers support C++ 17 meanwhile.
-  - Some of the dependencies of Ramses have also switched to C++17.
-  - Some tools and linters work better and detect more issues with a higher version of the standard.
-  - Draw mode is checked against geometry shader input type (Appearance::setDrawMode) also when effect was loaded from file
-    (previously it was checked only when effect created in same session without loading).
-- Modified ramses-stream-viewer command line options:
-  - renamed -fps,--framesPerSecond to --fps
 - Stream buffers can be linked even if content from wayland surface is not available (yet).
 - Stream buffers do not get unlinked from texture consumers if content from wayland surface becomes unavailable.
-- ramses-scene-viewer: renamed command line options:
-  - -nv,--no-validation: removed short option (-nv)
-  - -ns,--no-skub: removed short option (-ns)
-  - renamed -vd,--validation-output-directory to --output
-  - renamed -x,--screenshot-file to -x,--screenshot
-  - scene file can be applied as positional argument
-- ramses standalone renderer: renamed command line options:
-  - renamed -nd,--numDisplays to --displays
-  - renamed -sm,--sceneMappings to -m,--scene-mapping
-  - renamed -nomap,--disableAutoMapping to --no-auto-show
-  - -skub,--skub: removed short option(-skub)
 - Functions that were kept static for API/ABI backcompatibility became proper member methods:
   - DisplayConfig::setAsyncEffectUploadEnabled, DisplayConfig::setDepthStencilBufferType
   - Effect::hasGeometryShader, Effect::getGeometryShaderInputType
@@ -270,16 +197,14 @@
 - ERamsesObjectType_DataBufferObject renamed to ERamsesObjectType_ArrayBufferObject to match the class ArrayBuffer name
 - Removed EEffectInputDataType used in UniformInput and AttributeInput, EDataType is used instead
   - Uniform/AttributeInput::getDataType now returns std::optional for case when the input is not valid (not or wrongly initialized)
-- Added other data types used in API to EDataType enum: EDataType::Int32, EDataType::Vector2/3/4I, EDataType::Matrix22/33/44F
 - Scene::createArrayResource must be used with concrete data type instead of void ptr and data type enum
-  - example how to port old code:  float twoTriangles[6]={..}; myScene.createArrayResource(EDataType::Vector3F, 2, twoTriangles);
+  - Example how to port old code:  float twoTriangles[6]={..}; myScene.createArrayResource(EDataType::Vector3F, 2, twoTriangles);
     to new code:                   vec3f twoTriangles[2]={..}; myScene.createArrayResource(2, twoTriangles);
-  - make sure to use the right math type to determine the ArrayResource data type (e.g. no floats to represent vecX, which was typical before)
-- LogicEngine instance now has mandatory argument to specify feature level (use EFeatureLevel::Latest if do not care and want all features)
+  - Make sure to use the right math type to determine the ArrayResource data type (e.g. no floats to represent vecX, which was typical before)
 - DataObject class can now hold any of the data types previously held by the removed DataXXX classes
-  - example how to port old code:  DataVector2I* obj = myScene.createDataVector2I(); obj->setValue(1, 2);
+  - Example how to port old code:  DataVector2I* obj = myScene.createDataVector2I(); obj->setValue(1, 2);
     to new code:                   DataObject* obj = myScene.createDataObject(EDataType::Vector2I); obj->setValue(vec2i{ 1, 2 });
-  - make sure to use the right math type when setting or getting the value
+  - Make sure to use the right math type when setting or getting the value
 - Node::getModelMatrix() / Node::getInverseModelMatrix() use matrix44f as argument
 - Replaced std::array type aliases by glm: matrix44f, vec2f, vec3f, vec4f, vec2i, vec3i, vec4i
 - LogicEngine::getTotalSerializedSize and getSerializedSize can now be set to use a specific ELuaSavingMode for size calculation
@@ -289,14 +214,55 @@
 - The const char* parameters of the public API are replaced by std::string_view.
 - The pointers to data memory (std::uint8_t*, unsigned char*) of the public API are replaced by std::byte*.
 
-### Removed <a name=28.0.0-rc1.Removed></a>
+### Fixed <a name=28.0.0.Fixed></a>
 
+- Fixed possible crash if Texture2DBuffer is recreated with smaller size
+- RamsesMeshNodeBinding now fails update if it receives invalid value (e.g. negative index count)
+- Fixed RamsesNodeBinding visibility property inconsistency if saved with Ramses node 3-state visibility as 'Off'
+  but properties 'enable'=false and 'visible'=true
+- Fixed potential renderer crash when having more than one displays in non-threaded mode and destroying all but one due to missing context enable
+- Fixed race condition when instantiating multiple RamsesFramework instances in different threads
+- RenderGroup no more reports 'contains no meshnodes' validation warning if it has nested RenderGroups with MeshNode(s)
+
+### Removed <a name=28.0.0.Removed></a>
+
+- Removed automatic validation when saving scene to a file (also removed the parameter from SaveFileConfig)
+- Removed cmake option `ramses-sdk_BUILD_HEADLESS_SHARED_LIB` for enabling headless shared lib since it always gets built now
+- Removed `IRendererResourceCache`, `DefaultRendererResourceCache` and `RendererConfig::setRendererResourceCache()`
+- Removed `resourceCacheFlag_t` type and updated relavant classes and implementations
+  - Removed `ResourceCacheFlag_DoNotCache`
+  - Removed resourceCacheFlag_t optional argument from all Scene::create*Resource
+  - Removed `resourceCacheFlagTag`
+- Removed default rotation convention from Node::setRotation(vec3f,rotationType)
+- Removed support for 32-bit architectures.
+- Removed `LogicEngine::setStatisticsLogLevel`: periodic log level is always set to Info
+- Removed obsolete `RamsesLogicVersion`, use `RamsesVersion` instead
+- Removed `SceneObject::getSceneId()`, use `SceneObject::getScene().getSceneId()` instead
+- Removed `DisplayConfig::keepEffectsUploaded()` and `--delete-effects` cli option. Effects are always kept uploaded now.
+- Removed `DisplayConfig::setWindowBorderless()` and `--borderless` cli option.
+- Removed ERamsesObjectType::NUMBER_OF_TYPES
+- Removed ETextureFormat::Invalid
+- Removed ramses::AllFeatureLevels array
+- Removed ramses-logic logging API:
+  - `Logger::SetVerbosityLimit()`: Use RamsesFrameworkConfig to set loglevel for context 'RCLI' (Info by default)
+  - `Logger::SetLogHandler()`: Use RamsesFramework::SetLogHandler()
+  - `Logger::SetDefaultLogging()`: Use RamsesFrameworkConfig::setLogLevelConsole(ELogLevel::Off) to disable console output
+- Removed cmake option `ramses-sdk_BUILD_DAEMON`. Now `ramses-deamon` is controlled by cmake option for tools `ramses-sdk_BUILD_TOOLS`
+- Removed `ERenderBufferType` from all API (removed RenderBuffer::getBufferType, changed Scene::createRenderBuffer)
+- Removed `ramses::RamsesUtils::TryConvert<T>`. Use `ramses::object_cast<T>` instead.
+- Removed deprecated method overload `LogicEngine::createLuaInterface` without LuaConfig parameter in favor of providing an empty `LuaConfig` as the default argument.
+  Now modules declaration will always be verified (also when not explicitly providing `LuaConfig`).
+- Removed `LogicEngine::saveToFile()`, `LogicEngine::load*` and `LogicEngine::GetFeatureLevelFrom*` methods. Logic is stored in the ramses scene.
+- Removed logic object ID and related API: `LogicObject::getLogicObjectId`, `LogicEngine::findObjectById`
+  - Use sceneObjectId_t instead as a unique numerical Id for objects
+- Removed `logicfile` command line parameter from ramses-logic-viewer
 - Removed cmake option ramses-sdk_CONSOLE_LOGLEVEL (use RamsesFrameworkConfig to configure log levels)
 - Removed environment variables CONSOLE_LOGLEVEL and RAMSES_LOGLEVEL (use RamsesFrameworkConfig to configure log levels)
 - Removed RamsesFramework::SetConsoleLogLevel (use RamsesFrameworkConfig::setLogLevelConsole)
 - Removed AnimationSystem and all related classes, animations moved from Ramses to Ramses Logic.
 - Removed text generator.
 - Removed visual frame profiler ('fp' Ramsh command).
+- Removed SomeIP support.
 - Removed tools for generating and packing effects from shaders (ramses-utils, ramses-resource-tools, ramses-shader-tools).
 - Removed ramses-packet-player.
 - Removed DCSM support and all related API.
@@ -305,9 +271,9 @@
   - Ramses 27 is the last official release which supports Integrity.
 - Removed RamsesFramework(argc, argv) constructor, use RamsesFrameworkConfig instead.
 - Removed support for warping:
-  - removed DisplayConfig::enableWarpingPostEffect()
-  - removed IRendererEventHandler::warpingMeshDataUpdated()
-  - removed RamsesRenderer::updateWarpingMeshData()
+  - Removed DisplayConfig::enableWarpingPostEffect()
+  - Removed IRendererEventHandler::warpingMeshDataUpdated()
+  - Removed RamsesRenderer::updateWarpingMeshData()
 - Removed stream texture from client API. Renderer side stream buffers must be used for embedded compositing on wayland.
 - Removed RamsesFrameworkConfig(argc, argv), DisplayConfig(argc, argv), RendererConfig(argc, argv) constructors
 - Removed deprecated embedded compositor settings from RendererConfig (use DisplayConfig instead)
@@ -315,18 +281,10 @@
 - Removed legacy ZYX (left handed) rotation convention
   - Remove related APIs: Node::rotate, Node::setRotation(x,y,z) and Node::getRotation(x,y,z)
   - RamsesNode_setRotationNative in JNI Interface uses right-handed Euler_XYZ rotation convention
-- Removed rlogic::EFeatureLevel, ramses::EFeatureLevel is used in whole Ramses SDK instead
 - Removed all typed data object classes (DataInt32, DataFloat, DataVector2/3/4/f/i, DataMatrix22/33/44),
   all their functionality was moved into DataObject class (see Changed section)
-- Removed rlogic::ERotationType (replaced by ramses::ERotationType)
 - Removed rlogic::ELogMessageType (replaced by ramses::ELogLevel)
 - Removed deprecated enum ESceneResourceStatus
-
-### Fixed <a name=28.0.0-rc1.Fixed></a>
-
-- Fixed potential renderer crash when having more than one displays in non-threaded mode and destroying all but one due to missing context enable
-- Fixed race condition when instantiating multiple RamsesFramework instances in different threads
-- RenderGroup no more reports 'contains no meshnodes' validation warning if it has nested RenderGroups with MeshNode(s)
 
 ## Older releases
 

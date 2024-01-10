@@ -8,3 +8,4 @@ leak:calloc
 leak:embedded-compositing-rendering-tests
 leak:render-backend-tests
 leak:renderer-lifecycle-tests
+leak:ramses-shared-lib-tests

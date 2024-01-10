@@ -18,9 +18,9 @@ namespace ramses
     }
 
     /**
+    * @brief #ramses::TextureSamplerExternal is used to sample from external textures data when bound
+    *      to a #ramses::Appearance uniform input (#ramses::Appearance::setInputTexture called with #ramses::TextureSamplerExternal).
     * @ingroup CoreAPI
-    * @brief The #ramses::TextureSamplerExternal is used to sample from external textures data when bound
-    *      to a #ramses::Appearance uniform input (#ramses::Appearance::setInputTexture called with #ramses::TextureSamplerExternal)
     */
     class RAMSES_API TextureSamplerExternal : public SceneObject
     {

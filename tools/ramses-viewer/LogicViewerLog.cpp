@@ -27,21 +27,38 @@ namespace ramses::internal
         m_text.append(text);
     }
 
-    void LogicViewerLog::logInputs(ramses::LogicNode* obj, const PathVector& path)
+    void LogicViewerLog::logInputs(ramses::LogicEngine& logicEngine, ramses::LogicNode* obj, std::string_view ltn)
     {
-        const auto joinedPath = fmt::format("{}", fmt::join(path.begin(), path.end(), "."));
-        std::string prefix;
-        if ((m_settings.luaPreferObjectIds) || obj->getName().empty())
+        std::string collectionPath;
+        if (m_settings.luaPreferSimplified)
         {
-            prefix = fmt::format("{}[{}]", joinedPath, obj->getSceneObjectId().getValue());
+            collectionPath = fmt::format("{}{}.{}().{}", m_indent, LogicViewer::ltnRoot, LogicViewer::ltnLogic, ltn);
         }
-        else if (m_settings.luaPreferIdentifiers)
+        else if (m_settings.luaPreferObjectIds)
         {
-            prefix = fmt::format("{}.{}", joinedPath, obj->getName());
+            collectionPath = fmt::format("{}{}.{}[{}].{}", m_indent, LogicViewer::ltnRoot, LogicViewer::ltnLogic, logicEngine.getSceneObjectId().getValue(), ltn);
+        }
+        else if (m_settings.luaPreferIdentifiers && !logicEngine.getName().empty())
+        {
+            collectionPath = fmt::format(R"({}{}.{}.{}.{})", m_indent, LogicViewer::ltnRoot, LogicViewer::ltnLogic, logicEngine.getName(), ltn);
         }
         else
         {
-            prefix = fmt::format("{}[\"{}\"]", joinedPath, obj->getName());
+            collectionPath = fmt::format(R"({}{}.{}["{}"].{})", m_indent, LogicViewer::ltnRoot, LogicViewer::ltnLogic, logicEngine.getName(), ltn);
+        }
+
+        std::string objPath;
+        if ((m_settings.luaPreferObjectIds) || obj->getName().empty())
+        {
+            objPath = fmt::format("{}[{}]", collectionPath, obj->getSceneObjectId().getValue());
+        }
+        else if (m_settings.luaPreferIdentifiers)
+        {
+            objPath = fmt::format("{}.{}", collectionPath, obj->getName());
+        }
+        else
+        {
+            objPath = fmt::format("{}[\"{}\"]", collectionPath, obj->getName());
         }
         PathVector propertyPath;
         propertyPath.push_back(LogicViewer::ltnIN);
@@ -50,7 +67,7 @@ namespace ramses::internal
         {
             for (size_t i = 0U; i < prop->getChildCount(); ++i)
             {
-                logProperty(prop->getChild(i), prefix, propertyPath);
+                logProperty(prop->getChild(i), objPath, propertyPath);
             }
         }
     }

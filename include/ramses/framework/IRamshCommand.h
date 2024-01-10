@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2021 BMW AG
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,6 +19,7 @@ namespace ramses
     *
     * These commands can be registered with #ramses::RamsesFramework::addRamshCommand and will
     * receive callbacks triggered via console input or DLT injection.
+    * @ingroup CoreAPI
     */
     class RAMSES_API IRamshCommand
     {

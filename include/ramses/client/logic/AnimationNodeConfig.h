@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2022 BMW AG
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,7 +20,8 @@ namespace ramses::internal
 namespace ramses
 {
     /**
-    * Holds data and settings for #ramses::AnimationNode creation using #ramses::LogicEngine::createAnimationNode.
+    * Holds the data and settings for #ramses::AnimationNode creation using #ramses::LogicEngine::createAnimationNode.
+    * @ingroup LogicAPI
     */
     class RAMSES_API AnimationNodeConfig
     {

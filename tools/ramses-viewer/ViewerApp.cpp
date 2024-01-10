@@ -107,16 +107,12 @@ Loads and shows a ramses scene from the <ramsesfile>.
 
     ViewerApp::ExitCode ViewerApp::createLogicViewer(LogicViewer::ScreenshotFunc&& fScreenshot)
     {
-        // find first logic engine
-        // TODO: LogicViewer should handle all LogicEngine instances
-        SceneObjectIterator iter{*m_scene, ERamsesObjectType::LogicEngine};
-        auto logic = object_cast<LogicEngine*>(iter.getNext());
-        if (logic)
+        m_logicViewer = std::make_unique<LogicViewer>(*m_scene, fScreenshot);
+        if (!m_logicViewer->getLogicEngines().empty())
         {
-            m_logicViewer = std::make_unique<LogicViewer>(*logic, fScreenshot);
             return runLogicCliCommands();
         }
-
+        m_logicViewer.reset();
         return ExitCode::Ok;
     }
 
@@ -124,6 +120,7 @@ Loads and shows a ramses scene from the <ramsesfile>.
     {
         m_interactive = false;
         assert(m_logicViewer);
+        assert(!m_logicViewer->getLogicEngines().empty());
         if (m_luaFile.empty())
         {
             m_luaFile = fs::path(m_sceneFile).replace_extension("lua").string();

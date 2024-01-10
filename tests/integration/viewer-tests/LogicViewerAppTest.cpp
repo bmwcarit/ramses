@@ -40,56 +40,56 @@
 
 const auto defaultLuaFile = R"(function default()
     --Interfaces
-    rlogic.interfaces["myInterface"]["IN"]["paramFloat"].value = 0
+    R.logic[""].interfaces["myInterface"]["IN"]["paramFloat"].value = 0
     --Scripts
-    rlogic.scripts["allTypesScript"]["IN"]["paramBool"].value = false
-    rlogic.scripts["allTypesScript"]["IN"]["paramFloat"].value = 0
-    rlogic.scripts["allTypesScript"]["IN"]["paramInt32"].value = 0
-    rlogic.scripts["allTypesScript"]["IN"]["paramInt64"].value = 0
-    rlogic.scripts["allTypesScript"]["IN"]["paramString"].value = ''
-    rlogic.scripts["allTypesScript"]["IN"]["paramVec2f"].value = { 0, 0 }
-    rlogic.scripts["allTypesScript"]["IN"]["paramVec2i"].value = { 0, 0 }
-    rlogic.scripts["allTypesScript"]["IN"]["paramVec3f"].value = { 0, 0, 0 }
-    rlogic.scripts["allTypesScript"]["IN"]["paramVec3i"].value = { 0, 0, 0 }
-    rlogic.scripts["allTypesScript"]["IN"]["paramVec4f"].value = { 0, 0, 0, 0 }
-    rlogic.scripts["allTypesScript"]["IN"]["paramVec4i"].value = { 0, 0, 0, 0 }
-    rlogic.scripts["allTypesScript"]["IN"]["struct"]["nested"]["data1"].value = ''
-    rlogic.scripts["allTypesScript"]["IN"]["struct"]["nested"]["data2"].value = 0
+    R.logic[""].scripts["allTypesScript"]["IN"]["paramBool"].value = false
+    R.logic[""].scripts["allTypesScript"]["IN"]["paramFloat"].value = 0
+    R.logic[""].scripts["allTypesScript"]["IN"]["paramInt32"].value = 0
+    R.logic[""].scripts["allTypesScript"]["IN"]["paramInt64"].value = 0
+    R.logic[""].scripts["allTypesScript"]["IN"]["paramString"].value = ''
+    R.logic[""].scripts["allTypesScript"]["IN"]["paramVec2f"].value = { 0, 0 }
+    R.logic[""].scripts["allTypesScript"]["IN"]["paramVec2i"].value = { 0, 0 }
+    R.logic[""].scripts["allTypesScript"]["IN"]["paramVec3f"].value = { 0, 0, 0 }
+    R.logic[""].scripts["allTypesScript"]["IN"]["paramVec3i"].value = { 0, 0, 0 }
+    R.logic[""].scripts["allTypesScript"]["IN"]["paramVec4f"].value = { 0, 0, 0, 0 }
+    R.logic[""].scripts["allTypesScript"]["IN"]["paramVec4i"].value = { 0, 0, 0, 0 }
+    R.logic[""].scripts["allTypesScript"]["IN"]["struct"]["nested"]["data1"].value = ''
+    R.logic[""].scripts["allTypesScript"]["IN"]["struct"]["nested"]["data2"].value = 0
     --Node bindings
-    rlogic.nodeBindings["myNode"]["IN"]["visibility"].value = true
-    rlogic.nodeBindings["myNode"]["IN"]["translation"].value = { 0, 0, 0 }
-    rlogic.nodeBindings["myNode"]["IN"]["scaling"].value = { 1, 1, 1 }
-    rlogic.nodeBindings["myNode"]["IN"]["enabled"].value = true
+    R.logic[""].nodeBindings["myNode"]["IN"]["visibility"].value = true
+    R.logic[""].nodeBindings["myNode"]["IN"]["translation"].value = { 0, 0, 0 }
+    R.logic[""].nodeBindings["myNode"]["IN"]["scaling"].value = { 1, 1, 1 }
+    R.logic[""].nodeBindings["myNode"]["IN"]["enabled"].value = true
     --Appearance bindings
-    rlogic.appearanceBindings["myAppearance"]["IN"]["green"].value = 0
-    rlogic.appearanceBindings["myAppearance"]["IN"]["blue"].value = 0
+    R.logic[""].appearanceBindings["myAppearance"]["IN"]["green"].value = 0
+    R.logic[""].appearanceBindings["myAppearance"]["IN"]["blue"].value = 0
     --Camera bindings
-    rlogic.cameraBindings["myCamera"]["IN"]["viewport"]["offsetX"].value = 0
-    rlogic.cameraBindings["myCamera"]["IN"]["viewport"]["offsetY"].value = 0
-    rlogic.cameraBindings["myCamera"]["IN"]["viewport"]["width"].value = 800
-    rlogic.cameraBindings["myCamera"]["IN"]["viewport"]["height"].value = 800
-    rlogic.cameraBindings["myCamera"]["IN"]["frustum"]["nearPlane"].value = 0.1
-    rlogic.cameraBindings["myCamera"]["IN"]["frustum"]["farPlane"].value = 100
-    rlogic.cameraBindings["myCamera"]["IN"]["frustum"]["fieldOfView"].value = 20
-    rlogic.cameraBindings["myCamera"]["IN"]["frustum"]["aspectRatio"].value = 1
+    R.logic[""].cameraBindings["myCamera"]["IN"]["viewport"]["offsetX"].value = 0
+    R.logic[""].cameraBindings["myCamera"]["IN"]["viewport"]["offsetY"].value = 0
+    R.logic[""].cameraBindings["myCamera"]["IN"]["viewport"]["width"].value = 800
+    R.logic[""].cameraBindings["myCamera"]["IN"]["viewport"]["height"].value = 800
+    R.logic[""].cameraBindings["myCamera"]["IN"]["frustum"]["nearPlane"].value = 0.1
+    R.logic[""].cameraBindings["myCamera"]["IN"]["frustum"]["farPlane"].value = 100
+    R.logic[""].cameraBindings["myCamera"]["IN"]["frustum"]["fieldOfView"].value = 20
+    R.logic[""].cameraBindings["myCamera"]["IN"]["frustum"]["aspectRatio"].value = 1
     --RenderPass bindings
-    rlogic.renderPassBindings["myRenderPass"]["IN"]["enabled"].value = true
-    rlogic.renderPassBindings["myRenderPass"]["IN"]["renderOrder"].value = 0
-    rlogic.renderPassBindings["myRenderPass"]["IN"]["clearColor"].value = { 0, 0, 0, 1 }
-    rlogic.renderPassBindings["myRenderPass"]["IN"]["renderOnce"].value = false
+    R.logic[""].renderPassBindings["myRenderPass"]["IN"]["enabled"].value = true
+    R.logic[""].renderPassBindings["myRenderPass"]["IN"]["renderOrder"].value = 0
+    R.logic[""].renderPassBindings["myRenderPass"]["IN"]["clearColor"].value = { 0, 0, 0, 1 }
+    R.logic[""].renderPassBindings["myRenderPass"]["IN"]["renderOnce"].value = false
     --RenderGroup bindings
-    rlogic.renderGroupBindings["myRenderGroup"]["IN"]["renderOrders"]["myMeshNode"].value = 0
+    R.logic[""].renderGroupBindings["myRenderGroup"]["IN"]["renderOrders"]["myMeshNode"].value = 0
     --MeshNode bindings
-    rlogic.meshNodeBindings["myMeshNode"]["IN"]["vertexOffset"].value = 0
-    rlogic.meshNodeBindings["myMeshNode"]["IN"]["indexOffset"].value = 0
-    rlogic.meshNodeBindings["myMeshNode"]["IN"]["indexCount"].value = 3
-    rlogic.meshNodeBindings["myMeshNode"]["IN"]["instanceCount"].value = 1
+    R.logic[""].meshNodeBindings["myMeshNode"]["IN"]["vertexOffset"].value = 0
+    R.logic[""].meshNodeBindings["myMeshNode"]["IN"]["indexOffset"].value = 0
+    R.logic[""].meshNodeBindings["myMeshNode"]["IN"]["indexCount"].value = 3
+    R.logic[""].meshNodeBindings["myMeshNode"]["IN"]["instanceCount"].value = 1
     --Anchor points
     --Skin bindings
     --RenderBuffer bindings
-    rlogic.renderBufferBindings["myRenderBuffer"]["IN"]["width"].value = 1
-    rlogic.renderBufferBindings["myRenderBuffer"]["IN"]["height"].value = 2
-    rlogic.renderBufferBindings["myRenderBuffer"]["IN"]["sampleCount"].value = 3
+    R.logic[""].renderBufferBindings["myRenderBuffer"]["IN"]["width"].value = 1
+    R.logic[""].renderBufferBindings["myRenderBuffer"]["IN"]["height"].value = 2
+    R.logic[""].renderBufferBindings["myRenderBuffer"]["IN"]["sampleCount"].value = 3
 end
 
 
@@ -98,10 +98,11 @@ defaultView = {
     description = "",
     update = function(time_ms)
         default()
-    end
+    end,
+    inputs = {}
 }
 
-rlogic.views = {defaultView}
+R.views = {defaultView}
 
 -- sample test function for automated image base tests
 -- can be executed by command line parameter --exec=test_default
@@ -109,7 +110,7 @@ function test_default()
     -- modify properties
     default()
     -- stores a screenshot (relative to the working directory)
-    rlogic.screenshot("test_default.png")
+    R.screenshot("test_default.png")
 end
 )";
 
@@ -233,6 +234,7 @@ namespace ramses::internal
         void setupLogic()
         {
             LogicEngine& engine{ *m_scene.scene->createLogicEngine() };
+            m_logicId = engine.getSceneObjectId();
 
             auto* interface = engine.createLuaInterface(R"(
                 function interface(IN,OUT)
@@ -426,11 +428,17 @@ namespace ramses::internal
             return testing::AssertionSuccess();
         }
 
+        LogicEngine* getLogic()
+        {
+            return m_app->getScene()->template findObject<LogicEngine>(m_logicId);
+        }
+
     protected:
         WithTempDirectory m_withTempDirectory;
         RamsesTestSetup   m_ramses;
         TriangleTestScene m_scene = m_ramses.createTriangleTestScene(ramses::sceneId_t(1));
         Scene*            m_emptyScene = m_ramses.createScene(ramses::sceneId_t(2));
+        sceneObjectId_t   m_logicId;
         LogHandler m_log;
         std::unique_ptr<CLI::App> m_cli;
         std::unique_ptr<T> m_app;
@@ -592,11 +600,39 @@ namespace ramses::internal
         EXPECT_THAT(testing::internal::GetCapturedStderr(), testing::HasSubstr("File does not exist: notExisting.lua"));
     }
 
+    TYPED_TEST(ALogicViewerApp_T, writeLuaSimplified)
+    {
+        EXPECT_EQ(0, this->createApp({ "--write-config", ramsesFile }));
+        EXPECT_FALSE(this->m_app->getSettings()->luaPreferSimplified);
+        this->m_app->getSettings()->luaPreferSimplified = true;
+        EXPECT_EQ(ViewerApp::ExitCode::Ok, this->m_app->run());
+        EXPECT_EQ(Result(), this->m_app->getLogicViewer()->loadLuaFile(luaFile));
+    }
+
+    TYPED_TEST(ALogicViewerApp_T, writeLuaNotSimplifiedIdentifiers)
+    {
+        EXPECT_EQ(0, this->createApp({ "--write-config", ramsesFile }));
+        EXPECT_FALSE(this->m_app->getSettings()->luaPreferIdentifiers);
+        this->m_app->getSettings()->luaPreferIdentifiers = true;
+        EXPECT_EQ(ViewerApp::ExitCode::Ok, this->m_app->run());
+        EXPECT_EQ(Result(), this->m_app->getLogicViewer()->loadLuaFile(luaFile));
+    }
+
+    TYPED_TEST(ALogicViewerApp_T, writeLuaNotSimplifiedObjectIds)
+    {
+        EXPECT_EQ(0, this->createApp({ "--write-config", ramsesFile }));
+        EXPECT_FALSE(this->m_app->getSettings()->luaPreferObjectIds);
+        this->m_app->getSettings()->luaPreferObjectIds = true;
+        EXPECT_EQ(ViewerApp::ExitCode::Ok, this->m_app->run());
+        EXPECT_EQ(Result(), this->m_app->getLogicViewer()->loadLuaFile(luaFile));
+    }
+
     TYPED_TEST(ALogicViewerApp_T, writeDefaultLuaConfiguration)
     {
         EXPECT_EQ(0, this->createApp({ "--write-config", ramsesFile }));
         EXPECT_EQ(ViewerApp::ExitCode::Ok, this->m_app->run());
         EXPECT_TRUE(fs::exists(luaFile));
+        EXPECT_EQ(Result(), this->m_app->getLogicViewer()->loadLuaFile(luaFile));
         std::ifstream str(luaFile);
         std::string   genfile((std::istreambuf_iterator<char>(str)), std::istreambuf_iterator<char>());
         EXPECT_EQ(defaultLuaFile, genfile);
@@ -607,6 +643,7 @@ namespace ramses::internal
         EXPECT_EQ(0, this->createApp({ "--write-config", "--headless", ramsesFile }));
         EXPECT_EQ(ViewerApp::ExitCode::Ok, this->m_app->run());
         EXPECT_TRUE(fs::exists(luaFile));
+        EXPECT_EQ(Result(), m_app->getLogicViewer()->loadLuaFile(luaFile));
         std::ifstream str(luaFile);
         std::string   genfile((std::istreambuf_iterator<char>(str)), std::istreambuf_iterator<char>());
         EXPECT_EQ(defaultLuaFile, genfile);
@@ -672,9 +709,9 @@ namespace ramses::internal
         SaveFile(R"(
             function test_default()
                 -- stores a screenshot (relative to the working directory)
-                rlogic.screenshot("test_red.png")
-                rlogic.appearanceBindings.myAppearance.IN.green.value = 1
-                rlogic.screenshot("test_yellow.png")
+                R.screenshot("test_red.png")
+                R.logic[""].appearanceBindings.myAppearance.IN.green.value = 1
+                R.screenshot("test_yellow.png")
             end
         )");
         EXPECT_EQ(0, createApp({ "--exec=test_default", ramsesFile }));
@@ -688,9 +725,9 @@ namespace ramses::internal
         this->SaveFile(R"(
             function test_default()
                 -- stores a screenshot (relative to the working directory)
-                rlogic.screenshot("test_red.png")
-                rlogic.appearanceBindings.myAppearance.IN.green.value = 1
-                rlogic.screenshot("test_yellow.png")
+                R.screenshot("test_red.png")
+                R.logic[""].appearanceBindings.myAppearance.IN.green.value = 1
+                R.screenshot("test_yellow.png")
         )");
         EXPECT_EQ(0, this->createApp({ "--exec=test_default", ramsesFile }));
         EXPECT_EQ(ViewerApp::ExitCode::ErrorLoadLua, this->m_app->run());
@@ -700,13 +737,13 @@ namespace ramses::internal
     {
         SaveFile(R"(
             function test_default(filename, greenVal)
-                rlogic.appearanceBindings.myAppearance.IN.green.value = greenVal
-                rlogic.screenshot(filename)
+                R.logic[""].appearanceBindings.myAppearance.IN.green.value = greenVal
+                R.screenshot(filename)
             end
         )");
         EXPECT_EQ(0, createApp({ R"(--exec-lua=test_default('almost_yellow.png', 0.9))", ramsesFile }));
         EXPECT_EQ(ViewerApp::ExitCode::Ok, m_app->run());
-        auto appearance = m_app->getLogicViewer()->getLogic().findObject<ramses::AppearanceBinding>("myAppearance");
+        auto appearance = getLogic()->findObject<ramses::AppearanceBinding>("myAppearance");
         ASSERT_TRUE(appearance != nullptr);
         auto prop = appearance->getInputs()->getChild("green");
         ASSERT_TRUE(prop != nullptr);
@@ -716,9 +753,9 @@ namespace ramses::internal
 
     TYPED_TEST(ALogicViewerApp_T, exec_lua_code)
     {
-        EXPECT_EQ(0, this->createApp({ R"(--exec-lua=rlogic.appearanceBindings.myAppearance.IN.green.value = 0.44)", ramsesFile }));
+        EXPECT_EQ(0, this->createApp({ R"(--exec-lua=R.logic[""].appearanceBindings.myAppearance.IN.green.value = 0.44)", ramsesFile }));
         EXPECT_EQ(ViewerApp::ExitCode::Ok, this->m_app->run());
-        auto appearance = this->m_app->getLogicViewer()->getLogic().template findObject<typename ramses::AppearanceBinding>("myAppearance");
+        auto appearance = this->getLogic()->template findObject<typename ramses::AppearanceBinding>("myAppearance");
         ASSERT_TRUE(appearance != nullptr);
         auto prop = appearance->getInputs()->getChild("green");
         ASSERT_TRUE(prop != nullptr);
@@ -728,16 +765,16 @@ namespace ramses::internal
     TYPED_TEST(ALogicViewerApp_T, exec_lua_error)
     {
         testing::internal::CaptureStderr();
-        EXPECT_EQ(0, this->createApp({ R"(--exec-lua=rlogic.appearanceBindings.myAppearance.IN.green = 0.44)", ramsesFile }));
+        EXPECT_EQ(0, this->createApp({ R"(--exec-lua=R.logic[""].appearanceBindings.myAppearance.IN.green = 0.44)", ramsesFile }));
         EXPECT_EQ(ViewerApp::ExitCode::ErrorLoadLua, this->m_app->run());
         EXPECT_THAT(testing::internal::GetCapturedStderr(), testing::HasSubstr("sol: cannot set (new_index) into this object"));
     }
 
     TEST_F(ALogicViewerGuiApp, exec_lua_headless)
     {
-        EXPECT_EQ(0, createApp({ R"(--exec-lua=rlogic.appearanceBindings.myAppearance.IN.green.value = 0.24)", "--headless", ramsesFile }));
+        EXPECT_EQ(0, createApp({ R"(--exec-lua=R.logic[""].appearanceBindings.myAppearance.IN.green.value = 0.24)", "--headless", ramsesFile }));
         EXPECT_EQ(ViewerApp::ExitCode::Ok, m_app->run());
-        auto appearance = m_app->getLogicViewer()->getLogic().findObject<ramses::AppearanceBinding>("myAppearance");
+        auto appearance = getLogic()->findObject<ramses::AppearanceBinding>("myAppearance");
         ASSERT_TRUE(appearance != nullptr);
         auto prop = appearance->getInputs()->getChild("green");
         ASSERT_TRUE(prop != nullptr);
@@ -747,7 +784,7 @@ namespace ramses::internal
     TEST_F(ALogicViewerGuiApp, exec_lua_screenshot_headless)
     {
         testing::internal::CaptureStderr();
-        EXPECT_EQ(0, this->createApp({ R"(--exec-lua=rlogic.screenshot("screenshot.png"))", "--headless", ramsesFile }));
+        EXPECT_EQ(0, this->createApp({ R"(--exec-lua=R.screenshot("screenshot.png"))", "--headless", ramsesFile }));
         EXPECT_EQ(ViewerApp::ExitCode::ErrorLoadLua, this->m_app->run());
         EXPECT_THAT(testing::internal::GetCapturedStderr(), testing::HasSubstr("No screenshots available in current configuration"));
     }
@@ -757,9 +794,9 @@ namespace ramses::internal
         SaveFile(R"(
             function test_default()
                 -- stores a screenshot (relative to the working directory)
-                rlogic.screenshot("test_red.png")
-                rlogic.appearanceBindings.myAppearance.IN.green.value = 1
-                rlogic.screenshot("test_yellow.png")
+                R.screenshot("test_red.png")
+                R.logic[""].appearanceBindings.myAppearance.IN.green.value = 1
+                R.screenshot("test_yellow.png")
         )");
         EXPECT_EQ(0, createApp({ ramsesFile }));
         EXPECT_EQ(ViewerApp::ExitCode::Ok, m_app->setup());
@@ -775,7 +812,7 @@ namespace ramses::internal
         SaveFile(R"(
             function test_default()
                 -- stores a screenshot (relative to the working directory)
-                rlogic.screenshot("test_red.png")
+                R.screenshot("test_red.png")
             end
         )");
         EXPECT_EQ(0, createApp({ "--exec=test_default", ramsesFile }));
@@ -788,7 +825,7 @@ namespace ramses::internal
         SaveFile(R"(
             function test_default()
                 -- stores a screenshot (relative to the working directory)
-                rlogic.screenshot("test_red.png")
+                R.screenshot("test_red.png")
             end
         )");
         EXPECT_EQ(0, createApp({ "--exec=test_default", "--width", "500", "--height", "700", ramsesFile }));
@@ -800,24 +837,24 @@ namespace ramses::internal
     {
         m_app->getSettings()->showLogicWindow = false;
         const int32_t xFile = 25;
-        auto* script = m_app->getLogicViewer()->getLogic().findObject<ramses::LuaScript>("allTypesScript");
+        auto* script = getLogic()->findObject<ramses::LuaScript>("allTypesScript");
         ASSERT_TRUE(script != nullptr);
         auto* prop = script->getOutputs()->getChild("paramString");
         ASSERT_TRUE(prop != nullptr);
 
-        SaveFile(R"(rlogic.scripts.allTypesScript.IN.paramString.value = "Hello")");
+        SaveFile(R"(R.logic[""].scripts.allTypesScript.IN.paramString.value = "Hello")");
         EXPECT_TRUE(m_app->doOneLoop());
         EXPECT_EQ("", prop->get<std::string>().value()); // not reloaded automatically
 
         EXPECT_TRUE(keyPress(ramses::EKeyCode_F5)); // reload configuration
         EXPECT_EQ("Hello", prop->get<std::string>().value());
 
-        SaveFile(R"(rlogic.scripts.allTypesScript.IN.paramString.value = "World")");
+        SaveFile(R"(R.logic[""].scripts.allTypesScript.IN.paramString.value = "World")");
         EXPECT_TRUE(click(xFile, ui.titleBar + ui.yMiddle));
         EXPECT_TRUE(click(xFile, ui.titleBar + ui.buttonHeight + 4*ui.smallButtonHeight + ui.yMiddle));
         EXPECT_EQ("World", prop->get<std::string>().value());
 
-        SaveFile(R"(rlogic.scripts.allTypesScript.IN.paramString.value = "Foo")");
+        SaveFile(R"(R.logic[""].scripts.allTypesScript.IN.paramString.value = "Foo")");
         EXPECT_TRUE(contextMenuSelect(700, 350, 8));
         EXPECT_EQ("Foo", prop->get<std::string>().value());
     }
@@ -826,12 +863,12 @@ namespace ramses::internal
     {
         auto* settings = m_app->getSettings();
         settings->showWindow = false;
-        auto* script = m_app->getLogicViewer()->getLogic().findObject<ramses::LuaScript>("allTypesScript");
+        auto* script = getLogic()->findObject<ramses::LuaScript>("allTypesScript");
         ASSERT_TRUE(script != nullptr);
         auto* prop = script->getOutputs()->getChild("paramString");
         ASSERT_TRUE(prop != nullptr);
 
-        SaveFile(R"(rlogic.scripts.allTypesScript.IN.paramString.value = "Hello")");
+        SaveFile(R"(R.logic[""].scripts.allTypesScript.IN.paramString.value = "Hello")");
         EXPECT_TRUE(m_app->doOneLoop());
         EXPECT_EQ("", prop->get<std::string>().value()); // not reloaded automatically
 
@@ -846,8 +883,8 @@ namespace ramses::internal
                 name = "Red",
                 description = "Shows a red triangle",
                 update = function(time_ms)
-                    rlogic.appearanceBindings["myAppearance"]["IN"]["green"].value = 0
-                    rlogic.appearanceBindings.myAppearance.IN.blue.value = 0
+                    R.logic[""].appearanceBindings["myAppearance"]["IN"]["green"].value = 0
+                    R.logic[""].appearanceBindings.myAppearance.IN.blue.value = 0
                 end
             }
 
@@ -855,15 +892,15 @@ namespace ramses::internal
                 name = "Yellow",
                 description = "Shows a yellow triangle",
                 update = function(time_ms)
-                    rlogic.appearanceBindings["myAppearance"]["IN"]["green"].value = 1
+                    R.logic[""].appearanceBindings["myAppearance"]["IN"]["green"].value = 1
                 end,
-                inputs = {rlogic.appearanceBindings.myAppearance.IN.blue}
+                inputs = {R.logic[""].appearanceBindings.myAppearance.IN.blue}
             }
 
-            rlogic.views = {red, yellow}
+            R.views = {red, yellow}
 
             function screenshot()
-                rlogic.screenshot("screenshot.png")
+                R.screenshot("screenshot.png")
             end
         )");
 
@@ -927,7 +964,7 @@ namespace ramses::internal
     {
         SaveFile(R"(
             function screenshot()
-                rlogic.screenshot("screenshot.png")
+                R.screenshot("screenshot.png")
             end
         )");
         EXPECT_TRUE(keyPress(ramses::EKeyCode_F5)); // reload configuration
@@ -953,10 +990,10 @@ ShowLogicWindow=1
 LuaPreferObjectIds=0
 LuaPreferIdentifiers=0
 )");
-        m_app->getSettings()->showUpdateReportDetails = true;
         const int32_t mouseX = 100;
+        EXPECT_TRUE(click(300, ui.updateReport()));
 
-        const auto& report = m_app->getLogicViewer()->getUpdateReport();
+        const auto& report = m_app->getLogicViewer()->getUpdateReport(*m_app->getLogicViewer()->getLogicEngines()[0]);
 
         // set update interval to 1 to avoid random test failures
         // (only the longest update is reported for an interval)
@@ -965,7 +1002,7 @@ LuaPreferIdentifiers=0
         EXPECT_EQ(1u, report.getInterval());
         EXPECT_EQ(12, report.getNodesExecuted().size() + report.getNodesSkippedExecution().size());
 
-        auto* interface = m_app->getLogicViewer()->getLogic().findObject<ramses::LuaInterface>("myInterface");
+        auto* interface = getLogic()->findObject<ramses::LuaInterface>("myInterface");
         ASSERT_TRUE(interface != nullptr);
         auto* prop = interface->getInputs()->getChild("paramFloat");
         ASSERT_TRUE(prop != nullptr);

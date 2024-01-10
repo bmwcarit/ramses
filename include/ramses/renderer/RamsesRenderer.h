@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2015 BMW Car IT GmbH
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -35,7 +35,6 @@ namespace ramses
     /**
     * @brief RamsesRenderer is the main renderer component which provides API to configure
     *        and control the way content will be rendered on display(s).
-    * @ingroup RendererAPI
     * @details All the commands in this class are put to a queue and submitted only when #ramses::RamsesRenderer::flush is called,
     *          they are then executed asynchronously in the renderer core, the order of execution is preserved.
     *          Most of the commands have a corresponding callback which reports the result back to the caller
@@ -43,6 +42,7 @@ namespace ramses
     *          Some commands can fail immediately by returning false, in such case there will be no callback,
     *          because the command will not even be submitted.
     *          #ramses::RamsesRenderer API is not thread-safe.
+    * @ingroup RendererAPI
     */
     class RAMSES_API RamsesRenderer
     {

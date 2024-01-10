@@ -232,6 +232,21 @@ namespace ramses::internal
             mipToFetch = 0;
             break;
         }
+        case EState_UpdateAndRecreate:
+            assert(m_textureBuffer == nullptr);
+            m_textureBuffer = m_scene.createTexture2DBuffer(ramses::ETextureFormat::RGBA8, 4u, 4u, 1);
+            sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode::Clamp, ramses::ETextureAddressMode::Clamp, ramses::ETextureSamplingMethod::Nearest_MipMapNearest, ramses::ETextureSamplingMethod::Nearest, *m_textureBuffer);
+            mipToFetch = 0;
+            break;
+        case EState_UpdateAndRecreate1:
+            assert(m_textureBuffer != nullptr);
+            m_textureBuffer->updateData(0, 0, 0, 4, 4, rgba_4x4_blue.data());
+            m_scene.destroy(*m_textureBuffer);
+            m_textureBuffer = m_scene.createTexture2DBuffer(ramses::ETextureFormat::RGBA8, 2u, 2u, 1);
+            m_textureBuffer->updateData(0, 0, 0, 2, 2, rgba_2x2_yellow.data());
+            sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode::Clamp, ramses::ETextureAddressMode::Clamp, ramses::ETextureSamplingMethod::Nearest_MipMapNearest, ramses::ETextureSamplingMethod::Nearest, *m_textureBuffer);
+            mipToFetch = 0;
+            break;
         default:
             assert(false);
         }

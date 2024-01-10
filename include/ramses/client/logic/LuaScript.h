@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2020 BMW AG
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -27,8 +27,8 @@ namespace ramses
 
     /**
     * The LuaScript class is the cornerstone of RAMSES Logic as it encapsulates
-    * a Lua script and the associated with it Lua environment. LuaScript instances are created
-    * by the #ramses::LogicEngine class.
+    * a Lua script and the Lua environment associated with it. LuaScript instances are created
+    * by #ramses::LogicEngine class.
     *
     * A LuaScript can be created from Lua source code which must fulfill following requirements:
     *
@@ -64,10 +64,11 @@ namespace ramses
     *       - the string provided will be the name under which the module will be available in other functions
     *       - See also #ramses::LuaModule for more info on modules and their syntax
     *
-    * Violating any of these requirements will result in error, which can be obtained by calling #ramses::RamsesFramework::getLastError().
+    * Violating any of these requirements will result in an error, which can be obtained by calling #ramses::RamsesFramework::getLastError().
     *
     * See also the full documentation at https://ramses-logic.readthedocs.io/en/latest/api.html for more details on Lua and
     * its interaction with C++.
+    * @ingroup LogicAPI
     */
     class RAMSES_API LuaScript : public LogicNode
     {

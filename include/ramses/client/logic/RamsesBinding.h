@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2020 BMW AG
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -18,8 +18,9 @@ namespace ramses::internal
 namespace ramses
 {
     /**
-     * The RamsesBinding is a shared base class for bindings to Ramses objects.
+     * #RamsesBinding is a shared base class for bindings to Ramses objects.
      * For details on each type of binding, look at the derived classes.
+     * @ingroup LogicAPI
      */
     class RAMSES_API RamsesBinding : public LogicNode
     {

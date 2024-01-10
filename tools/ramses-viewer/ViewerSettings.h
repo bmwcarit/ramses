@@ -28,14 +28,16 @@ namespace ramses::internal
 
         bool showLogicWindow    = false;
         bool showUpdateReport   = true;
-        bool showUpdateReportDetails = false;
 
         bool luaPreferObjectIds   = false;
         bool luaPreferIdentifiers = false;
+        bool luaPreferSimplified  = false; // R.logic().interfaces instead of R.logic[engineId].interfaces
 
         size_t updateReportInterval = 60u;
 
         glm::vec4 clearColor{ 0, 0, 0, 1 };
+
+        int font = 0;
 
         ViewerSettings();
 

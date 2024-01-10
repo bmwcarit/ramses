@@ -16,6 +16,7 @@ createModule(
                             LogicViewerTestBase.cpp
                             LogicViewerTest.cpp
                             LogicViewerLuaTest.cpp
+                            LogicViewer2EnginesLuaTest.cpp
                             ValidationCacheTest.cpp
     DEPENDENCIES            ramses-viewer-lib
                             ramses-client

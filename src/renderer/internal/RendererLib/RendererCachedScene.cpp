@@ -91,6 +91,12 @@ namespace ramses::internal
         return resultHandle;
     }
 
+    void RendererCachedScene::releaseTextureBuffer(TextureBufferHandle handle)
+    {
+        TextureLinkCachedScene::releaseTextureBuffer(handle);
+        m_textureBufferUpdates[handle.asMemoryHandle()].clear();
+    }
+
     void RendererCachedScene::updateTextureBuffer(TextureBufferHandle handle, uint32_t mipLevel, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const std::byte* data)
     {
         TextureLinkCachedScene::updateTextureBuffer(handle, mipLevel, x, y, width, height, data);

@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2015 BMW Car IT GmbH
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -29,8 +29,8 @@ namespace ramses
     class Node;
 
     /**
+    * @brief A SceneObjectIterator can iterate through the nodes in the scene graph with the order specified as the traversal style.
     * @ingroup CoreAPI
-    * @brief A SceneObjectIterator can iterate through the nodes in the scene graph with the order specified as traversal style
     */
     class RAMSES_API SceneGraphIterator
     {

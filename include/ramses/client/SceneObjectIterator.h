@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2014 BMW Car IT GmbH
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,10 +20,10 @@ namespace ramses
     class Scene;
 
     /**
-    * @ingroup CoreAPI
     * @brief The SceneObjectIterator traverses objects in a Scene.
     *
-    * It provides a way to traverse all objects owned by a given scene.
+    * SceneObjectIterator provides a way to traverse all objects owned by a given scene.
+    * @ingroup CoreAPI
     */
     class RAMSES_API SceneObjectIterator
     {

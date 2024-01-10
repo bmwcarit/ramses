@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2021 BMW AG
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -26,11 +26,11 @@ namespace ramses::internal
 namespace ramses
 {
     /**
-     * The CameraBinding is a type of #ramses::RamsesBinding which allows the #ramses::LogicEngine to control instances of ramses::Camera.
-     * CameraBinding's can be created with #ramses::LogicEngine::createCameraBinding or #ramses::LogicEngine::createCameraBindingWithFrustumPlanes,
+     * #CameraBinding is a type of #ramses::RamsesBinding which allows the #ramses::LogicEngine to control instances of ramses::Camera.
+     * CameraBinding can be created with #ramses::LogicEngine::createCameraBinding or #ramses::LogicEngine::createCameraBindingWithFrustumPlanes,
      * which affects the set of input properties that will be used to control camera frustum as described below.
      *
-     * The #CameraBinding has a static link to a ramses::Camera. After creation, #ramses::LogicNode::getInputs will
+     * #CameraBinding has a static link to a ramses::Camera. After creation, #ramses::LogicNode::getInputs will
      * return a struct property with children equivalent to the camera settings of the provided ramses::Camera.
      *
      * There are two types of ramses::Camera:
@@ -48,7 +48,7 @@ namespace ramses
      * To avoid unexpected behavior, we highly recommend setting all viewport values together, and also setting all frustum planes together
      * (either by link or by setting them directly). This way unwanted behavior can be avoided.
      *
-     * Since the CameraBinding derives from #ramses::RamsesBinding, it also provides the #ramses::LogicNode::getInputs
+     * Since #CameraBinding derives from #ramses::RamsesBinding, it also provides the #ramses::LogicNode::getInputs
      * and #ramses::LogicNode::getOutputs method. For this class, the methods behave as follows:
      *  - #ramses::LogicNode::getInputs: returns inputs struct with two child properties: viewport and frustum.
      *          - 'viewport' (type struct) with these children:
@@ -69,13 +69,14 @@ namespace ramses
      *                  - 'farPlane'    (type Float)  - frustum plane far
      *                  - 'fieldOfView' (type Float)  - frustum field of view in degrees
      *                  - 'aspectRatio' (type Float)  - aspect ratio of frustum width / frustum height
-     *            Full set of frustum planes properties will be present if camera is ramses::Orthographic (regardless of which create method was used)
-     *            or camera is ramses::PerspectiveCamera and #ramses::LogicEngine::createCameraBindingWithFrustumPlanes was used to create it.
-     *            Simplified set of frustum properties will be present if camera is ramses::PerspectiveCamera and #ramses::LogicEngine::createCameraBinding was used to create it.
-     *    Refer to ramses::Camera, ramses::PerspectiveCamera and ramses::OrthographicCamera for meaning and constraints of all these inputs.
+     *            Full set of frustum planes properties will be present if the camera is ramses::Orthographic (regardless of which create method was used)
+     *            or if the camera is ramses::PerspectiveCamera and #ramses::LogicEngine::createCameraBindingWithFrustumPlanes was used to create it.
+     *            Simplified set of frustum properties will be present if the camera is ramses::PerspectiveCamera and #ramses::LogicEngine::createCameraBinding was used to create it.
+     *    Refer to ramses::Camera, ramses::PerspectiveCamera and ramses::OrthographicCamera for the meanings and constraints of all these inputs.
      *
-     *  - #ramses::LogicNode::getOutputs: returns always nullptr, because a #CameraBinding does not have outputs,
-     *    it implicitly controls the ramses Camera
+     *  - #ramses::LogicNode::getOutputs: always returns nullptr, because a #CameraBinding does not have outputs,
+     *    it implicitly controls the ramses Camera.
+     * @ingroup LogicAPI
      */
     class RAMSES_API CameraBinding : public RamsesBinding
     {

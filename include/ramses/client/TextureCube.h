@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2015 BMW Car IT GmbH
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -23,8 +23,8 @@ namespace ramses
     }
 
     /**
-     * @ingroup CoreAPI
      * @brief TextureCube stores pixel data with 6 equally sized quadratic faces.
+     * @ingroup CoreAPI
      */
     class RAMSES_API TextureCube : public Resource
     {

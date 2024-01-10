@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2014 BMW Car IT GmbH
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -21,9 +21,9 @@ namespace ramses
     }
 
     /**
-     * @ingroup CoreAPI
      * @brief The Node is the base class of all nodes and provides
      * scene graph functionality which propagates to its children.
+     * @ingroup CoreAPI
      */
     class RAMSES_API Node : public SceneObject
     {

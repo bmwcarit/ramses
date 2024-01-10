@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2021 BMW AG
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,7 +20,7 @@ namespace ramses
     /**
     * #LuaModule represents Lua source code in form of a reusable Lua module
     * which can be used in Lua scripts of one or more #ramses::LuaScript instances. Lua modules can
-    * be also declared as dependency to other modules.
+    * be also declared as a dependency to other modules.
     * Lua modules are expected to follow these guidelines https://www.tutorialspoint.com/lua/lua_modules.htm
     * and have some limitations:
     *     - the name of the module given when creating it is only used to differentiate between #LuaModule
@@ -32,7 +32,7 @@ namespace ramses
     * #ramses::LuaModule source code is loaded into its own Lua environment and is accessible in other #ramses::LuaScript
     * and/or #LuaModule instances in their own environments under the alias name given when creating those.
     *
-    * #LuaModule can also be used to help provide property types for #ramses::LuaScript interface declarations,
+    * #LuaModule can also be used to help providing property types for #ramses::LuaScript interface declarations,
     * for example a module with a 'struct' type:
     *   \code{.lua}
     *       local mytypes = {}
@@ -57,6 +57,7 @@ namespace ramses
     *   \endcode
     *
     * The label 'Type' is a reserved keyword and must not be overwritten for other purposes (e.g. name of variable or function).
+    * @ingroup LogicAPI
     */
     class RAMSES_API LuaModule : public LogicObject
     {

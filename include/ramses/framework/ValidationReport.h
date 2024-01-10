@@ -21,10 +21,10 @@ namespace ramses
     }
 
     /**
-     * @ingroup CoreAPI
      * @brief ValidationReport contains a list of issues that is reported by #ramses::RamsesObject::validate().
      *
      * @see #ramses::RamsesObject::validate()
+     * @ingroup CoreAPI
      */
     class RAMSES_API ValidationReport
     {

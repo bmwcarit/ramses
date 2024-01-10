@@ -43,6 +43,8 @@ namespace ramses::internal
 
         static bool DrawColorSetting(const char* name, glm::vec4& color);
 
+        void drawFontSelector(const char* label);
+
         void drawErrorPopup();
         void drawProgressPopup();
 

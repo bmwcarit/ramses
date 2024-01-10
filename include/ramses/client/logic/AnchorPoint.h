@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2022 BMW AG
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -25,7 +25,7 @@ namespace ramses::internal
 namespace ramses
 {
     /**
-    * Anchor point is a #ramses::LogicNode which calculates viewport coordinates (and depth) of a Ramses node's origin.
+    * @brief Anchor point is a #ramses::LogicNode which calculates viewport coordinates (and depth) of a Ramses node's origin.
     * The projected coordinates are accessible via its output property and can be linked to another logic node.
     * Anchor point requires a #ramses::NodeBinding and a #ramses::CameraBinding at creation time, see #ramses::LogicEngine::createAnchorPoint.
     *
@@ -64,6 +64,7 @@ namespace ramses
     * the outputs only if anything changed. Anchor point depends on Ramses objects and their states, which cannot be easily monitored
     * and therefore it has to be updated every time #ramses::LogicEngine::update is called. For this reason it is highly recommended
     * to keep the number of anchor nodes to a necessary minimum.
+    * @ingroup LogicAPI
     */
     class RAMSES_API AnchorPoint : public LogicNode
     {

@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2018 BMW Car IT GmbH
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,7 +24,6 @@ namespace ramses
     }
 
     /**
-    * @ingroup TextAPI
     * @brief Stores text data - texture atlas, meshes, glyph bitmap data. It is a cache because the
     * content can be re-generated when necessary, e.g. when cached glyphs take up too much memory.
     *
@@ -83,6 +82,7 @@ namespace ramses
     * Finally, the TextLine object holds pointers to the original vector of glyphs which were used to create it.
     * Be careful to not tamper with it, as it is used when destroying the text line to obtain information which
     * glyphs can be freed.
+    * @ingroup TextAPI
     */
     class RAMSES_API TextCache
     {

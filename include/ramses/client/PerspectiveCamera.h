@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2014 BMW Car IT GmbH
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,11 +13,11 @@
 namespace ramses
 {
     /**
-    * @ingroup CoreAPI
     * @brief   The #PerspectiveCamera is a local camera which defines a perspective view into the scene.
     * @details A valid camera for rendering must have viewport and frustum set.
     *          Frustum planes can be set using #ramses::Camera::setFrustum or #ramses::PerspectiveCamera::setFrustum,
-    *          depending if input is concrete frustum planes or field of view and aspect ratio.
+    *          depending if the inputs are concrete frustum planes or field of view and aspect ratio.
+    * @ingroup CoreAPI
     */
     class RAMSES_API PerspectiveCamera : public Camera
     {

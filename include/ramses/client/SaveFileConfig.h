@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2022 BMW AG
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -26,6 +26,7 @@ namespace ramses
      * This config file is designed to work with the Ramses Composer editor, but you can use the metadata to store
      * version and export information from any exporter (or script). Use the config to trace the origin and
      * export environment of assets during runtime.
+     * @ingroup CoreAPI
      */
     class RAMSES_API SaveFileConfig
     {

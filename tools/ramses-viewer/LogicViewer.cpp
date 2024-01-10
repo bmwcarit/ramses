@@ -24,6 +24,7 @@
 #include "ramses/client/logic/AnchorPoint.h"
 #include "ramses/client/logic/SkinBinding.h"
 #include "ramses/client/logic/RenderBufferBinding.h"
+#include "ramses/client/SceneObjectIterator.h"
 #include "fmt/format.h"
 #include "internal/logic/SolHelper.h"
 #include <iostream>
@@ -61,8 +62,9 @@ namespace ramses::internal
 
     struct LogicWrapper
     {
-        explicit LogicWrapper(LogicEngine& logicEngine, sol::state& sol)
-            : views(sol.create_table())
+        explicit LogicWrapper(LogicViewer& viewer, LogicEngine& logicEngine)
+            : m_logicEngine(logicEngine)
+            , update ([&]() { viewer.updateEngine(logicEngine); })
             , interfaces(logicEngine)
             , scripts(logicEngine)
             , animations(logicEngine)
@@ -77,7 +79,22 @@ namespace ramses::internal
             , skinBindings(logicEngine)
             , renderBufferBindings(logicEngine)
         {
+            link = [&](PropertyWrapper& src, PropertyWrapper& target) { return logicEngine.link(src.m_property, target.m_property); };
+            unlink = [&](PropertyWrapper& src, PropertyWrapper& target) { return logicEngine.unlink(src.m_property, target.m_property); };
         }
+
+        explicit LogicWrapper(LogicViewer& viewer, LogicEngine& logicEngine, sol::state& sol)
+            : LogicWrapper(viewer, logicEngine)
+        {
+            views  = sol.create_table();
+        }
+
+        ramses::LogicEngine& m_logicEngine;
+
+        // function objects allow lua syntax `rlogic.update()` - instead of `rlogic:update()`
+        std::function<void()> update;
+        std::function<bool(PropertyWrapper&, PropertyWrapper&)> link;
+        std::function<bool(PropertyWrapper&, PropertyWrapper&)> unlink;
 
         sol::table views;
 
@@ -96,7 +113,69 @@ namespace ramses::internal
         NodeListWrapper<RenderBufferBinding> renderBufferBindings;
     };
 
-    const char* const LogicViewer::ltnModule      = "rlogic";
+    struct LogicCollectionWrapper
+    {
+        explicit LogicCollectionWrapper(LogicViewer& viewer)
+        {
+            for (auto* logic : viewer.m_logicEngines)
+            {
+                m_logicWrappers.emplace_back(viewer, *logic, viewer.m_sol);
+            }
+        }
+
+        sol::object get(sol::stack_object key, sol::this_state L)
+        {
+            auto strKey = key.as<sol::optional<std::string>>();
+            auto it = m_logicWrappers.end();
+            if (strKey)
+            {
+                it = std::find_if(m_logicWrappers.begin(), m_logicWrappers.end(),
+                    [&](const LogicWrapper& wrapper) { return wrapper.m_logicEngine.getName() == *strKey; });
+            }
+            else
+            {
+                auto intKey = key.as<sol::optional<int>>();
+                if (intKey)
+                {
+                    const sceneObjectId_t objId(*intKey);
+                    it = std::find_if(m_logicWrappers.begin(), m_logicWrappers.end(),
+                        [&](const LogicWrapper& wrapper) { return wrapper.m_logicEngine.getSceneObjectId() == objId; });
+                }
+            }
+
+            if (it != m_logicWrappers.end())
+            {
+                return sol::object(L, sol::in_place, *it);
+            }
+            return sol::object(L, sol::in_place, sol::lua_nil);
+        }
+
+        sol::variadic_results call(sol::this_state L)
+        {
+            sol::variadic_results results;
+            results.reserve(m_logicWrappers.size());
+            for (auto& logicWrapper : m_logicWrappers)
+                results.push_back(sol::object(L, sol::in_place, logicWrapper));
+            return results;
+        }
+
+        std::vector<LogicWrapper> m_logicWrappers;
+    };
+
+    struct ViewerWrapper
+    {
+        ViewerWrapper(LogicViewer& viewer, sol::state& sol)
+            : views(sol.create_table())
+            , logic(viewer)
+        {
+        }
+        sol::table views;
+        LogicCollectionWrapper logic;
+    };
+
+
+    const char* const LogicViewer::ltnRoot         = "R";
+    const char* const LogicViewer::ltnLogic        = "logic";
     const char* const LogicViewer::ltnScript      = "scripts";
     const char* const LogicViewer::ltnInterface   = "interfaces";
     const char* const LogicViewer::ltnAnimation   = "animationNodes";
@@ -124,10 +203,12 @@ namespace ramses::internal
     const char* const LogicViewer::ltnViewName        = "name";
     const char* const LogicViewer::ltnViewDescription = "description";
 
-    LogicViewer::LogicViewer(ramses::LogicEngine& logicEngine, ScreenshotFunc screenshotFunc)
-        : m_logicEngine{ logicEngine }
-        , m_screenshotFunc(std::move(screenshotFunc))
+    LogicViewer::LogicViewer(ramses::Scene& scene, ScreenshotFunc screenshotFunc)
+        : m_screenshotFunc(std::move(screenshotFunc))
     {
+        SceneObjectIterator iter{scene, ERamsesObjectType::LogicEngine};
+        while (auto* logic = object_cast<LogicEngine*>(iter.getNext()))
+            m_logicEngines.push_back(logic);
         m_startTime = std::chrono::steady_clock::now();
     }
 
@@ -187,11 +268,35 @@ namespace ramses::internal
             sol::readonly(&LogicWrapper::skinBindings),
             ltnRenderBuffer,
             sol::readonly(&LogicWrapper::renderBufferBindings),
+            ltnUpdate,
+            &LogicWrapper::update,
+            ltnLink,
+            &LogicWrapper::link,
+            ltnUnlink,
+            &LogicWrapper::unlink
+            );
+
+        m_sol.new_usertype<LogicCollectionWrapper>(
+            "RamsesLogicEngines",
+            sol::no_constructor,
+            sol::meta_function::index,
+            &LogicCollectionWrapper::get,
+            sol::meta_function::call,
+            &LogicCollectionWrapper::call,
+            sol::meta_function::to_string,
+            []() { return "LogicCollectionWrapper"; }
+        );
+
+        m_sol.new_usertype<ViewerWrapper>(
+            "RamsesLogicViewer",
+            sol::no_constructor,
+            ltnLogic,
+            sol::readonly(&ViewerWrapper::logic),
             ltnViews,
-            &LogicWrapper::views,
+            &ViewerWrapper::views,
             ltnScreenshot,
             [&](const std::string& screenshotFile) {
-                updateEngine();
+                updateAllEngines(); // ensure that all state changes are applied
                 if (!m_screenshotFunc)
                 {
                     throw sol::error("No screenshots available in current configuration");
@@ -199,13 +304,10 @@ namespace ramses::internal
                 return m_screenshotFunc(screenshotFile);
             },
             ltnUpdate,
-            [&]() { updateEngine(); },
-            ltnLink,
-            [&](PropertyWrapper& src, PropertyWrapper& target) { return m_logicEngine.link(src.m_property, target.m_property); },
-            ltnUnlink,
-            [&](PropertyWrapper& src, PropertyWrapper& target) { return m_logicEngine.unlink(src.m_property, target.m_property); });
+            [&]() { updateAllEngines(); }
+        );
 
-        m_sol[ltnModule] = LogicWrapper(m_logicEngine, m_sol);
+        m_sol[ltnRoot] = ViewerWrapper(*this, m_sol);
 
         m_luaFilename = filename;
         if (!filename.empty())
@@ -254,11 +356,11 @@ namespace ramses::internal
 
     Result LogicViewer::update()
     {
-        updateEngine();
+        updateAllEngines();
         // don't update if there's already an error
         if (m_result.ok())
         {
-            sol::optional<sol::table> view = m_sol[ltnModule][ltnViews][m_view];
+            sol::optional<sol::table> view = m_sol[ltnRoot][ltnViews][m_view];
             if (view)
             {
                 const auto elapsed   = std::chrono::steady_clock::now() - m_startTime;
@@ -287,7 +389,7 @@ namespace ramses::internal
 
     size_t LogicViewer::getViewCount() const
     {
-        sol::optional<sol::table> tbl = m_sol[ltnModule][ltnViews];
+        sol::optional<sol::table> tbl = m_sol[ltnRoot][ltnViews];
         return tbl ? tbl->size() : 0U;
     }
 
@@ -299,16 +401,22 @@ namespace ramses::internal
 
     LogicViewer::View LogicViewer::getView(size_t viewId) const
     {
-        sol::optional<sol::table> tbl = m_sol[ltnModule][ltnViews][viewId];
+        sol::optional<sol::table> tbl = m_sol[ltnRoot][ltnViews][viewId];
         return View(std::move(tbl));
     }
 
-    void LogicViewer::updateEngine()
+    void LogicViewer::updateAllEngines()
     {
-        m_logicEngine.update();
+        for (auto* logic : m_logicEngines)
+            updateEngine(*logic);
+    }
+
+    void LogicViewer::updateEngine(ramses::LogicEngine& engine)
+    {
+        engine.update();
         if (m_updateReportEnabled)
         {
-            m_updateReportSummary.add(m_logicEngine.getLastUpdateReport());
+            m_updateReports[engine.getSceneObjectId()].add(engine.getLastUpdateReport());
         }
     }
 
@@ -323,29 +431,35 @@ namespace ramses::internal
         LogicViewerLog log(settings);
         log.logText("function default()\n");
 
-        log.logAllInputs<LuaInterface>(m_logicEngine, "--Interfaces\n", LogicViewer::ltnInterface);
-        log.logAllInputs<LuaScript>(m_logicEngine, "--Scripts\n", LogicViewer::ltnScript);
-        log.logAllInputs<NodeBinding>(m_logicEngine, "--Node bindings\n", LogicViewer::ltnNode);
-        log.logAllInputs<AppearanceBinding>(m_logicEngine, "--Appearance bindings\n", LogicViewer::ltnAppearance);
-        log.logAllInputs<CameraBinding>(m_logicEngine, "--Camera bindings\n", LogicViewer::ltnCamera);
-        log.logAllInputs<RenderPassBinding>(m_logicEngine, "--RenderPass bindings\n", LogicViewer::ltnRenderPass);
-        log.logAllInputs<RenderGroupBinding>(m_logicEngine, "--RenderGroup bindings\n", LogicViewer::ltnRenderGroup);
-        log.logAllInputs<MeshNodeBinding>(m_logicEngine, "--MeshNode bindings\n", LogicViewer::ltnMeshNode);
-        log.logAllInputs<AnchorPoint>(m_logicEngine, "--Anchor points\n", LogicViewer::ltnAnchorPoint);
-        log.logAllInputs<SkinBinding>(m_logicEngine, "--Skin bindings\n", LogicViewer::ltnSkinBinding);
-        log.logAllInputs<RenderBufferBinding>(m_logicEngine, "--RenderBuffer bindings\n", LogicViewer::ltnRenderBuffer);
+        log.setIndent("    ");
+        for (auto* logic : m_logicEngines)
+        {
+            log.logAllInputs<LuaInterface>(*logic, "--Interfaces\n", LogicViewer::ltnInterface);
+            log.logAllInputs<LuaScript>(*logic, "--Scripts\n", LogicViewer::ltnScript);
+            log.logAllInputs<NodeBinding>(*logic, "--Node bindings\n", LogicViewer::ltnNode);
+            log.logAllInputs<AppearanceBinding>(*logic, "--Appearance bindings\n", LogicViewer::ltnAppearance);
+            log.logAllInputs<CameraBinding>(*logic, "--Camera bindings\n", LogicViewer::ltnCamera);
+            log.logAllInputs<RenderPassBinding>(*logic, "--RenderPass bindings\n", LogicViewer::ltnRenderPass);
+            log.logAllInputs<RenderGroupBinding>(*logic, "--RenderGroup bindings\n", LogicViewer::ltnRenderGroup);
+            log.logAllInputs<MeshNodeBinding>(*logic, "--MeshNode bindings\n", LogicViewer::ltnMeshNode);
+            log.logAllInputs<AnchorPoint>(*logic, "--Anchor points\n", LogicViewer::ltnAnchorPoint);
+            log.logAllInputs<SkinBinding>(*logic, "--Skin bindings\n", LogicViewer::ltnSkinBinding);
+            log.logAllInputs<RenderBufferBinding>(*logic, "--RenderBuffer bindings\n", LogicViewer::ltnRenderBuffer);
+        }
+        log.setIndent({});
 
         log.logText("end\n\n");
-        const char* code = R"(
-defaultView = {
+        const std::string code = fmt::format(R"(
+defaultView = {{
     name = "Default",
     description = "",
     update = function(time_ms)
         default()
-    end
-}
+    end,
+    inputs = {{}}
+}}
 
-rlogic.views = {defaultView}
+{0}.views = {{defaultView}}
 
 -- sample test function for automated image base tests
 -- can be executed by command line parameter --exec=test_default
@@ -353,9 +467,9 @@ function test_default()
     -- modify properties
     default()
     -- stores a screenshot (relative to the working directory)
-    rlogic.screenshot("test_default.png")
+    {0}.screenshot("test_default.png")
 end
-)";
+)", LogicViewer::ltnRoot);
         log.logText(code);
         outfile << log.getText();
         if (outfile.bad())

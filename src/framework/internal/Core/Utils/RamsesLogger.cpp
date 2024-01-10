@@ -96,7 +96,7 @@ namespace ramses::internal
                     {
                         std::vector<LogContext*> logContextPtrs;
                         for (auto& ctx : m_logContexts)
-                            logContextPtrs.push_back(ctx.get());
+                            logContextPtrs.push_back(ctx.second.get());
                         DltAdapter* dltAdapter = DltAdapter::getDltAdapter();
                         if (dltAdapter->initialize(config.dltAppId, config.dltAppDescription, enableDLTApplicationRegistration,
                                             [this](const std::string& contextId_, int logLevel_) {
@@ -158,8 +158,9 @@ namespace ramses::internal
     std::vector<LogContextInformation> RamsesLogger::getAllContextsInformation() const
     {
         std::vector<LogContextInformation> result;
-        for (const auto& ctx : m_logContexts)
+        for (const auto& it : m_logContexts)
         {
+            const auto& ctx = it.second;
             result.push_back({ ctx->getContextId(), ctx->getContextName(), ctx->getLogLevel() });
         }
         return result;
@@ -169,7 +170,7 @@ namespace ramses::internal
     {
         for (auto& ctx : m_logContexts)
         {
-            ctx->setLogLevel(logLevel);
+            ctx.second->setLogLevel(logLevel);
         }
     }
 
@@ -237,9 +238,8 @@ namespace ramses::internal
             LOG_ERROR(CONTEXT_FRAMEWORK, "RamsesLogger::createContext: Context creation not allowed after initialize");
             assert(false);
         }
-        m_logContexts.push_back(std::make_unique<LogContext>(name, id));
-
-        return *m_logContexts.back();
+        auto ins = m_logContexts.insert({ id, std::make_unique<LogContext>(name, id) });
+        return *(ins.first->second);
     }
 
     void RamsesLogger::dltLogLevelChangeCallback(const std::string& contextId, int logLevelAsInt)
@@ -268,11 +268,9 @@ namespace ramses::internal
 
     LogContext* RamsesLogger::getLogContextById(const std::string& contextId)
     {
-        for (const auto& ctx : m_logContexts)
-        {
-            if (contextId == ctx->getContextId())
-                return ctx.get();
-        }
+        auto it = m_logContexts.find(contextId);
+        if (it != m_logContexts.end())
+            return it->second.get();
         return nullptr;
     }
 

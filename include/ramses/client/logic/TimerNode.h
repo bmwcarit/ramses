@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2021 BMW AG
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -36,6 +36,7 @@ namespace ramses
     * time unit agnostic mode, see inputs/outputs description above for details.
     * Note that unlike other logic nodes a TimerNode is always updated on every #ramses::LogicEngine::update call regardless of if any of its
     * inputs were modified or not.
+    * @ingroup LogicAPI
     */
     class RAMSES_API TimerNode : public LogicNode
     {

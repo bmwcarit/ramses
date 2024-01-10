@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2022 BMW AG
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,7 +24,7 @@ namespace ramses::internal
 namespace ramses
 {
     /**
-     * The RenderPassBinding binds to a Ramses object instance like other types derived from
+     * #RenderPassBinding binds to a Ramses object instance like other types derived from
      * #ramses::RamsesBinding, in this case it binds to a ramses::RenderPass.
      * RenderPassBinding can be created using #ramses::LogicEngine::createRenderPassBinding
      * after providing an instance of a ramses::RenderPass.
@@ -52,6 +52,7 @@ namespace ramses
      * The changes via binding objects are applied to the bound object right away when calling ramses::LogicEngine::update(),
      * however keep in mind that Ramses has a mechanism for bundling scene changes and applying them at once using ramses::Scene::flush,
      * so the changes will be applied all the way only after calling this method on the scene.
+     * @ingroup LogicAPI
      */
     class RAMSES_API RenderPassBinding : public RamsesBinding
     {

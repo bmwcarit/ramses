@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2020 BMW AG
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -23,12 +23,15 @@ namespace ramses
 
     /**
      * A base class for multiple logic classes which provides a unified interface to their
-     * inputs and outputs. Some subclasses don't have inputs or outputs - in that case the
+     * inputs and outputs.
+     *
+     * Some subclasses don't have inputs or outputs - in that case the
      * #getInputs or #getOutputs methods respectively will return nullptr. Some subclasses,
      * like the #ramses::AppearanceBinding, will have their inputs depending on their
      * current state (in this example the GLSL uniforms of the shader to which the bound ramses
      * Appearance belongs). In those cases, #getInputs()/#getOutputs() will return a #ramses::Property
      * which represents an empty struct (type Struct, but no child properties).
+     * @ingroup LogicAPI
      */
     class RAMSES_API LogicNode : public LogicObject
     {

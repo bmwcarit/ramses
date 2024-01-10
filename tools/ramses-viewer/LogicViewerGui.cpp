@@ -179,6 +179,14 @@ namespace ramses::internal
         }
     }
 
+    void LogicViewerGui::drawMenuItemSaveDefaultLua()
+    {
+        if (ImGui::MenuItem("Save default lua configuration", nullptr))
+        {
+            m_saveDefaultLuaFile = true;
+        }
+    }
+
     void LogicViewerGui::reloadConfiguration()
     {
         if (fs::exists(m_filename))
@@ -222,23 +230,49 @@ namespace ramses::internal
 
         if (m_settings.showUpdateReport)
         {
-            ImGui::Separator();
-            drawUpdateReport();
+            for (auto* engine : m_viewer.getLogicEngines())
+            {
+                ImGui::Separator();
+                drawUpdateReport(*engine);
+            }
         }
+
+        drawSaveDefaultLuaFile();
     }
 
     void LogicViewerGui::drawCurrentView()
     {
         const auto  viewCount = static_cast<int>(m_viewer.getViewCount());
         const auto& status    = m_viewer.getLastResult();
-        if (!status.ok())
+        if (!status.ok() || m_viewer.getLuaFilename().empty())
         {
-            ImGui::TextUnformatted(fmt::format("Error occurred in {}", m_viewer.getLuaFilename()).c_str());
-            ImGui::TextUnformatted(status.getMessage().c_str());
-        }
-        else if (m_viewer.getLuaFilename().empty())
-        {
-            drawSaveDefaultLuaFile();
+            if (!status.ok())
+            {
+                ImGui::TextUnformatted(fmt::format("Error occurred in {}", m_viewer.getLuaFilename()).c_str());
+                ImGui::TextUnformatted(status.getMessage().c_str());
+            }
+            else
+            {
+                ImGui::TextUnformatted("No lua configuration file found.");
+            }
+            ImGui::Separator();
+            ImGui::InputText("##filename", &m_filename);
+            ImGui::SameLine();
+            if (ImGui::Button("Save default"))
+                m_saveDefaultLuaFile = true;
+            ImGui::SameLine();
+            if (ImGui::Button("Open"))
+            {
+                fs::path luafile(m_filename);
+                if (fs::exists(luafile))
+                {
+                    loadLuaFile(m_filename);
+                }
+                else if (!luafile.empty())
+                {
+                    m_lastErrorMessage = "File does not exist: " + m_filename;
+                }
+            }
         }
         else if (viewCount > 0)
         {
@@ -268,16 +302,17 @@ namespace ramses::internal
         }
     }
 
-    void LogicViewerGui::drawUpdateReport()
+    void LogicViewerGui::drawUpdateReport(LogicEngine& engine)
     {
-        ImGui::TextUnformatted(fmt::format("Average Update Time: {} ms", m_viewer.getUpdateReport().getTotalTime().average).c_str());
+        ImGui::TextUnformatted(fmt::format("Average Update Time: {} ms", m_viewer.getUpdateReport(engine).getTotalTime().average).c_str());
         ImGui::SameLine();
         HelpMarker("Time it took to update the whole logic nodes network (LogicEngine::update()).");
         ImGui::SameLine();
-        if (ImGui::SmallButton(m_settings.showUpdateReportDetails ? "Hide Details" : "Show Details"))
-            m_settings.showUpdateReportDetails = !m_settings.showUpdateReportDetails;
-
-        if (m_settings.showUpdateReportDetails)
+        std::string detailsText = "Show Details";
+        if (m_viewer.getLogicEngines().size() > 1)
+            detailsText = fmt::format("Show Details ([{}]: {})", engine.getSceneObjectId(), engine.getName());
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg) 3rd party interface
+        if (ImGui::TreeNode(&engine, "%s", detailsText.c_str()))
         {
             auto interval = static_cast<int>(m_settings.updateReportInterval);
             bool refresh = m_viewer.isUpdateReportEnabled();
@@ -291,7 +326,7 @@ namespace ramses::internal
                 m_settings.updateReportInterval = static_cast<size_t>(interval);
                 m_viewer.enableUpdateReport(refresh, m_settings.updateReportInterval);
             }
-            const auto& report = m_viewer.getUpdateReport();
+            const auto& report = m_viewer.getUpdateReport(engine);
             const auto& executed = report.getNodesExecuted();
             const auto& skipped  = report.getNodesSkippedExecution();
             const auto longest = report.getTotalTime().maxValue;
@@ -348,16 +383,15 @@ namespace ramses::internal
                 }
                 ImGui::TreePop();
             }
+            ImGui::TreePop();
         }
     }
 
     void LogicViewerGui::drawSaveDefaultLuaFile()
     {
-        ImGui::TextUnformatted("No lua configuration file found.");
-        ImGui::InputText("##filename", &m_filename);
-        ImGui::SameLine();
-        if (ImGui::Button("Save default"))
+        if (m_saveDefaultLuaFile)
         {
+            m_saveDefaultLuaFile = false;
             fs::path luafile(m_filename);
             if (fs::exists(luafile))
             {
@@ -366,19 +400,6 @@ namespace ramses::internal
             else if (!luafile.empty())
             {
                 saveDefaultLuaFile();
-            }
-        }
-        ImGui::SameLine();
-        if (ImGui::Button("Open"))
-        {
-            fs::path luafile(m_filename);
-            if (fs::exists(luafile))
-            {
-                loadLuaFile(m_filename);
-            }
-            else if (!luafile.empty())
-            {
-                m_lastErrorMessage = "File does not exist: " + m_filename;
             }
         }
 

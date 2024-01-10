@@ -52,8 +52,12 @@ namespace ramses::internal
             MOCK_METHOD(bool, screenshot, (const std::string&));
         };
 
-        ALogicViewerBase()
+        explicit ALogicViewerBase(size_t logicEngineInstances = 1u)
         {
+            for (size_t i = 0; i < logicEngineInstances; ++i)
+                m_logicEngines.push_back(m_scene->createLogicEngine(fmt::format("logic{}", i)));
+
+            viewer = std::make_unique<LogicViewer>(*m_scene, doScreenshot);
             m_mockScreenshot = nullptr;
         }
 
@@ -72,10 +76,10 @@ namespace ramses::internal
                     throw std::runtime_error("bad filestream");
                 }
             }
-            auto result = viewer.loadLuaFile(filename);
+            auto result = viewer->loadLuaFile(filename);
             if (result.ok())
             {
-                result = viewer.update();
+                result = viewer->update();
             }
             return result;
         }
@@ -86,9 +90,9 @@ namespace ramses::internal
         }
 
         template<class T>
-        T* getNode(std::string_view nodeName)
+        T* getNode(LogicEngine& logic, std::string_view nodeName)
         {
-            auto* node = viewer.getLogic().findObject<T>(nodeName);
+            auto* node = logic.findObject<T>(nodeName);
             if (node == nullptr)
             {
                 throw(std::runtime_error(fmt::format("Node not found: '{}'", nodeName)));
@@ -107,9 +111,9 @@ namespace ramses::internal
         }
 
         template<class T>
-        ramses::Property* getInput(std::string_view nodeName, std::string_view propertyName)
+        ramses::Property* getInput(LogicEngine& logic, std::string_view nodeName, std::string_view propertyName)
         {
-            return GetInput(getNode<T>(nodeName), propertyName);
+            return GetInput(getNode<T>(logic, nodeName), propertyName);
         }
 
         static const ramses::Property* GetOutput(const ramses::LogicNode* node, std::string_view propertyName)
@@ -123,9 +127,9 @@ namespace ramses::internal
         }
 
         template<class T>
-        const ramses::Property* getOutput(std::string_view nodeName, std::string_view propertyName)
+        const ramses::Property* getOutput(LogicEngine& logic, std::string_view nodeName, std::string_view propertyName)
         {
-            return GetOutput(getNode<T>(nodeName), propertyName);
+            return GetOutput(getNode<T>(logic, nodeName), propertyName);
         }
 
         static void SetMockScreenshot(MockScreenshot* mock)
@@ -145,8 +149,8 @@ namespace ramses::internal
         ramses::RenderGroup* m_nestedRenderGroup = { m_scene->createRenderGroup() };
         ramses::MeshNode* m_meshNode = { m_scene->createMeshNode() };
         ramses::RenderBuffer* m_renderBuffer = { m_scene->createRenderBuffer(1u, 2u, ramses::ERenderBufferFormat::R16F, ramses::ERenderBufferAccessMode::ReadWrite, 3u) };
-        ramses::LogicEngine* m_logic = { m_scene->createLogicEngine() };
-        LogicViewer viewer{ *m_logic, doScreenshot };
+        std::vector<ramses::LogicEngine*> m_logicEngines;
+        std::unique_ptr<LogicViewer>      viewer;
 
     private:
         // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables) must be static and non-const (see SetMockScreenshot)

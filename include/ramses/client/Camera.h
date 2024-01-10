@@ -1,5 +1,5 @@
 //  -------------------------------------------------------------------------
-//  Copyright (C) 2014 BMW Car IT GmbH
+//  Copyright (C) 2023 BMW AG
 //  -------------------------------------------------------------------------
 //  This Source Code Form is subject to the terms of the Mozilla Public
 //  License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,10 +20,10 @@ namespace ramses
     class DataObject;
 
     /**
-    * @ingroup CoreAPI
     * @brief   The #Camera base class is part of a scene and defines a view into the scene
     *          defined by the client application. It is also a #Node with transformation.
-    * @details A valid camera for rendering must have viewport and frustum set.
+    * @details A valid camera for rendering must have a viewport and a frustum set.
+    * @ingroup CoreAPI
     */
     class RAMSES_API Camera : public Node
     {

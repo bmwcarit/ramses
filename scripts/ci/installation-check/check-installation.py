@@ -97,6 +97,7 @@ def main():
             r"^bin/render-backend-tests$",
             r"^bin/rendering-tests$",
             r"^bin/renderer-lifecycle-tests$",
+            r"^bin/ramses-shared-lib-tests$",
         ]
 
         # Everything else below should also not be in the package

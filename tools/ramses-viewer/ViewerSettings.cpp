@@ -74,6 +74,10 @@ namespace ramses::internal
         {
             gui->luaPreferIdentifiers = (flag != 0);
         }
+        else if (IniReadFlag(line, "Font=%d", &flag))
+        {
+            gui->font = flag;
+        }
     }
 
     void ViewerSettings::IniWriteAll(ImGuiContext* /*context*/, ImGuiSettingsHandler* handler, ImGuiTextBuffer* buf)
@@ -92,6 +96,8 @@ namespace ramses::internal
         buf->appendf("LuaPreferObjectIds=%d\n", gui->luaPreferObjectIds ? 1 : 0);
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg) 3rd party interface
         buf->appendf("LuaPreferIdentifiers=%d\n", gui->luaPreferIdentifiers ? 1 : 0);
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg) 3rd party interface
+        buf->appendf("Font=%d\n", gui->font);
         buf->append("\n");
     }
 }

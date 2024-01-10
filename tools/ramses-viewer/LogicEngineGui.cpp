@@ -189,23 +189,6 @@ namespace ramses::internal
         drawNode(obj);
     }
 
-    void LogicEngineGui::drawNodeContextMenu(ramses::LogicNode* obj, const std::string_view& ns)
-    {
-        if (ImGui::BeginPopupContextItem(obj->getName().data()))
-        {
-            if (ImGui::MenuItem(fmt::format("Copy {} inputs", obj->getName()).c_str()))
-            {
-                LogicViewerLog::PathVector path;
-                path.push_back(LogicViewer::ltnModule);
-                path.push_back(ns);
-                LogicViewerLog log(m_settings);
-                log.logInputs(obj, path);
-                ImGui::SetClipboardText(log.getText().c_str());
-            }
-            ImGui::EndPopup();
-        }
-    }
-
     void LogicEngineGui::drawNode(ramses::LogicNode* obj)
     {
         auto* in = obj->getInputs();

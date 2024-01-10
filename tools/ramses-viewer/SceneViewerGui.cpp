@@ -657,19 +657,19 @@ namespace ramses::internal
         auto& engine = static_cast<LogicEngine&>(obj.getRamsesObject());
         LogicEngineGui logicGui(m_settings);
 
-        logicGui.drawCollection(engine.getCollection<LuaInterface>(), LogicViewer::ltnInterface, "Interfaces", [&](auto* o) { draw(o->impl()); });
-        logicGui.drawCollection(engine.getCollection<LuaScript>(), LogicViewer::ltnScript, "Scripts", [&](auto* o) { draw(o->impl()); });
-        logicGui.drawCollection(engine.getCollection<AnimationNode>(), LogicViewer::ltnAnimation, "AnimationNodes", [&](auto* o) { draw(o->impl()); });
-        logicGui.drawCollection(engine.getCollection<TimerNode>(), LogicViewer::ltnTimer, "Timer Nodes", [&](auto* o) { draw(o->impl()); });
-        logicGui.drawCollection(engine.getCollection<AppearanceBinding>(), LogicViewer::ltnAppearance, "Appearance Bindings", [&](auto* o) { draw(o->impl()); });
-        logicGui.drawCollection(engine.getCollection<NodeBinding>(), LogicViewer::ltnNode, "Node Bindings", [&](auto* o) { draw(o->impl()); });
-        logicGui.drawCollection(engine.getCollection<CameraBinding>(), LogicViewer::ltnCamera, "Camera Bindings", [&](auto* o) { draw(o->impl()); });
-        logicGui.drawCollection(engine.getCollection<RenderPassBinding>(), LogicViewer::ltnRenderPass, "RenderPass Bindings", [&](auto* o) { draw(o->impl()); });
-        logicGui.drawCollection(engine.getCollection<RenderGroupBinding>(), LogicViewer::ltnRenderGroup, "RenderGroup Bindings", [&](auto* o) { draw(o->impl()); });
-        logicGui.drawCollection(engine.getCollection<MeshNodeBinding>(), LogicViewer::ltnMeshNode, "MeshNode Bindings", [&](auto* o) { draw(o->impl()); });
-        logicGui.drawCollection(engine.getCollection<AnchorPoint>(), LogicViewer::ltnAnchorPoint, "Anchor Bindings", [&](auto* o) { draw(o->impl()); });
-        logicGui.drawCollection(engine.getCollection<SkinBinding>(), LogicViewer::ltnSkinBinding, "Skin Bindings", [&](auto* o) { draw(o->impl()); });
-        logicGui.drawCollection(engine.getCollection<RenderBufferBinding>(), LogicViewer::ltnRenderBuffer, "RenderBuffer Bindings", [&](auto* o) { draw(o->impl()); });
+        logicGui.drawCollection<LuaInterface>(engine, LogicViewer::ltnInterface, "Interfaces", [&](auto* o) { draw(o->impl()); });
+        logicGui.drawCollection<LuaScript>(engine, LogicViewer::ltnScript, "Scripts", [&](auto* o) { draw(o->impl()); });
+        logicGui.drawCollection<AnimationNode>(engine, LogicViewer::ltnAnimation, "AnimationNodes", [&](auto* o) { draw(o->impl()); });
+        logicGui.drawCollection<TimerNode>(engine, LogicViewer::ltnTimer, "Timer Nodes", [&](auto* o) { draw(o->impl()); });
+        logicGui.drawCollection<AppearanceBinding>(engine, LogicViewer::ltnAppearance, "Appearance Bindings", [&](auto* o) { draw(o->impl()); });
+        logicGui.drawCollection<NodeBinding>(engine, LogicViewer::ltnNode, "Node Bindings", [&](auto* o) { draw(o->impl()); });
+        logicGui.drawCollection<CameraBinding>(engine, LogicViewer::ltnCamera, "Camera Bindings", [&](auto* o) { draw(o->impl()); });
+        logicGui.drawCollection<RenderPassBinding>(engine, LogicViewer::ltnRenderPass, "RenderPass Bindings", [&](auto* o) { draw(o->impl()); });
+        logicGui.drawCollection<RenderGroupBinding>(engine, LogicViewer::ltnRenderGroup, "RenderGroup Bindings", [&](auto* o) { draw(o->impl()); });
+        logicGui.drawCollection<MeshNodeBinding>(engine, LogicViewer::ltnMeshNode, "MeshNode Bindings", [&](auto* o) { draw(o->impl()); });
+        logicGui.drawCollection<AnchorPoint>(engine, LogicViewer::ltnAnchorPoint, "Anchor Bindings", [&](auto* o) { draw(o->impl()); });
+        logicGui.drawCollection<SkinBinding>(engine, LogicViewer::ltnSkinBinding, "Skin Bindings", [&](auto* o) { draw(o->impl()); });
+        logicGui.drawCollection<RenderBufferBinding>(engine, LogicViewer::ltnRenderBuffer, "RenderBuffer Bindings", [&](auto* o) { draw(o->impl()); });
     }
 
     void SceneViewerGui::drawLogicObject(LogicObjectImpl& obj)
