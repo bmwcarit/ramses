@@ -39,6 +39,7 @@ namespace ramses_internal
         MOCK_METHOD(Bool , hasSurfaceForStreamTexture, (WaylandIviSurfaceId), (const, override));
         MOCK_METHOD(String , getTitleOfWaylandIviSurface, (WaylandIviSurfaceId), (const, override));
         MOCK_METHOD(void, logInfos, (RendererLogContext&), (const, override));
+        MOCK_METHOD(void, logPeriodicInfo, (StringOutputStream&), (const, override));
         MOCK_METHOD(bool, isRealCompositor, (), (const, override));
     };
 }

@@ -1273,4 +1273,294 @@ namespace ramses
         EXPECT_EQ(StatusOK, appearance->getDrawMode(mode));
         EXPECT_EQ(EDrawMode_LineStrip, mode);
     }
+
+    TEST_F(AAppearanceTest, defaultBlendingFactors)
+    {
+        EBlendFactor srcColor  = EBlendFactor_Zero;
+        EBlendFactor destColor = EBlendFactor_Zero;
+        EBlendFactor srcAlpha  = EBlendFactor_Zero;
+        EBlendFactor destAlpha = EBlendFactor_Zero;
+        status_t stat = appearance->getBlendingFactors(srcColor, destColor, srcAlpha, destAlpha);
+        EXPECT_EQ(StatusOK, stat);
+        EXPECT_EQ(EBlendFactor_SrcAlpha, srcColor);
+        EXPECT_EQ(EBlendFactor_OneMinusSrcAlpha, destColor);
+        EXPECT_EQ(EBlendFactor_One, srcAlpha);
+        EXPECT_EQ(EBlendFactor_One, destAlpha);
+    }
+
+    TEST_F(AAppearanceTest, defaultDepthWriteMode)
+    {
+        EDepthWrite depthWriteMode = EDepthWrite_Disabled;
+        EXPECT_EQ(StatusOK, appearance->getDepthWriteMode(depthWriteMode));
+        EXPECT_EQ(EDepthWrite_Enabled, depthWriteMode);
+    }
+
+    TEST_F(AAppearanceTest, defaultScissorRegion)
+    {
+        int16_t  x      = std::numeric_limits<int16_t>::max();
+        int16_t  y      = std::numeric_limits<int16_t>::max();
+        uint16_t width  = std::numeric_limits<uint16_t>::max();
+        uint16_t height = std::numeric_limits<uint16_t>::max();
+        EXPECT_EQ(StatusOK, appearance->getScissorRegion(x, y, width, height));
+        EXPECT_EQ(0, x);
+        EXPECT_EQ(0, y);
+        EXPECT_EQ(0u, width);
+        EXPECT_EQ(0u, height);
+    }
+
+    TEST_F(AAppearanceTest, defaultStencilFunc)
+    {
+        EStencilFunc func = EStencilFunc_NUMBER_OF_ELEMENTS;
+        uint8_t      ref  = std::numeric_limits<uint8_t>::max();
+        uint8_t      mask = std::numeric_limits<uint8_t>::max();
+        status_t     stat = appearance->getStencilFunction(func, ref, mask);
+        EXPECT_EQ(StatusOK, stat);
+        EXPECT_EQ(EStencilFunc_Disabled, func);
+        EXPECT_EQ(0u, ref);
+        EXPECT_EQ(0xFF, mask);
+    }
+
+    TEST_F(AAppearanceTest, defaultBlendingOperations)
+    {
+        EBlendOperation opColor = EBlendOperation_NUMBER_OF_ELEMENTS;
+        EBlendOperation opAlpha = EBlendOperation_NUMBER_OF_ELEMENTS;
+        EXPECT_EQ(StatusOK, appearance->getBlendingOperations(opColor, opAlpha));
+        EXPECT_EQ(EBlendOperation_Disabled, opColor);
+        EXPECT_EQ(EBlendOperation_Disabled, opAlpha);
+    }
+
+    TEST_F(AAppearanceTest, defaultCullMode)
+    {
+        ECullMode mode = ECullMode_Disabled;
+        EXPECT_EQ(StatusOK, appearance->getCullingMode(mode));
+        EXPECT_EQ(ECullMode_BackFacing, mode);
+    }
+
+    TEST_F(AAppearanceTest, defaultColorWriteMask)
+    {
+        bool writeR = false;
+        bool writeG = false;
+        bool writeB = false;
+        bool writeA = false;
+        EXPECT_EQ(StatusOK, appearance->getColorWriteMask(writeR, writeG, writeB, writeA));
+        EXPECT_TRUE(writeR);
+        EXPECT_TRUE(writeG);
+        EXPECT_TRUE(writeB);
+        EXPECT_TRUE(writeA);
+    }
+
+    TEST_F(AAppearanceTest, defaultGetInputValue)
+    {
+        UniformInput uniformItegerInput;
+        int32_t      intOut = std::numeric_limits<int32_t>::max();
+        EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("integerInput", uniformItegerInput));
+        EXPECT_EQ(StatusOK, appearance->getInputValueInt32(uniformItegerInput, intOut));
+        EXPECT_EQ(intOut, 0);
+
+        UniformInput uniformFloatInput;
+        float        floatOut = std::numeric_limits<float>::max();
+        EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("floatInput", uniformFloatInput));
+        EXPECT_EQ(StatusOK, appearance->getInputValueFloat(uniformFloatInput, floatOut));
+        EXPECT_FLOAT_EQ(floatOut, 0.0f);
+
+        UniformInput              uniformVec2iInput;
+        ramses_internal::Vector4i vec4iOut(42, 42, 42, 42);
+        EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("vec2iInput", uniformVec2iInput));
+        EXPECT_EQ(StatusOK, appearance->getInputValueVector2i(uniformVec2iInput, vec4iOut.x, vec4iOut.y));
+        EXPECT_EQ(vec4iOut.x, 0);
+        EXPECT_EQ(vec4iOut.y, 0);
+
+        UniformInput uniformVec3iInput;
+        vec4iOut = ramses_internal::Vector4i(42, 42, 42, 42);
+        EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("vec3iInput", uniformVec3iInput));
+        EXPECT_EQ(StatusOK, appearance->getInputValueVector3i(uniformVec3iInput, vec4iOut.x, vec4iOut.y, vec4iOut.z));
+        EXPECT_EQ(vec4iOut.x, 0);
+        EXPECT_EQ(vec4iOut.y, 0);
+        EXPECT_EQ(vec4iOut.z, 0);
+
+        UniformInput uniformVec4iInput;
+        vec4iOut = ramses_internal::Vector4i(42, 42, 42, 42);
+        EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("vec4iInput", uniformVec4iInput));
+        EXPECT_EQ(StatusOK, appearance->getInputValueVector4i(uniformVec4iInput, vec4iOut.x, vec4iOut.y, vec4iOut.z, vec4iOut.w));
+        EXPECT_EQ(vec4iOut.x, 0);
+        EXPECT_EQ(vec4iOut.y, 0);
+        EXPECT_EQ(vec4iOut.z, 0);
+        EXPECT_EQ(vec4iOut.w, 0);
+
+        UniformInput uniformVec2fInput;
+        ramses_internal::Vector4 vec4fOut(42.0f, 42.0f, 42.0f, 42.0f);
+        EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("vec2fInput", uniformVec2fInput));
+        EXPECT_EQ(StatusOK, appearance->getInputValueVector2f(uniformVec2fInput, vec4fOut.x, vec4fOut.y));
+        EXPECT_EQ(vec4fOut.x, 0.0f);
+        EXPECT_EQ(vec4fOut.y, 0.0f);
+
+        UniformInput uniformVec3fInput;
+        vec4fOut = ramses_internal::Vector4(42.0f, 42.0f, 42.0f, 42.0f);
+        EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("vec3fInput", uniformVec3fInput));
+        EXPECT_EQ(StatusOK, appearance->getInputValueVector3f(uniformVec3fInput, vec4fOut.x, vec4fOut.y, vec4fOut.z));
+        EXPECT_EQ(vec4fOut.x, 0.0f);
+        EXPECT_EQ(vec4fOut.y, 0.0f);
+        EXPECT_EQ(vec4fOut.z, 0.0f);
+
+        UniformInput uniformVec4fInput;
+        vec4fOut = ramses_internal::Vector4(42.0f, 42.0f, 42.0f, 42.0f);
+        EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("vec4fInput", uniformVec4fInput));
+        EXPECT_EQ(StatusOK, appearance->getInputValueVector4f(uniformVec4fInput, vec4fOut.x, vec4fOut.y, vec4fOut.z, vec4fOut.w));
+        EXPECT_EQ(vec4fOut.x, 0.0f);
+        EXPECT_EQ(vec4fOut.y, 0.0f);
+        EXPECT_EQ(vec4fOut.z, 0.0f);
+        EXPECT_EQ(vec4fOut.w, 0.0f);
+
+        UniformInput uniformMatrix22fInput;
+        EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("matrix22fInput", uniformMatrix22fInput));
+        float matrix22fOut[4] =
+        {
+            42, 43, 44, 45
+        };
+        EXPECT_EQ(StatusOK, appearance->getInputValueMatrix22f(uniformMatrix22fInput, matrix22fOut));
+        for (const auto &i : matrix22fOut)
+            EXPECT_FLOAT_EQ(i, 0.0f);
+
+        UniformInput uniformMatrix33fInput;
+        EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("matrix33fInput", uniformMatrix33fInput));
+        float matrix33fOut[9] =
+        {
+            42, 43, 44,
+            45, 46, 47,
+            48, 49, 50
+        };
+        EXPECT_EQ(StatusOK, appearance->getInputValueMatrix33f(uniformMatrix33fInput, matrix33fOut));
+        for (const auto &i : matrix33fOut)
+            EXPECT_FLOAT_EQ(i, 0.0f);
+
+        UniformInput uniformMatrix44fInput;
+        EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("matrix44fInput", uniformMatrix44fInput));
+        float matrix44fOut[16] =
+        {
+            42, 43, 44, 45,
+            46, 47, 48, 49,
+            50, 51, 52, 53,
+            54, 55, 56, 57
+        };
+        EXPECT_EQ(StatusOK, appearance->getInputValueMatrix44f(uniformMatrix44fInput, matrix44fOut));
+        for (const auto &i : matrix44fOut)
+            EXPECT_FLOAT_EQ(i, 0.0f);
+
+        UniformInput integerInputArrayInput;
+        EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("integerInputArray", integerInputArrayInput));
+        int32_t integerInputArray[] = {42, 42, 42};
+        EXPECT_EQ(StatusOK, appearance->getInputValueInt32(integerInputArrayInput, 3u, integerInputArray));
+        for (const auto& i : integerInputArray)
+            EXPECT_EQ(i, 0);
+
+        UniformInput floatInputArrayInput;
+        EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("floatInputArray", floatInputArrayInput));
+        float floatInputArray[] = {42, 42, 42};
+        EXPECT_EQ(StatusOK, appearance->getInputValueFloat(floatInputArrayInput, 3u, floatInputArray));
+        for (const auto& i : floatInputArray)
+            EXPECT_FLOAT_EQ(i, 0.0f);
+
+        UniformInput vec2iInputArrayInput;
+        EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("vec2iInputArray", vec2iInputArrayInput));
+        int32_t vec2iInputArray[] = {42, 43, 44, 45, 46, 47};
+        EXPECT_EQ(StatusOK, appearance->getInputValueVector2i(vec2iInputArrayInput, 3u, vec2iInputArray));
+        for (const auto& i : vec2iInputArray)
+            EXPECT_EQ(i, 0);
+
+        UniformInput vec3iInputArrayInput;
+        EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("vec3iInputArray", vec3iInputArrayInput));
+        int32_t vec3iInputArray[] = {42, 43, 44, 45, 46, 47, 48, 49, 50};
+        EXPECT_EQ(StatusOK, appearance->getInputValueVector3i(vec3iInputArrayInput, 3u, vec3iInputArray));
+        for (const auto& i : vec3iInputArray)
+            EXPECT_EQ(i, 0);
+
+        UniformInput vec4iInputArrayInput;
+        EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("vec4iInputArray", vec4iInputArrayInput));
+        int32_t vec4iInputArray[] =
+        {
+            42, 43, 44, 45,
+            46, 47, 48, 49,
+            50, 51, 52, 53
+        };
+        EXPECT_EQ(StatusOK, appearance->getInputValueVector4i(vec4iInputArrayInput, 3u, vec4iInputArray));
+        for (const auto& i : vec4iInputArray)
+            EXPECT_EQ(i, 0);
+
+        UniformInput vec2fInputArrayInput;
+        EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("vec2fInputArray", vec2fInputArrayInput));
+        float vec2fInputArray[] = {42, 43, 44, 45, 46, 47};
+        EXPECT_EQ(StatusOK, appearance->getInputValueVector2f(vec2fInputArrayInput, 3u, vec2fInputArray));
+        for (const auto& i : vec2iInputArray)
+            EXPECT_EQ(i, 0.0f);
+
+        UniformInput vec3fInputArrayInput;
+        EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("vec3fInputArray", vec3fInputArrayInput));
+        float vec3fInputArray[] = {42, 43, 44, 45, 46, 47, 48, 49, 50};
+        EXPECT_EQ(StatusOK, appearance->getInputValueVector3f(vec3fInputArrayInput, 3u, vec3fInputArray));
+        for (const auto& i : vec3fInputArray)
+            EXPECT_FLOAT_EQ(i, 0.0f);
+
+        UniformInput vec4fInputArrayInput;
+        EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("vec4fInputArray", vec4fInputArrayInput));
+        float vec4fInputArray[] =
+        {
+            42, 43, 44, 45,
+            46, 47, 48, 49,
+            50, 51, 52, 53
+        };
+        EXPECT_EQ(StatusOK, appearance->getInputValueVector4f(vec4fInputArrayInput, 3u, vec4fInputArray));
+        for (const auto& i : vec4fInputArray)
+            EXPECT_FLOAT_EQ(i, 0.0f);
+
+        UniformInput matrix22fInputArrayInput;
+        EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("matrix22fInputArray", matrix22fInputArrayInput));
+        float matrix22fInputArray[12] =
+        {
+            42, 43, 44, 45,
+            46, 47, 48, 49,
+            50, 51, 52, 53
+        };
+        EXPECT_EQ(StatusOK, appearance->getInputValueMatrix22f(matrix22fInputArrayInput, 3u, matrix22fInputArray));
+        for (const auto& i : matrix22fInputArray)
+            EXPECT_FLOAT_EQ(i, 0.0f);
+
+        UniformInput matrix33fInputArrayInput;
+        EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("matrix33fInputArray", matrix33fInputArrayInput));
+        float matrix33fInputArray[27] =
+        {
+            42, 43, 44,
+            46, 47, 48,
+            50, 51, 52,
+            54, 55, 56,
+            46, 47, 48,
+            42, 43, 44,
+            54, 55, 56,
+            46, 47, 48,
+            50, 51, 52
+        };
+        EXPECT_EQ(StatusOK, appearance->getInputValueMatrix33f(matrix33fInputArrayInput, 3u, matrix33fInputArray));
+        for (const auto& i : matrix33fInputArray)
+            EXPECT_FLOAT_EQ(i, 0.0f);
+
+        UniformInput matrix44fInputArrayInput;
+        EXPECT_EQ(StatusOK, sharedTestState->effect->findUniformInput("matrix44fInputArray", matrix44fInputArrayInput));
+        float matrix44fInputArray[48] =
+        {
+            42, 43, 44, 45,
+            46, 47, 48, 49,
+            50, 51, 52, 53,
+            54, 55, 56, 57,
+            46, 47, 48, 49,
+            42, 43, 44, 45,
+            54, 55, 56, 57,
+            46, 47, 48, 49,
+            50, 51, 52, 53,
+            54, 55, 56, 57,
+            42, 43, 44, 45,
+            50, 51, 52, 53
+        };
+        EXPECT_EQ(StatusOK, appearance->getInputValueMatrix44f(matrix44fInputArrayInput, 3u, matrix44fInputArray));
+        for (const auto& i : matrix44fInputArray)
+            EXPECT_FLOAT_EQ(i, 0.0f);
+    }
 }

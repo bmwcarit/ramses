@@ -28,6 +28,7 @@
 #include "ResourceObjects.h"
 #include "Collections/Vector.h"
 #include "RamsesObjectVector.h"
+#include "ClientCommands/SetProperty.h"
 #include "ClientCommands/ValidateCommand.h"
 #include "ClientCommands/ForceFallbackImage.h"
 #include "ClientCommands/DumpSceneToFile.h"
@@ -135,7 +136,7 @@ namespace ramses
         ramses_internal::ManagedResource createManagedTexture(ramses_internal::EResourceType textureType, uint32_t width, uint32_t height, uint32_t depth, ETextureFormat format, uint32_t mipMapCount, const MipDataStorageType mipLevelData[], bool generateMipChain, const TextureSwizzle& swizzle, resourceCacheFlag_t cacheFlag, const char* name);
         ramses_internal::ManagedResource createManagedEffect(const EffectDescription& effectDesc, resourceCacheFlag_t cacheFlag, const char* name, std::string& errorMessages);
 
-        void writeLowLevelResourcesToStream(const ResourceObjects& resources, ramses_internal::BinaryFileOutputStream& resourceOutputStream, bool compress) const;
+        void writeLowLevelResourcesToStream(const ResourceObjects& resources, ramses_internal::IOutputStream& resourceOutputStream, bool compress) const;
         static bool ReadRamsesVersionAndPrintWarningOnMismatch(ramses_internal::IInputStream& inputStream, const ramses_internal::String& verboseFileName);
         static void WriteCurrentBuildVersionToStream(ramses_internal::IOutputStream& stream);
 
@@ -206,6 +207,8 @@ namespace ramses
         SceneVector          m_scenes;
 
         std::shared_ptr<ramses_internal::PrintSceneList> m_cmdPrintSceneList;
+        std::shared_ptr<ramses_internal::SetProperty> m_cmdSetProperty;
+        std::shared_ptr<ramses_internal::SetPropertyAll> m_cmdSetPropertyAll;
         std::shared_ptr<ramses_internal::ValidateCommand> m_cmdPrintValidation;
         std::shared_ptr<ramses_internal::ForceFallbackImage> m_cmdForceFallbackImage;
         std::shared_ptr<ramses_internal::FlushSceneVersion> m_cmdFlushSceneVersion;

@@ -24,6 +24,7 @@ namespace ramses_internal
         absl::Span<const Byte> asSpan() const;
 
         IOutputStream& write(const void* data, size_t size) override;
+        EStatus getPos(size_t& position) const override;
     private:
         std::vector<Byte>& m_vecRef;
         const size_t m_startSize;
@@ -43,6 +44,12 @@ namespace ramses_internal
             m_vecRef.insert(m_vecRef.end(), dataByte, dataByte + size);
         }
         return *this;
+    }
+
+    inline EStatus VectorBinaryOutputStream::getPos(size_t& position) const
+    {
+        position = m_vecRef.size() - m_startSize;
+        return EStatus::Ok;
     }
 
     inline absl::Span<const Byte> VectorBinaryOutputStream::asSpan() const

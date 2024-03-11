@@ -26,6 +26,26 @@ namespace ramses
             return (fixed - 32) / 64;
     }
 
+#if !defined(USE_HARFBUZZ_LEGACY_SHAPING)
+    static hb_script_t guessScript(hb_unicode_funcs_t* unicodeFuncs, std::u32string::const_iterator charIt, std::u32string::const_iterator charsEnd)
+    {
+        hb_script_t result = HB_SCRIPT_COMMON;
+
+        while (charIt != charsEnd)
+        {
+            const hb_script_t hbScript = hb_unicode_script(unicodeFuncs, *charIt);
+            if ((HB_SCRIPT_COMMON != hbScript) && (HB_SCRIPT_INHERITED != hbScript) && (HB_SCRIPT_UNKNOWN != hbScript))
+            {
+                result = hbScript;
+                break;
+            }
+            ++charIt;
+        }
+
+        return result;
+    }
+#endif
+
     HarfbuzzFontInstance::HarfbuzzFontInstance(FontInstanceId id, FT_Face fontFace, uint32_t pixelSize, bool forceAutohinting)
         : Freetype2FontInstance(id, fontFace, pixelSize, forceAutohinting)
     {
@@ -73,6 +93,21 @@ namespace ramses
             // Always take LTR direction. With that Arabic reshaping works, but char codes must already come in the swapped order.
             hb_buffer_set_direction(m_hbBuffer, HB_DIRECTION_LTR);
 
+#if !defined(USE_HARFBUZZ_LEGACY_SHAPING)
+            // leading INHERITED, COMMON or UNKNOWN scripts have to be replaced by the first dedicated script (main script)
+            // to allow contextual shaping: otherwise the main script characters created a buffer containing 1 character
+            const hb_script_t hbScript = guessScript(unicodeFuncs, charIt, charsEnd);
+            hb_buffer_set_script(m_hbBuffer, hbScript);
+
+            // add chars using same script to buffer
+            // - include chars with COMMON property to kern spaces, solidus, minus, etc. correct (8000+ characters)
+            // - include chars with INHERITED property to shape diacritics correct (600+ characters)
+            // - include chars with UNKNOWN property (private use area)
+            while (charIt != charsEnd)
+            {
+                const hb_script_t cpScript = hb_unicode_script(unicodeFuncs, *charIt);
+                if ((cpScript == hbScript) || (HB_SCRIPT_COMMON == cpScript) || (HB_SCRIPT_INHERITED == cpScript) || (HB_SCRIPT_UNKNOWN == cpScript))
+#else
             const hb_script_t hbScript = hb_unicode_script(unicodeFuncs, *charIt);
             hb_buffer_set_script(m_hbBuffer, hbScript);
 
@@ -80,6 +115,7 @@ namespace ramses
             while (charIt != charsEnd)
             {
                 if (hb_unicode_script(unicodeFuncs, *charIt) == hbScript)
+#endif
                 {
                     hb_buffer_add(m_hbBuffer, *charIt, clusterIdx);
                     charIt++;

@@ -34,7 +34,7 @@ namespace ramses_internal
         const char* m_contextId;
 
         std::atomic<ELogLevel> m_logLevel{ELogLevel::Info};
-        bool m_setLogLevelEnabled = true;
+        std::atomic_bool m_setLogLevelEnabled{ true };
 
         void* m_data = nullptr;
     };

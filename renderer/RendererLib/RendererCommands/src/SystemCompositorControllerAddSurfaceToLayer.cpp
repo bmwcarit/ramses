@@ -13,7 +13,7 @@ namespace ramses_internal
     SystemCompositorControllerAddSurfaceToLayer::SystemCompositorControllerAddSurfaceToLayer(RendererCommandBuffer& rendererCommandBuffer)
         : m_rendererCommandBuffer(rendererCommandBuffer)
     {
-        description = "adds an ivi surface to an ivi layer";
+        description = "adds an ivi-surface to an ivi-layer";
         registerKeyword("scAddSurfaceToLayer");
         registerKeyword("scastl");
 

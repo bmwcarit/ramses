@@ -17,7 +17,7 @@
 namespace ramses_internal
 {
     WaylandIVISurface::WaylandIVISurface(IWaylandClient&             client,
-                                         INativeWaylandResource&           iviApplicationConnectionResource,
+                                         INativeWaylandResource&     iviApplicationConnectionResource,
                                          WaylandIviSurfaceId         iviSurfaceId,
                                          IWaylandSurface*            surface,
                                          uint32_t                    id,
@@ -26,12 +26,12 @@ namespace ramses_internal
         , m_compositor(compositor)
         , m_clientCredentials(client.getCredentials())
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandIVISurface::WaylandIVISurface");
+        LOG_TRACE(CONTEXT_RENDERER, "WaylandIVISurface::WaylandIVISurface");
 
         if (surface->hasIviSurface())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "WaylandIVISurface::WaylandIVISurface: failed creating ivi-surface : " << iviSurfaceId
-                    << ". The wayland surface already has an ivi-surface " << surface->getIviSurfaceId() << "attached!  " << m_clientCredentials);
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandIVISurface::WaylandIVISurface: failed creating: " << iviSurfaceId
+                    << ". The wayland surface already has a surface with " << surface->getIviSurfaceId() << "attached!  " << m_clientCredentials);
 
             iviApplicationConnectionResource.postError(IVI_APPLICATION_ERROR_IVI_ID, "surface already has a ivi-surface");
         }
@@ -42,7 +42,7 @@ namespace ramses_internal
                 m_resource = client.resourceCreate(&ivi_surface_interface, iviApplicationConnectionResource.getVersion(), id);
                 if (nullptr != m_resource)
                 {
-                    LOG_INFO(CONTEXT_RENDERER, "WaylandIVISurface::WaylandIVISurface: created succesffully for ivi-surface : " << iviSurfaceId
+                    LOG_INFO(CONTEXT_RENDERER, "WaylandIVISurface::WaylandIVISurface: created successfully: " << iviSurfaceId
                             << "  " << m_clientCredentials);
 
                     m_resource->setImplementation(&m_iviSurfaceInterface, this, ResourceDestroyedCallback);
@@ -56,7 +56,7 @@ namespace ramses_internal
                 }
                 else
                 {
-                    LOG_ERROR(CONTEXT_RENDERER, "WaylandIVISurface::WaylandIVISurface: failed creating ivi-surface : " << iviSurfaceId
+                    LOG_ERROR(CONTEXT_RENDERER, "WaylandIVISurface::WaylandIVISurface: failed creating " << iviSurfaceId
                             << ". Failed creating wayland resource  " << m_clientCredentials);
                     client.postNoMemory();
                 }
@@ -66,9 +66,9 @@ namespace ramses_internal
 
                 const auto credentialsForOtherClient = m_compositor.findSurfaceForStreamTexture(iviSurfaceId).getClientCredentials();
 
-                LOG_ERROR(CONTEXT_RENDERER, "WaylandIVISurface::WaylandIVISurface: failed creating ivi-surface : " << iviSurfaceId
+                LOG_ERROR(CONTEXT_RENDERER, "WaylandIVISurface::WaylandIVISurface: failed creating " << iviSurfaceId
                         << " for  " << m_clientCredentials
-                        << ". A wayland surface already eixsts with same ivi-surface id for " << credentialsForOtherClient);
+                        << ". A wayland surface already exists with same ivi-surface id for " << credentialsForOtherClient);
 
                 iviApplicationConnectionResource.postError(IVI_APPLICATION_ERROR_IVI_ID, "ivi-id is already in use");
             }
@@ -82,7 +82,7 @@ namespace ramses_internal
 
     WaylandIVISurface::~WaylandIVISurface()
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandIVISurface::!WaylandIVISurface: wayland ivi sruface destroyed with ivi-id : " << m_iviSurfaceId
+        LOG_INFO(CONTEXT_RENDERER, "WaylandIVISurface::~WaylandIVISurface " << m_iviSurfaceId
                 << "  " << m_clientCredentials);
 
         if (m_surface != nullptr)
@@ -120,7 +120,7 @@ namespace ramses_internal
 
     void WaylandIVISurface::resourceDestroyed()
     {
-        LOG_INFO(CONTEXT_RENDERER, "WaylandIVISurface::resourceDestroyed");
+        LOG_INFO(CONTEXT_RENDERER, "WaylandIVISurface::resourceDestroyed " << m_iviSurfaceId);
 
         // wl_resource is destroyed outside by the Wayland library, so m_resource looses the ownership of the
         // Wayland resource, so that we don't call wl_resource_destroy.

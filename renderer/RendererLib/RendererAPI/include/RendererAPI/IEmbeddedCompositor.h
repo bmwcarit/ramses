@@ -16,6 +16,7 @@ namespace ramses_internal
 {
     class RendererLogContext;
     class ITextureUploadingAdapter;
+    class StringOutputStream;
 
     class IEmbeddedCompositor
     {
@@ -37,6 +38,7 @@ namespace ramses_internal
         virtual Bool hasSurfaceForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const = 0;
         virtual String getTitleOfWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const = 0;
         virtual void logInfos(RendererLogContext& context) const = 0;
+        virtual void logPeriodicInfo(StringOutputStream& sos) const = 0;
 
         virtual Bool isRealCompositor() const = 0; //TODO Mohamed: remove this when dummy EC is removed
     };

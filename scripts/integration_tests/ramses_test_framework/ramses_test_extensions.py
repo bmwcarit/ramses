@@ -36,16 +36,17 @@ def ensureSystemCompositorRoundTrip(renderer, ivisurfaceid):
     watchRenderer = renderer.start_watch_stdout()
     renderer.send_ramsh_command("scSetSurfaceOpacity {0} 0.5".format(ivisurfaceid))
     renderer.send_ramsh_command("scSetSurfaceOpacity {0} 1.0".format(ivisurfaceid))
-    opacityExecutedInSystemCompositor = renderer.wait_for_msg_in_stdout(watchRenderer,
-                                                                        "IVIControllerSurface::HandleOpacityCallBack ivi-id: {0} opacity: 256".
-                                                                        format(ivisurfaceid))
-    assert(opacityExecutedInSystemCompositor)  # Could not ensure system compositor roundtrip
+    opacityExecutedInSystemCompositor = renderer.wait_for_msg_in_stdout(
+        watchRenderer,
+        "IVIControllerSurface::HandleOpacityCallBack ivi-surface:{0} opacity: 256".format(ivisurfaceid))
+    assert (opacityExecutedInSystemCompositor)  # Could not ensure system compositor roundtrip
 
 
 def ensureHasContentOnSurface(renderer, surface_id):
     # callback from system compositor when surface content state changes (1: content added, 2: content removed)
-    is_executed = renderer.wait_for_msg_in_stdout_from_beginning("IVIControllerSurface::HandleContentCallback ivi-id: {} contentState: 1".format(surface_id))
-    assert(is_executed)
+    is_executed = renderer.wait_for_msg_in_stdout_from_beginning(
+        "IVIControllerSurface::HandleContentCallback ivi-surface:{} contentState: 1".format(surface_id))
+    assert (is_executed)
 
 
 class IVI_Control(object):
@@ -87,7 +88,7 @@ class IVI_Control(object):
                 # otherwise we are inside a section, so we add the info
                 # to the section's dictionary
                 else:
-                    assert(section_name != "" and section_id != 0)
+                    assert (section_name != "" and section_id != 0)
                     section_dict = scene_state[section_name][section_id]
                     object_parameter = [x.strip() for x in line.split(":")]
                     section_dict[object_parameter[0]] = object_parameter[1]

@@ -15,21 +15,69 @@ namespace ramses_internal
     DumpSceneToFile::DumpSceneToFile(ramses::RamsesClientImpl& client)
         : m_client(client)
     {
-        description = "dump scene to file";
+        description = "Usage: [-sendViaDLT] [-flush] sceneId [filename] - dump scene to file or DLT";
         registerKeyword("dumpSceneToFile");
-        getArgument<0>().setDescription("scene id");
-        getArgument<1>().setDescription("file name");
-        getArgument<2>().setDescription("send dumped scene file and related resource files via dlt (-sendViaDLT)");
-        getArgument<2>().setDefaultValue("");
+        registerKeyword("dumpScene");
     }
 
-    Bool DumpSceneToFile::execute(uint64_t& sceneId, String& fileName, String& sendViaDLT) const
+    bool DumpSceneToFile::executeInput(const std::vector<std::string>& input)
     {
-        SceneCommandDumpSceneToFile command;
-        command.fileName = fileName;
-        command.sendViaDLT = sendViaDLT == String("-sendViaDLT");
+        std::vector<std::string> arguments;
+        SceneCommandDumpSceneToFile command{};
+        bool flush = false;
+
+        for (auto& str : input)
+        {
+            if (str == "-sendViaDLT")
+            {
+                command.sendViaDLT = true;
+            }
+            else if (str == "-flush")
+            {
+                flush = true;
+            }
+            else
+            {
+                arguments.push_back(str);
+            }
+        }
+
+        switch (arguments.size())
+        {
+        case 3:
+            command.fileName = arguments[2];
+            break;
+        case 2:
+            if (!command.sendViaDLT)
+            {
+                LOG_ERROR_P(CONTEXT_RAMSH, "Expected [filename] or -sendViaDlt");
+                return false;
+            }
+            break;
+        default:
+            LOG_ERROR_P(CONTEXT_RAMSH, "None or too many arguments provided: {}", arguments.size() - 1);
+            return false;
+        }
+
+        ramses::sceneId_t sceneId;
+        ArgumentConverter<uint64_t>::tryConvert(arguments[1], sceneId.getReference());
+        if (!sceneId.isValid())
+        {
+            LOG_ERROR_P(CONTEXT_RAMSH, "Invalid SceneId: {}", arguments[0]);
+            return false;
+        }
 
         m_client.enqueueSceneCommand(ramses::sceneId_t(sceneId), std::move(command));
+        if (flush)
+        {
+            auto* scene = m_client.getScene(sceneId);
+            if (!scene)
+            {
+                LOG_ERROR_P(CONTEXT_RAMSH, "Scene not available: {}", sceneId);
+                return false;
+            }
+            scene->flush();
+        }
         return true;
     }
 }

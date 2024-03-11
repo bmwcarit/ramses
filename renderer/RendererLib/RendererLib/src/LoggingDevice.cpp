@@ -309,7 +309,8 @@ namespace ramses_internal
         m_logContext << "generate mipmaps for texture [handle:" << handle << "]" << RendererLogContext::NewLine;
     }
 
-    void LoggingDevice::uploadTextureData(DeviceResourceHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const Byte*, UInt32 dataSize)
+    void LoggingDevice::uploadTextureData(
+        DeviceResourceHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const Byte*, UInt32 dataSize, UInt32 /*stride*/)
     {
         m_logContext << "update texture data [handle:" << handle << " mipLevel:" << mipLevel << " (x,y,z):(" << x << "," << y << "," << z << ") (w,h,d):(" << width << "," << height << "," << depth << ") dataSize:" << dataSize << "]" << RendererLogContext::NewLine;
     }

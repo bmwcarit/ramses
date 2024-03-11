@@ -190,7 +190,7 @@ namespace ramses_internal
 
     void RendererEventCollector::addStreamSourceEvent(ERendererEventType eventType, WaylandIviSurfaceId streamSourceId)
     {
-        LOG_INFO(CONTEXT_RENDERER, eventType << " streamSourceId=" << streamSourceId);
+        LOG_INFO(CONTEXT_RENDERER, eventType << " streamSource=" << streamSourceId);
 
         RendererEvent event(eventType);
         event.streamSourceId = streamSourceId;

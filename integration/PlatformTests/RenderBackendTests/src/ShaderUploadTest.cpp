@@ -7,6 +7,9 @@
 //  -------------------------------------------------------------------------
 
 #include "ramses-renderer-api/DisplayConfig.h"
+#include "ramses-framework-api/RamsesFramework.h"
+#include "ramses-framework-api/RamsesFrameworkTypes.h"
+
 #include "DisplayConfigImpl.h"
 #include "RendererConfigImpl.h"
 #include "RendererTestUtils.h"
@@ -26,6 +29,7 @@
 #include "Platform_Base/Device_Base.h"
 #include "Platform_Base/Platform_Base.h"
 #include <memory>
+#include <vector>
 
 using namespace testing;
 
@@ -553,5 +557,85 @@ namespace ramses_internal
         EXPECT_TRUE(testDevice->isDeviceStatusHealthy());
 
         testDevice->deleteShader(handle);
+    }
+
+    TEST_F(ADeviceSupportingGeometryShaders, PrintInvalidShaderToLogger)
+    {
+        std::vector<std::string> collectedErrors;
+
+        ramses::RamsesFramework::SetLogHandler([&collectedErrors](auto level, auto, auto& message) {
+            if (level == ramses::ELogLevel::Error)
+            {
+                collectedErrors.push_back(message);
+            }
+        });
+
+        const auto invalidShader{"--this is some invalide shader source code--"};
+        const std::unique_ptr<EffectResource> templateEffect(CreateTestEffectResource());
+        {
+            const EffectResource invalidEffect(invalidShader,
+                                               templateEffect->getFragmentShader(),
+                                               templateEffect->getGeometryShader(),
+                                               absl::nullopt,
+                                               templateEffect->getUniformInputs(),
+                                               templateEffect->getAttributeInputs(),
+                                               "invalid effect",
+                                               ResourceCacheFlag_DoNotCache);
+            (void)testDevice->uploadShader(invalidEffect);
+
+            EXPECT_THAT(collectedErrors, ::testing::Contains(std::string{"1: Device_Base::PrintShaderSourceWithLineNumbers:  L1: "} + invalidShader));
+        }
+
+        auto shader = {
+            "#version 320 es",
+            "",
+            "layout(points) in;",
+            "layout(points, max_vertices = 1) out;",
+            "uniform highp float u_geomFloat;",
+            "",
+            "uniform highp vec4 u_float; //interface mismatch",
+            "",
+            "void main() {",
+            "",
+            "    gl_Position = vec4(u_geomFloat * u_float);",
+            "    EmitVertex();",
+            "    EndPrimitive() // missing ;",
+            "}",
+        };
+        String invalidGeometryShader{};
+        for (auto& line : shader)
+        {
+            invalidGeometryShader += line;
+            invalidGeometryShader += '\n';
+        }
+        collectedErrors.clear();
+        {
+            const EffectResource invalidEffect(templateEffect->getVertexShader(),
+                                               templateEffect->getFragmentShader(),
+                                               invalidGeometryShader,
+                                               absl::nullopt,
+                                               templateEffect->getUniformInputs(),
+                                               templateEffect->getAttributeInputs(),
+                                               "invalid effect",
+                                               ResourceCacheFlag_DoNotCache);
+            (void)testDevice->uploadShader(invalidEffect);
+
+            std::vector<std::string> expectedResult;
+            std::size_t              l = 1;
+            for (const auto& line : shader)
+            {
+                expectedResult.push_back(std::string{"1: Device_Base::PrintShaderSourceWithLineNumbers:  L"} + std::to_string(l) + ": " + line);
+                l++;
+            }
+
+            auto it = std::find(collectedErrors.begin(), collectedErrors.end(), expectedResult[0]);
+            for (const auto& line : expectedResult)
+            {
+                ASSERT_NE(it, collectedErrors.end());
+                EXPECT_EQ(*it, line);
+                it++;
+            }
+        }
+        ramses::RamsesFramework::SetLogHandler(nullptr);
     }
 }

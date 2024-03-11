@@ -182,10 +182,6 @@ namespace ramses_internal
 
     void LinuxDmabufParams::createBuffer(IWaylandClient& client, uint32_t bufferId, int32_t width, int32_t height, uint32_t format, uint32_t flags)
     {
-        LOG_INFO(CONTEXT_RENDERER, "LinuxDmabufParams::createBuffer(): buffer id : " << bufferId
-                << ", width :" << width << ", height :" << height << ", format :" << format << ", flags :" << flags
-                << "  " << m_clientCredentials);
-
         if (m_data->getNumPlanes() < 1)
         {
             LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufParams::createBuffer(): failed to create buffer [id : " << bufferId
@@ -223,7 +219,7 @@ namespace ramses_internal
         if (width < 1 || height < 1)
         {
             LOG_ERROR(CONTEXT_RENDERER, "LinuxDmabufParams::createBuffer(): failed to create buffer [id : " << bufferId
-                    << "] because of invalid width or height");
+                    << "] because of invalid width(" << width << ") or height(" << height << ")");
 
             StringOutputStream message;
             message << "invalid width " << width << " or height " << height;
@@ -340,6 +336,9 @@ namespace ramses_internal
         wl_resource* bufferNativeWaylandResource = bufferWaylandResource->getLowLevelHandle();
         bufferWaylandResource->setImplementation(&LinuxDmabufBuffer::m_bufferInterface, m_data, BufferDestroyCallback);
         m_data = nullptr;
+
+        LOG_INFO_P(CONTEXT_RENDERER, "LinuxDmabufParams::createBuffer(): bufferId:{} w:{} h:{} format:{} flags:{} res:{} {}",
+                   bufferId, width, height, format, flags, static_cast<void*>(bufferNativeWaylandResource), m_clientCredentials);
 
         // Announce the resulting buffer to the client
         if (0 == bufferId)

@@ -13,7 +13,7 @@ namespace ramses_internal
     SystemCompositorControllerDestroySurface::SystemCompositorControllerDestroySurface(RendererCommandBuffer& rendererCommandBuffer)
         : m_rendererCommandBuffer(rendererCommandBuffer)
     {
-        description = "destroy an ivi surface";
+        description = "destroy an ivi-surface";
         registerKeyword("scDestroySurface");
         registerKeyword("scds");
 

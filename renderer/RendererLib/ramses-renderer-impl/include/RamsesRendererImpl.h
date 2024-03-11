@@ -37,6 +37,10 @@
 #include "RendererCommands/SystemCompositorControllerRemoveSurfaceFromLayer.h"
 #include "RendererCommands/SystemCompositorControllerDestroySurface.h"
 #include "RendererCommands/SetFrameTimeLimits.h"
+#include "RendererCommands/SetSceneState.h"
+#include "RendererCommands/LinkUnlink.h"
+#include "RendererCommands/CreateOffscreenBuffer.h"
+#include "RendererCommands/AssignScene.h"
 #include <memory>
 
 namespace ramses_internal

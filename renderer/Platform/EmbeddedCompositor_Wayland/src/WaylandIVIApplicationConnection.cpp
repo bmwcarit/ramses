@@ -68,14 +68,11 @@ namespace ramses_internal
     }
 
     void WaylandIVIApplicationConnection::iviApplicationIVISurfaceCreate(IWaylandClient&   client,
-                                                                         uint32_t          iviId,
+                                                                         WaylandIviSurfaceId iviId,
                                                                          INativeWaylandResource& surfaceResource,
                                                                          uint32_t          id)
     {
-        LOG_INFO(CONTEXT_RENDERER,
-                 "WaylandIVIApplicationConnection::iviApplicationConnectionIVISurfaceCreate New ivi surface created "
-                 "with ivi-id "
-                     << iviId);
+        LOG_INFO(CONTEXT_RENDERER, "WaylandIVIApplicationConnection::iviApplicationIVISurfaceCreate " << iviId);
 
         WaylandSurface* clientSurface = reinterpret_cast<WaylandSurface*>(surfaceResource.getUserData());
 
@@ -105,13 +102,13 @@ namespace ramses_internal
         wl_resource* surfaceResource,
         uint32_t     id)
     {
+        const WaylandIviSurfaceId iviSurfaceId{iviId};
         LOG_INFO(CONTEXT_RENDERER,
-                 "WaylandIVIApplicationConnection::IVIApplicationIVISurfaceCreateCallback iviId: " << iviId
-                                                                                                   << " id: " << id);
+                 "WaylandIVIApplicationConnection::IVIApplicationIVISurfaceCreateCallback " << iviSurfaceId << " id:" << id);
         WaylandIVIApplicationConnection* iviApplicationConnection =
             static_cast<WaylandIVIApplicationConnection*>(wl_resource_get_user_data(iviApplicationConnectionResource));
         WaylandClient waylandClient(client);
         NativeWaylandResource waylandSurfaceResource(surfaceResource);
-        iviApplicationConnection->iviApplicationIVISurfaceCreate(waylandClient, iviId, waylandSurfaceResource, id);
+        iviApplicationConnection->iviApplicationIVISurfaceCreate(waylandClient, iviSurfaceId, waylandSurfaceResource, id);
     }
 }

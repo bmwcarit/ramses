@@ -18,7 +18,10 @@ namespace ramses_internal
     {
     }
 
-    RamshStandardSetup::~RamshStandardSetup() = default;
+    RamshStandardSetup::~RamshStandardSetup()
+    {
+        RamshCommunicationChannelDLT::GetInstance().unregisterRamsh(*this);
+    }
 
     bool RamshStandardSetup::start()
     {
@@ -29,7 +32,7 @@ namespace ramses_internal
         if (m_type == ramses::ERamsesShellType_Console)
             m_consoleChannel = RamshCommunicationChannelConsole::Construct(*this, m_prompt);
         if (m_type == ramses::ERamsesShellType_Console || m_type == ramses::ERamsesShellType_Default)
-            m_dltChannel = std::make_unique<RamshCommunicationChannelDLT>(*this);
+            RamshCommunicationChannelDLT::GetInstance().registerRamsh(*this);
         return true;
     }
 
@@ -37,8 +40,8 @@ namespace ramses_internal
     {
         if (!m_started)
             return false;
-        m_dltChannel.reset();
         m_consoleChannel.reset();
+        RamshCommunicationChannelDLT::GetInstance().unregisterRamsh(*this);
         m_started  = false;
         return true;
     }

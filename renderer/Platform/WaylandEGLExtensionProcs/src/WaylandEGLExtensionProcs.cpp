@@ -20,6 +20,7 @@ namespace ramses_internal
         , m_glEGLImageTargetTexture2DOES(nullptr)
         , m_eglBindWaylandDisplayWL(nullptr)
         , m_eglUnbindWaylandDisplayWL(nullptr)
+        , m_eglQueryWaylandBufferWL(nullptr)
         , m_extensionsSupported(false)
         , m_dmabufExtensionsSupported(false)
     {
@@ -33,6 +34,7 @@ namespace ramses_internal
         , m_glEGLImageTargetTexture2DOES(nullptr)
         , m_eglBindWaylandDisplayWL(nullptr)
         , m_eglUnbindWaylandDisplayWL(nullptr)
+        , m_eglQueryWaylandBufferWL(nullptr)
         , m_extensionsSupported(false)
         , m_dmabufExtensionsSupported(false)
     {
@@ -41,6 +43,10 @@ namespace ramses_internal
 
     void WaylandEGLExtensionProcs::Init()
     {
+        if (m_eglDisplay == EGL_NO_DISPLAY)
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandEGLExtensionProcs::Init EGL_NO_DISPLAY");
+        }
         ramses_internal::String eglExtensionsString(eglQueryString(m_eglDisplay, EGL_EXTENSIONS));
         ramses_internal::String glExtensionsString(reinterpret_cast<const ramses_internal::Char*>(glGetString(GL_EXTENSIONS)));
 
@@ -65,6 +71,9 @@ namespace ramses_internal
 
             m_eglUnbindWaylandDisplayWL = reinterpret_cast<PFNEGLBINDWAYLANDDISPLAYWL>(eglGetProcAddress("eglUnbindWaylandDisplayWL"));
             assert(m_eglUnbindWaylandDisplayWL != nullptr);
+
+            m_eglQueryWaylandBufferWL = reinterpret_cast<PFNEGLQUERYWAYLANDBUFFERWL>(eglGetProcAddress("eglQueryWaylandBufferWL"));
+            assert(m_eglQueryWaylandBufferWL != nullptr);
 
             m_extensionsSupported = true;
         }
@@ -159,6 +168,20 @@ namespace ramses_internal
         }
     }
 
+    EGLBoolean WaylandEGLExtensionProcs::eglQueryWaylandBufferWL(wl_resource* buffer, EGLint attribute, EGLint* value) const
+    {
+        if (m_eglQueryWaylandBufferWL)
+        {
+            return m_eglQueryWaylandBufferWL(m_eglDisplay, buffer, attribute, value);
+        }
+        else
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandEGLExtensionProcs::eglQueryWaylandBufferWL Extension not bound!");
+            assert(false);
+            return EGL_FALSE;
+        }
+    }
+
     bool WaylandEGLExtensionProcs::areExtensionsSupported()const
     {
         return m_extensionsSupported;
@@ -167,5 +190,15 @@ namespace ramses_internal
     bool WaylandEGLExtensionProcs::areDmabufExtensionsSupported() const
     {
         return m_dmabufExtensionsSupported;
+    }
+
+    const char* WaylandEGLExtensionProcs::getTextureFormatName(EGLint textureFormat)
+    {
+        switch (textureFormat)
+        {
+        case EGL_TEXTURE_RGB: return "EGL_TEXTURE_RGB";
+        case EGL_TEXTURE_RGBA: return "EGL_TEXTURE_RGBA";
+        default: return "<unknown>";
+        }
     }
 }

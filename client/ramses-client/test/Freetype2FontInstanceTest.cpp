@@ -20,12 +20,20 @@ namespace ramses
         {
             FRegistry = new FontRegistry;
             const auto fontId = FRegistry->createFreetype2Font("res/ramses-text-Roboto-Bold.ttf");
+            const auto fontIdJp = FRegistry->createFreetype2Font("res/ramses-text-WenQuanYi-Micro-Hei.ttf");
+            const auto fontThaiId = FRegistry->createFreetype2Font("res/ramses-text-NotoSansThai-Regular.ttf");
 
             FontInstanceId4 = FRegistry->createFreetype2FontInstanceWithHarfBuzz(fontId, 4);
             FontInstanceId10 = FRegistry->createFreetype2FontInstanceWithHarfBuzz(fontId, 10);
+            FontInstanceIdLatin = FRegistry->createFreetype2FontInstance(fontId, 10);
+            FontInstanceIdJapanese = FRegistry->createFreetype2FontInstance(fontIdJp, 10);
+            FontInstanceIdThai = FRegistry->createFreetype2FontInstance(fontThaiId, 10);
 
             FontInstance4 = static_cast<Freetype2FontInstance*>(FRegistry->getFontInstance(FontInstanceId4));
             FontInstance10 = static_cast<Freetype2FontInstance*>(FRegistry->getFontInstance(FontInstanceId10));
+            FontInstanceLatin = static_cast<Freetype2FontInstance*>(FRegistry->getFontInstance(FontInstanceIdLatin));
+            FontInstanceJp    = static_cast<Freetype2FontInstance*>(FRegistry->getFontInstance(FontInstanceIdJapanese));
+            FontInstanceThai  = static_cast<Freetype2FontInstance*>(FRegistry->getFontInstance(FontInstanceIdThai));
         }
 
         static void TearDownTestCase()
@@ -56,15 +64,27 @@ namespace ramses
         static FontRegistry*  FRegistry;
         static FontInstanceId FontInstanceId4;
         static FontInstanceId FontInstanceId10;
+        static FontInstanceId FontInstanceIdLatin;
+        static FontInstanceId FontInstanceIdJapanese;
+        static FontInstanceId FontInstanceIdThai;
         static Freetype2FontInstance* FontInstance4;
         static Freetype2FontInstance* FontInstance10;
+        static Freetype2FontInstance* FontInstanceLatin;
+        static Freetype2FontInstance* FontInstanceJp;
+        static Freetype2FontInstance* FontInstanceThai;
     };
 
     FontRegistry*          AFreetype2FontInstance::FRegistry(nullptr);
     FontInstanceId         AFreetype2FontInstance::FontInstanceId4(0u);
     FontInstanceId         AFreetype2FontInstance::FontInstanceId10(0u);
+    FontInstanceId         AFreetype2FontInstance::FontInstanceIdLatin(0u);
+    FontInstanceId         AFreetype2FontInstance::FontInstanceIdJapanese(0u);
+    FontInstanceId         AFreetype2FontInstance::FontInstanceIdThai(0u);
     Freetype2FontInstance* AFreetype2FontInstance::FontInstance4(nullptr);
     Freetype2FontInstance* AFreetype2FontInstance::FontInstance10(nullptr);
+    Freetype2FontInstance* AFreetype2FontInstance::FontInstanceLatin(nullptr);
+    Freetype2FontInstance* AFreetype2FontInstance::FontInstanceJp(nullptr);
+    Freetype2FontInstance* AFreetype2FontInstance::FontInstanceThai(nullptr);
 
     TEST_F(AFreetype2FontInstance, ComputesHeightFromFontData)
     {
@@ -201,5 +221,67 @@ namespace ramses
         EXPECT_TRUE(896u == supportedChars.size());
         EXPECT_TRUE(supportedChars.end() != supportedChars.find(165u));
         EXPECT_FALSE(supportedChars.end() != supportedChars.find(127u));
+    }
+
+    TEST_F(AFreetype2FontInstance, WillNotShapeJapaneseCombinedCharacters)
+    {
+        const std::u32string str = { 0x30D5, 0x3099, 0x30C4, 0x3099, }; //decompositions of U+30D6 and U+30C7
+
+        const GlyphMetricsVector positionedGlyphs = getPositionedGlyphs(str, *FontInstanceJp);
+        ASSERT_EQ(4u, positionedGlyphs.size());
+
+        auto it = positionedGlyphs.cbegin();
+        expectGlyphMetricsEq({ { GlyphId(1614u), FontInstanceIdJapanese }, 8u,  9u, 1, -1, 10 }, *it++); //U+30D5
+        expectGlyphMetricsEq({ { GlyphId(1556u), FontInstanceIdJapanese }, 3u,  3u, 7,  6, 10 }, *it++); //U+3099
+        expectGlyphMetricsEq({ { GlyphId(1597u), FontInstanceIdJapanese }, 10u, 9u, 0, -1, 10 }, *it++); //U+30C6
+        expectGlyphMetricsEq({ { GlyphId(1556u), FontInstanceIdJapanese }, 3u,  3u, 7,  6, 10 }, *it++); //U+3099
+        EXPECT_EQ(it, positionedGlyphs.cend());
+    }
+
+    TEST_F(AFreetype2FontInstance, WillNotShapeFrenchCombinedCharacters)
+    {
+        const std::u32string str = {0x0061, 0x0301, }; //decomposition of U+00E1
+
+        const GlyphMetricsVector positionedGlyphs = getPositionedGlyphs(str, *FontInstanceLatin);
+        ASSERT_EQ(2u, positionedGlyphs.size());
+
+        auto it = positionedGlyphs.cbegin();
+        expectGlyphMetricsEq({ { GlyphId(69u), FontInstanceIdLatin},  6u, 5u,  0, 0, 5 }, *it++); //U+0061
+        expectGlyphMetricsEq({ { GlyphId(169u), FontInstanceIdLatin}, 4u, 2u, -4, 6, 0 }, *it++); //U+0301
+        EXPECT_EQ(it, positionedGlyphs.cend());
+    }
+
+    TEST_F(AFreetype2FontInstance, WillNotShapeThaiCombinedCharacters)
+    {
+        const std::u32string str = { 0x0E1B, 0x0E31, 0x0E4A, 0x0E21, 0x0E19, 0x0E49, 0x0E33, 0x0E21, 0x0E31, }; //'ปั๊มน้ำมั'
+
+        const GlyphMetricsVector positionedGlyphs = getPositionedGlyphs(str, *FontInstanceThai);
+        ASSERT_EQ(9u, positionedGlyphs.size());
+
+        auto it = positionedGlyphs.cbegin();
+        expectGlyphMetricsEq({ { GlyphId(80u), FontInstanceIdThai}, 5u, 8u,  1, 0, 7 }, *it++);
+        expectGlyphMetricsEq({ { GlyphId(45u), FontInstanceIdThai}, 5u, 2u, -4, 7, 0 }, *it++);
+        expectGlyphMetricsEq({ { GlyphId(50u), FontInstanceIdThai}, 4u, 3u, -4, 7, 0 }, *it++);
+        expectGlyphMetricsEq({ { GlyphId(56u), FontInstanceIdThai}, 5u, 6u,  1, 0, 7 }, *it++);
+        expectGlyphMetricsEq({ { GlyphId(71u), FontInstanceIdThai}, 5u, 6u,  1, 0, 7 }, *it++);
+        expectGlyphMetricsEq({ { GlyphId(47u), FontInstanceIdThai}, 4u, 2u, -4, 7, 0 }, *it++);
+        expectGlyphMetricsEq({ { GlyphId(90u), FontInstanceIdThai}, 6u, 9u, -3, 0, 4 }, *it++); //0x0E33 stays 1 glyph (compared to HarfBuzz decomposition)
+        expectGlyphMetricsEq({ { GlyphId(56u), FontInstanceIdThai}, 5u, 6u,  1, 0, 7 }, *it++);
+        expectGlyphMetricsEq({ { GlyphId(45u), FontInstanceIdThai}, 5u, 2u, -4, 7, 0 }, *it++);
+
+        EXPECT_EQ(it, positionedGlyphs.end());
+    }
+
+    TEST_F(AFreetype2FontInstance, WillNotShapeVietnameseCombinedCharacters)
+    {
+        const std::u32string str = { 0x00F4, 0x0309, }; //U"ổ"
+
+        const GlyphMetricsVector positionedGlyphs = getPositionedGlyphs(str, *FontInstanceLatin);
+        ASSERT_EQ(2u, positionedGlyphs.size());
+
+        auto it = positionedGlyphs.cbegin();
+        expectGlyphMetricsEq({ { GlyphId(685u), FontInstanceIdLatin }, 6u, 8u,  0, 0, 6 }, *it++); //U+00F4
+        expectGlyphMetricsEq({ { GlyphId(171u), FontInstanceIdLatin }, 3u, 3u, -4, 6, 0 }, *it++); //U+0309
+        EXPECT_EQ(it, positionedGlyphs.end());
     }
 }

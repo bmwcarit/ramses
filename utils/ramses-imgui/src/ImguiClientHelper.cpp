@@ -136,7 +136,11 @@ namespace ramses_internal
         effect->findAttributeInput("a_texcoord", inputUV);
         effect->findAttributeInput("Color", inputColor);
 
-        ImGui::CreateContext();
+        // ImGui context may be already created
+        if(!ImGui::GetCurrentContext())
+        {
+            m_context = ImGui::CreateContext();
+        }
         ImGuiIO& io = ImGui::GetIO();
         io.DisplaySize.x = static_cast<float>(width);
         io.DisplaySize.y = static_cast<float>(height);
@@ -192,7 +196,8 @@ namespace ramses_internal
 
     ImguiClientHelper::~ImguiClientHelper()
     {
-        ImGui::DestroyContext();
+        if (m_context)
+            ImGui::DestroyContext(m_context);
     }
 
     void ImguiClientHelper::setDisplayId(ramses::displayId_t displayId)

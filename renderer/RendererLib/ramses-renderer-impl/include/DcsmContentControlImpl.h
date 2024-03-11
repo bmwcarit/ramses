@@ -55,6 +55,14 @@ namespace ramses
         status_t sendContentStatus(ContentID contentID, DcsmStatusMessage const& message);
 
     private:
+        struct ContentLink
+        {
+            ContentID provider;
+            ContentID consumer;
+            dataConsumerId_t dataConsumerId;
+            bool eventSent;
+        };
+
         // IDcsmConsumerEventHandler
         virtual void contentOffered(ContentID contentID, Category category, ETechnicalContentType contentType) override;
         virtual void contentDescription(ContentID contentID, TechnicalContentDescriptor contentDescriptor) override;
@@ -113,7 +121,7 @@ namespace ramses
         void applyTechnicalStateChange(TechnicalContentDescriptor techId, RendererSceneState state);
 
         void createStreamBuffer(displayId_t displayId, waylandIviSurfaceId_t surfaceId);
-
+        void rememberLink(ContentLink link);
         void removePendingShow(ContentID contentID);
 
         IRendererSceneControl& m_sceneControl;
@@ -149,8 +157,11 @@ namespace ramses
             TechnicalContentDescriptor descriptor;
             displayBufferId_t displayBufferAssignment;
             uint64_t readyRequestTimeOut = std::numeric_limits<uint64_t>::max();
+            bool stopOfferRequested = false;
         };
         std::unordered_map<ContentID, ContentInfo> m_contents;
+
+        std::vector<ContentLink> m_contentTextureLinks;
 
         struct OfferedContents
         {

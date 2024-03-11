@@ -33,7 +33,7 @@ namespace ramses_internal
         return SingleResourceSerialization::DeserializeResource(inStream, hash);
     }
 
-    void ResourcePersistation::WriteNamedResourcesWithTOCToStream(BinaryFileOutputStream& outStream, const ManagedResourceVector& resourcesForFile, bool compress)
+    void ResourcePersistation::WriteNamedResourcesWithTOCToStream(IOutputStream& outStream, const ManagedResourceVector& resourcesForFile, bool compress)
     {
         // achieve maximum resource file loading speed by reading in increasing file position order
         // so store TOC first followed by all resources, as the toc is read before the resources

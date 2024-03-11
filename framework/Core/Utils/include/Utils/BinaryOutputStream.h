@@ -21,6 +21,7 @@ namespace ramses_internal
         explicit BinaryOutputStream(size_t startSize = 16);
 
         IOutputStream& write(const void* data, size_t size) override;
+        EStatus getPos(size_t& position) const override;
 
         const Byte* getData() const;
         size_t getSize() const;
@@ -43,6 +44,12 @@ namespace ramses_internal
         const Byte* dataCharptr = static_cast<const Byte*>(data);
         m_buffer.insert(m_buffer.end(), dataCharptr, dataCharptr+size);
         return *this;
+    }
+
+    inline EStatus BinaryOutputStream::getPos(size_t& position) const
+    {
+        position = m_buffer.size();
+        return EStatus::Ok;
     }
 
     inline const Byte* BinaryOutputStream::getData() const

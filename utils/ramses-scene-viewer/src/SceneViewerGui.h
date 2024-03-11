@@ -17,6 +17,7 @@
 #include "SceneDumper.h"
 #include "ProgressMonitor.h"
 #include "ResourceList.h"
+#include "ShaderWarnings.h"
 #include <unordered_map>
 #include <map>
 #include <array>
@@ -43,6 +44,7 @@ namespace ramses_internal
 {
     class TextureResource;
     struct DataSlot;
+    struct MipMap;
 
     class SceneViewerGui
     {
@@ -120,6 +122,7 @@ namespace ramses_internal
         void drawNodeHierarchy();
         void drawResources();
         void drawRenderHierarchy();
+        void drawShaderWarnings();
         void drawErrors();
 
         bool passFilter(const ramses::RamsesObjectImpl& obj) const;
@@ -167,6 +170,7 @@ namespace ramses_internal
         std::string               m_lastErrorMessage;
         SceneObjects              m_sceneObjects;
         std::unique_ptr<ResourceList> m_resourceInfo;
+        std::unique_ptr<ShaderWarnings> m_shaderWarnings;
         RenderInfo                m_renderInfo;
         bool                      m_compressFile = false;
         bool                      m_alwaysOverwrite = false;

@@ -8,16 +8,10 @@
 
 #include "DltLogAppender/DltAdapterImpl/DltAdapterImpl.h"
 #include "Utils/Warnings.h"
-
-#ifdef DLT_HAS_FILETRANSFER
-extern "C"
-{
-#include <dlt/dlt_filetransfer.h>
-}
-#endif
 #include "Utils/LogLevel.h"
 #include "Utils/LogMessage.h"
 #include "Utils/InplaceStringTokenizer.h"
+#include "Utils/File.h"
 #include <cassert>
 
 namespace ramses_internal
@@ -257,7 +251,38 @@ namespace ramses_internal
         {
             return false;
         }
-        return m_fileTransfer.transmitFile(ctx, uri, deleteFile);
+        File f(uri);
+        size_t size = 0u;
+        if (!f.getSizeInBytes(size))
+        {
+            return false;
+        }
+        if (!f.open(File::Mode::ReadOnlyBinary))
+        {
+            return false;
+        }
+        std::vector<Byte> data;
+        data.resize(size);
+        if (f.read(data.data(), data.size(), size) != EStatus::Ok)
+        {
+            return false;
+        }
+        f.close();
+        if (deleteFile)
+        {
+            f.remove();
+        }
+
+        return m_fileTransfer.transmit(ctx, std::move(data), uri);
+    }
+
+    bool DltAdapterImpl::transmit(LogContext& ctx, std::vector<Byte>&& data, const String& filename)
+    {
+        if (!m_initialized)
+        {
+            return false;
+        }
+        return m_fileTransfer.transmit(ctx, std::move(data), filename);
     }
 
     bool DltAdapterImpl::isInitialized()
@@ -276,44 +301,22 @@ namespace ramses_internal
         m_thread.join();
     }
 
-    bool DltAdapterImpl::FileTransferWorker::transmitFile(LogContext& ctx, const String& uri, bool deleteFile)
+    bool DltAdapterImpl::FileTransferWorker::transmit(LogContext& ctx, std::vector<Byte>&& data, const String& filename)
     {
-        if (uri.size() == 0 || ctx.getUserData() == nullptr)
-        {
-            return false;
-        }
-#ifndef DLT_HAS_FILETRANSFER
-        UNUSED(deleteFile);
-        return false;
-#else
-        DltContext* fileContext = static_cast<DltContext*>(ctx.getUserData());
-
-        // send header to catch early errors
-        // if a file is modified during transfer it will be incomplete
-        // (dlt-filetransfer will assign a new serial)
-        if (dlt_user_log_file_header(fileContext, uri.c_str()) != 0)
+        if (filename.size() == 0 || ctx.getUserData() == nullptr)
         {
             return false;
         }
 
         FileTransfer ft;
-        ft.filename = uri;
-        ft.ctx = fileContext;
-        ft.deleteFlag = deleteFile ? 1 : 0;
+        ft.filename = filename;
+        ft.ctx = static_cast<DltContext*>(ctx.getUserData());
+        ft.data = data;
+        ft.serial = ++m_fileTransferSerial;
         bool startThread = false;
         {
             PlatformGuard guard(m_lock);
             startThread = m_files.empty();
-            if (!m_files.empty() && m_files.front().filename == uri)
-            {
-                // file is resent  -> cancel running transfer
-                WARNINGS_PUSH
-                WARNING_DISABLE_LINUX(-Wold-style-cast)
-                DLT_LOG2((*fileContext), DLT_LOG_WARN, DLT_STRING("file is resent -> cancel running transfer:"), DLT_STRING(uri.c_str()));
-                WARNINGS_POP
-                m_thread.cancel();
-                startThread = true;
-            }
             m_files.push_back(ft);
         }
 
@@ -324,7 +327,6 @@ namespace ramses_internal
             m_thread.start(*this);
         }
         return true;
-#endif
     }
 
     void DltAdapterImpl::FileTransferWorker::get(DltAdapterImpl::FileTransferWorker::FileTransfer& ft)
@@ -349,44 +351,90 @@ namespace ramses_internal
 
     void DltAdapterImpl::FileTransferWorker::run()
     {
-#ifdef DLT_HAS_FILETRANSFER
-        // Sending files per dlt is done by chunking the binary file data in very small chunks (~1024 bytes) and send these per regular DLT_LOG(..)
-        // after each chunk dlt_user_log_file_data() should sleep for the timeoutInMs so the FIFO of dlt will not be flooded with to many messages in a short period of time.
-        // The dlt implementation recommends a timeout of 20 ms, unfortunately due the very small chunk size a huge number of messages has to be sent and
-        // this will cause a transfer time of ~30 seconds for a file of 1.5 MB.
+        // Sending files per DLT is done by chunking the binary file data in very small chunks (~1024 bytes) and send these per regular DLT_LOG(..)
+        // After each chunk the file transfer should wait for some time, so the DLT-FIFO will not be flooded with too many messages.
+        // The DLT implementation recommends a timeout of 20 ms, but this would mean long transfer durations for typical scene dumps.
         // To prevent these long delays we simply use a smaller timeout and check for dlt buffer overflows (dlt_user_check_buffer())
-        const int timeoutInMS = 1;
+#ifdef DLT_HAS_FILETRANSFER
+        const auto uptime = std::chrono::seconds(dlt_uptime() / 10000);
+#else
+        // no dlt_uptime() available - do not wait
+        const auto uptime = std::chrono::seconds(60);
+#endif
+        const auto startupDelay = std::chrono::seconds(60);
+        if (uptime < startupDelay)
+        {
+            // do not transfer files at system startup (reduces risk of losing messages)
+            std::this_thread::sleep_for(startupDelay - uptime);
+        }
         FileTransfer ft;
         get(ft);
         do
         {
-            const auto filename = ft.filename.c_str();
-            const auto total = dlt_user_log_file_packagesCount(ft.ctx, filename);
-            int i = 1;
-            for (; ((i <= total) && !isCancelRequested()); ++i)
-            {
-                auto canWriteToDLT = [](){
-                    int dltTotal = 0;
-                    int dltUsed = 0;
-                    // file transfer should not use more than 50% of the dlt buffer
-                    dlt_user_check_buffer(&dltTotal, &dltUsed);
-                    return ((dltTotal - dltUsed) > (dltTotal / 2));
-                };
-                while (!canWriteToDLT())
-                {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(timeoutInMS));
-                }
-                if (dlt_user_log_file_data(ft.ctx, filename, i, timeoutInMS) != 0)
-                {
-                    // usually this means the file was modified during transfer
-                    break;
-                }
-            }
-            if (i > total)
-            {
-                dlt_user_log_file_end(ft.ctx, filename, ft.deleteFlag);
-            }
+            send(ft);
         } while(pop(ft) && !isCancelRequested());
+    }
+
+    void DltAdapterImpl::FileTransferWorker::send(const FileTransfer &ft)
+    {
+        const int timeoutInMS = 1;
+        const size_t bufferSize = 1024;
+        const auto filename = ft.filename.c_str();
+        const auto packages = (ft.data.size() % bufferSize == 0) ? (ft.data.size() / bufferSize) : (ft.data.size() / bufferSize + 1);
+
+#ifdef DLT_HAS_FILETRANSFER
+        auto canWriteToDLT = [](){
+            int dltTotal = 0;
+            int dltUsed = 0;
+            // file transfer should not use more than 50% of the dlt buffer
+            dlt_user_check_buffer(&dltTotal, &dltUsed);
+            const auto dltFree = dltTotal - dltUsed;
+            return (dltFree > (dltTotal / 2) && dltFree > static_cast<int>(5 * bufferSize));
+        };
+#else
+        auto canWriteToDLT = [](){
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            return true;
+        };
 #endif
+
+        while (!canWriteToDLT())
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        }
+
+        DLT_LOG8(*ft.ctx, DLT_LOG_INFO,
+                DLT_STRING("FLST"),
+                DLT_UINT(ft.serial),
+                DLT_STRING(filename),
+                DLT_UINT(ft.data.size()),
+                DLT_STRING(""),
+                DLT_UINT(packages),
+                DLT_UINT(bufferSize),
+                DLT_STRING("FLST")
+                );
+
+        for (uint32_t i = 0; ((i < packages) && !isCancelRequested()); ++i)
+        {
+            while (!canWriteToDLT())
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(timeoutInMS));
+            }
+            const auto it = ft.data.begin() + i * bufferSize;
+            const auto chunkSize = std::min(static_cast<size_t>(ft.data.end() - it), bufferSize);
+            DLT_LOG5(*ft.ctx, DLT_LOG_INFO,
+                    DLT_STRING("FLDA"),
+                    DLT_UINT(ft.serial),
+                    DLT_UINT(i + 1),
+                    DLT_RAW(const_cast<Byte*>(&(*it)), static_cast<uint16_t>(chunkSize)),
+                    DLT_STRING("FLDA")
+                    );
+        }
+
+        DLT_LOG3(*ft.ctx, DLT_LOG_INFO,
+                DLT_STRING("FLFI"),
+                DLT_UINT(ft.serial),
+                DLT_STRING("FLFI")
+                );
     }
 }

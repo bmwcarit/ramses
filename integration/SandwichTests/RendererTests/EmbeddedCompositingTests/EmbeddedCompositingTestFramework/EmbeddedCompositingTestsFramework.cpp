@@ -76,45 +76,45 @@ namespace ramses_internal
         LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::stopTestApplicationAndWaitUntilDisconnected stop confirmation received");
     }
 
-    void EmbeddedCompositingTestsFramework::waitForContentOnStreamTexture(WaylandIviSurfaceId sourceId, uint32_t displayIdx)
+    void EmbeddedCompositingTestsFramework::waitForContentOnStreamTexture(WaylandIviSurfaceId iviSurface, uint32_t displayIdx)
     {
         const IEmbeddedCompositor& embeddedCompositor = getEmbeddedCompositor(displayIdx);
         IEmbeddedCompositingManager& embeddedCompositorManager = getEmbeddedCompositorManager(displayIdx);
 
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForContentOnStreamTexture(): waiting for content on stream source id :" << sourceId.getValue());
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForContentOnStreamTexture() " << iviSurface);
 
-        while (!embeddedCompositor.isContentAvailableForStreamTexture(sourceId))
+        while (!embeddedCompositor.isContentAvailableForStreamTexture(iviSurface))
         {
             embeddedCompositorManager.processClientRequests();
         }
 
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForContentOnStreamTexture(): content found on stream source id :" << sourceId.getValue());
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForContentOnStreamTexture(): content found on " << iviSurface);
     }
 
-    void EmbeddedCompositingTestsFramework::waitForUnavailablilityOfContentOnStreamTexture(WaylandIviSurfaceId sourceId)
+    void EmbeddedCompositingTestsFramework::waitForUnavailablilityOfContentOnStreamTexture(WaylandIviSurfaceId iviSurface)
     {
         const IEmbeddedCompositor& embeddedCompositor = getEmbeddedCompositor();
         IEmbeddedCompositingManager& embeddedCompositorManager = getEmbeddedCompositorManager();
 
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForUnavailablilityOfContentFromStreamTexture(): waiting for unavailability of content on stream source id :" << sourceId.getValue());
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForUnavailablilityOfContentFromStreamTexture() " << iviSurface);
 
-        while (embeddedCompositor.isContentAvailableForStreamTexture(sourceId))
+        while (embeddedCompositor.isContentAvailableForStreamTexture(iviSurface))
         {
             embeddedCompositorManager.processClientRequests();
         }
 
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForUnavailablilityOfContentFromStreamTexture(): no content on stream source id :" << sourceId.getValue());
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForUnavailablilityOfContentFromStreamTexture(): no content on " << iviSurface);
     }
 
-    Bool EmbeddedCompositingTestsFramework::waitUntilNumberOfCommitedFramesForIviSurface(WaylandIviSurfaceId waylandSurfaceId, UInt64 numberOfComittedBuffers, UInt32 timeoutMilliseconds)
+    Bool EmbeddedCompositingTestsFramework::waitUntilNumberOfCommitedFramesForIviSurface(WaylandIviSurfaceId iviSurface, UInt64 numberOfComittedBuffers, UInt32 timeoutMilliseconds)
     {
         const IEmbeddedCompositor& embeddedCompositor = getEmbeddedCompositor();
         IEmbeddedCompositingManager& embeddedCompositingManager = getEmbeddedCompositorManager();
 
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitUntilNumberOfCommitedBuffersForIviSurface(): waiting for number of commited buffers for ivi surface " << waylandSurfaceId.getValue() << " reaching " << numberOfComittedBuffers);
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitUntilNumberOfCommitedBuffersForIviSurface(): waiting for number of commited buffers for " << iviSurface << " reaching " << numberOfComittedBuffers);
 
         const UInt64 startTime = PlatformTime::GetMillisecondsMonotonic();
-        while (embeddedCompositor.getNumberOfCommitedFramesForWaylandIviSurfaceSinceBeginningOfTime(waylandSurfaceId) != numberOfComittedBuffers)
+        while (embeddedCompositor.getNumberOfCommitedFramesForWaylandIviSurfaceSinceBeginningOfTime(iviSurface) != numberOfComittedBuffers)
         {
             embeddedCompositingManager.processClientRequests();
 
@@ -125,14 +125,14 @@ namespace ramses_internal
                 return false;
             }
         }
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitUntilNumberOfCommitedBuffersForIviSurface(): number of commited buffers for ivi surface " << waylandSurfaceId.getValue() << " is " << embeddedCompositor.getNumberOfCommitedFramesForWaylandIviSurfaceSinceBeginningOfTime(waylandSurfaceId));
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitUntilNumberOfCommitedBuffersForIviSurface(): number of commited buffers for " << iviSurface << " is " << embeddedCompositor.getNumberOfCommitedFramesForWaylandIviSurfaceSinceBeginningOfTime(iviSurface));
         return true;
     }
 
-    String EmbeddedCompositingTestsFramework::getTitleOfIviSurface(WaylandIviSurfaceId waylandSurfaceId)
+    String EmbeddedCompositingTestsFramework::getTitleOfIviSurface(WaylandIviSurfaceId iviSurface)
     {
         const IEmbeddedCompositor& embeddedCompositor = getEmbeddedCompositor();
-        return embeddedCompositor.getTitleOfWaylandIviSurface(waylandSurfaceId);
+        return embeddedCompositor.getTitleOfWaylandIviSurface(iviSurface);
     }
 
     void EmbeddedCompositingTestsFramework::logEmbeddedCompositor(RendererLogContext& logContext)
@@ -166,17 +166,16 @@ namespace ramses_internal
         LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitUntilNumberOfCompositorConnections(): number of compositor connections is " << numberOfConnections);
     }
 
-    void EmbeddedCompositingTestsFramework::waitForBufferAttachedToIviSurface(WaylandIviSurfaceId waylandSurfaceId)
+    void EmbeddedCompositingTestsFramework::waitForBufferAttachedToIviSurface(WaylandIviSurfaceId iviSurface)
     {
         const IEmbeddedCompositor&   embeddedCompositor         = getEmbeddedCompositor();
         IEmbeddedCompositingManager& embeddedCompositingManager = getEmbeddedCompositorManager();
 
         LOG_INFO(CONTEXT_RENDERER,
                  "EmbeddedCompositingTestsFramework::waitForBufferAttachedToIviSurface(): waiting for "
-                 "buffer attached to ivi surface "
-                     << waylandSurfaceId.getValue());
+                 "buffer attached to " << iviSurface);
 
-        while (!embeddedCompositor.isBufferAttachedToWaylandIviSurface(waylandSurfaceId))
+        while (!embeddedCompositor.isBufferAttachedToWaylandIviSurface(iviSurface))
         {
             embeddedCompositingManager.processClientRequests();
         }
@@ -184,17 +183,16 @@ namespace ramses_internal
                  "EmbeddedCompositingTestsFramework::waitForBufferAttachedToIviSurface(): buffer is attached");
     }
 
-    void EmbeddedCompositingTestsFramework::waitForNoBufferAttachedToIviSurface(WaylandIviSurfaceId waylandSurfaceId)
+    void EmbeddedCompositingTestsFramework::waitForNoBufferAttachedToIviSurface(WaylandIviSurfaceId iviSurface)
     {
         const IEmbeddedCompositor&   embeddedCompositor         = getEmbeddedCompositor();
         IEmbeddedCompositingManager& embeddedCompositingManager = getEmbeddedCompositorManager();
 
         LOG_INFO(CONTEXT_RENDERER,
                  "EmbeddedCompositingTestsFramework::waitForNoBufferAttachedToIviSurface(): waiting for "
-                 "no buffer attached to ivi surface "
-                     << waylandSurfaceId.getValue());
+                 "no buffer attached to " << iviSurface);
 
-        while (embeddedCompositor.isBufferAttachedToWaylandIviSurface(waylandSurfaceId))
+        while (embeddedCompositor.isBufferAttachedToWaylandIviSurface(iviSurface))
         {
             embeddedCompositingManager.processClientRequests();
         }
@@ -208,37 +206,37 @@ namespace ramses_internal
         getTestRenderer().doOneLoop();
     }
 
-    void EmbeddedCompositingTestsFramework::waitForSurfaceAvailableForStreamTexture(WaylandIviSurfaceId sourceId)
+    void EmbeddedCompositingTestsFramework::waitForSurfaceAvailableForStreamTexture(WaylandIviSurfaceId iviSurface)
     {
         const IEmbeddedCompositor& embeddedCompositor = getEmbeddedCompositor();
 
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForSurfaceAvailableForStreamTexture(): waiting for surface available for stream source id :" << sourceId.getValue());
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForSurfaceAvailableForStreamTexture() " << iviSurface);
 
-        while (!embeddedCompositor.hasSurfaceForStreamTexture(sourceId))
+        while (!embeddedCompositor.hasSurfaceForStreamTexture(iviSurface))
         {
             getTestRenderer().doOneLoop();
         }
 
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForSurfaceAvailableForStreamTexture(): surface available for source id :" << sourceId.getValue());
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForSurfaceAvailableForStreamTexture(): surface available for " << iviSurface);
     }
 
-    void EmbeddedCompositingTestsFramework::waitForSurfaceUnavailableForStreamTexture(WaylandIviSurfaceId sourceId)
+    void EmbeddedCompositingTestsFramework::waitForSurfaceUnavailableForStreamTexture(WaylandIviSurfaceId iviSurface)
     {
         const IEmbeddedCompositor& embeddedCompositor = getEmbeddedCompositor();
 
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForSurfaceUnavailableForStreamTexture(): waiting for surface unavailable for stream source id :" << sourceId.getValue());
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForSurfaceUnavailableForStreamTexture() " << iviSurface);
 
-        while (embeddedCompositor.hasSurfaceForStreamTexture(sourceId))
+        while (embeddedCompositor.hasSurfaceForStreamTexture(iviSurface))
         {
             getTestRenderer().doOneLoop();
         }
 
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForSurfaceUnavailableForStreamTexture(): surface unavailable for source id :" << sourceId.getValue());
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingTestsFramework::waitForSurfaceUnavailableForStreamTexture(): surface unavailable for " << iviSurface);
     }
 
-    bool EmbeddedCompositingTestsFramework::waitForStreamSurfaceAvailabilityChange(WaylandIviSurfaceId streamSource, bool available)
+    bool EmbeddedCompositingTestsFramework::waitForStreamSurfaceAvailabilityChange(WaylandIviSurfaceId iviSurface, bool available)
     {
-        return getTestRenderer().waitForStreamSurfaceAvailabilityChange(ramses::waylandIviSurfaceId_t(streamSource.getValue()), available);
+        return getTestRenderer().waitForStreamSurfaceAvailabilityChange(ramses::waylandIviSurfaceId_t(iviSurface.getValue()), available);
     }
 
     void EmbeddedCompositingTestsFramework::sendStopToTestApplication(uint32_t testAppIdx)
@@ -319,10 +317,10 @@ namespace ramses_internal
         m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
     }
 
-    void EmbeddedCompositingTestsFramework::sendCreateIVISurfaceToTestApplication(TestApplicationSurfaceId surfaceId, WaylandIviSurfaceId surfaceIviId, uint32_t testAppIdx)
+    void EmbeddedCompositingTestsFramework::sendCreateIVISurfaceToTestApplication(TestApplicationSurfaceId surfaceId, WaylandIviSurfaceId iviSurface, uint32_t testAppIdx)
     {
         BinaryOutputStream bos;
-        bos << ETestWaylandApplicationMessage::CreateIVISurface << surfaceId.getValue() << surfaceIviId.getValue();
+        bos << ETestWaylandApplicationMessage::CreateIVISurface << surfaceId.getValue() << iviSurface.getValue();
         m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
     }
 
@@ -344,6 +342,13 @@ namespace ramses_internal
     {
         BinaryOutputStream bos;
         bos << ETestWaylandApplicationMessage::AttachBuffer << surfaceId.getValue() << commit;
+        m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
+    }
+
+    void EmbeddedCompositingTestsFramework::sendReAttachBufferToTestApplication(TestApplicationSurfaceId surfaceId, uint32_t count, uint32_t testAppIdx)
+    {
+        BinaryOutputStream bos;
+        bos << ETestWaylandApplicationMessage::ReAttachBuffer << surfaceId.getValue() << count;
         m_testForkingController.sendMessageToTestApplication(bos, testAppIdx);
     }
 
@@ -389,9 +394,9 @@ namespace ramses_internal
         return getTestRenderer().getEmbeddedCompositorManager(displays[displayIdx].displayId);
     }
 
-    void EmbeddedCompositingTestsFramework::setSurfaceVisibility(WaylandIviSurfaceId surfaceId, bool visibility)
+    void EmbeddedCompositingTestsFramework::setSurfaceVisibility(WaylandIviSurfaceId iviSurface, bool visibility)
     {
-        getTestRenderer().setSurfaceVisibility(surfaceId, visibility);
+        getTestRenderer().setSurfaceVisibility(iviSurface, visibility);
     }
 
     void EmbeddedCompositingTestsFramework::sendSetSurfaceSizeToTestApplicaton(TestApplicationSurfaceId surfaceId, UInt32 width, UInt32 height, uint32_t testAppIdx)

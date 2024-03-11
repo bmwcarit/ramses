@@ -74,6 +74,7 @@ namespace ramses_internal
         IDevice* m_device;
         Matrix44f m_projectionMatrix;
         Float m_displayWidth;
+        Float m_displayHeight;
         UInt32 m_counterGraphHeight = 500u;
         UInt32 m_timingGraphHeight = 16u; // milliseconds
 

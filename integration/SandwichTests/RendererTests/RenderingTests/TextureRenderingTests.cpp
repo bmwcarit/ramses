@@ -79,6 +79,8 @@ void TextureRenderingTests::setUpTestCases(RendererTestsFramework& testFramework
     testFramework.createTestCaseWithDefaultDisplay(TextureBufferTest_PartialUpdate, *this, "TextureBufferTest_PartialUpdate");
     testFramework.createTestCaseWithDefaultDisplay(TextureBufferTest_PartialUpdateMipMap, *this, "TextureBufferTest_PartialUpdateMipMap");
     testFramework.createTestCaseWithDefaultDisplay(TextureBufferTest_PartialUpdateMipMap_RG8, *this, "TextureBufferTest_PartialUpdateMipMap_RG8");
+    testFramework.createTestCaseWithDefaultDisplay(TextureBufferTest_PartialUpdateIncremental, *this, "TextureBufferTest_PartialUpdateIncremental");
+    testFramework.createTestCaseWithDefaultDisplay(TextureBufferTest_Recreate, *this, "TextureBufferTest_Recreate");
     testFramework.createTestCaseWithDefaultDisplay(TextureBufferTest_SwitchSceneTextureToClientTexture, *this, "TextureBufferTest_SwitchSceneTextureToClientTexture");
     testFramework.createTestCaseWithDefaultDisplay(TextureBufferTest_SwitchClientTextureToSceneTexture, *this, "TextureBufferTest_SwitchClientTextureToSceneTexture");
     testFramework.createTestCaseWithDefaultDisplay(TextureBufferTest_SwitchClientTextureToSceneTextureAndBack, *this, "TextureBufferTest_SwitchClientTextureToSceneTextureAndBack");
@@ -192,6 +194,24 @@ bool TextureRenderingTests::run(RendererTestsFramework& testFramework, const Ren
         return runBasicTest<TextureBufferScene>(testFramework, TextureBufferScene::EState_PartialUpdateMipMap, "TextureBuffer_PartialUpdateMipMap");
     case TextureBufferTest_PartialUpdateMipMap_RG8:
         return runBasicTest<TextureBufferScene>(testFramework, TextureBufferScene::EState_PartialUpdateMipMap_RG8, "TextureBuffer_PartialUpdateMipMap_RG8");
+    case TextureBufferTest_PartialUpdateIncremental:
+    {
+        const auto sceneId = createAndShowScene<TextureBufferScene>(testFramework, TextureBufferScene::EState_PartialUpdate);
+        const auto init = testFramework.renderAndCompareScreenshot("TextureBuffer_PartialUpdate", 0u);
+        testFramework.getScenesRegistry().setSceneState<TextureBufferScene>(sceneId, TextureBufferScene::EState_PartialUpdate1);
+        const auto update1 = testFramework.renderAndCompareScreenshot("TextureBuffer_PartialUpdate1", 0u);
+        testFramework.getScenesRegistry().setSceneState<TextureBufferScene>(sceneId, TextureBufferScene::EState_PartialUpdate2);
+        const auto update2 = testFramework.renderAndCompareScreenshot("TextureBuffer_PartialUpdate2", 0u);
+        return init && update1 && update2;
+    }
+    case TextureBufferTest_Recreate:
+    {
+        const auto sceneId = createAndShowScene<TextureBufferScene>(testFramework, TextureBufferScene::EState_UpdateAndRecreate);
+        testFramework.flushRendererAndDoOneLoop();
+        testFramework.getScenesRegistry().setSceneState<TextureBufferScene>(sceneId, TextureBufferScene::EState_UpdateAndRecreate1);
+        const auto update = testFramework.renderAndCompareScreenshot("TextureBuffer_Recreate", 0u);
+        return update;
+    }
     case TextureBufferTest_SwitchSceneTextureToClientTexture:
     {
         const ramses::sceneId_t sceneId = createAndShowScene<TextureBufferScene>(testFramework, TextureBufferScene::EState_RGBA8_OneMip);

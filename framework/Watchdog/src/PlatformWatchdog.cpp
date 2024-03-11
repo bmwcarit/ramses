@@ -56,6 +56,8 @@ namespace ramses_internal
         {
             timeToNext += m_interval;
         }
+        if (timeToNext > m_interval)
+            timeToNext = m_interval; // protection against non-steady clock values (should never happen)
         return timeToNext;
     }
 }

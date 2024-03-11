@@ -148,7 +148,7 @@ class SystemCompositorControllerBase(test_classes.OnSelectedTargetsTest):
         #    another surface id which has it as a prefex, e.g., to make sure 10 does not match 10000
         # 3. any other surface ids can exist before, between (or after) the expected surfaces
         surfaceIdListRegEx = "{}{}\\s".format(surfaceIdRegEx, surfaceIdRegEx.join(surfaceIdsList))
-        surfaceIdSearchRegEx = "SystemCompositorController_Wayland_IVI::listIVISurfaces Known ivi-ids are:{}".format(surfaceIdListRegEx)
+        surfaceIdSearchRegEx = "SystemCompositorController_Wayland_IVI::listIVISurfaces Known ivi-surface ids:{}".format(surfaceIdListRegEx)
         log.info("waiting on surfaces beeing registered in scc " + surfaceIdSearchRegEx)
         for i in range(1, 30):
             if self.renderer.send_ramsh_command("scl", response_message=surfaceIdSearchRegEx, timeout=1):

@@ -55,12 +55,36 @@ namespace ramses_internal
         }
     }
 
-    void TextureUploadingAdapter_Wayland::uploadTextureFromWaylandResource(DeviceResourceHandle textureHandle, EGLClientBuffer bufferResource)
+    void TextureUploadingAdapter_Wayland::uploadTextureFromWaylandResource(DeviceResourceHandle textureHandle, wl_resource *bufferResource)
     {
         if (m_waylandEglExtensionProcs.areExtensionsSupported())
         {
             const GLuint texID = m_device.getTextureAddress(textureHandle);
             glBindTexture(GL_TEXTURE_2D, texID);
+
+            if (CONTEXT_RENDERER.getLogLevel() >= ELogLevel::Debug)
+            {
+                EGLint textureFormat =  0;
+                EGLint textureWidth =  0;
+                EGLint textureHeight =  0;
+                EGLBoolean res = m_waylandEglExtensionProcs.eglQueryWaylandBufferWL(bufferResource, EGL_TEXTURE_FORMAT, &textureFormat);
+                if (res == EGL_FALSE)
+                {
+                    LOG_ERROR(CONTEXT_RENDERER, "eglQueryWaylandBufferWL(EGL_TEXTURE_FORMAT) failed");
+                }
+                res = m_waylandEglExtensionProcs.eglQueryWaylandBufferWL(bufferResource, EGL_WIDTH, &textureWidth);
+                if (res == EGL_FALSE)
+                {
+                    LOG_ERROR(CONTEXT_RENDERER, "eglQueryWaylandBufferWL(EGL_WIDTH) failed");
+                }
+                res = m_waylandEglExtensionProcs.eglQueryWaylandBufferWL(bufferResource, EGL_HEIGHT, &textureHeight);
+                if (res == EGL_FALSE)
+                {
+                    LOG_ERROR(CONTEXT_RENDERER, "eglQueryWaylandBufferWL(EGL_HEIGHT) failed");
+                }
+                LOG_DEBUG_P(CONTEXT_RENDERER, "TextureUploadingAdapter_Wayland::uploadTextureFromWaylandResource: w:{} h:{} format:{} ({})",
+                            textureWidth, textureHeight, textureFormat, m_waylandEglExtensionProcs.getTextureFormatName(textureFormat));
+            }
 
             const EGLImage eglImage = m_waylandEglExtensionProcs.eglCreateImageKHR(nullptr, EGL_WAYLAND_BUFFER_WL, bufferResource, nullptr);
             assert(EGL_NO_IMAGE != eglImage);

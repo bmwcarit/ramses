@@ -20,6 +20,10 @@ namespace ramses_internal
         EXPECT_EQ(buffer.data(), os.getData());
         EXPECT_EQ(buffer.size(), os.getSize());
         EXPECT_EQ(0u, os.getBytesWritten());
+
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, os.getPos(position));
+        EXPECT_EQ(0u, position);
     }
 
     TEST(ARawBinaryOutputStream, canDoZeroWrite)
@@ -33,6 +37,10 @@ namespace ramses_internal
 
         os.write(nullptr, 0);
         EXPECT_EQ(0u, os.getBytesWritten());
+
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, os.getPos(position));
+        EXPECT_EQ(0u, position);
     }
 
     TEST(ARawBinaryOutputStream, canWriteData)
@@ -41,6 +49,7 @@ namespace ramses_internal
         std::vector<Byte>     refBuffer(450);
         RawBinaryOutputStream os(buffer.data(), buffer.size());
 
+        size_t position = std::numeric_limits<size_t>::max();
         const uint8_t     d8  = 123;
         const uint16_t    d16 = 65531;
         const uint64_t    d64 = 0xf897abd898798;
@@ -53,21 +62,29 @@ namespace ramses_internal
         std::memcpy(refBuffer.data(), &d8, sizeof(d8));
         EXPECT_EQ(1u, os.getBytesWritten());
         EXPECT_EQ(refBuffer, buffer);
+        EXPECT_EQ(EStatus::Ok, os.getPos(position));
+        EXPECT_EQ(position, os.getBytesWritten());
 
         os.write(&d64, sizeof(d64));
         std::memcpy(refBuffer.data()+1, &d64, sizeof(d64));
         EXPECT_EQ(9u, os.getBytesWritten());
         EXPECT_EQ(refBuffer, buffer);
+        EXPECT_EQ(EStatus::Ok, os.getPos(position));
+        EXPECT_EQ(position, os.getBytesWritten());
 
         os.write(dVec.data(), dVec.size());
         std::memcpy(refBuffer.data()+9, dVec.data(), dVec.size());
         EXPECT_EQ(441u, os.getBytesWritten());
         EXPECT_EQ(refBuffer, buffer);
+        EXPECT_EQ(EStatus::Ok, os.getPos(position));
+        EXPECT_EQ(position, os.getBytesWritten());
 
         os.write(&d16, sizeof(d16));
         std::memcpy(refBuffer.data()+441, &d16, sizeof(d16));
         EXPECT_EQ(443u, os.getBytesWritten());
         EXPECT_EQ(refBuffer, buffer);
+        EXPECT_EQ(EStatus::Ok, os.getPos(position));
+        EXPECT_EQ(position, os.getBytesWritten());
 
         EXPECT_EQ(buffer.data(), os.getData());
         EXPECT_EQ(buffer.size(), os.getSize());

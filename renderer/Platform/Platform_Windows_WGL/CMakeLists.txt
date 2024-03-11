@@ -26,6 +26,7 @@ ACME_MODULE(
     #==========================================================================
     DEPENDENCIES            Window_Windows
                             Context_WGL
+                            Device_GL
                             ramses-renderer-lib
 )
 

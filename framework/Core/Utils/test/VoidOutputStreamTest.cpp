@@ -26,6 +26,10 @@ namespace ramses_internal
     {
         const UInt32 expectedSize = 0u;
         EXPECT_EQ(expectedSize,  stream.getSize());
+
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, stream.getPos(position));
+        EXPECT_EQ(stream.getSize(), position);
     }
 
     TEST_F(VoidOutputStreamTest, InsertUInt16)
@@ -33,6 +37,10 @@ namespace ramses_internal
         const UInt16 value = 5u;
         stream << value;
         EXPECT_EQ( sizeof(UInt16),  stream.getSize());
+
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, stream.getPos(position));
+        EXPECT_EQ(stream.getSize(), position);
     }
 
     TEST_F(VoidOutputStreamTest, InsertBool)
@@ -40,6 +48,10 @@ namespace ramses_internal
         const bool value = true;
         stream << value;
         EXPECT_EQ( sizeof(bool),  stream.getSize());
+
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, stream.getPos(position));
+        EXPECT_EQ(stream.getSize(), position);
     }
 
     TEST_F(VoidOutputStreamTest, InsertInt32)
@@ -47,6 +59,10 @@ namespace ramses_internal
         const Int32 value = -7;
         stream << value;
         EXPECT_EQ( sizeof(Int32),  stream.getSize());
+
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, stream.getPos(position));
+        EXPECT_EQ(stream.getSize(), position);
     }
 
     TEST_F(VoidOutputStreamTest, InsertUInt32)
@@ -54,6 +70,10 @@ namespace ramses_internal
         const UInt32 value = 25u;
         stream << value;
         EXPECT_EQ( sizeof(UInt32),  stream.getSize());
+
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, stream.getPos(position));
+        EXPECT_EQ(stream.getSize(), position);
     }
 
     TEST_F(VoidOutputStreamTest, InsertInt64)
@@ -61,6 +81,10 @@ namespace ramses_internal
         const Int64 value = -333;
         stream << value;
         EXPECT_EQ( sizeof(Int64),  stream.getSize());
+
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, stream.getPos(position));
+        EXPECT_EQ(stream.getSize(), position);
     }
 
     TEST_F(VoidOutputStreamTest, InsertUInt64)
@@ -68,6 +92,10 @@ namespace ramses_internal
         const UInt64 value = 5432u;
         stream << value;
         EXPECT_EQ( sizeof(UInt64),  stream.getSize());
+
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, stream.getPos(position));
+        EXPECT_EQ(stream.getSize(), position);
     }
 
     TEST_F(VoidOutputStreamTest, InsertFloat)
@@ -75,6 +103,10 @@ namespace ramses_internal
         const Float value = 42.23f;
         stream << value;
         EXPECT_EQ( sizeof(Float),  stream.getSize());
+
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, stream.getPos(position));
+        EXPECT_EQ(stream.getSize(), position);
     }
 
     TEST_F(VoidOutputStreamTest, InsertGuid)
@@ -82,6 +114,10 @@ namespace ramses_internal
         const Guid value;
         stream << value;
         EXPECT_EQ(sizeof(Guid::value_type),  stream.getSize());
+
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, stream.getPos(position));
+        EXPECT_EQ(stream.getSize(), position);
     }
 
     TEST_F(VoidOutputStreamTest, InsertString)
@@ -90,6 +126,10 @@ namespace ramses_internal
         const UInt32 expectedSize = sizeof(UInt32) + static_cast<UInt32>(value.size()); // length info + string
         stream << value;
         EXPECT_EQ( expectedSize,  stream.getSize());
+
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, stream.getPos(position));
+        EXPECT_EQ(stream.getSize(), position);
     }
 
     TEST_F(VoidOutputStreamTest, InsertResourceContextHash)
@@ -97,6 +137,10 @@ namespace ramses_internal
         const ResourceContentHash value;
         stream << value;
         EXPECT_EQ(sizeof(ResourceContentHash), stream.getSize());
+
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, stream.getPos(position));
+        EXPECT_EQ(stream.getSize(), position);
     }
 
     TEST_F(VoidOutputStreamTest, InsertRawData)
@@ -104,6 +148,10 @@ namespace ramses_internal
         const UInt32 sentSize = 37u;
         stream.write(nullptr, sentSize);
         EXPECT_EQ( sentSize,  stream.getSize());
+
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, stream.getPos(position));
+        EXPECT_EQ(stream.getSize(), position);
     }
 
 
@@ -115,5 +163,9 @@ namespace ramses_internal
         const UInt32 expectedSize = sizeof(UInt64) + sizeof(UInt32) + 8 + sizeof(Float);
         stream << intValue << testString << floatValue;
         EXPECT_EQ( expectedSize, stream.getSize());
+
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, stream.getPos(position));
+        EXPECT_EQ(stream.getSize(), position);
     }
 }

@@ -147,9 +147,9 @@ namespace ramses_internal
         addMeshNodeToDefaultRenderGroup(*meshNode);
     }
 
-    ramses::Appearance& EmbeddedCompositorScene::createAppearanceWithStreamTexture(ramses::Scene& scene, ramses::waylandIviSurfaceId_t sourceId, ramses::dataConsumerId_t consumerId, const ramses::Texture2D& fallbackTexture)
+    ramses::Appearance& EmbeddedCompositorScene::createAppearanceWithStreamTexture(ramses::Scene& scene, ramses::waylandIviSurfaceId_t iviSurface, ramses::dataConsumerId_t consumerId, const ramses::Texture2D& fallbackTexture)
     {
-        ramses::StreamTexture* streamTexture = scene.createStreamTexture(fallbackTexture, sourceId);
+        ramses::StreamTexture* streamTexture = scene.createStreamTexture(fallbackTexture, iviSurface);
         const ramses::TextureSampler* sampler = scene.createTextureSampler(
                     ramses::ETextureAddressMode_Repeat,
                     ramses::ETextureAddressMode_Repeat,
@@ -227,9 +227,9 @@ namespace ramses_internal
         }
     }
 
-    void EmbeddedCompositorScene::createQuadWithStreamTexture(float xPos, float yPos, float width, float height, ramses::waylandIviSurfaceId_t sourceId, ramses::dataConsumerId_t consumerId, const ramses::Texture2D& fallbackTexture)
+    void EmbeddedCompositorScene::createQuadWithStreamTexture(float xPos, float yPos, float width, float height, ramses::waylandIviSurfaceId_t iviSurface, ramses::dataConsumerId_t consumerId, const ramses::Texture2D& fallbackTexture)
     {
-        ramses::Appearance& appearance = createAppearanceWithStreamTexture(m_scene, sourceId, consumerId, fallbackTexture);
+        ramses::Appearance& appearance = createAppearanceWithStreamTexture(m_scene, iviSurface, consumerId, fallbackTexture);
         createQuad(xPos, yPos, width, height, appearance);
     }
 }

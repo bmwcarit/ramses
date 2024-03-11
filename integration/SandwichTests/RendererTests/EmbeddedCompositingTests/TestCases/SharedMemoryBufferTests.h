@@ -27,6 +27,7 @@ namespace ramses_internal
             ShowFallbackTextureWhenBufferIsDetachedFromSurface,
             ShowFallbackTextureWhenBufferIsDetachedFromSurfaceAndLastFrameNotUsedForRendering,
             ClientAttachesAndDestroysBufferWithoutCommit,
+            QuickBufferReAttach,
 
             //switchting between EGL and shared memory buffers
             SwitchBetweenBufferTypes_ShmThenDestroyShmThenEgl,

@@ -16,7 +16,6 @@
 namespace ramses_internal
 {
     class RamshCommunicationChannelConsole;
-    class RamshCommunicationChannelDLT;
 
     class RamshStandardSetup : public Ramsh
     {
@@ -32,7 +31,6 @@ namespace ramses_internal
         const String m_prompt;
         bool m_started = false;
         std::unique_ptr<RamshCommunicationChannelConsole> m_consoleChannel;
-        std::unique_ptr<RamshCommunicationChannelDLT> m_dltChannel;
     };
 
 }

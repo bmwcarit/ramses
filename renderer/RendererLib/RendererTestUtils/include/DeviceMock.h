@@ -89,7 +89,7 @@ namespace ramses_internal
         MOCK_METHOD(DeviceResourceHandle, getEmptyExternalTexture, (), (const, override));
         MOCK_METHOD(void, bindTexture, (DeviceResourceHandle handle), (override));
         MOCK_METHOD(void, generateMipmaps, (DeviceResourceHandle handle), (override));
-        MOCK_METHOD(void, uploadTextureData, (DeviceResourceHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const Byte* data, UInt32 dataSize), (override));
+        MOCK_METHOD(void, uploadTextureData, (DeviceResourceHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const Byte* data, UInt32 dataSize, UInt32 stride), (override));
         MOCK_METHOD(DeviceResourceHandle, uploadStreamTexture2D, (DeviceResourceHandle handle, UInt32 width, UInt32 height, ETextureFormat format, const UInt8* data, const TextureSwizzleArray& swizzle), (override));
         MOCK_METHOD(void, deleteTexture, (DeviceResourceHandle), (override));
         MOCK_METHOD(void, activateTexture, (DeviceResourceHandle, DataFieldHandle), (override));

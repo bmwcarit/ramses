@@ -20,6 +20,10 @@ namespace ramses_internal
         class MockSceneCommandVisitor
         {
         public:
+            void operator()(const SceneCommandSetProperty& cmd)
+            {
+                handleSceneCommandSetProperty(cmd);
+            }
             void operator()(const SceneCommandForceFallback& cmd)
             {
                 handleSceneCommandForceFallback(cmd);
@@ -41,6 +45,7 @@ namespace ramses_internal
                 handleSceneCommandLogResourceMemoryUsage(cmd);
             }
 
+            MOCK_METHOD(void, handleSceneCommandSetProperty, (const SceneCommandSetProperty&));
             MOCK_METHOD(void, handleSceneCommandForceFallback, (const SceneCommandForceFallback&));
             MOCK_METHOD(void, handleSceneCommandFlushSceneVersion, (const SceneCommandFlushSceneVersion&));
             MOCK_METHOD(void, handleSceneCommandValidationRequest, (const SceneCommandValidationRequest&));

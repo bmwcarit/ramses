@@ -82,6 +82,31 @@ namespace ramses_internal
         m_renderableOrderingDirty = true;
     }
 
+    TextureBufferHandle RendererCachedScene::allocateTextureBuffer(ETextureFormat textureFormat, const MipMapDimensions& mipMapDimensions, TextureBufferHandle handle)
+    {
+        auto resultHandle = TextureLinkCachedScene::allocateTextureBuffer(textureFormat, mipMapDimensions, handle);
+        m_textureBufferUpdates.resize(getTextureBufferCount());
+        auto& update = m_textureBufferUpdates[resultHandle.asMemoryHandle()];
+        update.resize(mipMapDimensions.size());
+        return resultHandle;
+    }
+
+    void RendererCachedScene::releaseTextureBuffer(TextureBufferHandle handle)
+    {
+        TextureLinkCachedScene::releaseTextureBuffer(handle);
+        m_textureBufferUpdates[handle.asMemoryHandle()].clear();
+    }
+
+    void RendererCachedScene::updateTextureBuffer(TextureBufferHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 width, UInt32 height, const Byte* data)
+    {
+        TextureLinkCachedScene::updateTextureBuffer(handle, mipLevel, x, y, width, height, data);
+        assert(handle.asMemoryHandle() < m_textureBufferUpdates.size());
+        auto& update = m_textureBufferUpdates[handle.asMemoryHandle()];
+        assert(mipLevel < update.size());
+        auto& area = update[mipLevel];
+        area = area.getBoundingQuad(Quad{static_cast<Int32>(x), static_cast<Int32>(y), static_cast<Int32>(width), static_cast<Int32>(height)});
+    }
+
     void RendererCachedScene::setRenderPassEnabled(RenderPassHandle passHandle, Bool isEnabled)
     {
         TextureLinkCachedScene::setRenderPassEnabled(passHandle, isEnabled);

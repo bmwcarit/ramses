@@ -10,12 +10,44 @@
 #include "TextureUtils.h"
 #include "ramses-client-api/Scene.h"
 #include "Resource/TextureResource.h"
+#include "SceneAPI/TextureBuffer.h"
 
 namespace ramses_internal
 {
     ImguiImageCache::ImguiImageCache(ramses::Scene* scene)
         : m_scene(scene)
     {
+    }
+
+    imgui::Image ImguiImageCache::get(const MipMap& mm, ETextureFormat format)
+    {
+        const auto it = m_imageBuffers.find(mm.data.data());
+        imgui::Image image = {nullptr, 0, 0};
+        if (it == m_imageBuffers.end())
+        {
+            const ramses::TextureSwizzle textureSwizzle;
+            std::vector<ramses::MipLevelData> mipLevelData{ramses::MipLevelData(static_cast<uint32_t>(mm.data.size()), mm.data.data())};
+            auto* texture = m_scene->createTexture2D(ramses::TextureUtils::GetTextureFormatFromInternal(format),
+                                                     mm.width,
+                                                     mm.height,
+                                                     static_cast<uint32_t>(mipLevelData.size()),
+                                                     &mipLevelData[0],
+                                                     false,
+                                                     textureSwizzle);
+            image.width  = mm.width;
+            image.height = mm.height;
+            image.sampler = m_scene->createTextureSampler(ramses::ETextureAddressMode_Clamp,
+                                                          ramses::ETextureAddressMode_Clamp,
+                                                          ramses::ETextureSamplingMethod_Linear_MipMapLinear,
+                                                          ramses::ETextureSamplingMethod_Linear,
+                                                          *texture);
+            m_imageBuffers[mm.data.data()] = image;
+        }
+        else
+        {
+            image = it->second;
+        }
+        return image;
     }
 
     imgui::Image ImguiImageCache::get(const TextureResource* res)

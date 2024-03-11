@@ -211,7 +211,10 @@ IF (ramses-sdk_ALLOW_CUSTOM_FREETYPE AND NOT freetype_FOUND)
 
     file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/FindHarfbuzz.cmake")
 
-    target_include_directories(freetype INTERFACE "freetype/include")
+    target_include_directories(freetype INTERFACE
+        "${CMAKE_CURRENT_BINARY_DIR}/freetype/include" # ftoption.h may be modified
+        "freetype/include"
+    )
 
     ACME_FOLDERIZE_TARGETS(freetype harfbuzz)
     foreach (tgt dist harfbuzz-subset hb-ot-tag main test-buffer-serialize test-size-params test-size-params test-test test-unicode-ranges test-would-substitute)

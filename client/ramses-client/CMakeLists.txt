@@ -88,6 +88,16 @@ ACME_MODULE(
                             ramses-gmock-main
 )
 
+if (ramses-sdk_ENABLE_HARFBUZZ_LEGACY_SHAPING)
+    ACME_INFO("+ HarfBuzz legacy shaping enabled")
+    target_compile_definitions(ramses-client PRIVATE "-DUSE_HARFBUZZ_LEGACY_SHAPING=1")
+    if (ramses-sdk_BUILD_TESTS)
+        target_compile_definitions(ramses-client-test PRIVATE "-DUSE_HARFBUZZ_LEGACY_SHAPING=1")
+    endif()
+else()
+    ACME_INFO("- HarfBuzz legacy shaping disabled")
+endif()
+
 set(ramses-shared-lib-MIXIN
     ${ramses-shared-lib-MIXIN}
     INCLUDE_BASE ${RAMSES_CLIENT_API_INCLUDE_BASE}

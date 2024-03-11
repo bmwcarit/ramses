@@ -322,8 +322,10 @@ namespace ramses
             const displayBufferId_t previouslyAssignedOB = contentIt->second.displayBufferAssignment;
             if (!previouslyAssignedOB.isValid())
                 return addErrorEntry("DcsmContentControl:linkContentToTextureConsumer: failed to link content, contentid not assigned to an offscreenbuffer");
-
-            return m_sceneControl.linkOffscreenBuffer(previouslyAssignedOB, consumerSceneId, consumerId);
+            status_t ret = m_sceneControl.linkOffscreenBuffer(previouslyAssignedOB, consumerSceneId, consumerId);
+            if (ret == ramses::StatusOK)
+                rememberLink(ContentLink{ contentID, consumerContentID, consumerId, false });
+            return ret;
         }
         else if (contentIt->second.contentType == ETechnicalContentType::WaylandIviSurfaceID)
         {
@@ -336,12 +338,29 @@ namespace ramses
                 return addErrorEntry("DcsmContentControl::linkContentToTextureConsumer: failed to link content, internal streambuffer not existing");
 
             const auto& streamBuffer = streamBufferIt->second;
-
             LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:linkContentToTextureConsumer: linking streambuffer " << streamBuffer.getValue() << " to consumerScene " << consumerSceneId << " consumerId " << consumerId);
-            return m_sceneControl.linkStreamBuffer(streamBuffer, consumerSceneId, consumerId);
+            status_t ret = m_sceneControl.linkStreamBuffer(streamBuffer, consumerSceneId, consumerId);
+            if (ret == ramses::StatusOK)
+                rememberLink(ContentLink{ contentID, consumerContentID, consumerId, false });
+            return ret;
         }
 
         return addErrorEntry("DcsmContentControl:linkContentToTextureConsumer: Cannot link content of unknown type");
+    }
+
+    void DcsmContentControlImpl::rememberLink(ContentLink link)
+    {
+        // check if link already in list
+        for (ContentLink& existinglink : m_contentTextureLinks)
+        {
+            if (existinglink.consumer == link.consumer && existinglink.dataConsumerId == link.dataConsumerId && existinglink.provider == link.provider)
+            {
+                existinglink.eventSent = false;
+                LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DcsmContentControlImpl:rememberLink: link already exists( provider " << link.provider << " consumer: " << link.consumer <<  " dataconsumerid: " << link.dataConsumerId << ")");
+                return;
+            }
+        }
+        m_contentTextureLinks.push_back(link);
     }
 
     status_t DcsmContentControlImpl::linkData(ContentID providerContentID, dataProviderId_t providerId, ContentID consumerContentID, dataConsumerId_t consumerId)
@@ -385,6 +404,14 @@ namespace ramses
         const auto consumerTechId = getTechnicalContentAssociatedWithContent(consumerContentID);
         if (!consumerTechId.isValid())
             return addErrorEntry("DcsmContentControl:unlinkData: failed to unlink data, consumer content's scene unknown.");
+
+        auto it = std::remove_if(m_contentTextureLinks.begin(), m_contentTextureLinks.end(), [&](ContentLink const& link) { return link.consumer == consumerContentID && link.dataConsumerId == consumerId; });
+        if (it == m_contentTextureLinks.end())
+        {
+            LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:unlinkData: no links found to remove from list");
+        }
+
+        m_contentTextureLinks.erase(it, m_contentTextureLinks.end());
 
         return m_sceneControl.unlinkData(sceneId_t{ consumerTechId.getValue() }, consumerId);
     }
@@ -447,6 +474,14 @@ namespace ramses
                 LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:contentOffered: content offered " << contentID << " is already assigned to another category " << contentIt->second.category
                     << ", now requesting category " << category << ". Ignoring, stop offer first before changing category.");
                 return;
+            }
+            if (contentIt != m_contents.cend())
+            {
+                if (contentIt->second.stopOfferRequested)
+                {
+                    LOG_WARN(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:contentOffered: content offered " << contentID << " is stop offer requested, forceUnoffering first. ");
+                    forceContentOfferStopped(contentID);
+                }
             }
 
             LOG_INFO(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:contentOffered: assigning content " << contentID << " to category " << category);
@@ -561,7 +596,10 @@ namespace ramses
             m_offeredContentsForOtherCategories.erase(itEnd, m_offeredContentsForOtherCategories.end());
         }
         else
+        {
+            contentIt->second.stopOfferRequested = true;
             m_pendingEvents.push_back({ EventType::ContentStopOfferRequested, contentID, Category{0}, {}, {}, DcsmContentControlEventResult::OK });
+        }
     }
 
     void DcsmContentControlImpl::forceContentOfferStopped(ContentID contentID)
@@ -605,48 +643,52 @@ namespace ramses
         if (contentIt == m_contents.end())
             return;
 
-        if (StatusOK == m_dcsmConsumer.contentStateChange(contentID, EDcsmState::Offered, {}))
-        {
-            // signal temporary NotAvailable to user to indicate failure, will be immediately followed by Available event triggered by contentOffered
-            m_pendingEvents.push_back({ EventType::ContentNotAvailable, contentID, Category{0}, {}, {}, DcsmContentControlEventResult::OK });
-
-            const auto category = contentIt->second.category;
-            const auto contentType = contentIt->second.contentType;
-
-            removeContent(contentID); // remove all associated states and data as we are supposed to get all (potentially conflicting) data again ramping up
-            contentOffered(contentID, category, contentType); // fake the now unknown content being newly offered
-        }
-        else
+        status_t stat = m_dcsmConsumer.contentStateChange(contentID, EDcsmState::Offered, {});
+        if (stat != StatusOK)
             LOG_ERROR(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:resetContentStateAfterTechnicalContentReset: error unassigning content " << contentID);
 
+        // signal temporary NotAvailable to user to indicate failure, will be immediately followed by Available event triggered by contentOffered
+        m_pendingEvents.push_back({ EventType::ContentNotAvailable, contentID, Category{0}, {}, {}, DcsmContentControlEventResult::OK });
+
+        const auto category = contentIt->second.category;
+        const auto contentType = contentIt->second.contentType;
+        requestSceneState(contentID, RendererSceneState::Available);
+
+        removeContent(contentID); // remove all associated states and data as we are supposed to get all (potentially conflicting) data again ramping up
+        contentOffered(contentID, category, contentType); // fake the now unknown content being newly offered
     }
 
     void DcsmContentControlImpl::applyTechnicalStateChange(TechnicalContentDescriptor techId, RendererSceneState state)
     {
+        LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControlImpl::applyTechnicalStateChange: techid {} state {}", techId, state);
         auto& sceneInfo = m_techContents[techId];
         // first collect current state of all associated contents to be used as 'last' state when checking if changed
         std::unordered_map<ContentID, ContentState> lastStates;
         for (const auto contentID : sceneInfo.associatedContents)
             lastStates[contentID] = determineCurrentContentState(contentID);
 
+        if (state == RendererSceneState::Unavailable)
+        {
+            // need to do reset here before setting reportedState, otherwise there is no rampdown
+            // rampdown can be necessary for example to cause cleanup of streambuffers
+            auto contentsToResetCopy = sceneInfo.associatedContents;
+            for (const auto contentID : contentsToResetCopy)
+                resetContentStateAfterTechnicalContentReset(contentID);
+        }
         // set new actual scene state which might modify consolidated state of some of the associated contents
         sceneInfo.sharedState.setReportedState(state);
         if (state == RendererSceneState::Unavailable)
             sceneInfo.sharedState.setRequestedState(RendererSceneState::Unavailable);
 
-        // emit event if state changed for any of the associated contents
-        std::vector<ContentID> contentsToReset;
-        for (const auto contentID : sceneInfo.associatedContents)
+        if (state != RendererSceneState::Unavailable)
         {
-            if (state == RendererSceneState::Unavailable)
-                contentsToReset.push_back(contentID);
-            else
+
+            // emit event if state changed for any of the associated contents
+            for (const auto contentID : sceneInfo.associatedContents)
+            {
                 handleContentStateChange(contentID, lastStates[contentID]);
+            }
         }
-
-        for (const auto contentID : contentsToReset)
-            resetContentStateAfterTechnicalContentReset(contentID);
-
 
         // trigger a potential state change that might result out of the new actual state
         goToConsolidatedDesiredState(techId);
@@ -741,17 +783,33 @@ namespace ramses
             consumerContents.push_back(ContentID::Invalid());
         }
 
-        // there might be multiple provider and consumer contens, ensure there is an event sent out for each combination of them
+        // there might be multiple provider and consumer contents, ensure there is an event sent out for each requested link
         for (const auto& providerID : providerContents)
         {
             for (const auto& consumerID : consumerContents)
             {
-                Event evt{ EventType::ContentLinkedToTextureConsumer };
-                evt.providerContentID = providerID;
-                evt.consumerContentID = consumerID;
-                evt.consumerID = consumerDataSlotId;
-                evt.result = success ? DcsmContentControlEventResult::OK : DcsmContentControlEventResult::TimedOut;
-                m_pendingEvents.push_back(evt);
+                for (auto& link : m_contentTextureLinks)
+                {
+                    // only emit for contents with requested links
+                    if (link.provider == providerID && link.consumer == consumerID && link.dataConsumerId == consumerDataSlotId)
+                    {
+                        if (!link.eventSent)
+                        {
+                            LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:streamBufferLinked: generating event providerid: {}, consumerid: {}, dataslotid: {} (event previously sent:{})", providerID, consumerID, consumerDataSlotId, link.eventSent);
+                            Event evt{ EventType::ContentLinkedToTextureConsumer };
+                            evt.providerContentID = providerID;
+                            evt.consumerContentID = consumerID;
+                            evt.consumerID = consumerDataSlotId;
+                            evt.result = success ? DcsmContentControlEventResult::OK : DcsmContentControlEventResult::TimedOut;
+                            m_pendingEvents.push_back(evt);
+                            link.eventSent = true;
+                        }
+                        else
+                        {
+                            LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:streamBufferLinked: skipping event providerid: {}, consumerid: {}, dataslotid: {} (event previously sent:{})", providerID, consumerID, consumerDataSlotId, link.eventSent);
+                        }
+                    }
+                }
             }
         }
     }
@@ -1127,12 +1185,15 @@ namespace ramses
                 switch (evt.contentState)
                 {
                 case ContentState::Available:
+                    LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dispatchPendingEvents: ContentState::Available (contentid:{}, cat:{})", evt.contentID, evt.category);
                     eventHandler.contentAvailable(evt.contentID, evt.category);
                     break;
                 case ContentState::Ready:
+                    LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dispatchPendingEvents: ContentState::Ready (contentid:{}, result:{})", evt.contentID, evt.result);
                     eventHandler.contentReady(evt.contentID, evt.result);
                     break;
                 case ContentState::Shown:
+                    LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dispatchPendingEvents: ContentState::Shown (contentid:{})", evt.contentID);
                     eventHandler.contentShown(evt.contentID);
                     break;
                 case ContentState::Invalid:
@@ -1141,67 +1202,87 @@ namespace ramses
                 }
                 break;
             case EventType::ContentEnableFocusRequest:
+                LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dispatchPendingEvents: ContentEnableFocusRequest (contentid:{}, focusreq:{})", evt.contentID, evt.focusRequest);
                 eventHandler.contentEnableFocusRequest(evt.contentID, evt.focusRequest);
                 break;
             case EventType::ContentDisableFocusRequest:
+                LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dispatchPendingEvents: ContentDisableFocusRequest (contentid:{}, focusreq:{})", evt.contentID, evt.focusRequest);
                 eventHandler.contentDisableFocusRequest(evt.contentID, evt.focusRequest);
                 break;
             case EventType::ContentStopOfferRequested:
+                LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dispatchPendingEvents: ContentStopOfferRequested (contentid:{})", evt.contentID);
                 eventHandler.contentStopOfferRequested(evt.contentID);
                 break;
             case EventType::ContentNotAvailable:
+                LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dispatchPendingEvents: ContentNotAvailable (contentid:{})", evt.contentID);
                 eventHandler.contentNotAvailable(evt.contentID);
                 break;
             case EventType::ContentMetadataUpdate:
             {
+                LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dispatchPendingEvents: ContentMetadataUpdate (contentid:{})", evt.contentID);
                 DcsmMetadataUpdate metadataUpdate(*new DcsmMetadataUpdateImpl);
                 metadataUpdate.impl.setMetadata(std::move(evt.metadata));
                 eventHandler.contentMetadataUpdated(evt.contentID, metadataUpdate);
                 break;
             }
             case EventType::OffscreenBufferLinked:
+                LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dispatchPendingEvents: OffscreenBufferLinked (buffer:{},consumercontentid:{}, consumerid:{},result:{})", evt.displayBuffer, evt.consumerContentID, evt.consumerID, evt.result == DcsmContentControlEventResult::OK);
                 eventHandler.offscreenBufferLinked(evt.displayBuffer, evt.consumerContentID, evt.consumerID, evt.result == DcsmContentControlEventResult::OK);
                 break;
             case EventType::DataLinked:
+                LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dispatchPendingEvents: DataLinked (providercontentid:{},providerid:{},consumercontentid:{},consumerid:{}, result:{})", evt.providerContentID, evt.providerID, evt.consumerContentID, evt.consumerID, evt.result == DcsmContentControlEventResult::OK);
                 eventHandler.dataLinked(evt.providerContentID, evt.providerID, evt.consumerContentID, evt.consumerID, evt.result == DcsmContentControlEventResult::OK);
                 break;
             case EventType::DataUnlinked:
+                LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dispatchPendingEvents: DataUnlinked (consumercontentid:{},consumerid:{}, result:{})", evt.consumerContentID, evt.consumerID, evt.result == DcsmContentControlEventResult::OK);
                 eventHandler.dataUnlinked(evt.consumerContentID, evt.consumerID, evt.result == DcsmContentControlEventResult::OK);
                 break;
             case EventType::ContentFlushed:
+                // already logged where received
                 eventHandler.contentFlushed(evt.contentID, evt.version);
                 break;
             case EventType::DataProviderCreated:
+                LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dispatchPendingEvents: DataProviderCreated (providerContentID:{},providerID:{})", evt.providerContentID, evt.providerID);
                 eventHandler.dataProviderCreated(evt.providerContentID, evt.providerID);
                 break;
             case EventType::DataProviderDestroyed:
+                LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dispatchPendingEvents: DataProviderDestroyed (providerContentID:{},providerID:{})", evt.providerContentID, evt.providerID);
                 eventHandler.dataProviderDestroyed(evt.providerContentID, evt.providerID);
                 break;
             case EventType::DataConsumerCreated:
+                LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dispatchPendingEvents: DataConsumerCreated (consumerContentID:{},consumerID:{})", evt.consumerContentID, evt.consumerID);
                 eventHandler.dataConsumerCreated(evt.consumerContentID, evt.consumerID);
                 break;
             case EventType::DataConsumerDestroyed:
+                LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dispatchPendingEvents: DataConsumerDestroyed (consumerContentID:{},consumerID:{})", evt.consumerContentID, evt.consumerID);
                 eventHandler.dataConsumerDestroyed(evt.consumerContentID, evt.consumerID);
                 break;
             case EventType::ContentExpirationMonitoringEnabled:
+                LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dispatchPendingEvents: ContentExpirationMonitoringEnabled (contentid:{})", evt.contentID);
                 eventHandler.contentExpirationMonitoringEnabled(evt.contentID);
                 break;
             case EventType::ContentExpirationMonitoringDisabled:
+                LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dispatchPendingEvents: ContentExpirationMonitoringDisabled (contentid:{})", evt.contentID);
                 eventHandler.contentExpirationMonitoringDisabled(evt.contentID);
                 break;
             case EventType::ContentExpired:
+                LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dispatchPendingEvents: ContentExpired (contentid:{})", evt.contentID);
                 eventHandler.contentExpired(evt.contentID);
                 break;
             case EventType::ContentRecoveredFromExpiration:
+                LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dispatchPendingEvents: ContentRecoveredFromExpiration (contentid:{})", evt.contentID);
                 eventHandler.contentRecoveredFromExpiration(evt.contentID);
                 break;
             case EventType::StreamAvailable:
+                LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dispatchPendingEvents: StreamAvailable (streamSource:{},streamAvailable:{})", evt.streamSource, evt.streamAvailable);
                 eventHandler.streamAvailabilityChanged(evt.streamSource, evt.streamAvailable);
                 break;
             case EventType::ObjectsPicked:
+                LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dispatchPendingEvents: ObjectsPicked (contentid:{})", evt.contentID);
                 eventHandler.objectsPicked(evt.contentID, evt.pickedObjectIds.data(), static_cast<uint32_t>(evt.pickedObjectIds.size()));
                 break;
             case EventType::ContentLinkedToTextureConsumer:
+                LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:dispatchPendingEvents: ContentLinkedToTextureConsumer (providerContentID:{},consumercontentid:{}, consumerid:{}, result:{})", evt.providerContentID, evt.consumerContentID, evt.consumerID, (evt.result == DcsmContentControlEventResult::OK));
                 eventHandler.contentLinkedToTextureConsumer(evt.providerContentID, evt.consumerContentID, evt.consumerID, (evt.result == DcsmContentControlEventResult::OK));
                 break;
             }
@@ -1226,7 +1307,7 @@ namespace ramses
 
         const bool mustRequest = (requestedState == reportedState || requestedState == RendererSceneState::Unavailable ) && // scene control is not doing anything currently
                                   reportedState != consolidatedDesiredState; // we want another state than the current one
-
+        LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControlImpl::goToConsolidatedDesiredSceneState: reportedState:{}, consolidatedDesiredState:{}, requestedState:{} ", reportedState, consolidatedDesiredState, requestedState);
         if (mustRequest &&
             reportedState != RendererSceneState::Unavailable && // can't do anything if scene isn't available/published
             consolidatedDesiredState != RendererSceneState::Unavailable) // unavailable is not a legal state to request
@@ -1313,13 +1394,23 @@ namespace ramses
     void DcsmContentControlImpl::handleContentStateChange(ContentID contentID, ContentState lastState)
     {
         const ContentState currState = determineCurrentContentState(contentID);
+        LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControlImpl::handleContentStateChange: contentid:{}, lastState:{}, currState:{} ", contentID, lastState, currState);
         if (currState != lastState)
         {
             assert(m_contents.count(contentID) > 0);
             auto& contentInfo = m_contents.find(contentID)->second;
 
             if (currState == ContentState::Available || currState == ContentState::Invalid)
+            {
                 contentInfo.displayBufferAssignment = {};
+                // remove all links with this content as source or target
+                auto it = std::remove_if(m_contentTextureLinks.begin(), m_contentTextureLinks.end(), [&](ContentLink const& link) { return link.provider == contentID || link.consumer == contentID; });
+                for (auto removed = it; removed != m_contentTextureLinks.end(); ++removed)
+                {
+                    LOG_INFO_P(ramses_internal::CONTEXT_RENDERER, "DcsmContentControl:handleContentStateChange: removing ContentLink (provider:{}, consumer:{},datalinkid:{}, previouslysent:{})", removed->provider, removed->consumer, removed->dataConsumerId, removed->eventSent);
+                }
+                m_contentTextureLinks.erase(it, m_contentTextureLinks.end());
+            }
 
             if (lastState == ContentState::Available && currState == ContentState::Ready)
                 contentInfo.readyRequestTimeOut = std::numeric_limits<uint64_t>::max();

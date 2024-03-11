@@ -60,8 +60,9 @@ class EmbeddedCompositorBase(test_classes.OnSelectedTargetsTest):
                                                               env={"WAYLAND_DISPLAY": "wayland-10"})
         self.checkThatApplicationWasStarted(self.wlClientIviGears)
         self.addCleanup(self.target.kill_application, self.wlClientIviGears)
-        surfaceFound = self.renderer.wait_for_msg_in_stdout(self.watchSurfaceFound,
-                                                            "embedded-compositing client surface found for existing streamtexture: {}".format(iviID))
+        surfaceFound = self.renderer.wait_for_msg_in_stdout(
+            self.watchSurfaceFound,
+            "embedded-compositing client surface found for existing streamtexture: ivi-surface:{}".format(iviID))
         self.assertTrue(surfaceFound, msg="Surface was not found by renderer")
 
     def _startDmaBufExample(self, iviID, alternateColors=False):
@@ -74,8 +75,9 @@ class EmbeddedCompositorBase(test_classes.OnSelectedTargetsTest):
                                                             env={"WAYLAND_DISPLAY": "wayland-10"})
         self.checkThatApplicationWasStarted(self.wlClientDmaBuf)
         self.addCleanup(self.target.kill_application, self.wlClientDmaBuf)
-        surfaceFound = self.renderer.wait_for_msg_in_stdout(self.watchSurfaceFound,
-                                                            "embedded-compositing client surface found for existing streamtexture: {}".format(iviID))
+        surfaceFound = self.renderer.wait_for_msg_in_stdout(
+            self.watchSurfaceFound,
+            "embedded-compositing client surface found for existing streamtexture: ivi-surface:{}".format(iviID))
         self.assertTrue(surfaceFound, msg="Surface was not found by renderer")
 
     def _killIviGears(self):

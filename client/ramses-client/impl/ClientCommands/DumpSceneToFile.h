@@ -20,11 +20,11 @@ namespace ramses
 
 namespace ramses_internal
 {
-    class DumpSceneToFile : public RamshCommandArgs<uint64_t, String, String>
+    class DumpSceneToFile : public RamshCommand
     {
     public:
         explicit DumpSceneToFile(ramses::RamsesClientImpl& client);
-        virtual Bool execute(uint64_t& sceneId, String& fileName, String& sendViaDLT) const override;
+        virtual bool executeInput(const std::vector<std::string>& input) override;
 
     private:
         ramses::RamsesClientImpl& m_client;

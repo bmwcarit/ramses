@@ -16,6 +16,7 @@
 #include "EmbeddedCompositor_Wayland/TextureUploadingAdapter_Wayland.h"
 #include "EmbeddedCompositor_Wayland/LinuxDmabuf.h"
 #include "EmbeddedCompositor_Wayland/WaylandOutputParams.h"
+#include "Context_EGL/Context_EGL.h"
 #include "RendererLib/DisplayConfig.h"
 #include "RendererLib/RendererLogContext.h"
 #include "Utils/ThreadLocalLogForced.h"
@@ -26,7 +27,7 @@
 
 namespace ramses_internal
 {
-    EmbeddedCompositor_Wayland::EmbeddedCompositor_Wayland(const DisplayConfig& displayConfig, IContext& context)
+    EmbeddedCompositor_Wayland::EmbeddedCompositor_Wayland(const DisplayConfig& displayConfig, Context_EGL &context)
         : m_waylandEmbeddedSocketName(displayConfig.getWaylandSocketEmbedded())
         , m_waylandEmbeddedSocketGroup(displayConfig.getWaylandSocketEmbeddedGroup())
         , m_waylandEmbeddedSocketPermissions(displayConfig.getWaylandSocketEmbeddedPermissions())
@@ -128,13 +129,34 @@ namespace ramses_internal
 
     void EmbeddedCompositor_Wayland::logInfos(RendererLogContext& context) const
     {
-        context << m_surfaces.size() << " connected wayland client(s)" << RendererLogContext::NewLine;
+        WaylandEGLExtensionProcs eglExt(m_context.getEglDisplay());
+        context << m_surfaces.size() << " wayland surface(s)" << RendererLogContext::NewLine;
         context.indent();
         for (auto surface: m_surfaces)
         {
-            surface->logInfos(context);
+            surface->logInfos(context, eglExt);
         }
         context.unindent();
+        context << m_waylandBuffers.size() << " wayland buffer(s)" << RendererLogContext::NewLine;
+        context.indent();
+        for (auto* buffer: m_waylandBuffers)
+        {
+            buffer->logInfos(context, eglExt);
+        }
+        context.unindent();
+        context << m_regions.size() << " wayland region(s) - [not supported]" << RendererLogContext::NewLine;
+    }
+
+    void EmbeddedCompositor_Wayland::logPeriodicInfo(StringOutputStream& sos) const
+    {
+        sos << "EC: ";
+        for (auto surface: m_surfaces)
+        {
+            auto* buf = surface->getWaylandBuffer();
+            auto* res = (buf != nullptr) ? static_cast<const void*>(buf->getResource().getLowLevelHandle()) : nullptr;
+            sos << surface->getIviSurfaceId().getValue() << "[pid:" << surface->getClientCredentials().getProcessId() << " res:" << res << "];";
+        }
+        sos << "\n";
     }
 
     void EmbeddedCompositor_Wayland::addWaylandSurface(IWaylandSurface& waylandSurface)
@@ -158,7 +180,7 @@ namespace ramses_internal
             }
         }
 
-        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::removeWaylandSurface() Client destroyed surface, showing fallback texture for ivi surface " << waylandSurface.getIviSurfaceId()
+        LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::removeWaylandSurface() Client destroyed surface, showing fallback texture for " << waylandSurface.getIviSurfaceId()
                  << ". Count surfaces :" << m_surfaces.size());
     }
 
@@ -205,7 +227,7 @@ namespace ramses_internal
         IWaylandSurface* waylandClientSurface = findWaylandSurfaceByIviSurfaceId(streamTextureSourceId);
         assert(nullptr != waylandClientSurface);
 
-        LOG_DEBUG(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::uploadCompositingContentForStreamTexture(): Stream texture with source Id " << streamTextureSourceId);
+        LOG_DEBUG(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::uploadCompositingContentForStreamTexture() " << streamTextureSourceId);
         LOG_INFO(CONTEXT_SMOKETEST, "embedded-compositing client surface found for existing streamtexture: " << streamTextureSourceId);
 
         uploadCompositingContentForWaylandSurface(waylandClientSurface, textureHandle, textureUploadingAdapter);
@@ -231,13 +253,13 @@ namespace ramses_internal
             uint8_t dummyData { 0u };
             textureUploadingAdapter.uploadTexture2D(textureHandle, 1u, 1u, ETextureFormat::R8, &dummyData, swizzle);
 
-            LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::uploadCompositingContentForWaylandSurface(): resetting swizzle for stream source id :" << waylandSurface->getIviSurfaceId());
+            LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::uploadCompositingContentForWaylandSurface(): resetting swizzle for " << waylandSurface->getIviSurfaceId());
         }
 
         if (nullptr != sharedMemoryBufferData)
         {
             const TextureSwizzleArray swizzle = {ETextureChannelColor::Blue, ETextureChannelColor::Green, ETextureChannelColor::Red, ETextureChannelColor::Alpha};
-            textureUploadingAdapter.uploadTexture2D(textureHandle, waylandBufferResource.bufferGetSharedMemoryWidth(), waylandBufferResource.bufferGetSharedMemoryHeight(), ETextureFormat::RGBA8, sharedMemoryBufferData, swizzle);
+            textureUploadingAdapter.uploadTexture2D(textureHandle, waylandBufferResource.getWidth(), waylandBufferResource.getHeight(), ETextureFormat::RGBA8, sharedMemoryBufferData, swizzle);
         }
         else if (nullptr != linuxDmabufBuffer)
         {
@@ -246,7 +268,7 @@ namespace ramses_internal
             if(!success)
             {
                 StringOutputStream message;
-                message << "Failed creating EGL image from dma buffer for stream source id: " << waylandSurface->getIviSurfaceId();
+                message << "Failed creating EGL image from dma buffer for " << waylandSurface->getIviSurfaceId();
 
                 waylandBufferResource.postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INVALID_WL_BUFFER, String(message.release()));
             }
@@ -399,7 +421,7 @@ namespace ramses_internal
 
     void EmbeddedCompositor_Wayland::addToUpdatedStreamTextureSourceIds(WaylandIviSurfaceId id)
     {
-        LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::addToUpdatedStreamTextureSourceIds: new texture data for stream texture with source id " << id);
+        LOG_TRACE(CONTEXT_RENDERER, "EmbeddedCompositor_Wayland::addToUpdatedStreamTextureSourceIds: new texture data for stream texture with " << id);
         m_updatedStreamTextureSourceIds.insert(id);
 
         if(!m_knownStreamTextureSoruceIds.count(id))

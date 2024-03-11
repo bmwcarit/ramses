@@ -88,6 +88,10 @@ namespace ramses_internal
         context << "No embedded compositor information available." << RendererLogContext::NewLine;
     }
 
+    void EmbeddedCompositor_Dummy::logPeriodicInfo(StringOutputStream& /*sos*/) const
+    {
+    }
+
     Bool EmbeddedCompositor_Dummy::isRealCompositor() const
     {
         return false;

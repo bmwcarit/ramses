@@ -649,10 +649,10 @@ namespace ramses_internal
             const std::string outputString = context.getStream().c_str();
 
             std::stringstream expectedLogBuf;
-            expectedLogBuf << "1 connected wayland client(s)\n"
-                           << "  [ivi-surface-id: " << EmbeddedCompositorScene::GetStreamTextureSourceId().getValue() << "; title: \"TestWaylandApplication\"]\n";
+            expectedLogBuf << "1 wayland surface(s)\n"
+                           << "  ivi-surface:" << EmbeddedCompositorScene::GetStreamTextureSourceId().getValue() << "; title: \"TestWaylandApplication\";";
 
-            if (outputString != expectedLogBuf.str())
+            if (outputString.rfind(expectedLogBuf.str(), 0) != 0)
             {
                 LOG_ERROR(CONTEXT_RENDERER, "SingleStreamTextureTests::runEmbeddedCompositingTestCase  Wrong log output: " << outputString.c_str());
                 testResultValue = false;

@@ -17,7 +17,7 @@
 namespace ramses_internal
 {
     class IEmbeddedCompositor_Wayland;
-    class IContext;
+    class Context_EGL;
     class WaylandDisplay;
     class IWaylandGlobal;
     class IWaylandClient;
@@ -28,7 +28,7 @@ namespace ramses_internal
         explicit LinuxDmabufGlobal(IEmbeddedCompositor_Wayland& compositor);
         ~LinuxDmabufGlobal();
 
-        bool init(WaylandDisplay& serverDisplay, IContext& context);
+        bool init(WaylandDisplay& serverDisplay, Context_EGL& context);
         void destroy();
         void globalBind(IWaylandClient& client, uint32_t version, uint32_t id);
 

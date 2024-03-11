@@ -20,6 +20,7 @@ namespace ramses_internal
     class IWaylandBuffer;
     class IWaylandIVISurface;
     class RendererLogContext;
+    class WaylandEGLExtensionProcs;
 
     class IWaylandSurface
     {
@@ -39,7 +40,7 @@ namespace ramses_internal
         virtual void surfaceDamageBuffer(IWaylandClient& client, int32_t x, int32_t y, int32_t width, int32_t height) = 0;
         virtual void setShellSurface(IWaylandShellSurface* shellSurface) = 0;
         virtual bool hasShellSurface() const = 0;
-        virtual void logInfos(RendererLogContext& context) const = 0;
+        virtual void logInfos(RendererLogContext& context, const WaylandEGLExtensionProcs& eglExt) const = 0;
         virtual WaylandIviSurfaceId getIviSurfaceId() const = 0;
         virtual void sendFrameCallbacks(uint32_t time) = 0;
         virtual IWaylandBuffer* getWaylandBuffer() const = 0;

@@ -129,7 +129,7 @@ IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     if (ramses-sdk_ENABLE_SANITIZER AND NOT ramses-sdk_ENABLE_SANITIZER STREQUAL "")
 
         set(ubsan_checks "bool,bounds,enum,float-divide-by-zero,integer-divide-by-zero,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,vla-bound,float-cast-overflow,vptr,alignment,function")
-        set(ubsan_options "-fsanitize=undefined -fno-sanitize-recover=${ubsan_checks}")
+        set(ubsan_options "-fsanitize=undefined -fno-sanitize-recover=${ubsan_checks} -fsanitize-blacklist=${CMAKE_CURRENT_SOURCE_DIR}/scripts/ci/config/sanitizer/ubsan_blacklist.txt")
         set(tsan_options "-fsanitize=thread")
         set(asan_options "-fsanitize=address")
 

@@ -45,6 +45,7 @@
 #include "TextureUtils.h"
 #include "Scene/ClientScene.h"
 #include "Utils/File.h"
+#include "SceneAPI/EShaderStage.h"
 
 namespace ramses_internal
 {
@@ -207,7 +208,10 @@ namespace ramses_internal
     bool SceneViewerGui::drawRamsesObject(ramses::RamsesObjectImpl& obj)
     {
         return drawRamsesObject(obj, [&]() {
-            return ImGui::TreeNode(&obj, "%s[%u]: %s", shortName(obj.getType()), obj.getObjectRegistryHandle().asMemoryHandle(), obj.getName().c_str());
+            ramses::sceneObjectId_t objId;
+            if (obj.isOfType(ramses::ERamsesObjectType_SceneObject))
+                objId = static_cast<ramses::SceneObjectImpl&>(obj).getSceneObjectId();
+            return ImGui::TreeNode(&obj, "%s", fmt::format("{}[{}]: {}", shortName(obj.getType()), objId.getValue(), obj.getName()).c_str());
             });
     }
 
@@ -253,6 +257,7 @@ namespace ramses_internal
         sceneDumper.dumpUnrequiredObjects(dummyStream);
         m_usedObjects = sceneDumper.getRequiredObjects();
         m_resourceInfo = std::make_unique<ResourceList>(scene, m_usedObjects);
+        m_shaderWarnings = std::make_unique<ShaderWarnings>(scene);
         const char* report = m_scene.getValidationReport(ramses::EValidationSeverity_Warning);
         m_hasSceneErrors = ((report != nullptr) && (report[0] != 0));
         ImGuiIO& io = ImGui::GetIO();
@@ -890,6 +895,13 @@ namespace ramses_internal
             }
         }
 
+        ImGui::PushStyleColor(ImGuiCol_Text, ImColor(255, 255, 0).Value);
+        for (const auto& w : m_shaderWarnings->getWarnings(obj))
+        {
+            ImGui::TextWrapped("%s", fmt::format("{}: {}", w.stage, w.msg).c_str());
+        }
+        ImGui::PopStyleColor();
+
         ImGui::Text("UNIFORMS");
         const auto& uniforms = obj.getUniformInputInformation();
         for (const auto& u : uniforms)
@@ -1121,126 +1133,9 @@ namespace ramses_internal
     {
         const ramses::Effect& effect = obj.getEffect();
         ramses_internal::ClientScene& iscene   = m_scene.impl.getIScene();
-        const ramses_internal::RenderState& rs = m_scene.impl.getIScene().getRenderState(obj.getRenderStateHandle());
 
-        if (ImGui::TreeNode("Blending"))
-        {
-            float rgba[4];
-            obj.getBlendingColor(rgba[0], rgba[1], rgba[2], rgba[3]);
-            if (ImGui::ColorEdit4("BlendingColor", rgba))
-                obj.setBlendingColor(rgba[0], rgba[1], rgba[2], rgba[3]);
+        imgui::RenderState(iscene, obj.getRenderStateHandle());
 
-            int srcColor  = static_cast<int>(rs.blendFactorSrcColor);
-            int destColor = static_cast<int>(rs.blendFactorDstColor);
-            int srcAlpha  = static_cast<int>(rs.blendFactorSrcAlpha);
-            int destAlpha = static_cast<int>(rs.blendFactorDstAlpha);
-            auto setBlendFactors = [&]() {
-                iscene.setRenderStateBlendFactors(obj.getRenderStateHandle(),
-                                                  static_cast<EBlendFactor>(srcColor),
-                                                  static_cast<EBlendFactor>(destColor),
-                                                  static_cast<EBlendFactor>(srcAlpha),
-                                                  static_cast<EBlendFactor>(destAlpha));
-            };
-            if (ImGui::Combo("srcColor", &srcColor, ramses_internal::BlendFactorNames, static_cast<int>(EBlendFactor::NUMBER_OF_ELEMENTS)))
-                setBlendFactors();
-            if (ImGui::Combo("destColor", &destColor, ramses_internal::BlendFactorNames, static_cast<int>(EBlendFactor::NUMBER_OF_ELEMENTS)))
-                setBlendFactors();
-            if (ImGui::Combo("srcAlpha", &srcAlpha, ramses_internal::BlendFactorNames, static_cast<int>(EBlendFactor::NUMBER_OF_ELEMENTS)))
-                setBlendFactors();
-            if (ImGui::Combo("destAlpha", &destAlpha, ramses_internal::BlendFactorNames, static_cast<int>(EBlendFactor::NUMBER_OF_ELEMENTS)))
-                setBlendFactors();
-
-            int blendingOperationColor = static_cast<int>(rs.blendOperationColor);
-            int blendingOperationAlpha = static_cast<int>(rs.blendOperationAlpha);
-            auto setBlendOperations = [&]() {
-                iscene.setRenderStateBlendOperations(
-                    obj.getRenderStateHandle(), static_cast<EBlendOperation>(blendingOperationColor), static_cast<EBlendOperation>(blendingOperationAlpha));
-            };
-            if (ImGui::Combo("colorOperation", &blendingOperationColor, ramses_internal::BlendOperationNames, static_cast<int>(EBlendOperation::NUMBER_OF_ELEMENTS)))
-                setBlendOperations();
-            if (ImGui::Combo("alphaOperation", &blendingOperationAlpha, ramses_internal::BlendOperationNames, static_cast<int>(EBlendOperation::NUMBER_OF_ELEMENTS)))
-                setBlendOperations();
-            ImGui::TreePop();
-        }
-        if (ImGui::TreeNode("Depth"))
-        {
-            int depthFunc = static_cast<int>(rs.depthFunc);
-            if (ImGui::Combo("depthFunc", &depthFunc, DepthFuncNames, static_cast<int>(EDepthFunc::NUMBER_OF_ELEMENTS)))
-                iscene.setRenderStateDepthFunc(obj.getRenderStateHandle(), static_cast<EDepthFunc>(depthFunc));
-            int depthWrite = static_cast<int>(rs.depthWrite);
-            if (ImGui::Combo("depthWrite", &depthWrite, DepthWriteNames, static_cast<int>(EDepthWrite::NUMBER_OF_ELEMENTS)))
-                iscene.setRenderStateDepthWrite(obj.getRenderStateHandle(), static_cast<EDepthWrite>(depthWrite));
-            ImGui::TreePop();
-        }
-        if (ImGui::TreeNode("Scissor"))
-        {
-            int mode = static_cast<int>(rs.scissorTest);
-            int xywh[4] = {
-                rs.scissorRegion.x,
-                rs.scissorRegion.y,
-                rs.scissorRegion.width,
-                rs.scissorRegion.height
-            };
-            auto setScissorTest = [&]() {
-                iscene.setRenderStateScissorTest(obj.getRenderStateHandle(), static_cast<EScissorTest>(mode),
-                    {static_cast<int16_t>(xywh[0]), static_cast<int16_t>(xywh[1]), static_cast<uint16_t>(xywh[2]), static_cast<uint16_t>(xywh[3])});
-            };
-            if (ImGui::Combo("scissorTest", &mode, ScissorTestNames, static_cast<int>(EScissorTest::NUMBER_OF_ELEMENTS)))
-                setScissorTest();
-            if (ImGui::DragInt4("Region", xywh))
-                setScissorTest();
-            ImGui::TreePop();
-        }
-        if (ImGui::TreeNode("Stencil"))
-        {
-            int func = static_cast<int>(rs.stencilFunc);
-            int refMask[2]  = {
-                rs.stencilRefValue,
-                rs.stencilMask
-            };
-            auto setStencilFunc = [&]() {
-                iscene.setRenderStateStencilFunc(obj.getRenderStateHandle(), static_cast<EStencilFunc>(func), static_cast<uint8_t>(refMask[0]), static_cast<uint8_t>(refMask[1]));
-            };
-            if (ImGui::Combo("stencilFunc", &func, StencilFuncNames, static_cast<int>(EStencilFunc::NUMBER_OF_ELEMENTS)))
-                setStencilFunc();
-            if (ImGui::DragInt2("RefValue, Mask", refMask))
-                setStencilFunc();
-
-            int sfail = static_cast<int>(rs.stencilOpFail);
-            int dpfail = static_cast<int>(rs.stencilOpDepthFail);
-            int dppass = static_cast<int>(rs.stencilOpDepthPass);
-            auto setStencilOps = [&]() {
-                iscene.setRenderStateStencilOps(obj.getRenderStateHandle(), static_cast<EStencilOp>(sfail), static_cast<EStencilOp>(dpfail), static_cast<EStencilOp>(dppass));
-            };
-            if (ImGui::Combo("fail operation", &sfail, StencilOperationNames, static_cast<int>(EStencilOp::NUMBER_OF_ELEMENTS)))
-                setStencilOps();
-            if (ImGui::Combo("depth fail operation", &dpfail, StencilOperationNames, static_cast<int>(EStencilOp::NUMBER_OF_ELEMENTS)))
-                setStencilOps();
-            if (ImGui::Combo("depth pass operation", &dppass, StencilOperationNames, static_cast<int>(EStencilOp::NUMBER_OF_ELEMENTS)))
-                setStencilOps();
-            ImGui::TreePop();
-        }
-        if (ImGui::TreeNode("DrawMode"))
-        {
-            int culling = static_cast<int>(rs.cullMode);
-            if (ImGui::Combo("Culling", &culling, CullModeNames, static_cast<int>(ECullMode::NUMBER_OF_ELEMENTS)))
-                iscene.setRenderStateCullMode(obj.getRenderStateHandle(), static_cast<ECullMode>(culling));
-            int drawMode = static_cast<int>(rs.drawMode);
-            if (ImGui::Combo("DrawMode", &drawMode, DrawModeNames, static_cast<int>(EDrawMode::NUMBER_OF_ELEMENTS)))
-                iscene.setRenderStateDrawMode(obj.getRenderStateHandle(), static_cast<EDrawMode>(drawMode));
-            uint32_t colorFlags = rs.colorWriteMask;
-            ImGui::Text("ColorWriteMask");
-            auto setColorWriteMask = [&]() { iscene.setRenderStateColorWriteMask(obj.getRenderStateHandle(), static_cast<uint8_t>(colorFlags)); };
-            if (ImGui::CheckboxFlags("Red", &colorFlags, EColorWriteFlag_Red))
-                setColorWriteMask();
-            if (ImGui::CheckboxFlags("Green", &colorFlags, EColorWriteFlag_Green))
-                setColorWriteMask();
-            if (ImGui::CheckboxFlags("Blue", &colorFlags, EColorWriteFlag_Blue))
-                setColorWriteMask();
-            if (ImGui::CheckboxFlags("Alpha", &colorFlags, EColorWriteFlag_Alpha))
-                setColorWriteMask();
-            ImGui::TreePop();
-        }
         if (ImGui::TreeNode("Uniform input"))
         {
             for (uint32_t i = 0; i < effect.getUniformInputCount(); ++i)
@@ -1535,6 +1430,12 @@ namespace ramses_internal
             ImGui::BulletText("width:%u height:%u", it->width, it->height);
             ImGui::BulletText("area: x:%d y:%d w:%d h:%d", it->usedRegion.x, it->usedRegion.y, it->usedRegion.width, it->usedRegion.height);
             ImGui::BulletText("size (kB): %lu", it->data.size() / 1024);
+            if (ImGui::Button("Save png"))
+            {
+                const auto filename = fmt::format("{:04}_Texture2DBuffer.png", obj.getObjectRegistryHandle().asMemoryHandle());
+                m_lastErrorMessage = imgui::SaveToPng(it->data.data(), it->data.size(), tb.textureFormat, it->width, it->height, filename);
+            }
+            imgui::PreviewImage(m_imageCache.get(*it, tb.textureFormat), ImVec2(128, 128));
         }
         drawRefs<ramses::TextureSampler>("Used by TextureSampler", obj, [&](const ramses::TextureSampler* ref) {
             const auto& sampler = obj.getIScene().getTextureSampler(ref->impl.getTextureSamplerHandle());
@@ -2033,16 +1934,57 @@ namespace ramses_internal
             {
                 ramses::RenderPassImpl& renderPass = static_cast<ramses::RenderPassImpl&>(pObj->impl);
                 const ramses::RenderTarget* rt = renderPass.getRenderTarget();
-                const auto handle = renderPass.getObjectRegistryHandle().asMemoryHandle();
+                const auto objId = renderPass.getSceneObjectId();
                 const char* name = renderPass.getName().c_str();
 
-                auto treeNode = [&]() { return ImGui::TreeNode(&renderPass, "RenderPass[%u]: %s", handle, name); };
-                auto treeNodeRT = [&]() { return ImGui::TreeNode(&renderPass, "RenderPass[%u]: %s <RT:%ux%u>", handle, name, rt->getWidth(), rt->getHeight()); };
+                auto treeNode = [&]() { return ImGui::TreeNode(&renderPass, "%s", fmt::format("RenderPass[{}]: {}", objId.getValue(), name).c_str()); };
+                auto treeNodeRT = [&]() { return ImGui::TreeNode(&renderPass, "%s", fmt::format("RenderPass[{}]: {} <RT:{}x{}>", objId.getValue(), name, rt->getWidth(), rt->getHeight()).c_str()); };
                 const bool isOpen = (rt == nullptr) ? drawRamsesObject(renderPass, treeNode) : drawRamsesObject(renderPass, treeNodeRT);
                 if (isOpen)
                 {
                     drawRenderPass(renderPass);
                     ImGui::TreePop();
+                }
+            }
+        }
+    }
+
+    void SceneViewerGui::drawShaderWarnings()
+    {
+        if (!m_shaderWarnings->hasWarnings())
+        {
+            if (ImGui::CollapsingHeader("Shader warnings"))
+            {
+                if (ImGui::Checkbox("Hide unused uniforms", &m_shaderWarnings->hideUnusedUniform))
+                {
+                    m_shaderWarnings->refresh();
+                }
+                if (ImGui::Checkbox("Hide precision mismatch", &m_shaderWarnings->hidePrecisionMismatch))
+                {
+                    m_shaderWarnings->refresh();
+                }
+                if (ImGui::Button("Copy to clipboard"))
+                {
+                    ImGui::LogToClipboard();
+                    ImGui::LogText("Hash, Name, Stage, Category, Message\n");
+                    for (const auto* obj : *m_shaderWarnings)
+                    {
+                        const auto hash = obj->impl.getLowlevelResourceHash();
+                        const auto name = obj->getName();
+                        for (const auto& w : m_shaderWarnings->getWarnings(obj->impl))
+                        {
+                            if (!m_shaderWarnings->isHidden(w))
+                            {
+                                ImGui::LogText("%s\n", fmt::format(R"("{}", "{}", "{}", "{}", "{}")", hash, name, w.stage, w.category, w.msg).c_str());
+                            }
+                        }
+                    }
+                    ImGui::LogFinish();
+                }
+                ImGui::Separator();
+                for (auto* obj : *m_shaderWarnings)
+                {
+                    draw(obj->impl);
                 }
             }
         }
@@ -2295,6 +2237,7 @@ namespace ramses_internal
             drawNodeHierarchy();
             drawResources();
             drawRenderHierarchy();
+            drawShaderWarnings();
             drawErrors();
             ImGui::End();
         }
@@ -2493,7 +2436,10 @@ namespace ramses_internal
 
     void SceneViewerGui::logRamsesObject(ramses::RamsesObjectImpl& obj)
     {
-        ImGui::LogText(R"(%u,"%s","%s",)", obj.getObjectRegistryHandle().asMemoryHandle(), obj.getName().c_str(), shortName(obj.getType()));
+        ramses::sceneObjectId_t objId;
+        if (obj.isOfType(ramses::ERamsesObjectType_SceneObject))
+            objId = static_cast<ramses::SceneObjectImpl&>(obj).getSceneObjectId();
+        ImGui::LogText("%s", fmt::format(R"(%u,"%s","%s",)", objId.getValue(), obj.getName().c_str(), shortName(obj.getType())).c_str());
     }
 
     void SceneViewerGui::logResource(ramses::ResourceImpl& obj)

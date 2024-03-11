@@ -106,7 +106,7 @@ namespace ramses_internal
 
         virtual void                    bindTexture                 (DeviceResourceHandle handle) = 0;
         virtual void                    generateMipmaps             (DeviceResourceHandle handle) = 0;
-        virtual void                    uploadTextureData           (DeviceResourceHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const Byte* data, UInt32 dataSize) = 0;
+        virtual void                    uploadTextureData           (DeviceResourceHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const Byte* data, UInt32 dataSize, UInt32 stride) = 0;
         virtual DeviceResourceHandle    uploadStreamTexture2D       (DeviceResourceHandle handle, UInt32 width, UInt32 height, ETextureFormat format, const UInt8* data, const TextureSwizzleArray& swizzle) = 0;
         virtual void                    deleteTexture               (DeviceResourceHandle handle) = 0;
         virtual void                    activateTexture             (DeviceResourceHandle handle, DataFieldHandle field) = 0;

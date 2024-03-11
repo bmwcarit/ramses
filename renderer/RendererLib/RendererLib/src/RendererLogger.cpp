@@ -210,7 +210,7 @@ namespace ramses_internal
         {
             context << "Width:     " << width << RendererLogContext::NewLine;
             context << "Height:    " << height << RendererLogContext::NewLine;
-            context << "IviSurfaceId: " << surfaceId.getValue() << RendererLogContext::NewLine;
+            context << surfaceId << RendererLogContext::NewLine;
             if (context.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
             {
                 const auto& renderer = updater.m_renderer;
@@ -509,7 +509,7 @@ namespace ramses_internal
             {
                 context.indent();
                 for (const auto& st : streamTextures)
-                    context << st.first << " [sourceId " << st.second->source << "]" << RendererLogContext::NewLine;
+                    context << st.first << " [" << st.second->source << "]" << RendererLogContext::NewLine;
                 context.unindent();
             }
 
@@ -1216,6 +1216,12 @@ namespace ramses_internal
             }
 
             sos << "\n";
+            if (updater.m_renderer.hasDisplayController())
+            {
+                const auto& ec = updater.m_renderer.getDisplayController().getRenderBackend().getEmbeddedCompositor();
+                ec.logPeriodicInfo(sos);
+            }
+
             updater.m_renderer.getStatistics().writeStatsToStream(sos);
             sos << "\nTime budgets:"
                 << " sceneResourceUpload " << Int64(updater.m_frameTimer.getTimeBudgetForSection(EFrameTimerSectionBudget::SceneResourcesUpload).count()) << "us"

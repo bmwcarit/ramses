@@ -57,7 +57,7 @@ class TestNoInitialBlackFrame(test_classes.OnSelectedTargetsTest):
         # not handle events from sys compositor to window. Instead, renderer still runs SCC update in update only mode, which receives events
         # happening on SCC socket connection to sys compositor
 
-        handleConfigurationMessage = "IVIControllerSurface::HandleConfigurationCallback ivi-id: {} width: 1280 height: 480".format(self.testSurface)
+        handleConfigurationMessage = "IVIControllerSurface::HandleConfigurationCallback ivi-surface:{} width: 1280 height: 480".format(self.testSurface)
         self.assertTrue(self.application.send_ramsh_command("step 1", response_message=handleConfigurationMessage))
 
         self.validateScreenshot(self.application, "red_triangle_on_blue_background.png", useSystemCompositorForScreenshot=True)

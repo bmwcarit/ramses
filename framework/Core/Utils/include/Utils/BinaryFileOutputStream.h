@@ -25,7 +25,7 @@ namespace ramses_internal
 
         IOutputStream& write(const void* data, size_t size) override;
 
-        EStatus getPos(size_t& position);
+        EStatus getPos(size_t& position) const override;
         EStatus getState() const;
 
     private:
@@ -59,9 +59,9 @@ namespace ramses_internal
     }
 
     inline
-    ramses_internal::EStatus BinaryFileOutputStream::getPos(size_t& position)
+    ramses_internal::EStatus BinaryFileOutputStream::getPos(size_t& position) const
     {
-        m_state = m_file.getPos(position) ? EStatus::Ok : EStatus::Error;
+        const_cast<EStatus&>(m_state) = m_file.getPos(position) ? EStatus::Ok : EStatus::Error;
         return m_state;
     }
 

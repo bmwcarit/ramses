@@ -13,6 +13,7 @@
 #include "ApiRamshCommandMock.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
 #include "Utils/LogMacros.h"
+#include "Utils/ThreadBarrier.h"
 
 using namespace ramses;
 using namespace testing;
@@ -158,4 +159,25 @@ TEST(ARamsesFramework, CanSetAndResetLogHandlerMultipleTimes)
     RamsesFramework::SetLogHandler([](auto /*level*/, auto& /*context*/, auto& /*message*/) {});
     RamsesFramework::SetLogHandler(nullptr);
     RamsesFramework::SetLogHandler(nullptr);
+}
+
+TEST(ARamsesFramework, multipleInstancesCanBeCreatedInParallel)
+{
+    // check stability of sensitive framework components (e.g. logger singleton) when used in multiple instances in parallel
+    const size_t numThreads = 32u;
+    ramses_internal::ThreadBarrier initBarrier(numThreads);
+    ramses_internal::ThreadBarrier deinitBarrier(numThreads);
+
+    std::vector<std::thread> threads;
+    threads.reserve(numThreads);
+    for (size_t t = 0u; t < numThreads; ++t)
+        threads.emplace_back([&]() {
+        RamsesFrameworkConfig config;
+        initBarrier.wait();
+        RamsesFramework fw{ config };
+        std::this_thread::sleep_for(std::chrono::milliseconds{ 10 });
+        deinitBarrier.wait();
+            });
+    for (auto& t : threads)
+        t.join();
 }

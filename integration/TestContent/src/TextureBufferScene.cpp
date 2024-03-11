@@ -101,6 +101,11 @@ namespace ramses_internal
     {
         // Gradients of monochrome texels in different colors
         const UInt8 rgba_1x1_red[] = { 255, 0, 0, 255 };
+        const UInt8 rgba_2x2_yellow[] =
+        {
+            64 , 64, 0, 255       , 128, 128, 0, 255,
+            192, 192, 0, 255       , 255, 255, 0, 255
+        };
         const UInt8 rgba_2x2_green[] =
         {
             0, 64 , 0, 255       , 0, 128, 0, 255,
@@ -166,6 +171,19 @@ namespace ramses_internal
             mipToFetch = 0;
             break;
         }
+        case EState_PartialUpdate1:
+            assert(m_textureBuffer);
+            m_textureBuffer->updateData(0, 1, 1, 2, 2, rgba_2x2_yellow);
+            sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode_Clamp, ramses::ETextureAddressMode_Clamp, ramses::ETextureSamplingMethod_Nearest_MipMapNearest, ramses::ETextureSamplingMethod_Nearest, *m_textureBuffer);
+            mipToFetch = 0;
+            break;
+        case EState_PartialUpdate2:
+            assert(m_textureBuffer);
+            m_textureBuffer->updateData(0, 1, 1, 1, 1, rgba_1x1_red);
+            m_textureBuffer->updateData(0, 1, 2, 1, 1, rgba_1x1_red);
+            sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode_Clamp, ramses::ETextureAddressMode_Clamp, ramses::ETextureSamplingMethod_Nearest_MipMapNearest, ramses::ETextureSamplingMethod_Nearest, *m_textureBuffer);
+            mipToFetch = 0;
+            break;
         case EState_PartialUpdateMipMap:
         {
             assert(m_textureBuffer == nullptr);
@@ -221,6 +239,21 @@ namespace ramses_internal
             mipToFetch = 0;
             break;
         }
+        case EState_UpdateAndRecreate:
+            assert(m_textureBuffer == nullptr);
+            m_textureBuffer = m_scene.createTexture2DBuffer(ramses::ETextureFormat::RGBA8, 4u, 4u, 1);
+            sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode_Clamp, ramses::ETextureAddressMode_Clamp, ramses::ETextureSamplingMethod_Nearest_MipMapNearest, ramses::ETextureSamplingMethod_Nearest, *m_textureBuffer);
+            mipToFetch = 0;
+            break;
+        case EState_UpdateAndRecreate1:
+            assert(m_textureBuffer != nullptr);
+            m_textureBuffer->updateData(0, 0, 0, 4, 4, rgba_4x4_blue);
+            m_scene.destroy(*m_textureBuffer);
+            m_textureBuffer = m_scene.createTexture2DBuffer(ramses::ETextureFormat::RGBA8, 2u, 2u, 1);
+            m_textureBuffer->updateData(0, 0, 0, 2, 2, rgba_2x2_yellow);
+            sampler = m_scene.createTextureSampler(ramses::ETextureAddressMode_Clamp, ramses::ETextureAddressMode_Clamp, ramses::ETextureSamplingMethod_Nearest_MipMapNearest, ramses::ETextureSamplingMethod_Nearest, *m_textureBuffer);
+            mipToFetch = 0;
+            break;
         default:
             assert(false);
         }

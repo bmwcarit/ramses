@@ -20,7 +20,7 @@ namespace ramses_internal
         , m_iviId(iviId)
         , m_systemCompositorController(systemCompositorController)
     {
-        LOG_INFO(CONTEXT_RENDERER, "IVIControllerSurface::IVIControllerSurface ivi-id: " << m_iviId);
+        LOG_INFO(CONTEXT_RENDERER, "IVIControllerSurface::IVIControllerSurface: " << m_iviId);
 
         if (nullptr != m_controllerSurface)
         {
@@ -35,7 +35,7 @@ namespace ramses_internal
 
     IVIControllerSurface::~IVIControllerSurface()
     {
-        LOG_INFO(CONTEXT_RENDERER, "IVIControllerSurface::~IVIControllerSurface ivi-id: " << m_iviId);
+        LOG_INFO(CONTEXT_RENDERER, "IVIControllerSurface::~IVIControllerSurface: " << m_iviId);
 
         if (nullptr != m_controllerSurface)
         {
@@ -129,7 +129,7 @@ namespace ramses_internal
 
         IVIControllerSurface& controllerSurface = *static_cast<IVIControllerSurface*>(data);
         LOG_INFO(CONTEXT_RENDERER,
-                 "IVIControllerSurface::HandleVisibilityCallback ivi-id: " << controllerSurface.m_iviId << " visibility: " << visibility);
+                 "IVIControllerSurface::HandleVisibilityCallback " << controllerSurface.m_iviId << " visibility: " << visibility);
     }
 
     void IVIControllerSurface::HandleOpacityCallBack(void*                   data,
@@ -141,7 +141,7 @@ namespace ramses_internal
         IVIControllerSurface& controllerSurface = *static_cast<IVIControllerSurface*>(data);
 
         LOG_INFO(CONTEXT_RENDERER,
-                 "IVIControllerSurface::HandleOpacityCallBack ivi-id: " << controllerSurface.m_iviId << " opacity: " << opacity);
+                 "IVIControllerSurface::HandleOpacityCallBack " << controllerSurface.m_iviId << " opacity: " << opacity);
 
     }
 
@@ -153,7 +153,7 @@ namespace ramses_internal
         IVIControllerSurface& controllerSurface = *static_cast<IVIControllerSurface*>(data);
 
         LOG_INFO(CONTEXT_RENDERER,
-                 "IVIControllerSurface::HandleSourceRectangleCallback ivi-id: "
+                 "IVIControllerSurface::HandleSourceRectangleCallback "
                      << controllerSurface.m_iviId << " x: " << x << " y: " << y << " width: " << width << " height: " << height);
 
     }
@@ -166,7 +166,7 @@ namespace ramses_internal
         IVIControllerSurface& controllerSurface = *static_cast<IVIControllerSurface*>(data);
 
         LOG_INFO(CONTEXT_RENDERER,
-                 "IVIControllerSurface::HandleDestinationRectangleCallback ivi-id: "
+                 "IVIControllerSurface::HandleDestinationRectangleCallback "
                      << controllerSurface.m_iviId << " x: " << x << " y: " << y << " width: " << width << " height: " << height);
 
     }
@@ -181,7 +181,7 @@ namespace ramses_internal
         IVIControllerSurface& controllerSurface = *static_cast<IVIControllerSurface*>(data);
 
         LOG_INFO(CONTEXT_RENDERER,
-                 "IVIControllerSurface::HandleConfigurationCallback ivi-id: " << controllerSurface.m_iviId << " width: "
+                 "IVIControllerSurface::HandleConfigurationCallback " << controllerSurface.m_iviId << " width: "
                                                                               << width << " height: " << height);
     }
 
@@ -194,7 +194,7 @@ namespace ramses_internal
         IVIControllerSurface& controllerSurface = *static_cast<IVIControllerSurface*>(data);
 
         LOG_INFO(CONTEXT_RENDERER,
-                 "IVIControllerSurface::HandleOrientationCallback ivi-id: " << controllerSurface.m_iviId
+                 "IVIControllerSurface::HandleOrientationCallback " << controllerSurface.m_iviId
                                                                             << " orientation: " << orientation);
     }
 
@@ -207,7 +207,7 @@ namespace ramses_internal
         IVIControllerSurface& controllerSurface = *static_cast<IVIControllerSurface*>(data);
 
         LOG_INFO(CONTEXT_RENDERER,
-                 "IVIControllerSurface::HandlePixelformatCallback ivi-id: " << controllerSurface.m_iviId
+                 "IVIControllerSurface::HandlePixelformatCallback " << controllerSurface.m_iviId
                                                                             << " pixelformat: " << pixelformat);
     }
 
@@ -236,7 +236,7 @@ namespace ramses_internal
         IVIControllerSurface& controllerSurface = *static_cast<IVIControllerSurface*>(data);
 
         LOG_INFO(CONTEXT_RENDERER,
-                 "IVIControllerSurface::HandleStatsCallback ivi-id: "
+                 "IVIControllerSurface::HandleStatsCallback "
                      << controllerSurface.m_iviId << " redrawCount: " << redrawCount << " frameCount: " << frameCount
                      << " updateCount: " << updateCount << " pid: " << pid << " processName: " << processName);
     }
@@ -247,7 +247,7 @@ namespace ramses_internal
 
         IVIControllerSurface& controllerSurface = *static_cast<IVIControllerSurface*>(data);
 
-        LOG_INFO(CONTEXT_RENDERER, "IVIControllerSurface::HandleDestroyedCallback ivi-id: " << controllerSurface.m_iviId);
+        LOG_INFO(CONTEXT_RENDERER, "IVIControllerSurface::HandleDestroyedCallback " << controllerSurface.m_iviId);
 
         SystemCompositorController_Wayland_IVI& systemCompositorController = controllerSurface.m_systemCompositorController;
         systemCompositorController.deleteControllerSurface(controllerSurface);
@@ -262,7 +262,7 @@ namespace ramses_internal
         IVIControllerSurface& controllerSurface = *static_cast<IVIControllerSurface*>(data);
 
         LOG_INFO(CONTEXT_RENDERER,
-                 "IVIControllerSurface::HandleContentCallback ivi-id: " << controllerSurface.m_iviId
+                 "IVIControllerSurface::HandleContentCallback " << controllerSurface.m_iviId
                                                                         << " contentState: " << contentState);
     }
 }

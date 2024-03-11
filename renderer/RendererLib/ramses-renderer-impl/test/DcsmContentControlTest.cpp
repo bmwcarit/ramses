@@ -191,6 +191,7 @@ public:
 protected:
     static constexpr sceneId_t SceneId1{ 33 };
     static constexpr sceneId_t SceneId2{ 34 };
+    static constexpr sceneId_t SceneId3{ 35 };
     static constexpr waylandIviSurfaceId_t WaylandSurfaceID { 33 };
     static constexpr waylandIviSurfaceId_t WaylandSurfaceID2{ 34 };
 
@@ -443,6 +444,7 @@ namespace ramses
 
 constexpr sceneId_t ADcsmContentControl::SceneId1;
 constexpr sceneId_t ADcsmContentControl::SceneId2;
+constexpr sceneId_t ADcsmContentControl::SceneId3;
 constexpr waylandIviSurfaceId_t ADcsmContentControl::WaylandSurfaceID;
 constexpr waylandIviSurfaceId_t ADcsmContentControl::WaylandSurfaceID2;
 
@@ -522,8 +524,11 @@ TEST_P(ADcsmContentControlP, handleRequestContentReadyFails)
 
     WAYLAND_expectStreamBufferCreated();
     // can get content to ready if offered again
-    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+
+    // expect notAvailable because of reoffer during stopofferrequest
+    EXPECT_CALL(m_eventHandlerMock, contentNotAvailable(m_contentID1));
     offerAndMakeDcsmContentReady(m_contentID1, m_categoryID1, TechnicalContentDescriptor{ SceneId1.getValue() });
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
     signalTechnicalContentReady();
     update(1050);
     update(1070);
@@ -1270,20 +1275,41 @@ TEST_P(ADcsmContentControlP, forcedStopOfferIsPropagatedAsEventAndMakesContentIn
     EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
     update();
 
-    if (GetParam()==ETechnicalContentType::RamsesSceneID)
-    {
-        EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Available));
-    }
-    else
-    {
-        EXPECT_CALL(m_sceneControlMock, destroyStreamBuffer(m_displayId, streamBufferId_t{ static_cast<uint32_t>(SceneId1.getValue()) }));
-    }
+    expectRequestToReleaseTechnicalContentFromReady();
     m_dcsmHandler.forceContentOfferStopped(m_contentID1);
     EXPECT_CALL(m_eventHandlerMock, contentNotAvailable(m_contentID1));
     update();
 
     // content invalidated, cannot set state
     EXPECT_NE(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID1, 0));
+}
+
+TEST_F(ADcsmContentControl, streamUnavailable_destroys_streambuffers_waylandContentType)
+{
+    offerAndMakeDcsmContentReady_wayland(m_contentID1, m_categoryID1, WaylandSurfaceID);
+    // make scene ready
+    EXPECT_CALL(m_sceneControlMock, createStreamBuffer(m_displayId, WaylandSurfaceID)).WillOnce(Return(ramses::streamBufferId_t{ WaylandSurfaceID.getValue() }));
+    signalTechnicalContentReady_wayland(WaylandSurfaceID);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    update();
+
+    EXPECT_CALL(m_sceneControlMock, destroyStreamBuffer(_, streamBufferId_t{ static_cast<uint32_t>(WaylandSurfaceID.getValue()) }));
+
+    EXPECT_CALL(m_eventHandlerMock, streamAvailabilityChanged(WaylandSurfaceID, false));
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(_, _, _)).WillOnce(Return(-1));
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _));
+    // from the technical content reset:
+    EXPECT_CALL(m_eventHandlerMock, contentNotAvailable(m_contentID1));
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, _));
+    m_sceneControlHandler.streamAvailabilityChanged(WaylandSurfaceID, false);
+    update();
+    Mock::VerifyAndClearExpectations(&m_eventHandlerMock);
+
+    EXPECT_CALL(m_eventHandlerMock, contentNotAvailable(m_contentID1));
+    m_dcsmHandler.forceContentOfferStopped(m_contentID1);
+
+    update();
+
 }
 
 TEST_F(ADcsmContentControl, afterOneRampUp_streambecomesAvailableBeforeNextRampup_waylandContentType)
@@ -1310,6 +1336,9 @@ TEST_F(ADcsmContentControl, afterOneRampUp_streambecomesAvailableBeforeNextRampu
         EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
         return StatusOK;
     });
+    // releases streambuffer towards renderer
+    EXPECT_CALL(m_sceneControlMock, setStreamBufferState(_, streamBufferId_t{ static_cast<uint32_t>(SceneId1.getValue()) }, false));
+    EXPECT_CALL(m_sceneControlMock, destroyStreamBuffer(m_displayId, streamBufferId_t{ static_cast<uint32_t>(SceneId1.getValue()) }));
 
     EXPECT_CALL(m_eventHandlerMock, streamAvailabilityChanged(WaylandSurfaceID, false));
     m_sceneControlHandler.streamAvailabilityChanged(WaylandSurfaceID, false);
@@ -1319,6 +1348,7 @@ TEST_F(ADcsmContentControl, afterOneRampUp_streambecomesAvailableBeforeNextRampu
     m_dcsmHandler.forceContentOfferStopped(m_contentID1);
     update();
 
+    EXPECT_CALL(m_sceneControlMock, createStreamBuffer(m_displayId, WaylandSurfaceID)).WillOnce(Return(ramses::streamBufferId_t{ WaylandSurfaceID.getValue() }));
     signalTechnicalContentReady_wayland(WaylandSurfaceID);
 
     // offer again and start new cycle
@@ -1673,6 +1703,106 @@ TEST_P(ADcsmContentControlP, contentCanBeReofferedAfterStopOfferRequestAccepted)
     signalTechnicalContentReady();
     EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
     update(200);
+}
+
+TEST_P(ADcsmContentControlP, contentCanBeReofferedEvenBeforeStopOfferRequestAccepted)
+{
+    // show content
+    offerAndMakeDcsmContentReady(m_contentID1, m_categoryID1, TechnicalContentDescriptor{ SceneId1.getValue() });
+    WAYLAND_expectStreamBufferCreated();
+    signalTechnicalContentReady();
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    update();
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Shown, AnimationInformation{ 0, 0 }));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.showContent(m_contentID1, AnimationInformation{ 0, 0 }));
+    expectRequestToShowTechnicalContent();
+    update();
+    signalTechnicalContentShown();
+    EXPECT_CALL(m_eventHandlerMock, contentShown(m_contentID1));
+    update();
+
+    // request stopoffer
+    // expect user event, RequestStopOffer
+    EXPECT_CALL(m_eventHandlerMock, contentStopOfferRequested(m_contentID1));
+    m_dcsmHandler.contentStopOfferRequest(m_contentID1);
+
+    // no dispatch at this point yet!
+    // update();
+
+    // Reoffer content, causes forceunoffer
+    if (GetParam() == ETechnicalContentType::RamsesSceneID)
+    {
+        EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Ready));
+    }
+    else
+    {
+        EXPECT_CALL(m_sceneControlMock, setStreamBufferState(_, streamBufferId_t{ static_cast<uint32_t>(SceneId1.getValue()) }, false));
+        EXPECT_CALL(m_sceneControlMock, destroyStreamBuffer(_, streamBufferId_t{ static_cast<uint32_t>(SceneId1.getValue()) }));
+    }
+
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+        return StatusOK;
+        });
+    // expect user events, content gone, then content available again
+    EXPECT_CALL(m_eventHandlerMock, contentNotAvailable(m_contentID1));
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, GetParam());
+    update();
+}
+
+TEST_P(ADcsmContentControlP, contentCanBeReofferedEvenBeforeStopOfferRequestAccepted_UserCallsAcceptLate)
+{
+    // show content
+    offerAndMakeDcsmContentReady(m_contentID1, m_categoryID1, TechnicalContentDescriptor{ SceneId1.getValue() });
+    WAYLAND_expectStreamBufferCreated();
+    signalTechnicalContentReady();
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    update();
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Shown, AnimationInformation{ 0, 0 }));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.showContent(m_contentID1, AnimationInformation{ 0, 0 }));
+    expectRequestToShowTechnicalContent();
+    update();
+    signalTechnicalContentShown();
+    EXPECT_CALL(m_eventHandlerMock, contentShown(m_contentID1));
+    update();
+
+    // request stopoffer
+    // expect user event, RequestStopOffer
+    EXPECT_CALL(m_eventHandlerMock, contentStopOfferRequested(m_contentID1));
+    m_dcsmHandler.contentStopOfferRequest(m_contentID1);
+
+    // no dispatch at this point yet!
+    // update();
+
+    // Reoffer content, causes forceunoffer
+    if (GetParam() == ETechnicalContentType::RamsesSceneID)
+    {
+        EXPECT_CALL(m_sceneControlMock, setSceneState(SceneId1, RendererSceneState::Ready));
+    }
+    else
+    {
+        EXPECT_CALL(m_sceneControlMock, setStreamBufferState(_, streamBufferId_t{ static_cast<uint32_t>(SceneId1.getValue()) }, false));
+        EXPECT_CALL(m_sceneControlMock, destroyStreamBuffer(_, streamBufferId_t{ static_cast<uint32_t>(SceneId1.getValue()) }));
+    }
+
+    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _)).WillOnce([&](const auto&, const auto& infoupdate) {
+        EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
+        return StatusOK;
+        });
+    // expect user events, content gone, then content available again
+    EXPECT_CALL(m_eventHandlerMock, contentNotAvailable(m_contentID1));
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
+    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, GetParam());
+    update();
+
+    // User goes through events, on ContentStopOfferRequested, calls Accept first
+    EXPECT_CALL(m_dcsmConsumerMock, acceptStopOffer(m_contentID1, AnimationInformation{ 0, 0 })).WillOnce(Return(123));
+    EXPECT_NE(StatusOK, m_dcsmContentControl.acceptStopOffer(m_contentID1, AnimationInformation{ 0, 0 }));
+
+    // check if can ramp up again
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Ready, AnimationInformation{ 0, 0 }));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.requestContentReady(m_contentID1, 0));
 }
 
 TEST_F(ADcsmContentControl, failsToSetSizeOfUnknownCategory)
@@ -2245,6 +2375,10 @@ TEST_P(ADcsmContentControlP, resetsDcsmStateToAssignedIfTechnicalContentFails_Fr
         EXPECT_CALL(m_eventHandlerMock, streamAvailabilityChanged(WaylandSurfaceID, false));
         EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Offered, AnimationInformation{}));
         EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _));
+        // releases streambuffer towards renderer
+        EXPECT_CALL(m_sceneControlMock, setStreamBufferState(_, streamBufferId_t{ static_cast<uint32_t>(SceneId1.getValue()) }, false));
+        EXPECT_CALL(m_sceneControlMock, destroyStreamBuffer(m_displayId, streamBufferId_t{ static_cast<uint32_t>(SceneId1.getValue()) }));
+
         m_sceneControlHandler.streamAvailabilityChanged(WaylandSurfaceID, false);
     }
 
@@ -2255,6 +2389,7 @@ TEST_P(ADcsmContentControlP, resetsDcsmStateToAssignedIfTechnicalContentFails_Fr
     update();
     Mock::VerifyAndClearExpectations(&m_eventHandlerMock);
     Mock::VerifyAndClearExpectations(&m_dcsmConsumerMock);
+    Mock::VerifyAndClearExpectations(&m_sceneControlMock);
 
     m_dcsmHandler.contentMetadataUpdated(m_contentID1, mdp);
     if (GetParam() == ETechnicalContentType::RamsesSceneID)
@@ -2267,6 +2402,7 @@ TEST_P(ADcsmContentControlP, resetsDcsmStateToAssignedIfTechnicalContentFails_Fr
     update();
 
     // can reshow
+    WAYLAND_expectStreamBufferCreated();
     makeAssignedContentReady(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
     EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Shown, AnimationInformation{ 0, 0 }));
     EXPECT_EQ(StatusOK, m_dcsmContentControl.showContent(m_contentID1, AnimationInformation{ 0, 0 }));
@@ -2319,6 +2455,8 @@ TEST_P(ADcsmContentControlP, resetsDcsmStateToAssignedIfTechnicalContentFails_Fr
         EXPECT_CALL(m_eventHandlerMock, streamAvailabilityChanged(WaylandSurfaceID, false));
         EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Offered, AnimationInformation{}));
         EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _));
+        // releases streambuffer towards renderer
+        EXPECT_CALL(m_sceneControlMock, destroyStreamBuffer(m_displayId, streamBufferId_t{ static_cast<uint32_t>(SceneId1.getValue()) }));
         m_sceneControlHandler.streamAvailabilityChanged(WaylandSurfaceID, false);
     }
 
@@ -2341,6 +2479,7 @@ TEST_P(ADcsmContentControlP, resetsDcsmStateToAssignedIfTechnicalContentFails_Fr
     update();
 
     // can reshow
+    WAYLAND_expectStreamBufferCreated();
     makeAssignedContentReady(m_contentID1, TechnicalContentDescriptor{ SceneId1.getValue() });
     EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Shown, AnimationInformation{ 0, 0 }));
     EXPECT_EQ(StatusOK, m_dcsmContentControl.showContent(m_contentID1, AnimationInformation{ 0, 0 }));
@@ -3122,20 +3261,7 @@ TEST_F(ADcsmContentControl, requestsHandlePickEvent)
     constexpr float x_coord = 1.0f;
     constexpr float y_coord = 2.0f;
 
-    EXPECT_CALL(m_dcsmConsumerMock, assignContentToConsumer(m_contentID1, _)).WillOnce([&](const auto&, const auto& infoupdate) {
-        EXPECT_EQ(m_CategoryInfoUpdate1, infoupdate);
-        return StatusOK;
-        });
-    m_dcsmHandler.contentOffered(m_contentID1, m_categoryID1, ETechnicalContentType::RamsesSceneID);
-    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
-    update();
-
     offerAndMakeDcsmContentReady_ramses(m_contentID1, m_categoryID1);
-
-    // handle scene ready
-    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
-    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
-    update();
 
     EXPECT_CALL(m_sceneControlMock, handlePickEvent(SceneId1, x_coord, y_coord));
     EXPECT_EQ(StatusOK, m_dcsmContentControl.handlePickEvent(m_contentID1, x_coord, y_coord));
@@ -3518,6 +3644,43 @@ TEST_F(ADcsmContentControl, linkContentWithRamsesSceneLinksOBInternallyAndEmitsC
     update();
 }
 
+TEST_F(ADcsmContentControl, linkContentWithRamsesSceneLinksOBInternallyAndEmitsContentLinkedEvent_twoContents)
+{
+    constexpr displayBufferId_t obId{ 12 };
+    constexpr dataConsumerId_t consumerId{ 14 };
+    constexpr int renderOrder = 123;
+    auto& contentid = m_contentID1;
+    auto& contentid2 = m_contentID2;
+    auto& consumerContentID = m_contentID3;
+
+    //make content and consumer ready
+    offerAndMakeDcsmContentReady_ramses(contentid2, m_categoryID1, SceneId2);
+    offerAndMakeDcsmContentReady_ramses(contentid, m_categoryID1, SceneId1);
+    offerAndMakeDcsmContentReady_ramses(consumerContentID, m_categoryID1, SceneId3);
+    m_sceneControlHandler.sceneStateChanged(SceneId1, RendererSceneState::Ready);
+    m_sceneControlHandler.sceneStateChanged(SceneId2, RendererSceneState::Ready);
+    m_sceneControlHandler.sceneStateChanged(SceneId3, RendererSceneState::Ready);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(contentid, DcsmContentControlEventResult::OK));
+    EXPECT_CALL(m_eventHandlerMock, contentReady(contentid2, DcsmContentControlEventResult::OK));
+    EXPECT_CALL(m_eventHandlerMock, contentReady(consumerContentID, DcsmContentControlEventResult::OK));
+    update();
+    // mandatory assign to OB
+    EXPECT_CALL(m_sceneControlMock, setSceneDisplayBufferAssignment(SceneId1, obId, renderOrder));
+    EXPECT_CALL(m_sceneControlMock, setSceneDisplayBufferAssignment(SceneId2, obId, renderOrder));
+    m_dcsmContentControl.assignContentToDisplayBuffer(contentid, obId, renderOrder);
+    m_dcsmContentControl.assignContentToDisplayBuffer(contentid2, obId, renderOrder);
+
+    // calls offscreenbuffer linking targeting previously assigned display buffer - succeeds
+    EXPECT_CALL(m_sceneControlMock, linkOffscreenBuffer(obId, SceneId3, consumerId));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.linkContentToTextureConsumer(contentid, consumerContentID, consumerId));
+
+    m_sceneControlHandler.offscreenBufferLinked(obId, SceneId3, consumerId, true);
+    EXPECT_CALL(m_eventHandlerMock, offscreenBufferLinked(obId, consumerContentID, consumerId, true));
+    // because of creation order, this event comes with contentid OR contentid2 depending on OS/compiler
+    EXPECT_CALL(m_eventHandlerMock, contentLinkedToTextureConsumer(AnyOf(contentid, contentid2), consumerContentID, consumerId, true));
+    update();
+}
+
 TEST_F(ADcsmContentControl, linkContentWithWaylandSurfaceLinksStreamBufferInternallyAndEmitsContentLinkedEvent)
 {
     constexpr dataConsumerId_t consumerId{ 13 };
@@ -3551,7 +3714,34 @@ TEST_F(ADcsmContentControl, linkContentWithWaylandSurfaceLinksStreamBufferIntern
     update();
 }
 
-TEST_F(ADcsmContentControl, linkingContentsWithSameWaylandSurfaceSharedByMultipleContentsAndExpectEventForAllOfThem)
+// next test makes sure we keep/document current behavior
+TEST_F(ADcsmContentControl, linkContentToTextureConsumer_canLinkReleasedContent)
+{
+    constexpr dataConsumerId_t consumerId{ 13 };
+    auto& consumerContentID = m_contentID3;
+
+    //make content and consumer ready
+    offerAndMakeDcsmContentReady_wayland(m_contentID1, m_categoryID1, WaylandSurfaceID);
+    offerAndMakeDcsmContentReady_wayland(m_contentID2, m_categoryID1, WaylandSurfaceID);
+    offerAndMakeDcsmContentReady_ramses(consumerContentID, m_categoryID1, SceneId2);
+    EXPECT_CALL(m_sceneControlMock, createStreamBuffer(m_displayId, WaylandSurfaceID)).WillRepeatedly(Return(ramses::streamBufferId_t{ WaylandSurfaceID.getValue() }));
+    signalTechnicalContentReady_wayland(WaylandSurfaceID);
+    m_sceneControlHandler.sceneStateChanged(SceneId2, RendererSceneState::Ready);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID2, DcsmContentControlEventResult::OK));
+    EXPECT_CALL(m_eventHandlerMock, contentReady(consumerContentID, DcsmContentControlEventResult::OK));
+    update();
+
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Assigned, AnimationInformation{ 0, 0 }));
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.releaseContent(m_contentID1, AnimationInformation{ 0, 0 }));
+
+    // calls streambuffer linking internally - succeeds
+    EXPECT_CALL(m_sceneControlMock, linkStreamBuffer(streamBufferId_t{ WaylandSurfaceID.getValue() }, SceneId2, consumerId));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.linkContentToTextureConsumer(m_contentID1, consumerContentID, consumerId));
+}
+
+TEST_F(ADcsmContentControl, linkContentToTextureConsumer)
 {
     constexpr dataConsumerId_t consumerId{ 13 };
     auto& consumerContentID = m_contentID3;
@@ -3574,8 +3764,167 @@ TEST_F(ADcsmContentControl, linkingContentsWithSameWaylandSurfaceSharedByMultipl
 
     m_sceneControlHandlerWayland.streamBufferLinked(streamBufferId_t{ WaylandSurfaceID.getValue() }, SceneId2, consumerId, true);
     EXPECT_CALL(m_eventHandlerMock, contentLinkedToTextureConsumer(m_contentID1, consumerContentID, consumerId, true));
+    update();
+}
+
+TEST_F(ADcsmContentControl, linkContentToTextureConsumer_noEventsAfterUnlink)
+{
+    constexpr dataConsumerId_t consumerId{ 13 };
+    auto& consumerContentID = m_contentID3;
+
+    //make content and consumer ready
+    offerAndMakeDcsmContentReady_wayland(m_contentID1, m_categoryID1, WaylandSurfaceID);
+    offerAndMakeDcsmContentReady_wayland(m_contentID2, m_categoryID1, WaylandSurfaceID);
+    offerAndMakeDcsmContentReady_ramses(consumerContentID, m_categoryID1, SceneId2);
+    EXPECT_CALL(m_sceneControlMock, createStreamBuffer(m_displayId, WaylandSurfaceID)).WillRepeatedly(Return(ramses::streamBufferId_t{ WaylandSurfaceID.getValue() }));
+    signalTechnicalContentReady_wayland(WaylandSurfaceID);
+    m_sceneControlHandler.sceneStateChanged(SceneId2, RendererSceneState::Ready);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID2, DcsmContentControlEventResult::OK));
+    EXPECT_CALL(m_eventHandlerMock, contentReady(consumerContentID, DcsmContentControlEventResult::OK));
+    update();
+
+    // calls streambuffer linking internally - succeeds
+    EXPECT_CALL(m_sceneControlMock, linkStreamBuffer(streamBufferId_t{ WaylandSurfaceID.getValue() }, SceneId2, consumerId));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.linkContentToTextureConsumer(m_contentID1, consumerContentID, consumerId));
+
+    // explicit unlink
+    EXPECT_CALL(m_sceneControlMock, unlinkData(SceneId2, consumerId));
+    m_dcsmContentControl.unlinkData(consumerContentID, consumerId);
+
+    m_sceneControlHandlerWayland.streamBufferLinked(streamBufferId_t{ WaylandSurfaceID.getValue() }, SceneId2, consumerId, true);
+    // no event
+    update();
+}
+
+TEST_F(ADcsmContentControl, linkContentToTextureConsumer_requestOtherLinklater_getsLinkedEventsForOtherConsumerId)
+{
+    constexpr dataConsumerId_t consumerId{ 13 };
+    constexpr dataConsumerId_t consumerId2{ 14 };
+    auto& consumerContentID = m_contentID3;
+
+    //make content and consumer ready
+    offerAndMakeDcsmContentReady_wayland(m_contentID1, m_categoryID1, WaylandSurfaceID);
+    offerAndMakeDcsmContentReady_wayland(m_contentID2, m_categoryID1, WaylandSurfaceID);
+    offerAndMakeDcsmContentReady_ramses(consumerContentID, m_categoryID1, SceneId2);
+    EXPECT_CALL(m_sceneControlMock, createStreamBuffer(m_displayId, WaylandSurfaceID)).WillRepeatedly(Return(ramses::streamBufferId_t{ WaylandSurfaceID.getValue() }));
+    signalTechnicalContentReady_wayland(WaylandSurfaceID);
+    m_sceneControlHandler.sceneStateChanged(SceneId2, RendererSceneState::Ready);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID2, DcsmContentControlEventResult::OK));
+    EXPECT_CALL(m_eventHandlerMock, contentReady(consumerContentID, DcsmContentControlEventResult::OK));
+    update();
+
+    EXPECT_CALL(m_dcsmConsumerMock, contentStateChange(m_contentID1, EDcsmState::Assigned, AnimationInformation{ 0, 0 }));
+    EXPECT_CALL(m_eventHandlerMock, contentAvailable(m_contentID1, m_categoryID1));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.releaseContent(m_contentID1, AnimationInformation{ 0, 0 }));
+
+    // calls streambuffer linking internally - succeeds
+    EXPECT_CALL(m_sceneControlMock, linkStreamBuffer(streamBufferId_t{ WaylandSurfaceID.getValue() }, SceneId2, consumerId));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.linkContentToTextureConsumer(m_contentID1, consumerContentID, consumerId));
+
+    m_sceneControlHandlerWayland.streamBufferLinked(streamBufferId_t{ WaylandSurfaceID.getValue() }, SceneId2, consumerId, true);
+    EXPECT_CALL(m_eventHandlerMock, contentLinkedToTextureConsumer(m_contentID1, consumerContentID, consumerId, true));
+    update();
+
+    //link second
+    EXPECT_CALL(m_sceneControlMock, linkStreamBuffer(streamBufferId_t{ WaylandSurfaceID.getValue() }, SceneId2, consumerId2));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.linkContentToTextureConsumer(m_contentID2, consumerContentID, consumerId2));
+    m_sceneControlHandlerWayland.streamBufferLinked(streamBufferId_t{ WaylandSurfaceID.getValue() }, SceneId2, consumerId2, true);
+    EXPECT_CALL(m_eventHandlerMock, contentLinkedToTextureConsumer(m_contentID2, consumerContentID, consumerId2, true));
+    update();
+}
+
+TEST_F(ADcsmContentControl, linkContentToTextureConsumer_backAndForthLinking_sameWaylandSurface)
+{
+    constexpr dataConsumerId_t consumerId{ 13 };
+    auto& consumerContentID = m_contentID3;
+
+    //make content and consumer ready
+    offerAndMakeDcsmContentReady_wayland(m_contentID1, m_categoryID1, WaylandSurfaceID);
+    offerAndMakeDcsmContentReady_wayland(m_contentID2, m_categoryID1, WaylandSurfaceID);
+    offerAndMakeDcsmContentReady_ramses(consumerContentID, m_categoryID1, SceneId2);
+    EXPECT_CALL(m_sceneControlMock, createStreamBuffer(m_displayId, WaylandSurfaceID)).WillRepeatedly(Return(ramses::streamBufferId_t{ WaylandSurfaceID.getValue() }));
+    signalTechnicalContentReady_wayland(WaylandSurfaceID);
+    m_sceneControlHandler.sceneStateChanged(SceneId2, RendererSceneState::Ready);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID2, DcsmContentControlEventResult::OK));
+    EXPECT_CALL(m_eventHandlerMock, contentReady(consumerContentID, DcsmContentControlEventResult::OK));
+    update();
+
+    // calls streambuffer linking internally - succeeds
+    EXPECT_CALL(m_sceneControlMock, linkStreamBuffer(streamBufferId_t{ WaylandSurfaceID.getValue() }, SceneId2, consumerId));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.linkContentToTextureConsumer(m_contentID1, consumerContentID, consumerId));
+
+    m_sceneControlHandlerWayland.streamBufferLinked(streamBufferId_t{ WaylandSurfaceID.getValue() }, SceneId2, consumerId, true);
+    EXPECT_CALL(m_eventHandlerMock, contentLinkedToTextureConsumer(m_contentID1, consumerContentID, consumerId, true));
+    update();
+    Mock::VerifyAndClearExpectations(&m_eventHandlerMock);
+
+
+    // later link second / content2
+    // tells renderer to link same streambuffer again
+    EXPECT_CALL(m_sceneControlMock, linkStreamBuffer(streamBufferId_t{ WaylandSurfaceID.getValue() }, SceneId2, consumerId));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.linkContentToTextureConsumer(m_contentID2, consumerContentID, consumerId));
+    // renderer sends linked event
+    m_sceneControlHandlerWayland.streamBufferLinked(streamBufferId_t{ WaylandSurfaceID.getValue() }, SceneId2, consumerId, true);
     EXPECT_CALL(m_eventHandlerMock, contentLinkedToTextureConsumer(m_contentID2, consumerContentID, consumerId, true));
     update();
+    Mock::VerifyAndClearExpectations(&m_eventHandlerMock);
+
+    // link content1 again
+    EXPECT_CALL(m_sceneControlMock, linkStreamBuffer(streamBufferId_t{ WaylandSurfaceID.getValue() }, SceneId2, consumerId));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.linkContentToTextureConsumer(m_contentID1, consumerContentID, consumerId));
+
+    m_sceneControlHandlerWayland.streamBufferLinked(streamBufferId_t{ WaylandSurfaceID.getValue() }, SceneId2, consumerId, true);
+    EXPECT_CALL(m_eventHandlerMock, contentLinkedToTextureConsumer(m_contentID1, consumerContentID, consumerId, true));
+}
+
+TEST_F(ADcsmContentControl, linkContentToTextureConsumer_backAndForthLinking_differentWaylandSurfaces)
+{
+    constexpr dataConsumerId_t consumerId{ 13 };
+    auto& consumerContentID = m_contentID3;
+
+    //make content and consumer ready
+    offerAndMakeDcsmContentReady_wayland(m_contentID1, m_categoryID1, WaylandSurfaceID);
+    offerAndMakeDcsmContentReady_wayland(m_contentID2, m_categoryID1, WaylandSurfaceID2);
+    offerAndMakeDcsmContentReady_ramses(consumerContentID, m_categoryID1, SceneId3);
+    EXPECT_CALL(m_sceneControlMock, createStreamBuffer(m_displayId, WaylandSurfaceID)).WillRepeatedly(Return(ramses::streamBufferId_t{ WaylandSurfaceID.getValue() }));
+    signalTechnicalContentReady_wayland(WaylandSurfaceID);
+    EXPECT_CALL(m_sceneControlMock, createStreamBuffer(m_displayId, WaylandSurfaceID2)).WillRepeatedly(Return(ramses::streamBufferId_t{ WaylandSurfaceID2.getValue() }));
+    signalTechnicalContentReady_wayland(WaylandSurfaceID2);
+    m_sceneControlHandler.sceneStateChanged(SceneId3, RendererSceneState::Ready);
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID1, DcsmContentControlEventResult::OK));
+    EXPECT_CALL(m_eventHandlerMock, contentReady(m_contentID2, DcsmContentControlEventResult::OK));
+    EXPECT_CALL(m_eventHandlerMock, contentReady(consumerContentID, DcsmContentControlEventResult::OK));
+    update();
+
+    // calls streambuffer linking internally - succeeds
+    EXPECT_CALL(m_sceneControlMock, linkStreamBuffer(streamBufferId_t{ WaylandSurfaceID.getValue() }, SceneId3, consumerId));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.linkContentToTextureConsumer(m_contentID1, consumerContentID, consumerId));
+
+    m_sceneControlHandlerWayland.streamBufferLinked(streamBufferId_t{ WaylandSurfaceID.getValue() }, SceneId3, consumerId, true);
+    EXPECT_CALL(m_eventHandlerMock, contentLinkedToTextureConsumer(m_contentID1, consumerContentID, consumerId, true));
+    update();
+    Mock::VerifyAndClearExpectations(&m_eventHandlerMock);
+
+
+    // later link second / content2
+    // tells renderer to link same streambuffer again
+    EXPECT_CALL(m_sceneControlMock, linkStreamBuffer(streamBufferId_t{ WaylandSurfaceID2.getValue() }, SceneId3, consumerId));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.linkContentToTextureConsumer(m_contentID2, consumerContentID, consumerId));
+    // renderer sends linked event
+    m_sceneControlHandlerWayland.streamBufferLinked(streamBufferId_t{ WaylandSurfaceID2.getValue() }, SceneId3, consumerId, true);
+    EXPECT_CALL(m_eventHandlerMock, contentLinkedToTextureConsumer(m_contentID2, consumerContentID, consumerId, true));
+    update();
+    Mock::VerifyAndClearExpectations(&m_eventHandlerMock);
+
+    // link content1 again
+    EXPECT_CALL(m_sceneControlMock, linkStreamBuffer(streamBufferId_t{ WaylandSurfaceID.getValue() }, SceneId3, consumerId));
+    EXPECT_EQ(StatusOK, m_dcsmContentControl.linkContentToTextureConsumer(m_contentID1, consumerContentID, consumerId));
+
+    m_sceneControlHandlerWayland.streamBufferLinked(streamBufferId_t{ WaylandSurfaceID.getValue() }, SceneId3, consumerId, true);
+    EXPECT_CALL(m_eventHandlerMock, contentLinkedToTextureConsumer(m_contentID1, consumerContentID, consumerId, true));
 }
 
 

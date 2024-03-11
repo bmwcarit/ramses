@@ -675,14 +675,15 @@ namespace ramses_internal
             WaylandIviSurfaceIdVector obsoleteStreams;
             embeddedCompositingManager.dispatchStateChangesOfSources(streamsWithAvailabilityChanged, newStreams, obsoleteStreams);
 
-            for (const auto stream : newStreams)
-            {
-                m_rendererEventCollector.addStreamSourceEvent(ERendererEventType::StreamSurfaceAvailable, stream);
-            }
+            // stream might be in both obsoleteStreams and newStreams -> dispatch unavailable first
             for (const auto stream : obsoleteStreams)
             {
                 m_rendererEventCollector.addStreamSourceEvent(ERendererEventType::StreamSurfaceUnavailable, stream);
                 m_renderer.getStatistics().untrackStreamTexture(stream);
+            }
+            for (const auto stream : newStreams)
+            {
+                m_rendererEventCollector.addStreamSourceEvent(ERendererEventType::StreamSurfaceAvailable, stream);
             }
 
             auto& texLinks = m_rendererScenes.getSceneLinksManager().getTextureLinkManager();
@@ -1353,6 +1354,12 @@ namespace ramses_internal
 
         assert(m_displayResourceManager);
         IRendererResourceManager& resourceManager = *m_displayResourceManager;
+        if (resourceManager.getStreamBufferDeviceHandle(buffer).isValid())
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleBufferCreateRequest a stream buffer with the same ID (" << buffer << ") already exists!");
+            return false;
+        }
+
         resourceManager.uploadStreamBuffer(buffer, source);
 
         const DeviceResourceHandle deviceHandle = resourceManager.getStreamBufferDeviceHandle(buffer);
@@ -1371,6 +1378,12 @@ namespace ramses_internal
 
         assert(m_displayResourceManager);
         IRendererResourceManager& resourceManager = *m_displayResourceManager;
+        if (!resourceManager.getStreamBufferDeviceHandle(buffer).isValid())
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::handleBufferDestroyRequest could not find stream buffer with ID " << buffer);
+            return false;
+        }
+
         resourceManager.unloadStreamBuffer(buffer);
         m_rendererScenes.getSceneLinksManager().handleBufferDestroyedOrSourceUnavailable(buffer);
 

@@ -56,7 +56,9 @@ namespace ramses_internal
         if (m_flushCounter == 0)
         {
             LOG_INFO_F(CONTEXT_CLIENT, ([&](StringOutputStream& sos) {
-                sos << "ClientSceneLogicShadowCopy::flushSceneActions: first flush, sceneId " << m_sceneId << ", numActions " << sceneUpdate.actions.numberOfActions() << ", published " << isPublished() << ", subsActive [";
+                sos << "ClientSceneLogicShadowCopy::flushSceneActions: first flush, sceneId " << m_sceneId << ", numActions " << sceneUpdate.actions.numberOfActions() << ", published " << isPublished()
+                    << ", numResources " << sceneUpdate.resources.size()
+                    << ", subsActive [";
                 for (const auto& sub : m_subscribersActive)
                     sos << sub << " ";
                 sos << "], subsWaiting [";

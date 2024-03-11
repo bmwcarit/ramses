@@ -13,7 +13,7 @@ namespace ramses_internal
     SystemCompositorControllerRemoveSurfaceFromLayer::SystemCompositorControllerRemoveSurfaceFromLayer(RendererCommandBuffer& rendererCommandBuffer)
         : m_rendererCommandBuffer(rendererCommandBuffer)
     {
-        description = "remove an ivi surface from an ivi layer";
+        description = "remove an ivi-surface from an ivi-layer";
         registerKeyword("scRemoveSurfaceFromLayer");
         registerKeyword("scrsfl");
 

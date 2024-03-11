@@ -71,7 +71,7 @@ public:
 
     MOCK_METHOD(void, uploadTextureBuffer, (TextureBufferHandle textureBufferHandle, UInt32 width, UInt32 height, ETextureFormat textureFormat, UInt32 mipLevelCount, SceneId sceneId), (override));
     MOCK_METHOD(void, unloadTextureBuffer, (TextureBufferHandle textureBufferHandle, SceneId sceneId), (override));
-    MOCK_METHOD(void, updateTextureBuffer, (TextureBufferHandle textureBufferHandle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 width, UInt32 height, const Byte* data, SceneId sceneId), (override));
+    MOCK_METHOD(void, updateTextureBuffer, (TextureBufferHandle textureBufferHandle, UInt32 mipLevel, const Quad& area, UInt32 stride, const Byte* data, SceneId sceneId), (override));
 
     MOCK_METHOD(void, uploadVertexArray, (RenderableHandle renderableHandle, const VertexArrayInfo& vertexArrayInfo, SceneId sceneId), (override));
     MOCK_METHOD(void, unloadVertexArray, (RenderableHandle renderableHandle, SceneId sceneId), (override));

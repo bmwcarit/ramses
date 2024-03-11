@@ -14,6 +14,7 @@
 #include "Collections/HashMap.h"
 #include "Collections/String.h"
 #include "SceneAPI/EFixedSemantics.h"
+#include "SceneAPI/EShaderStage.h"
 #include "Resource/EffectInputInformation.h"
 #include "SceneAPI/RenderState.h"
 #include "absl/types/optional.h"
@@ -35,14 +36,6 @@ namespace ramses_internal
         absl::optional<EDrawMode> getGeometryShaderInputType() const;
 
     private:
-        enum class EShaderStage
-        {
-            Vertex = 1,
-            Geometry = 2,
-            Fragment = 4,
-            Invalid
-        };
-
         HashMap<String, EFixedSemantics> m_semanticInputs;
         mutable StringOutputStream m_message;
 

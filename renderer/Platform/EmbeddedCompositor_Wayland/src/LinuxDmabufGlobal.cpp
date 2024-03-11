@@ -37,22 +37,9 @@ namespace ramses_internal
         assert(nullptr == m_waylandGlobal);
     }
 
-    bool LinuxDmabufGlobal::init(WaylandDisplay& serverDisplay, IContext& context)
+    bool LinuxDmabufGlobal::init(WaylandDisplay& serverDisplay, Context_EGL& context)
     {
-        EGLDisplay eglDisplay;
-
-        Context_EGL* contextEgl = dynamic_cast<Context_EGL*>(&context);
-
-        if (!contextEgl)
-        {
-            // Running in a test case
-            return false;
-        }
-
-        eglDisplay = contextEgl->getEglDisplay();
-        assert(eglDisplay != EGL_NO_DISPLAY);
-
-        WaylandEGLExtensionProcs procs(eglDisplay);
+        WaylandEGLExtensionProcs procs(context.getEglDisplay());
 
         if (!procs.areDmabufExtensionsSupported())
         {

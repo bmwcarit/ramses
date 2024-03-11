@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <cstddef>
 #include <type_traits>
+#include "PlatformAbstraction/PlatformError.h"
 
 namespace ramses_internal
 {
@@ -20,6 +21,7 @@ namespace ramses_internal
     public:
         virtual ~IOutputStream() = default;
         virtual IOutputStream& write(const void* data, size_t size) = 0;
+        virtual EStatus getPos(size_t& position) const = 0;
 
         IOutputStream& operator<<(const void*) = delete;
     };

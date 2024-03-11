@@ -10,6 +10,7 @@
 #include "Ramsh/RamshCommandArguments.h"
 #include "Ramsh/RamshCommunicationChannelConsole.h"
 #include "Ramsh/RamshCommandExit.h"
+#include "Ramsh/RamshCommandArgumentsConverter.h"
 #include "framework_common_gmock_header.h"
 #include "gmock/gmock.h"
 #include <gtest/gtest.h>
@@ -169,6 +170,77 @@ namespace ramses_internal
         EXPECT_EQ(String("test 'argument'"), result3[5]);
     }
 
+    TEST_F(RamshAPI, parseUInt16)
+    {
+        uint16_t value = 0;
+        EXPECT_TRUE(ArgumentConverter<uint16_t>::tryConvert("-1", value));
+        EXPECT_EQ(std::numeric_limits<uint16_t>::max(), value);
+        EXPECT_TRUE(ArgumentConverter<uint16_t>::tryConvert("0", value));
+        EXPECT_EQ(0u, value);
+        EXPECT_TRUE(ArgumentConverter<uint16_t>::tryConvert("65535", value));
+        EXPECT_EQ(std::numeric_limits<uint16_t>::max(), value);
+    }
+
+    TEST_F(RamshAPI, parseInt16)
+    {
+        int16_t value = 0;
+        EXPECT_TRUE(ArgumentConverter<int16_t>::tryConvert("-1", value));
+        EXPECT_EQ(-1, value);
+        EXPECT_TRUE(ArgumentConverter<int16_t>::tryConvert("0", value));
+        EXPECT_EQ(0, value);
+        EXPECT_TRUE(ArgumentConverter<int16_t>::tryConvert("32767", value));
+        EXPECT_EQ(std::numeric_limits<int16_t>::max(), value);
+        EXPECT_TRUE(ArgumentConverter<int16_t>::tryConvert("-32768", value));
+        EXPECT_EQ(std::numeric_limits<int16_t>::min(), value);
+    }
+
+    TEST_F(RamshAPI, parseUInt32)
+    {
+        uint32_t value = 0;
+        EXPECT_TRUE(ArgumentConverter<uint32_t>::tryConvert("-1", value));
+        EXPECT_EQ(std::numeric_limits<uint32_t>::max(), value);
+        EXPECT_TRUE(ArgumentConverter<uint32_t>::tryConvert("0", value));
+        EXPECT_EQ(0u, value);
+        EXPECT_TRUE(ArgumentConverter<uint32_t>::tryConvert("4294967295", value));
+        EXPECT_EQ(std::numeric_limits<uint32_t>::max(), value);
+    }
+
+    TEST_F(RamshAPI, parseInt32)
+    {
+        int32_t value = 0;
+        EXPECT_TRUE(ArgumentConverter<int32_t>::tryConvert("-1", value));
+        EXPECT_EQ(-1, value);
+        EXPECT_TRUE(ArgumentConverter<int32_t>::tryConvert("0", value));
+        EXPECT_EQ(0, value);
+        EXPECT_TRUE(ArgumentConverter<int32_t>::tryConvert("2147483647", value));
+        EXPECT_EQ(std::numeric_limits<int32_t>::max(), value);
+        EXPECT_TRUE(ArgumentConverter<int32_t>::tryConvert("-2147483648", value));
+        EXPECT_EQ(std::numeric_limits<int32_t>::min(), value);
+    }
+
+    TEST_F(RamshAPI, parseUInt64)
+    {
+        uint64_t value = 0;
+        EXPECT_TRUE(ArgumentConverter<uint64_t>::tryConvert("-1", value));
+        EXPECT_EQ(std::numeric_limits<uint64_t>::max(), value);
+        EXPECT_TRUE(ArgumentConverter<uint64_t>::tryConvert("0", value));
+        EXPECT_EQ(0u, value);
+        EXPECT_TRUE(ArgumentConverter<uint64_t>::tryConvert("18446744073709551615", value));
+        EXPECT_EQ(std::numeric_limits<uint64_t>::max(), value);
+    }
+
+    TEST_F(RamshAPI, parseInt64)
+    {
+        int64_t value = 0;
+        EXPECT_TRUE(ArgumentConverter<int64_t>::tryConvert("-1", value));
+        EXPECT_EQ(-1, value);
+        EXPECT_TRUE(ArgumentConverter<int64_t>::tryConvert("0", value));
+        EXPECT_EQ(0, value);
+        EXPECT_TRUE(ArgumentConverter<int64_t>::tryConvert("9223372036854775807", value));
+        EXPECT_EQ(std::numeric_limits<int64_t>::max(), value);
+        EXPECT_TRUE(ArgumentConverter<int64_t>::tryConvert("-9223372036854775808", value));
+        EXPECT_EQ(std::numeric_limits<int64_t>::min(), value);
+    }
 
     TEST_F(RamshAPI, typedCommand)
     {

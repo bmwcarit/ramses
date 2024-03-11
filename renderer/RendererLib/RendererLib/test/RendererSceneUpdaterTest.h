@@ -648,12 +648,16 @@ protected:
 
     void expectStreamBufferUploaded(StreamBufferHandle buffer, WaylandIviSurfaceId source, DeviceResourceHandle rtDeviceHandleToReturn = DeviceMock::FakeRenderTargetDeviceHandle)
     {
+        InSequence seq;
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamBufferDeviceHandle(buffer)).WillOnce(Return(DeviceResourceHandle::Invalid()));
         EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, uploadStreamBuffer(buffer, source));
-        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamBufferDeviceHandle(buffer)).Times(AnyNumber()).WillRepeatedly(Return(rtDeviceHandleToReturn));
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamBufferDeviceHandle(buffer)).WillRepeatedly(Return(rtDeviceHandleToReturn));
     }
 
     void expectStreamBufferDeleted(StreamBufferHandle buffer)
     {
+        InSequence seq;
+        EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamBufferDeviceHandle(buffer)).WillOnce(Return(DeviceMock::FakeRenderTargetDeviceHandle));
         EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, unloadStreamBuffer(buffer));
         EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamBufferDeviceHandle(buffer)).WillRepeatedly(Return(DeviceResourceHandle::Invalid()));
     }

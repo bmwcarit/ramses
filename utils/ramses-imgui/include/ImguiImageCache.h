@@ -13,16 +13,20 @@
 
 namespace ramses_internal
 {
+    struct MipMap;
+
     class ImguiImageCache
     {
     public:
         explicit ImguiImageCache(ramses::Scene* scene);
 
         imgui::Image get(const TextureResource* res);
+        imgui::Image get(const MipMap& mm, ETextureFormat format);
 
     private:
         ramses::Scene* m_scene;
         std::unordered_map<const TextureResource*, imgui::Image> m_images;
+        std::unordered_map<const Byte*, imgui::Image>            m_imageBuffers;
     };
 }
 

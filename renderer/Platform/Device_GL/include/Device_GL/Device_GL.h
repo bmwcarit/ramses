@@ -94,7 +94,7 @@ namespace ramses_internal
 
         virtual void                    bindTexture         (DeviceResourceHandle handle) override;
         virtual void                    generateMipmaps     (DeviceResourceHandle handle) override;
-        virtual void                    uploadTextureData   (DeviceResourceHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const Byte* data, UInt32 dataSize) override;
+        virtual void                    uploadTextureData   (DeviceResourceHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const Byte* data, UInt32 dataSize, UInt32 stride) override;
         virtual DeviceResourceHandle    uploadStreamTexture2D(DeviceResourceHandle handle, UInt32 width, UInt32 height, ETextureFormat format, const UInt8* data, const TextureSwizzleArray& swizzle) override;
         virtual void                    deleteTexture       (DeviceResourceHandle handle) override;
         virtual void                    activateTexture     (DeviceResourceHandle handle, DataFieldHandle field) override;
@@ -181,7 +181,7 @@ namespace ramses_internal
         uint32_t checkAndClampNumberOfSamples(GLenum internalFormat, uint32_t numSamples) const;
 
         void allocateTextureStorage(const GLTextureInfo& texInfo, UInt32 mipLevels, UInt32 sampleCount = 0) const;
-        void uploadTextureMipMapData(UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const GLTextureInfo& texInfo, const UInt8 *pData, UInt32 dataSize) const;
+        void uploadTextureMipMapData(UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const GLTextureInfo& texInfo, const UInt8 *pData, UInt32 dataSize, UInt32 stride) const;
 
         Bool isApiExtensionAvailable(const String& extensionName) const;
         void queryDeviceDependentFeatures();

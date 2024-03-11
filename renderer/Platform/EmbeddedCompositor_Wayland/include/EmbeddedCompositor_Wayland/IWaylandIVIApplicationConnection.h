@@ -9,6 +9,7 @@
 #define RAMSES_IWAYLANDIVIAPPLICATIONCONNECTION_H
 
 #include <cstdint>
+#include <SceneAPI/WaylandIviSurfaceId.h>
 
 namespace ramses_internal
 {
@@ -20,7 +21,7 @@ namespace ramses_internal
     public:
         virtual ~IWaylandIVIApplicationConnection(){}
         virtual void resourceDestroyed() = 0;
-        virtual void iviApplicationIVISurfaceCreate(IWaylandClient& client, uint32_t iviId, INativeWaylandResource& surfaceResource, uint32_t id) = 0;
+        virtual void iviApplicationIVISurfaceCreate(IWaylandClient& client, WaylandIviSurfaceId iviId, INativeWaylandResource& surfaceResource, uint32_t id) = 0;
     };
 }
 

@@ -143,7 +143,7 @@ namespace ramses_internal
     void ResourceCachedScene::setForceFallbackImage(StreamTextureHandle streamTextureHandle, Bool forceFallbackImage)
     {
         LOG_DEBUG(CONTEXT_RENDERER, "ResourceCachedScene::setForceFallbackImage(): setting force fallback to :" << forceFallbackImage << " for stream texture :" << streamTextureHandle.asMemoryHandle()
-                  << " with source id :" << getStreamTexture(streamTextureHandle).source);
+                  << " with " << getStreamTexture(streamTextureHandle).source);
         DataReferenceLinkCachedScene::setForceFallbackImage(streamTextureHandle, forceFallbackImage);
         setRenderableResourcesDirtyByStreamTexture(streamTextureHandle);
     }
@@ -432,19 +432,19 @@ namespace ramses_internal
         if (streamTexture.forceFallbackTexture)
         {
             LOG_INFO(CONTEXT_RENDERER, "ResourceCachedScene::updateTextureSamplerResourceAsStreamTexture(): using fallback texture for stream texture :" << streamTextureHandle.asMemoryHandle()
-                      << " with source id :" << source << " because force fallback is set");
+                      << " with " << source << " because force fallback is set");
             return CheckAndUpdateDeviceHandle(resourceAccessor, deviceHandleInOut, streamTexture.fallbackTexture);
         }
         else if (!streamTextureDeviceHandle.isValid())
         {
             LOG_INFO(CONTEXT_RENDERER, "ResourceCachedScene::updateTextureSamplerResourceAsStreamTexture(): using fallback texture for stream texture :" << streamTextureHandle.asMemoryHandle()
-                      << " with source id :" << source << " because stream source not available");
+                      << " with " << source << " because stream source not available");
             return CheckAndUpdateDeviceHandle(resourceAccessor, deviceHandleInOut, streamTexture.fallbackTexture);
         }
         else
         {
             LOG_INFO(CONTEXT_RENDERER, "ResourceCachedScene::updateTextureSamplerResourceAsStreamTexture(): using composited texture for stream texture :" << streamTextureHandle.asMemoryHandle()
-                      << " with source id :" << source);
+                      << " with " << source);
         }
 
 
@@ -608,7 +608,7 @@ namespace ramses_internal
     void ResourceCachedScene::setRenderableResourcesDirtyByStreamTexture(StreamTextureHandle streamTextureHandle) const
     {
         LOG_DEBUG(CONTEXT_RENDERER, "ResourceCachedScene::setRenderableResourcesDirtyByStreamTexture(): state change for stream texture :" << streamTextureHandle.asMemoryHandle()
-                  << " with source id :" << getStreamTexture(streamTextureHandle).source);
+                  << " with " << getStreamTexture(streamTextureHandle).source);
 
         const auto& textureSamplers = getTextureSamplers();
         for (const auto& texSamplerIt : textureSamplers)

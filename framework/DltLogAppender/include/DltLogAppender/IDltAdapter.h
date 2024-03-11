@@ -59,6 +59,8 @@ namespace ramses_internal
          */
         virtual bool transmitFile(LogContext& ctx, const String& uri, bool deleteFile) = 0;
 
+        virtual bool transmit(LogContext& ctx, std::vector<Byte>&& data, const String& filename) = 0;
+
         /**
          * Return the state if dlt was found at runtime
          * @return if dlt was successfully initialized

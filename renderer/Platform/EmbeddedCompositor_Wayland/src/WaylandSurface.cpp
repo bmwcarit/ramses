@@ -88,6 +88,20 @@ namespace ramses_internal
         }
     }
 
+    void WaylandSurface::logSurfaceAttach(ELogLevel level, const char* stage, IWaylandBuffer* buffer, int x, int y)
+    {
+        if (level <= CONTEXT_RENDERER.getLogLevel())
+        {
+            auto res = buffer->getResource();
+            const auto isShm = (res.bufferGetSharedMemoryData() != nullptr);
+            const auto width = res.getWidth();
+            const auto height = res.getHeight();
+            auto* wlres = res.getLowLevelHandle();
+            LOG_COMMON_RP(CONTEXT_RENDERER, level, "WaylandSurface::surfaceAttach{}: {} shm:{} x:{} y:{} w:{} h:{} res:{}",
+                          stage, getIviSurfaceId(), isShm, x, y, width, height, static_cast<void*>(wlres));
+        }
+    }
+
     IWaylandBuffer* WaylandSurface::getWaylandBuffer() const
     {
         return m_buffer;
@@ -173,37 +187,25 @@ namespace ramses_internal
 
     void WaylandSurface::surfaceAttach(IWaylandClient& client, WaylandBufferResource& bufferResource, int x, int y)
     {
-        LOG_TRACE(CONTEXT_RENDERER, "WaylandSurface::surfaceAttach");
-
         UNUSED(client);
-        UNUSED(x);
-        UNUSED(y);
-
-        LOG_TRACE(CONTEXT_RENDERER,
-                  "WaylandSurface::surfaceAttach: set new pending buffer to surface with title "
-                      << getSurfaceTitle() << ", ivi surface id " << getIviSurfaceId().getValue());
-
         m_pendingBuffer            = &m_compositor.getOrCreateBuffer(bufferResource);
         m_removeBufferOnNextCommit = false;
 
-        //WaylandSurface::surfaceAttach is called iff attached buffer is not null (if null buffer gets attached then WaylandSurface::surfaceDetach gets called instead)
+        // WaylandSurface::surfaceAttach is called if attached buffer is not null (if null buffer gets attached then WaylandSurface::surfaceDetach gets called instead)
         assert(m_pendingBuffer);
-        //if no buffer was attached (e.g. first buffer ever or after detach)
         const bool pendingBufferIsSharedMemoryBuffer = m_pendingBuffer->isSharedMemoryBuffer();
+        logSurfaceAttach(ELogLevel::Trace, "", m_pendingBuffer, x, y);
+        // if no buffer was attached (e.g. first buffer ever or after detach)
         if(!m_buffer)
         {
             m_bufferTypeChanged = true;
-
-            LOG_INFO(CONTEXT_RENDERER, "WaylandSurface::surfaceAttach: Mark buffer type as changed for surface with ivi-id :" << getIviSurfaceId()
-                     << " due to attach after no buffer attached to surface. New buffer is Shared mem buffer :" << pendingBufferIsSharedMemoryBuffer);
+            logSurfaceAttach(ELogLevel::Info, "[new]", m_pendingBuffer, x, y);
         }
-        //if new buffer (pending buffer) has different type from current buffer
+        // if new buffer (pending buffer) has different type from current buffer
         else if(pendingBufferIsSharedMemoryBuffer != m_buffer->isSharedMemoryBuffer())
         {
             m_bufferTypeChanged = true;
-
-            LOG_INFO(CONTEXT_RENDERER, "WaylandSurface::surfaceAttach: Mark buffer type as changed for surface with ivi-id :" << getIviSurfaceId()
-                     << " because newly attached buffer has differen type from current. New buffer is Shared mem buffer :" << pendingBufferIsSharedMemoryBuffer);
+            logSurfaceAttach(ELogLevel::Info, "[typeChange]", m_pendingBuffer, x, y);
         }
     }
 
@@ -215,7 +217,7 @@ namespace ramses_internal
 
         LOG_TRACE(CONTEXT_RENDERER,
                   "WaylandSurface::surfaceAttach: remove current pending buffer from surface with title "
-                      << getSurfaceTitle() << ", ivi surface id " << getIviSurfaceId().getValue());
+                      << getSurfaceTitle() << ", " << getIviSurfaceId());
 
         m_pendingBuffer            = nullptr;
         m_removeBufferOnNextCommit = true;
@@ -273,8 +275,7 @@ namespace ramses_internal
         UNUSED(client);
 
         LOG_TRACE(CONTEXT_RENDERER,
-                  "WaylandSurface::surfaceCommit: handling commit message for surface with ivi surface id "
-                      << getIviSurfaceId().getValue());
+                  "WaylandSurface::surfaceCommit: handling commit message for surface " << getIviSurfaceId());
 
         // Transfers pending callbacks to list of frame_callbacks.
         for(const auto& callback : m_pendingCallbacks)
@@ -286,8 +287,7 @@ namespace ramses_internal
         if (m_pendingBuffer)
         {
             LOG_TRACE(CONTEXT_RENDERER,
-                      "WaylandSurface::surfaceCommit: new texture data for surface with ivi surface id "
-                          << getIviSurfaceId().getValue());
+                      "WaylandSurface::surfaceCommit: new texture data for surface " << getIviSurfaceId());
             setBufferToSurface(*m_pendingBuffer);
             m_pendingBuffer = nullptr;
         }
@@ -297,8 +297,7 @@ namespace ramses_internal
             {
                 LOG_TRACE(
                     CONTEXT_RENDERER,
-                    "WaylandSurface::surfaceCommit: remove buffer from surface with ivi surface id "
-                        << getIviSurfaceId().getValue()
+                    "WaylandSurface::surfaceCommit: remove buffer from surface " << getIviSurfaceId()
                         << " because triggered by earlier empty attachsurface");
                 unsetBufferFromSurface();
             }
@@ -462,8 +461,7 @@ namespace ramses_internal
         else
         {
             LOG_TRACE(CONTEXT_RENDERER,
-                      "WaylandSurface::setBufferToSurface client provides content for surface "
-                          << getIviSurfaceId().getValue());
+                      "WaylandSurface::setBufferToSurface client provides content for surface " << getIviSurfaceId());
         }
 
         setWaylandBuffer(&buffer);
@@ -472,8 +470,7 @@ namespace ramses_internal
     void WaylandSurface::unsetBufferFromSurface()
     {
         LOG_TRACE(CONTEXT_RENDERER,
-                  "WaylandSurface::unsetBufferFromSurface: removing buffer used for surface with ivi surface id "
-                      << getIviSurfaceId().getValue());
+                  "WaylandSurface::unsetBufferFromSurface: removing buffer used for surface " << getIviSurfaceId());
 
         if (m_buffer)
         {
@@ -495,10 +492,19 @@ namespace ramses_internal
         m_frameCallbacks.clear();
     }
 
-    void WaylandSurface::logInfos(RendererLogContext& context) const
+    void WaylandSurface::logInfos(RendererLogContext& context, const WaylandEGLExtensionProcs &eglExt) const
     {
-        context << "[ivi-surface-id: " << getIviSurfaceId().getValue() << "; title: \"" << getSurfaceTitle() << "\"]"
+        context << getIviSurfaceId() << "; title: \"" << getSurfaceTitle()
+                << "\"; client" << getClientCredentials()
+                << "; commitedFrames: " << m_numberOfCommitedFramesSinceBeginningOfTime
                 << RendererLogContext::NewLine;
+        if (m_buffer != nullptr)
+        {
+            context.indent();
+            m_buffer->logInfos(context, eglExt);
+            context.unindent();
+        }
+
     }
 
     void WaylandSurface::bufferDestroyed(IWaylandBuffer& buffer)
@@ -506,9 +512,7 @@ namespace ramses_internal
         if (m_buffer == &buffer)
         {
             LOG_TRACE(CONTEXT_RENDERER,
-                      "WaylandSurface::bufferDestroyed(): destroying buffer for surface with ivi "
-                      "surface id :"
-                          << getIviSurfaceId().getValue());
+                      "WaylandSurface::bufferDestroyed(): destroying buffer for surface: " << getIviSurfaceId());
 
             unsetBufferFromSurface();
         }
@@ -516,9 +520,7 @@ namespace ramses_internal
         if (m_pendingBuffer == &buffer)
         {
             LOG_TRACE(CONTEXT_RENDERER,
-                      "WaylandSurface::bufferDestroyed(): destroying pending buffer for surface with "
-                      "ivi surface id :"
-                          << getIviSurfaceId().getValue());
+                      "WaylandSurface::bufferDestroyed(): destroying pending buffer for surface: " << getIviSurfaceId());
             m_pendingBuffer = nullptr;
         }
     }

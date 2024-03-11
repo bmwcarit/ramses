@@ -242,7 +242,7 @@ TEST_F(ARendererStatistics, tracksStreamTextureSource)
     stats.frameFinished(0u);
 
     EXPECT_THAT(logOutput(), HasSubstr("numFrames 5"));
-    EXPECT_THAT(logOutput(), HasSubstr("SourceId 99: upd 12, framesUpd 3, maxUpdInFrame 9, maxFramesWithNoUpd 2"));
+    EXPECT_THAT(logOutput(), HasSubstr("SourceId ivi-surface:99: upd 12, framesUpd 3, maxUpdInFrame 9, maxFramesWithNoUpd 2"));
 }
 
 TEST_F(ARendererStatistics, logsValidNumbersWhenStreamTextureInactive)
@@ -254,7 +254,7 @@ TEST_F(ARendererStatistics, logsValidNumbersWhenStreamTextureInactive)
     stats.frameFinished(0u);
     stats.frameFinished(0u);
 
-    EXPECT_THAT(logOutput(), HasSubstr("SourceId 99: upd 0, framesUpd 0, maxUpdInFrame 0, maxFramesWithNoUpd 3"));
+    EXPECT_THAT(logOutput(), HasSubstr("SourceId ivi-surface:99: upd 0, framesUpd 0, maxUpdInFrame 0, maxFramesWithNoUpd 3"));
 }
 
 TEST_F(ARendererStatistics, untracksStreamTextureSource)
@@ -265,7 +265,7 @@ TEST_F(ARendererStatistics, untracksStreamTextureSource)
 
     stats.untrackStreamTexture(src);
 
-    EXPECT_THAT(logOutput(), Not(HasSubstr("SourceId 99")));
+    EXPECT_THAT(logOutput(), Not(HasSubstr("SourceId ivi-surface:99")));
 }
 
 TEST_F(ARendererStatistics, tracksResourceUploads)

@@ -47,7 +47,7 @@ namespace ramses_internal
         }
         else
         {
-            auto compositor = std::make_unique<EmbeddedCompositor_Wayland>(displayConfig, *m_context);
+            auto compositor = std::make_unique<EmbeddedCompositor_Wayland>(displayConfig, static_cast<Context_EGL&>(*m_context));
             if (compositor->init())
                 m_embeddedCompositor = std::move(compositor);
 
