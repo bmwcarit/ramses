@@ -17,6 +17,7 @@
 #include "TestApplicationShellSurfaceId.h"
 #include "WaylandOutputTestParams.h"
 #include "RendererAPI/Types.h"
+#include "SceneAPI/WaylandIviSurfaceId.h"
 #include "Collections/HashMap.h"
 
 #include <wayland-client.h>
@@ -85,13 +86,14 @@ namespace ramses_internal
         void destroyShellSurface(TestApplicationShellSurfaceId shellSurfaceId);
         void destroyWindow(TestApplicationSurfaceId surfaceId);
         void destroyIVISurface(TestApplicationSurfaceId surfaceId);
-        void createIVISurface(TestApplicationSurfaceId surfaceId, uint32_t iviSurfaceId);
+        void createIVISurface(TestApplicationSurfaceId surfaceId, WaylandIviSurfaceId iviSurfaceId);
         void enableContextForSurface(TestApplicationSurfaceId surfaceId);
         void disableContextForSurface();
         void resizeWindow(TestApplicationSurfaceId surfaceId, uint32_t width, uint32_t height);
         void swapBuffersAndProcessEvents(TestApplicationSurfaceId surfaceId, bool useCallback);
         void swapBuffersAndProcessEvents(TestApplicationSurfaceId surfaceId, SHMBuffer& buffer, bool useCallback);
         void attachBuffer(TestApplicationSurfaceId surfaceId, const SHMBuffer& buffer, bool commit);
+        void reattachBuffer(TestApplicationSurfaceId surfaceId, const SHMBuffer& buffer, uint32_t count);
         void detachBuffer(TestApplicationSurfaceId surfaceId);
         void deleteSHMBuffers();
         void waitOnFrameCallback(TestApplicationSurfaceId surfaceId);

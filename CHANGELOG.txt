@@ -1,3 +1,116 @@
+27.0.139
+-------------------
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Fixed scene locked in subscription requested state, when
+          - Scene is created in LocalOnly mode
+          - Display is destroyed, before the scene entered Ready state
+
+27.0.138
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - ramses-scene-viewer:
+          - changed default gui mode to "overlay" (no offscreen buffer)
+          - optimized command line interface, non-standard long options (`-foo`) are no longer available
+          - scenes can be offered as dcsm content (`--dcsm` option)
+          - scene id can be set by command line (`--sceneid` option)
+          - scene object ids are displayed alongside the name
+        - added ramsh commands to modify some object parameters (visibility, uniform inputs)
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Fixed possible crash if Texture2DBuffer is recreated with smaller size
+        - Handle time overflow when calculating watchdog
+          notification intervals (IThreadWatchdogNotification)
+        - Added sanity check for display thread sleep timeout (skub mode)
+
+27.0.137
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - Unified logging for ivi surfaces and layers (ids are prefixed by "ivi-surface:"/"ivi-layer:")
+        - Dcsm periodic logs resolve technical content to scene id or ivi surface
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Fixed stream surface availability if a wayland client detaches/re-attaches ivi-surfaces in a single frame
+
+27.0.136
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - Optimized texture buffer uploads when frequently updating subregions
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Ramses explicitly requests OpenGL ES 3.2 context instead of ES 3.x.
+          If 3.2 is not available it will automatically downgrade to 3.1 or 3.0 and log and error message
+
+27.0.135
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - ramses-scene-viewer reports warnings for non-optimal shaders:
+          - interface mismatch between shader stages (unused in and out varyings)
+          - precision mismatch between shader stages
+          - unused varyings
+          - unused uniforms
+        - Added documentation about ramses::Appearance default values
+        - Disable ramses-sdk_ENABLE_HARFBUZZ_LEGACY_SHAPING for Integrity.
+          It's now disabled by default for all platforms.
+
+27.0.134
+-------------------
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Fixed race condition when instantiating multiple RamsesFramework instances in different threads
+
+27.0.133
+-------------------
+        General changes
+        ------------------------------------------------------------------------
+        - improved scene dumps by ramsh / DLT injection
+          - Added alias for 'dumpSceneToFile': 'dumpScene'
+          - Filename is optional if -sendViaDLT is enabled
+          - Added '-flush' option for ramsh command: dumpSceneToFile
+        - ramses-scene-viewer:
+          - show contents of Texture2DBuffer objects
+        - added/improved ramsh commands:
+          - fixed parsing large integer values
+          - 'p,screenshot' can capture offscreen buffers
+          - 'clc' can clear offscreen buffers
+          - 'scenestate' modifies the scene state
+          - 'obCreate' creates an offscreen buffer
+          - 'assign' assigns a scene to a display / offscreenbuffer
+          - 'link'/'unlink' connects offscreenbuffer to a texture consumer
+
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Fixed HarfBuzz shaping for text blocks with special characters (punctuation,
+          diacritics, ligature modifiers, private use). This affects positioning (e.g.
+          kerning) and ligature creation for Arabic, Thai, Vietnamese and Japanese,
+          as well as characters common to all languages.
+          Previous behavior can be enabled using ramses-sdk_ENABLE_HARFBUZZ_LEGACY_SHAPING.
+        - Fixed possible crash when shader compilation fails with an empty error message.
+        - Fixed renderer crash if StreamBuffer with same ID is created or non-existing StreamBuffer is destroyed
+        - Fixed potential renderer crash when having more than one displays in non-threaded mode
+          and destroying all but one due to missing context enable
+        - Fixed missing streambuffer deletion towards renderer from
+          DcsmContentControl in cases when stream became unavailable while contents using
+          it were in state Ready or Shown
+
+27.0.132
+-------------------
+        Bugfixes
+        ------------------------------------------------------------------------
+        - Fixed wrong events given by DcsmContentControlEventHandlerMock::contentLinkedToTextureConsumer
+          Previously could report linked events for non-linked contents (also with wrong datalink id) when the
+          contents shared technical id (like same wayland surface) internally
+
+27.0.131
+-------------------
+        No changes
 
 27.0.130
 -------------------

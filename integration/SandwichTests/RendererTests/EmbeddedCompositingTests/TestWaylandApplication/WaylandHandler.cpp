@@ -173,6 +173,19 @@ namespace ramses_internal
         wl_display_flush(wayland.display);
     }
 
+    void WaylandHandler::reattachBuffer(TestApplicationSurfaceId surfaceId, const SHMBuffer& buffer, uint32_t count)
+    {
+        TestWaylandWindow& window = getWindow(surfaceId);
+        while(count--)
+        {
+            wl_surface_attach(window.surface, nullptr, 0, 0);
+            wl_surface_commit(window.surface);
+            wl_surface_attach(window.surface, buffer.getWaylandBuffer(), 0, 0);
+            wl_surface_commit(window.surface);
+        }
+        wl_display_flush(wayland.display);
+    }
+
     void WaylandHandler::detachBuffer(TestApplicationSurfaceId surfaceId)
     {
         TestWaylandWindow& window = getWindow(surfaceId);
@@ -564,17 +577,17 @@ namespace ramses_internal
         wl_display_flush(wayland.display);
     }
 
-    void WaylandHandler::createIVISurface(TestApplicationSurfaceId surfaceId, uint32_t iviSurfaceId)
+    void WaylandHandler::createIVISurface(TestApplicationSurfaceId surfaceId, WaylandIviSurfaceId iviSurfaceId)
     {
         TestWaylandWindow& window = getWindow(surfaceId);
         if (wayland.ivi_app != nullptr)
         {
-            ivi_surface* iviSurface = ivi_application_surface_create(wayland.ivi_app, iviSurfaceId, window.surface);
+            ivi_surface* iviSurface = ivi_application_surface_create(wayland.ivi_app, iviSurfaceId.getValue(), window.surface);
 
             if (iviSurface == nullptr)
             {
                 LOG_ERROR(CONTEXT_RENDERER,
-                          "WaylandHandler::createIVISurface(): Failed to create ivi-surface");
+                          "WaylandHandler::createIVISurface(): Failed to create " << iviSurfaceId);
                 assert(false);
             }
             else

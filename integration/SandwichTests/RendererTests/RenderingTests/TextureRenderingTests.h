@@ -76,6 +76,8 @@ private:
         TextureBufferTest_PartialUpdate,
         TextureBufferTest_PartialUpdateMipMap,
         TextureBufferTest_PartialUpdateMipMap_RG8,
+        TextureBufferTest_PartialUpdateIncremental,
+        TextureBufferTest_Recreate,
         TextureBufferTest_SwitchSceneTextureToClientTexture,
         TextureBufferTest_SwitchClientTextureToSceneTexture,
         TextureBufferTest_SwitchClientTextureToSceneTextureAndBack,

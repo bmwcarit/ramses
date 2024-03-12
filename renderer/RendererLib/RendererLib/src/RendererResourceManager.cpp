@@ -762,7 +762,7 @@ namespace ramses_internal
         sceneResources.removeTextureBuffer(textureBufferHandle);
     }
 
-    void RendererResourceManager::updateTextureBuffer(TextureBufferHandle textureBufferHandle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 width, UInt32 height, const Byte* data, SceneId sceneId)
+    void RendererResourceManager::updateTextureBuffer(TextureBufferHandle textureBufferHandle, UInt32 mipLevel, const Quad& area, UInt32 stride, const Byte* data, SceneId sceneId)
     {
         assert(m_sceneResourceRegistryMap.contains(sceneId));
         const RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
@@ -772,9 +772,9 @@ namespace ramses_internal
 
         IDevice& device = m_renderBackend.getDevice();
         device.bindTexture(deviceHandle);
-        device.uploadTextureData(deviceHandle, mipLevel, x, y, 0u, width, height, 1u, data, 0u);
+        device.uploadTextureData(deviceHandle, mipLevel, area.x, area.y, 0u, area.width, area.height, 1u, data, 0u, stride);
 
-        const UInt32 updateDataSizeInBytes = TextureMathUtils::GetTotalMemoryUsedByMipmappedTexture(GetTexelSizeFromFormat(sceneResources.getTextureBufferFormat(textureBufferHandle)), width, height, 1u, 1u);
+        const UInt32 updateDataSizeInBytes = TextureMathUtils::GetTotalMemoryUsedByMipmappedTexture(GetTexelSizeFromFormat(sceneResources.getTextureBufferFormat(textureBufferHandle)), area.width, area.height, 1u, 1u);
         m_stats.sceneResourceUploaded(sceneId, updateDataSizeInBytes);
     }
 

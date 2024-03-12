@@ -36,6 +36,7 @@ namespace ramses_internal
         virtual Bool hasSurfaceForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const override;
         virtual String getTitleOfWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const override;
         virtual void logInfos(RendererLogContext& context) const override;
+        virtual void logPeriodicInfo(StringOutputStream& sos) const override;
 
         virtual Bool isRealCompositor() const override;
     };

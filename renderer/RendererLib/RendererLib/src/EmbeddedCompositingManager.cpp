@@ -26,7 +26,7 @@ namespace ramses_internal
         auto streamTextureInfoIt = m_streamTextureSourceInfoMap.find(source);
         if (m_streamTextureSourceInfoMap.end() == streamTextureInfoIt)
         {
-            LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingManager::refStream: Creating new stream texture with source id: " << source);
+            LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingManager::refStream: Creating new stream texture with: " << source);
             createStreamTexture(source);
             streamTextureInfoIt = m_streamTextureSourceInfoMap.find(source);
         }
@@ -47,7 +47,7 @@ namespace ramses_internal
 
         if (streamTextureSourceInfo->refs == 0)
         {
-            LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingManager::unrefStream: Destroying no more referenced stream texture with source id: " << source);
+            LOG_INFO(CONTEXT_RENDERER, "EmbeddedCompositingManager::unrefStream: Destroying no more referenced stream texture with " << source);
             destroyStreamTexture(source);
         }
     }

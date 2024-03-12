@@ -163,7 +163,7 @@ namespace ramses_internal
 
     EDeviceTypeId Device_GL::getDeviceTypeId() const
     {
-        if (m_majorApiVersion == 3 && m_minorApiVersion == 0 && m_isEmbedded)
+        if (m_majorApiVersion == 3 && m_isEmbedded)
             return EDeviceTypeId_GL_ES_3_0;
         else if (m_majorApiVersion == 4 && m_minorApiVersion == 2 && !m_isEmbedded)
             return EDeviceTypeId_GL_4_2_CORE;
@@ -602,7 +602,7 @@ namespace ramses_internal
         glGenerateMipmap(gpuResource.m_textureInfo.target);
     }
 
-    void Device_GL::uploadTextureData(DeviceResourceHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const Byte* data, UInt32 dataSize)
+    void Device_GL::uploadTextureData(DeviceResourceHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const Byte* data, UInt32 dataSize, UInt32 stride)
     {
         const TextureGPUResource_GL& gpuResource = m_resourceMapper.getResourceAs<TextureGPUResource_GL>(handle);
 
@@ -613,7 +613,7 @@ namespace ramses_internal
             texInfo.target = TypesConversion_GL::GetCubemapFaceSpecifier(static_cast<ETextureCubeFace>(z));
             z = 0u;
         }
-        uploadTextureMipMapData(mipLevel, x, y, z, width, height, depth, texInfo, data, dataSize);
+        uploadTextureMipMapData(mipLevel, x, y, z, width, height, depth, texInfo, data, dataSize, stride);
     }
 
     DeviceResourceHandle Device_GL::uploadStreamTexture2D(DeviceResourceHandle handle, UInt32 width, UInt32 height, ETextureFormat format, const UInt8* data, const TextureSwizzleArray& swizzle)
@@ -719,13 +719,17 @@ namespace ramses_internal
         }
     }
 
-    void Device_GL::uploadTextureMipMapData(UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const GLTextureInfo& texInfo, const UInt8 *pData, UInt32 dataSize) const
+    void Device_GL::uploadTextureMipMapData(UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const GLTextureInfo& texInfo, const UInt8 *pData, UInt32 dataSize, UInt32 stride) const
     {
         assert(width > 0 && height > 0 && depth > 0 && "trying to upload texture with 0 width and/or height and/or depth!");
         assert(x + width <= TextureMathUtils::GetMipSize(mipLevel, texInfo.width));
         assert(y + height <= TextureMathUtils::GetMipSize(mipLevel, texInfo.height));
         assert(z + depth <= TextureMathUtils::GetMipSize(mipLevel, texInfo.depth));
         assert(dataSize > 0u || !texInfo.uploadParams.compressed);
+
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, stride);
+        glPixelStorei(GL_UNPACK_SKIP_ROWS, y);
+        glPixelStorei(GL_UNPACK_SKIP_PIXELS, x);
 
         switch (texInfo.target)
         {
@@ -759,6 +763,11 @@ namespace ramses_internal
             assert(false);
             break;
         }
+
+        // restore default values
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+        glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
+        glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
     }
 
     DeviceResourceHandle Device_GL::uploadRenderBuffer(uint32_t width, uint32_t height, ERenderBufferType type, ETextureFormat format, ERenderBufferAccessMode accessMode, uint32_t sampleCount)

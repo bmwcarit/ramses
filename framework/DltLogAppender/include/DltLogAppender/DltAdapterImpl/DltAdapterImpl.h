@@ -50,6 +50,7 @@ namespace ramses_internal
         virtual bool logMessage(const LogMessage& msg) override;
         virtual bool registerInjectionCallback(LogContext* ctx, uint32_t sid, int (*dltInjectionCallback)(uint32_t service_id, void *data, uint32_t length)) override;
         virtual bool transmitFile(LogContext& ctx, const String& uri, bool deleteFile) override;
+        virtual bool transmit(LogContext& ctx, std::vector<Byte>&& data, const String& filename) override;
 
         virtual bool isInitialized() override;
 
@@ -76,7 +77,7 @@ namespace ramses_internal
             FileTransferWorker();
             ~FileTransferWorker() override;
 
-            bool transmitFile(LogContext& ctx, const String& uri, bool deleteFile);
+            bool transmit(LogContext& ctx, std::vector<Byte>&& data, const String& filename);
 
         private:
             void run() override;
@@ -84,16 +85,20 @@ namespace ramses_internal
             struct FileTransfer
             {
                 String filename;
+                std::vector<Byte> data;
                 DltContext* ctx = nullptr;
-                int deleteFlag = 0;
+                uint32_t serial = 0;
             };
 
             void get(FileTransfer& ft);
             bool pop(FileTransfer& ft);
 
+            void send(const FileTransfer& ft);
+
             PlatformThread m_thread;
             PlatformLock m_lock;
             std::list<FileTransfer> m_files;
+            uint32_t m_fileTransferSerial = 0;
         };
 
         FileTransferWorker m_fileTransfer;

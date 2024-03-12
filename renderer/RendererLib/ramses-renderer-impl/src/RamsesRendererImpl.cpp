@@ -56,6 +56,11 @@ namespace ramses
 
         { //Add ramsh commands to ramsh, independent of whether it is enabled or not.
             m_ramshCommands.push_back(std::make_shared<ramses_internal::Screenshot>(m_rendererCommandBuffer));
+            m_ramshCommands.push_back(std::make_shared<ramses_internal::CreateOffscreenBuffer>(m_rendererCommandBuffer));
+            m_ramshCommands.push_back(std::make_shared<ramses_internal::LinkBuffer>(m_rendererCommandBuffer));
+            m_ramshCommands.push_back(std::make_shared<ramses_internal::UnlinkBuffer>(m_rendererCommandBuffer));
+            m_ramshCommands.push_back(std::make_shared<ramses_internal::AssignScene>(m_rendererCommandBuffer));
+            m_ramshCommands.push_back(std::make_shared<ramses_internal::SetSceneState>(m_rendererCommandBuffer));
             m_ramshCommands.push_back(std::make_shared<ramses_internal::LogRendererInfo>(m_rendererCommandBuffer));
             m_ramshCommands.push_back(std::make_shared<ramses_internal::ShowFrameProfiler>(m_rendererCommandBuffer));
             m_ramshCommands.push_back(std::make_shared<ramses_internal::PrintStatistics>(m_rendererCommandBuffer));

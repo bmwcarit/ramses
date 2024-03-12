@@ -59,6 +59,11 @@ namespace ramses_internal
             return true;
         }
 
+        virtual bool transmit(LogContext& /*ctx*/, std::vector<Byte>&& /*data*/, const String& /*filename*/) override
+        {
+            return true;
+        }
+
         virtual bool isInitialized() override
         {
             return true;

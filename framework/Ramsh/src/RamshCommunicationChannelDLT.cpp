@@ -15,8 +15,6 @@
 
 namespace ramses_internal
 {
-    RamshCommunicationChannelDLT* RamshCommunicationChannelDLT::m_instance = nullptr;
-
     int RamshCommunicationChannelDLT::dltInjectionCallbackF(uint32_t sid, void* data, uint32_t length)
     {
         String incoming = String(static_cast<const char*>(data), 0, length - 1);//use length to avoid unterminated strings copied to target buffer
@@ -24,31 +22,36 @@ namespace ramses_internal
         LOG_DEBUG(CONTEXT_RAMSH, "Received dlt injection with service id " << sid << ", length is " << length);
         LOG_INFO(CONTEXT_RAMSH, "Calling command '" << incoming << "' received from dlt injection");
 
-        if (RamshCommunicationChannelDLT::m_instance)
-        {
-            RamshCommunicationChannelDLT::m_instance->processInput(incoming);
-        }
+        RamshCommunicationChannelDLT::GetInstance().processInput(incoming);
+
         return 0;
     }
 
-    RamshCommunicationChannelDLT::RamshCommunicationChannelDLT(Ramsh& ramsh)
-        : m_ramsh(ramsh)
+    RamshCommunicationChannelDLT::RamshCommunicationChannelDLT()
     {
-        m_instance = this;
         const UInt32 serviceId = 5000u;
         GetRamsesLogger().registerInjectionCallback(CONTEXT_RAMSH, serviceId, &RamshCommunicationChannelDLT::dltInjectionCallbackF);
     }
 
-    RamshCommunicationChannelDLT::~RamshCommunicationChannelDLT()
+    void RamshCommunicationChannelDLT::registerRamsh(Ramsh& ramsh)
     {
-        if (this == m_instance)
-        {
-            m_instance = nullptr;
-        }
+        // if used in parallel with multiple instances, the last registered ramsh is used
+        std::lock_guard<std::mutex> guard(m_ramshLock);
+        m_ramsh = &ramsh;
+    }
+
+    void RamshCommunicationChannelDLT::unregisterRamsh(Ramsh& ramsh)
+    {
+        // if used in parallel with multiple instances, the currently used ramsh might not be the one to unregister
+        std::lock_guard<std::mutex> guard(m_ramshLock);
+        if (m_ramsh == &ramsh)
+            m_ramsh = nullptr;
     }
 
     void RamshCommunicationChannelDLT::processInput(const String& s)
     {
-        m_ramsh.execute(RamshTools::parseCommandString(s));
+        std::lock_guard<std::mutex> guard(m_ramshLock);
+        if (m_ramsh)
+            m_ramsh->execute(RamshTools::parseCommandString(s));
     }
 }

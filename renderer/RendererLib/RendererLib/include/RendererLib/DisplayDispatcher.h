@@ -103,6 +103,9 @@ namespace ramses_internal
 
         IThreadAliveNotifier& m_notifier;
 
+        // flag to force context enable for next doOneLoop (relevant only for non-threaded mode)
+        bool m_forceContextEnableNextLoop = false;
+
         // to avoid re-allocs
         RendererCommands m_tmpCommands;
         RendererEventVector m_tmpEvents;

@@ -70,7 +70,7 @@ namespace ramses_internal
         virtual DeviceResourceHandle getEmptyExternalTexture() const override;
         virtual void                 bindTexture(DeviceResourceHandle handle) override;
         virtual void                 generateMipmaps(DeviceResourceHandle handle) override;
-        virtual void                 uploadTextureData(DeviceResourceHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const Byte* data, UInt32 dataSize) override;
+        virtual void                 uploadTextureData(DeviceResourceHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 z, UInt32 width, UInt32 height, UInt32 depth, const Byte* data, UInt32 dataSize, UInt32 stride) override;
         virtual DeviceResourceHandle uploadStreamTexture2D(DeviceResourceHandle handle, UInt32 width, UInt32 height, ETextureFormat format, const UInt8* data, const TextureSwizzleArray& swizzle) override;
         virtual void deleteTexture(DeviceResourceHandle handle) override;
         virtual void activateTexture(DeviceResourceHandle handle, DataFieldHandle field) override;

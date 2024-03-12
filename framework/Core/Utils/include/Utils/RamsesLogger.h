@@ -58,6 +58,7 @@ namespace ramses_internal
         void removeAfterConsoleLogCallback();
 
         bool transmitFile(const String& path, bool deleteFile) const;
+        bool transmit(std::vector<Byte>&& data, const String& filename) const;
         bool registerInjectionCallback(LogContext& ctx, UInt32 serviceId, int (*callback)(UInt32 serviceId, void* data, UInt32 length));
 
         static const char* GetLogLevelText(ELogLevel logLevel);
@@ -76,13 +77,13 @@ namespace ramses_internal
         LogContext* getLogContextById(const String& contextId);
 
         std::mutex m_appenderLock;
-        bool m_isInitialized;
+        std::atomic_bool m_isInitialized;
         bool m_consoleLogLevelSetProgrammatically = false;
         ConsoleLogAppender m_consoleLogAppender;
         std::unique_ptr<DltLogAppender> m_dltLogAppender;
         std::unique_ptr<LogAppenderBase> m_platformLogAppender;
         std::unique_ptr<UserLogAppender> m_userLogAppender;
-        std::vector<LogContext*> m_logContexts;
+        std::vector<std::unique_ptr<LogContext>> m_logContexts;
         std::vector<LogAppenderBase*> m_logAppenders;
         LogContext& m_fileTransferContext;
         ELogLevel m_consoleLogLevelProgrammatically = LogLevelDefault_Console;

@@ -83,11 +83,15 @@ namespace ramses
 
         m_appLogic.init(framework.getResourceComponent(), framework.getScenegraphComponent());
         m_cmdPrintSceneList = std::make_shared<ramses_internal::PrintSceneList>(*this);
+        m_cmdSetProperty = std::make_shared<ramses_internal::SetProperty>(*this);
+        m_cmdSetPropertyAll = std::make_shared<ramses_internal::SetPropertyAll>(*this);
         m_cmdPrintValidation = std::make_shared<ramses_internal::ValidateCommand>(*this);
         m_cmdForceFallbackImage = std::make_shared<ramses_internal::ForceFallbackImage>(*this);
         m_cmdFlushSceneVersion = std::make_shared<ramses_internal::FlushSceneVersion>(*this);
         m_cmdDumpSceneToFile = std::make_shared<ramses_internal::DumpSceneToFile>(*this);
         m_cmdLogResourceMemoryUsage = std::make_shared<ramses_internal::LogResourceMemoryUsage>(*this);
+        framework.getRamsh().add(m_cmdSetProperty);
+        framework.getRamsh().add(m_cmdSetPropertyAll);
         framework.getRamsh().add(m_cmdPrintSceneList);
         framework.getRamsh().add(m_cmdPrintValidation);
         framework.getRamsh().add(m_cmdForceFallbackImage);
@@ -202,7 +206,7 @@ namespace ramses
         return addErrorEntry("RamsesClient::destroy failed, scene is not in this client.");
     }
 
-    void RamsesClientImpl::writeLowLevelResourcesToStream(const ResourceObjects& resources, ramses_internal::BinaryFileOutputStream& resourceOutputStream, bool compress) const
+    void RamsesClientImpl::writeLowLevelResourcesToStream(const ResourceObjects& resources, ramses_internal::IOutputStream& resourceOutputStream, bool compress) const
     {
         //getting names for resources (names are transmitted only for debugging purposes)
         ramses_internal::ManagedResourceVector managedResources;

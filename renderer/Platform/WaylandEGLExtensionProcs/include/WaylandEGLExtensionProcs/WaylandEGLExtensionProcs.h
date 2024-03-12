@@ -39,9 +39,12 @@ namespace ramses_internal
         void glEGLImageTargetTexture2DOES(GLenum target, GLeglImageOES image) const;
         EGLBoolean eglBindWaylandDisplayWL(wl_display* waylandDisplay) const;
         EGLBoolean eglUnbindWaylandDisplayWL(wl_display* waylandDisplay) const;
+        EGLBoolean eglQueryWaylandBufferWL(wl_resource* buffer, EGLint attribute, EGLint* value) const;
 
         bool areExtensionsSupported()const;
         bool areDmabufExtensionsSupported()const;
+
+        static const char* getTextureFormatName(EGLint textureFormat);
 
     private:
 
@@ -56,6 +59,7 @@ namespace ramses_internal
         PFNGLEGLIMAGETARGETTEXTURE2DOESPROC m_glEGLImageTargetTexture2DOES;
         PFNEGLBINDWAYLANDDISPLAYWL m_eglBindWaylandDisplayWL;
         PFNEGLUNBINDWAYLANDDISPLAYWL m_eglUnbindWaylandDisplayWL;
+        PFNEGLQUERYWAYLANDBUFFERWL m_eglQueryWaylandBufferWL;
 
         bool m_extensionsSupported;
         bool m_dmabufExtensionsSupported;

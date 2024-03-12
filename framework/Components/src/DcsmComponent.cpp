@@ -15,6 +15,7 @@
 #include "ramses-framework-api/DcsmMetadataUpdate.h"
 #include "DcsmMetadataUpdateImpl.h"
 #include "CategoryInfoUpdateImpl.h"
+#include "SceneAPI/WaylandIviSurfaceId.h"
 #include <chrono>
 
 // ensure internal and api types match
@@ -1907,6 +1908,22 @@ namespace ramses_internal
         }
     }
 
+    void FormatContentDescriptor(fmt::memory_buffer& out, ETechnicalContentType contentType, TechnicalContentDescriptor descriptor)
+    {
+        switch(contentType)
+        {
+        case ETechnicalContentType::RamsesSceneID:
+            fmt::format_to(out, ",scene:{}", SceneId(descriptor.getValue()));
+            break;
+        case ETechnicalContentType::WaylandIviSurfaceID:
+            fmt::format_to(out, ",{}", WaylandIviSurfaceId(static_cast<uint32_t>(descriptor.getValue())));
+            break;
+        case ETechnicalContentType::Invalid:
+            fmt::format_to(out, ",{:s}:{}", contentType, descriptor);
+            break;
+        }
+    }
+
     void DcsmComponent::triggerLogMessageForPeriodicLog()
     {
         // log format description:
@@ -1931,7 +1948,7 @@ namespace ramses_internal
                     else
                         fmt::format_to(out, ",-");
                     if (ci.contentDescriptor.isValid())
-                        fmt::format_to(out, ",{:s}:{}", ci.contentType, ci.contentDescriptor);
+                        FormatContentDescriptor(out, ci.contentType, ci.contentDescriptor);
                     else
                         fmt::format_to(out, ",-");
                     if (ci.localOnly)

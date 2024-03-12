@@ -14,6 +14,7 @@
 namespace ramses_internal
 {
     class IScene;
+    class RendererCachedScene;
     class IRendererResourceManager;
 
     class SceneResourceUploader
@@ -23,7 +24,7 @@ namespace ramses_internal
         static void UploadRenderBuffer(const IScene& scene, RenderBufferHandle renderBuffer, IRendererResourceManager& resourceManager);
         static void UploadBlitPassRenderTargets(const IScene& scene, BlitPassHandle blitPass, IRendererResourceManager& resourceManager);
         static void UploadTextureBuffer(const IScene& scene, TextureBufferHandle textureBuffer, IRendererResourceManager& resourceManager);
-        static void UpdateTextureBuffer(const IScene& scene, TextureBufferHandle textureBuffer, IRendererResourceManager& resourceManager);
+        static void UpdateTextureBuffer(const RendererCachedScene& scene, TextureBufferHandle textureBuffer, IRendererResourceManager& resourceManager);
         static void UploadVertexArray(const IScene& scene, RenderableHandle renderableHandle, IRendererResourceManager& resourceManager);
     };
 }

@@ -123,6 +123,7 @@ namespace ramses
         sceneId_t           getSceneId() const;
         EScenePublicationMode getPublicationModeSetFromSceneConfig() const;
 
+        status_t serialize(std::vector<ramses_internal::Byte>& outputBuffer, bool compress) const;
         status_t saveToFile(const char* fileName, bool compress) const;
         bool saveResources(std::string const& fileName, bool compress) const;
 

@@ -34,6 +34,7 @@ namespace ramses_internal
         RenderOneFrame_ToEGLBuffer,
         RenderOneFrame_ToSharedMemoryBuffer,
         AttachBuffer,
+        ReAttachBuffer,
         DestroyBuffers,
         SetSurfaceSize,
         SetTriangleColor,

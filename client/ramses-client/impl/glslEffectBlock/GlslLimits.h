@@ -9,6 +9,8 @@
 #ifndef RAMSES_GLSLLIMITS_H
 #define RAMSES_GLSLLIMITS_H
 
+#include "Collections/String.h"
+
 struct TBuiltInResource;
 
 namespace ramses_internal

@@ -15,18 +15,59 @@ namespace ramses_internal
     SetClearColor::SetClearColor(RendererCommandBuffer& rendererCommandBuffer)
         : m_rendererCommandBuffer(rendererCommandBuffer)
     {
-        description = "set display clear color";
+        description = "Usage: [-ob bufferID] displayID red green blue alpha - set clear color for display or offscreen buffer";
         registerKeyword("clc");
-        getArgument<0>().setDescription("display id");
-        getArgument<1>().setDescription("red channel value");
-        getArgument<2>().setDescription("green channel value");
-        getArgument<3>().setDescription("blue channel value");
-        getArgument<4>().setDescription("alpha channel value");
     }
 
-    Bool SetClearColor::execute(UInt32& displayId, Float& red, Float& green, Float& blue, Float& alpha) const
+    bool SetClearColor::executeInput(const std::vector<std::string>& input)
     {
-        m_rendererCommandBuffer.enqueueCommand(ramses_internal::RendererCommand::SetClearColor{ DisplayHandle{displayId}, {}, Vector4{red, green, blue, alpha} });
+        std::vector<std::string> positionals;
+        ramses_internal::RendererCommand::SetClearColor cmd{};
+
+        enum class EOption
+        {
+            None,
+            OffscreenBuffer,
+        };
+
+        EOption lastOption = EOption::None;
+
+        for (const auto& arg : input)
+        {
+            if (arg == "-ob")
+            {
+                lastOption = EOption::OffscreenBuffer;
+            }
+            else
+            {
+                switch( lastOption )
+                {
+                case EOption::OffscreenBuffer:
+                    ArgumentConverter<uint32_t>::tryConvert(arg, cmd.offscreenBuffer.asMemoryHandleReference());
+                    lastOption = EOption::None;
+                    break;
+                case EOption::None:
+                    if (!contains_c(m_keywords, arg))
+                    {
+                        positionals.push_back(arg);
+                    }
+                    break;
+                }
+            }
+        }
+
+        if (positionals.size() != 5)
+        {
+            LOG_ERROR_P(CONTEXT_RAMSH, "None or too many arguments provided: {}", positionals.size());
+            return false;
+        }
+
+        ArgumentConverter<uint32_t>::tryConvert(positionals[0], cmd.display.asMemoryHandleReference());
+        ArgumentConverter<float>::tryConvert(positionals[1], cmd.clearColor.r);
+        ArgumentConverter<float>::tryConvert(positionals[2], cmd.clearColor.g);
+        ArgumentConverter<float>::tryConvert(positionals[3], cmd.clearColor.b);
+        ArgumentConverter<float>::tryConvert(positionals[4], cmd.clearColor.a);
+        m_rendererCommandBuffer.enqueueCommand(std::move(cmd));
         return true;
     }
 }

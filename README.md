@@ -127,3 +127,4 @@ Included Assets:
 - Droid Kufi Font (Licensed under Apache 2.0)
 - Droid Naskh Font (Licensed under Apache 2.0)
 - Satisfy Font (Licensed under Apache 2.0)
+- Noto Sans Thai Font (Licensed under SIL Open Font License 1.1)

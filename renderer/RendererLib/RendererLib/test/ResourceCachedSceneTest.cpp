@@ -131,9 +131,9 @@ namespace ramses_internal
                 scene.markVertexArraysClean();
         }
 
-        TextureSamplerHandle setResourcesAndSamplerWithStreamTexture(const RenderableHandle renderable, WaylandIviSurfaceId sourceId, ResourceContentHash fallbackTexture)
+        TextureSamplerHandle setResourcesAndSamplerWithStreamTexture(const RenderableHandle renderable, WaylandIviSurfaceId iviSurface, ResourceContentHash fallbackTexture)
         {
-            sceneAllocator.allocateStreamTexture(sourceId, fallbackTexture, sceneHelper.streamTexture);
+            sceneAllocator.allocateStreamTexture(iviSurface, fallbackTexture, sceneHelper.streamTexture);
             const TextureSamplerHandle samplerHandle = sceneHelper.createTextureSampler(sceneHelper.streamTexture);
             sceneHelper.createAndAssignUniformDataInstance(renderable, samplerHandle);
             sceneHelper.createAndAssignVertexDataInstance(renderable);

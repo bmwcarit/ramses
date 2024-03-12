@@ -15,6 +15,7 @@
 #include "SceneImpl.h"
 #include "RamsesObjectTypeUtils.h"
 #include "RamsesClientImpl.h"
+#include "Utils/File.h"
 
 namespace ramses
 {
@@ -113,10 +114,30 @@ namespace ramses
             }
         }
 
+        void checkSceneFile(const char* filename)
+        {
+            std::vector<ramses_internal::Byte> buffer;
+            EXPECT_EQ(StatusOK, m_scene.impl.serialize(buffer, false));
+            EXPECT_FALSE(buffer.empty());
+
+            ramses_internal::File f(filename);
+            EXPECT_TRUE(f.open(ramses_internal::File::Mode::ReadOnlyBinary));
+            size_t numBytes = 0u;
+            EXPECT_TRUE(f.getSizeInBytes(numBytes));
+            EXPECT_EQ(numBytes, buffer.size());
+            std::vector<ramses_internal::Byte> fileBuffer;
+            fileBuffer.resize(numBytes);
+            EXPECT_EQ(ramses_internal::EStatus::Ok, f.read(fileBuffer.data(), numBytes, numBytes));
+            EXPECT_TRUE(f.close());
+            EXPECT_EQ(buffer, fileBuffer);
+        }
+
         void doWriteReadCycle(bool expectSameSceneSizeInfo = true, bool expectSameTypeHistogram = true)
         {
             const status_t status = m_scene.saveToFile("someTemporaryFile.ram", false);
             EXPECT_EQ(StatusOK, status);
+
+            checkSceneFile("someTemporaryFile.ram");
 
             m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTemporaryFile.ram");
             ASSERT_TRUE(nullptr != m_sceneLoaded);

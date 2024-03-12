@@ -148,7 +148,18 @@ namespace ramses_internal
     };
 }
 
-MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::WaylandIviLayerId)
+template <>
+struct fmt::formatter<ramses_internal::WaylandIviLayerId> {
+    template<typename ParseContext>
+    constexpr auto parse(ParseContext& ctx)  {
+        return ctx.begin();
+    }
+    template<typename FormatContext>
+    constexpr auto format(const ramses_internal::WaylandIviLayerId& value, FormatContext& ctx) {
+        return fmt::format_to(ctx.out(), "ivi-layer:{}", value.getValue());
+    }
+};
+
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::IntegrityRGLDeviceUnit)
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::WindowsWindowHandle)
 MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::AndroidNativeWindowPtr)

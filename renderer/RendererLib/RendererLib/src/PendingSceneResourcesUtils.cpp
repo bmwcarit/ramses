@@ -10,7 +10,7 @@
 #include "RendererLib/IRendererResourceManager.h"
 #include "RendererLib/SceneResourceUploader.h"
 #include "RendererLib/FrameTimer.h"
-#include "SceneAPI/IScene.h"
+#include "RendererLib/RendererCachedScene.h"
 #include "SceneAPI/GeometryDataBuffer.h"
 #include "SceneAPI/StreamTexture.h"
 
@@ -75,7 +75,10 @@ namespace ramses_internal
         }
     }
 
-    bool PendingSceneResourcesUtils::ApplySceneResourceActions(const SceneResourceActionVector& actions, const IScene& scene, IRendererResourceManager& resourceManager, const FrameTimer* frameTimer)
+    bool PendingSceneResourcesUtils::ApplySceneResourceActions(const SceneResourceActionVector& actions,
+                                                               const RendererCachedScene&       scene,
+                                                               IRendererResourceManager&        resourceManager,
+                                                               const FrameTimer*                frameTimer)
     {
         constexpr size_t TimeCheckPeriod = 20u;
         constexpr size_t ThresholdForTimeChecking = 100u;

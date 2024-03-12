@@ -10,6 +10,7 @@
 #define RAMSES_RAMSHCOMMUNICATIONCHANNELDLT_H
 
 #include <cstdint>
+#include <mutex>
 
 namespace ramses_internal
 {
@@ -22,19 +23,23 @@ namespace ramses_internal
     class RamshCommunicationChannelDLT final
     {
     public:
-        explicit RamshCommunicationChannelDLT(Ramsh& ramsh);
-        ~RamshCommunicationChannelDLT();
+        static RamshCommunicationChannelDLT& GetInstance()
+        {
+            static RamshCommunicationChannelDLT instance;
+            return instance;
+        }
+
+        void registerRamsh(Ramsh& ramsh);
+        void unregisterRamsh(Ramsh& ramsh);
 
     private:
+        RamshCommunicationChannelDLT();
+
         static int dltInjectionCallbackF(uint32_t sid, void* data, uint32_t length);
         void processInput(const String& s);
 
-        Ramsh& m_ramsh;
-
-        /**
-         * Static communication Channel instance for DLT
-         */
-        static RamshCommunicationChannelDLT* m_instance;
+        std::mutex m_ramshLock;
+        Ramsh* m_ramsh = nullptr;
     };
 
 }

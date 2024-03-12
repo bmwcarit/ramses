@@ -63,9 +63,9 @@ namespace ramses_internal
         sceneStats.sceneResourcesBytesUploaded += byteSize;
     }
 
-    void RendererStatistics::streamTextureUpdated(WaylandIviSurfaceId sourceId, UInt numUpdates)
+    void RendererStatistics::streamTextureUpdated(WaylandIviSurfaceId iviSurface, UInt numUpdates)
     {
-        auto& strTexStat = m_streamTextureStatistics[sourceId];
+        auto& strTexStat = m_streamTextureStatistics[iviSurface];
         strTexStat.numUpdates += numUpdates;
         if (strTexStat.lastFrameUpdated != m_frameNumber)
         {
@@ -146,9 +146,9 @@ namespace ramses_internal
         m_displayStatistics.offscreenBufferStatistics.erase(offscreenBuffer);
     }
 
-    void RendererStatistics::untrackStreamTexture(WaylandIviSurfaceId sourceId)
+    void RendererStatistics::untrackStreamTexture(WaylandIviSurfaceId iviSurface)
     {
-        m_streamTextureStatistics.erase(sourceId);
+        m_streamTextureStatistics.erase(iviSurface);
     }
 
     void RendererStatistics::frameFinished(UInt32 drawCalls)

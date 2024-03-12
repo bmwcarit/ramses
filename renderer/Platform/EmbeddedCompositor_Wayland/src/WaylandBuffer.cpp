@@ -7,9 +7,13 @@
 //  -------------------------------------------------------------------------
 
 #include "EmbeddedCompositor_Wayland/WaylandBuffer.h"
+#include "EmbeddedCompositor_Wayland/LinuxDmabufBuffer.h"
+#include "EmbeddedCompositor_Wayland/LinuxDmabuf.h"
 #include "EmbeddedCompositor_Wayland/IEmbeddedCompositor_Wayland.h"
+#include "WaylandEGLExtensionProcs/WaylandEGLExtensionProcs.h"
 #include "Utils/ThreadLocalLogForced.h"
 #include "Utils/Warnings.h"
+#include "RendererLib/RendererLogContext.h"
 #include <cassert>
 
 namespace ramses_internal
@@ -78,5 +82,54 @@ WARNINGS_POP
     bool WaylandBuffer::isSharedMemoryBuffer() const
     {
         return m_bufferResource.bufferGetSharedMemoryData() != nullptr;
+    }
+
+    void WaylandBuffer::logInfos(RendererLogContext& contexti, const WaylandEGLExtensionProcs &eglExt) const
+    {
+        auto res = m_bufferResource.getLowLevelHandle();
+        contexti << "Buffer: res:" << static_cast<const void*>(res);
+        wl_shm_buffer* shm = wl_shm_buffer_get(res);
+        if (shm != nullptr)
+        {
+            contexti << " type:shm w:" << wl_shm_buffer_get_width(shm) << " h:" << wl_shm_buffer_get_height(shm);
+            contexti << " format:" << wl_shm_buffer_get_format(shm);
+        }
+        else if ((res != nullptr) && wl_resource_instance_of(res, &wl_buffer_interface, &LinuxDmabufBuffer::m_bufferInterface))
+        {
+            contexti << " type:dma";
+            auto dmabuf = static_cast<LinuxDmabufBufferData*>(wl_resource_get_user_data(res));
+            if (dmabuf != nullptr)
+            {
+                contexti << " w:" << dmabuf->getWidth() << " h:" << dmabuf->getHeight();
+                contexti << " planes:" << dmabuf->getNumPlanes() << " format:" << dmabuf->getFormat();
+                contexti << " flags:" << dmabuf->getFlags();
+            }
+        }
+        else
+        {
+            EGLint textureFormat =  0;
+            EGLint textureWidth =  0;
+            EGLint textureHeight =  0;
+            auto bufferResource = m_bufferResource.getLowLevelHandle();
+            contexti << " type:EGL_WAYLAND_BUFFER_WL";
+            EGLBoolean ret = eglExt.eglQueryWaylandBufferWL(bufferResource, EGL_TEXTURE_FORMAT, &textureFormat);
+            if (ret == EGL_FALSE)
+            {
+                contexti <<  "eglQueryWaylandBufferWL(EGL_TEXTURE_FORMAT) failed" << RendererLogContext::NewLine;
+            }
+            ret = eglExt.eglQueryWaylandBufferWL(bufferResource, EGL_WIDTH, &textureWidth);
+            if (ret == EGL_FALSE)
+            {
+                contexti <<  "eglQueryWaylandBufferWL(EGL_WIDTH) failed" << RendererLogContext::NewLine;
+            }
+            ret = eglExt.eglQueryWaylandBufferWL(bufferResource, EGL_HEIGHT, &textureHeight);
+            if (ret == EGL_FALSE)
+            {
+                contexti <<  "eglQueryWaylandBufferWL(EGL_HEIGHT) failed" << RendererLogContext::NewLine;
+            }
+            contexti << " w:" << textureWidth << " h:" << textureHeight
+                     << " format:" << eglExt.getTextureFormatName(textureFormat) << " (" << textureFormat << ")";
+        }
+        contexti << RendererLogContext::NewLine;
     }
 }

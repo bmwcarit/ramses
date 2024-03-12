@@ -1052,6 +1052,21 @@ TEST_F(ARendererSceneUpdater, failsToCreateStreamBufferOnUnknownDisplay)
     EXPECT_FALSE(rendererSceneUpdater->handleBufferCreateRequest(buffer, source));
 }
 
+TEST_F(ARendererSceneUpdater, failsToCreateStreamBufferWithSameID)
+{
+    createDisplayAndExpectSuccess();
+
+    constexpr StreamBufferHandle buffer{ 1u };
+    constexpr WaylandIviSurfaceId source{ 2u };
+    expectStreamBufferUploaded(buffer, source);
+    EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, source));
+
+    EXPECT_FALSE(rendererSceneUpdater->handleBufferCreateRequest(buffer, source));
+    EXPECT_FALSE(rendererSceneUpdater->handleBufferCreateRequest(buffer, source));
+
+    destroyDisplay();
+}
+
 TEST_F(ARendererSceneUpdater, canDestroyStreamBuffer)
 {
     createDisplayAndExpectSuccess();
@@ -1071,6 +1086,17 @@ TEST_F(ARendererSceneUpdater, failsToDestroyStreamBufferOnUnknownDisplay)
 {
     constexpr StreamBufferHandle buffer{ 1u };
     EXPECT_FALSE(rendererSceneUpdater->handleBufferDestroyRequest(buffer));
+}
+
+TEST_F(ARendererSceneUpdater, failsToDestroyNonExistentStreamBuffer)
+{
+    createDisplayAndExpectSuccess();
+
+    constexpr StreamBufferHandle buffer{ 1u };
+    EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, getStreamBufferDeviceHandle(buffer)).WillRepeatedly(Return(DeviceResourceHandle::Invalid()));
+    EXPECT_FALSE(rendererSceneUpdater->handleBufferDestroyRequest(buffer));
+
+    destroyDisplay();
 }
 
 TEST_F(ARendererSceneUpdater, emitsStreamBufferEnabledDisabledEvents)
@@ -1738,10 +1764,10 @@ TEST_F(ARendererSceneUpdater, updateSceneStreamTexturesDirtinessGeneratesEventsF
     RendererEventVector dummy;
     rendererEventCollector.appendAndConsumePendingEvents(dummy, resultEvents);
     ASSERT_EQ(2u, resultEvents.size());
-    EXPECT_EQ(ERendererEventType::StreamSurfaceAvailable, resultEvents[0].eventType);
-    EXPECT_EQ(newStreamId, resultEvents[0].streamSourceId);
-    EXPECT_EQ(ERendererEventType::StreamSurfaceUnavailable, resultEvents[1].eventType);
-    EXPECT_EQ(obsoleteStreamId, resultEvents[1].streamSourceId);
+    EXPECT_EQ(ERendererEventType::StreamSurfaceUnavailable, resultEvents[0].eventType);
+    EXPECT_EQ(obsoleteStreamId, resultEvents[0].streamSourceId);
+    EXPECT_EQ(ERendererEventType::StreamSurfaceAvailable, resultEvents[1].eventType);
+    EXPECT_EQ(newStreamId, resultEvents[1].streamSourceId);
 
     destroyDisplay();
 }

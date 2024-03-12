@@ -50,10 +50,10 @@ namespace ramses_internal
 
     private:
         void createQuad(float x, float y, float w, float h, ramses::Appearance& appearance);
-        ramses::Appearance& createAppearanceWithStreamTexture(ramses::Scene& scene, ramses::waylandIviSurfaceId_t sourceId, ramses::dataConsumerId_t consumerId, const ramses::Texture2D& fallbackTexture);
+        ramses::Appearance& createAppearanceWithStreamTexture(ramses::Scene& scene, ramses::waylandIviSurfaceId_t iviSurface, ramses::dataConsumerId_t consumerId, const ramses::Texture2D& fallbackTexture);
         const ramses::Effect& createTestEffect(UInt32 state);
         const ramses::ArrayResource& createTextureCoordinates(UInt32 state);
-        void createQuadWithStreamTexture(float xPos, float yPos, float width, float height, ramses::waylandIviSurfaceId_t sourceId, ramses::dataConsumerId_t consumerId, const ramses::Texture2D& fallbackTexture);
+        void createQuadWithStreamTexture(float xPos, float yPos, float width, float height, ramses::waylandIviSurfaceId_t iviSurface, ramses::dataConsumerId_t consumerId, const ramses::Texture2D& fallbackTexture);
 
         static const WaylandIviSurfaceId EmbeddedSurfaceStreamTextureSourceId;
         const ramses::Effect& m_effect;

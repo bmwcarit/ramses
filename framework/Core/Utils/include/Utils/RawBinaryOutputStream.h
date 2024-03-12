@@ -22,6 +22,7 @@ namespace ramses_internal
         explicit RawBinaryOutputStream(Byte* data, size_t size);
 
         IOutputStream& write(const void* data, size_t size) override;
+        EStatus getPos(size_t& position) const override;
 
         const Byte* getData() const;
         size_t getSize() const;
@@ -49,6 +50,12 @@ namespace ramses_internal
             std::memcpy(m_data, data, size);
         m_data += size;
         return *this;
+    }
+
+    inline EStatus RawBinaryOutputStream::getPos(size_t& position) const
+    {
+        position = m_data - m_dataBase;
+        return EStatus::Ok;
     }
 
     inline const Byte* RawBinaryOutputStream::getData() const

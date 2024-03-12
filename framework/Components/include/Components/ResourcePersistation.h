@@ -24,7 +24,7 @@ namespace ramses_internal
     class ResourcePersistation
     {
     public:
-        static void WriteNamedResourcesWithTOCToStream(BinaryFileOutputStream& outStream, const ManagedResourceVector& resourcesForFile, bool compress);
+        static void WriteNamedResourcesWithTOCToStream(IOutputStream& outStream, const ManagedResourceVector& resourcesForFile, bool compress);
         static void WriteOneResourceToStream(IOutputStream& outStream, const ManagedResource& resource);
 
         static std::unique_ptr<IResource> ReadOneResourceFromStream(IInputStream& inStream, const ResourceContentHash& hash);

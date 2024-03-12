@@ -34,11 +34,15 @@ namespace ramses_internal
             EState_RGBA8_OneMip_ScaledDown,
             EState_RGBA8_ThreeMips,
             EState_PartialUpdate,
+            EState_PartialUpdate1,
+            EState_PartialUpdate2,
             EState_PartialUpdateMipMap,
             EState_PartialUpdateMipMap_RG8,
             EState_ClientTextureResource_RGBA8,
             EState_SwitchBackToClientTexture,
-            EState_SwitchBackToExistingTextureBufferAndUpdate
+            EState_SwitchBackToExistingTextureBufferAndUpdate,
+            EState_UpdateAndRecreate,
+            EState_UpdateAndRecreate1,
         };
 
         void setState(UInt32 state);

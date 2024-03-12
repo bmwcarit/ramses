@@ -37,13 +37,15 @@ namespace ramses_internal
             fragColor = color;
         })GLSL";
 
+    static_assert(static_cast<uint32_t>(FrameProfilerStatistics::ERegion::Count) == 15u, "Adapt shader constants and color array, both in VS and FS!");
     static const char* const IndexedColorFragmentShader = R"GLSL(
         #version 300 es
         precision highp float;
 
+        // colorId = ERegion_X + 1 (due to GL_LAST_VERTEX_CONVENTION)
         flat in int colorId;
         const vec4 colors[16] = vec4[16](
-            vec4(0.0, 0.0, 0.0, 1.0),
+            vec4(0.0, 0.0, 0.0, 1.0),        // ... unused due to way opengl outputs flat values from VS (see GL_LAST_VERTEX_CONVENTION)
             vec4(0.5, 1.0, 0.0, 0.5),        // RendererCommands
             vec4(1.0, 0.0, 0.0, 0.5),        // UpdateClientResources
             vec4(0.0, 0.0, 1.0, 0.5),        // ApplySceneActions
@@ -117,6 +119,7 @@ namespace ramses_internal
     FrameProfileRenderer::FrameProfileRenderer(IDevice& device, UInt32 displayWidth, UInt32 displayHeight)
         : m_device(&device)
         , m_displayWidth(static_cast<Float>(displayWidth))
+        , m_displayHeight(static_cast<Float>(displayHeight))
     {
         const ProjectionParams params = ProjectionParams::Frustum(ECameraProjectionType::Orthographic, 0.0f, m_displayWidth, 0.0f, static_cast<Float>(displayHeight), 0.0f, 1.0f);
         m_projectionMatrix = CameraMatrixHelper::ProjectionMatrix(params);
@@ -391,8 +394,8 @@ namespace ramses_internal
         renderable.look = look;
         renderable.color = color;
         renderable.mvpMatrix = createMVPMatrix(translation, scale);
-
-        renderable.vertexArrayHandle = {};
+        if (geometry.vertexBufferHandle.isValid()) // cannot create VAO if vertices not created (e.g. generated on the fly)
+            renderable.vertexArrayHandle = createVertexArray(geometry, look);
 
         return renderable;
     }
@@ -551,6 +554,7 @@ namespace ramses_internal
                 createResources();
             }
 
+            m_device->setViewport(0, 0, static_cast<uint32_t>(m_displayWidth), static_cast<uint32_t>(m_displayHeight));
             m_device->depthFunc(EDepthFunc::Disabled);
             m_device->blendOperations(EBlendOperation::Add, EBlendOperation::Add);
             m_device->blendFactors(EBlendFactor::SrcAlpha, EBlendFactor::OneMinusSrcAlpha, EBlendFactor::SrcAlpha, EBlendFactor::OneMinusSrcAlpha);
@@ -565,8 +569,7 @@ namespace ramses_internal
 
     void FrameProfileRenderer::render(const Renderable& drawable)
     {
-        if (!drawable.vertexArrayHandle.isValid())
-            return;
+        assert(drawable.vertexArrayHandle.isValid());
 
         m_device->activateShader(drawable.look.shaderHandle);
         if (drawable.look.colorHandle != DataFieldHandle::Invalid())

@@ -10,6 +10,7 @@
 #define RAMSES_RENDERERLIFECYCLETESTS_H
 
 #include "TestScenesAndRenderer.h"
+#include "ramses-client-api/SceneConfig.h"
 #include "gtest/gtest.h"
 
 namespace ramses_internal
@@ -40,14 +41,14 @@ namespace ramses_internal
         }
 
         template <typename INTEGRATION_SCENE>
-        ramses::sceneId_t createScene(uint32_t state, const Vector3& cameraPosition = { 0.f, 0.f, 0.f }, uint32_t vpWidth = WindowWidth, uint32_t vpHeight = WindowHeight)
+        ramses::sceneId_t createScene(uint32_t state, const Vector3& cameraPosition = {0.f, 0.f, 0.f}, uint32_t vpWidth = WindowWidth, uint32_t vpHeight = WindowHeight, const ramses::SceneConfig& config = {})
         {
-            return testScenesAndRenderer.getScenesRegistry().createScene<INTEGRATION_SCENE>(state, cameraPosition, vpWidth, vpHeight);
+            return testScenesAndRenderer.getScenesRegistry().createScene<INTEGRATION_SCENE>(state, cameraPosition, vpWidth, vpHeight, config);
         }
         template <typename INTEGRATION_SCENE>
-        void createScene(uint32_t state, ramses::sceneId_t sceneId, const Vector3& cameraPosition = { 0.f, 0.f, 0.f })
+        void createScene(uint32_t state, ramses::sceneId_t sceneId, const Vector3& cameraPosition = {0.f, 0.f, 0.f}, const ramses::SceneConfig& config = {})
         {
-            testScenesAndRenderer.getScenesRegistry().createScene<INTEGRATION_SCENE>(state, sceneId, cameraPosition, WindowWidth, WindowHeight);
+            testScenesAndRenderer.getScenesRegistry().createScene<INTEGRATION_SCENE>(state, sceneId, cameraPosition, WindowWidth, WindowHeight, config);
         }
 
         static const uint32_t WindowX = 0u;

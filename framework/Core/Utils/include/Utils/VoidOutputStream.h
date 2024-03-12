@@ -20,6 +20,7 @@ namespace ramses_internal
         explicit VoidOutputStream();
 
         IOutputStream& write(const void* data, size_t size) override;
+        virtual EStatus getPos(size_t& position) const override;
 
         size_t getSize() const;
 
@@ -37,6 +38,12 @@ namespace ramses_internal
     {
         m_size += size;
         return *this;
+    }
+
+    inline EStatus VoidOutputStream::getPos(size_t& position) const
+    {
+        position = m_size;
+        return EStatus::Ok;
     }
 
     inline size_t VoidOutputStream::getSize() const

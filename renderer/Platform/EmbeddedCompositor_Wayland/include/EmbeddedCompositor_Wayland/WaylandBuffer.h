@@ -28,6 +28,7 @@ namespace ramses_internal
         virtual void reference() override;
         virtual void release() override;
         virtual bool isSharedMemoryBuffer() const override;
+        virtual void logInfos(RendererLogContext& contexti, const WaylandEGLExtensionProcs& eglExt) const override;
 
     private:
 

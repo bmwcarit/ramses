@@ -23,7 +23,7 @@
 namespace ramses_internal
 {
     class DisplayConfig;
-    class IContext;
+    class Context_EGL;
     class IWaylandCompositorConnection;
     class IWaylandSurface;
     class IWaylandBuffer;
@@ -33,7 +33,7 @@ namespace ramses_internal
     class EmbeddedCompositor_Wayland: public IEmbeddedCompositor, public IEmbeddedCompositor_Wayland
     {
     public:
-        EmbeddedCompositor_Wayland(const DisplayConfig& displayConfig, IContext& context);
+        EmbeddedCompositor_Wayland(const DisplayConfig& displayConfig, Context_EGL& context);
         virtual ~EmbeddedCompositor_Wayland() override;
 
         Bool init();
@@ -56,6 +56,7 @@ namespace ramses_internal
         const IWaylandSurface& findSurfaceForStreamTexture(WaylandIviSurfaceId streamTextureSourceId) const;
         virtual String getTitleOfWaylandIviSurface(WaylandIviSurfaceId waylandSurfaceId) const override;
         virtual void logInfos(RendererLogContext& context) const override;
+        virtual void logPeriodicInfo(StringOutputStream& sos) const override;
 
         virtual void addWaylandSurface(IWaylandSurface& waylandSurface) override;
         virtual void removeWaylandSurface(IWaylandSurface& waylandSurface) override;
@@ -91,7 +92,7 @@ namespace ramses_internal
         const String                m_waylandEmbeddedSocketGroup;
         const uint32_t              m_waylandEmbeddedSocketPermissions;
         const int                   m_waylandEmbeddedSocketFD;
-        IContext&                   m_context;
+        Context_EGL&                m_context;
 
         WaylandDisplay              m_serverDisplay;
         WaylandCompositorGlobal     m_compositorGlobal;

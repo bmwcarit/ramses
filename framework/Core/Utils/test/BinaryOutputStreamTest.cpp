@@ -21,6 +21,9 @@ namespace ramses_internal
         BinaryOutputStream outStream;
 
         EXPECT_EQ(0u,  outStream.getSize());
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, outStream.getPos(position));
+        EXPECT_EQ(0u, position);
         EXPECT_EQ(16u, outStream.getCapacity());
     }
 
@@ -44,6 +47,10 @@ namespace ramses_internal
         EXPECT_EQ(6, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint16_t>(data));
         data += sizeof(uint16_t);
         EXPECT_EQ(7, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint16_t>(data));
+
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, outStream.getPos(position));
+        EXPECT_EQ(3 * sizeof(uint16_t), position);
     }
 
     TEST(BinaryOutputStreamTest, InsertBool)
@@ -58,6 +65,10 @@ namespace ramses_internal
         EXPECT_FALSE(UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<bool>(data));
         data += sizeof(bool);
         EXPECT_TRUE(UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<bool>(data));
+
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, outStream.getPos(position));
+        EXPECT_EQ(3 * sizeof(bool), position);
     }
 
     TEST(BinaryOutputStreamTest, InsertInt)
@@ -72,6 +83,10 @@ namespace ramses_internal
         EXPECT_EQ(6, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<int32_t>(data));
         data += sizeof(int32_t);
         EXPECT_EQ(7, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<int32_t>(data));
+
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, outStream.getPos(position));
+        EXPECT_EQ(3 * sizeof(int32_t), position);
     }
 
     TEST(BinaryOutputStreamTest, InsertUInt)
@@ -89,6 +104,10 @@ namespace ramses_internal
         EXPECT_EQ(7u, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(data));
         data += sizeof(uint32_t);
         EXPECT_EQ(std::numeric_limits<uint32_t>::max(), UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint32_t>(data));
+
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, outStream.getPos(position));
+        EXPECT_EQ(5 * sizeof(uint32_t), position);
     }
 
     TEST(BinaryOutputStreamTest, InsertInt64)
@@ -103,6 +122,10 @@ namespace ramses_internal
         EXPECT_EQ(6, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<int64_t>(data));
         data += sizeof(int64_t);
         EXPECT_EQ(7, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<int64_t>(data));
+
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, outStream.getPos(position));
+        EXPECT_EQ(3 * sizeof(uint64_t), position);
     }
 
     TEST(BinaryOutputStreamTest, InsertUInt64)
@@ -120,6 +143,10 @@ namespace ramses_internal
         EXPECT_EQ(7u, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint64_t>(data));
         data += sizeof(uint64_t);
         EXPECT_EQ(std::numeric_limits<uint64_t>::max(), UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<uint64_t>(data));
+
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, outStream.getPos(position));
+        EXPECT_EQ(5 * sizeof(uint64_t), position);
     }
 
     TEST(BinaryOutputStreamTest, InsertFloat)
@@ -133,6 +160,10 @@ namespace ramses_internal
         EXPECT_EQ(6.0f, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<float>(data));
         data += sizeof(int32_t);
         EXPECT_EQ(7.0f, UnsafeTestMemoryHelpers::GetTypedValueFromMemoryBlob<float>(data));
+
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, outStream.getPos(position));
+        EXPECT_EQ(3 * sizeof(float), position);
     }
 
     TEST(BinaryOutputStreamTest, InsertGuid)
@@ -151,6 +182,10 @@ namespace ramses_internal
 
         EXPECT_EQ(guid1, fromStreamGuid1);
         EXPECT_EQ(guid2, fromStreamGuid2);
+
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, outStream.getPos(position));
+        EXPECT_EQ(2 * sizeof(Guid::value_type), position);
     }
 
     TEST(BinaryOutputStreamTest, InsertMultipleData)
@@ -186,6 +221,10 @@ namespace ramses_internal
         EXPECT_STREQ("Hello World with a lot of characters", buffer);
 
         delete[] buffer;
+
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, outStream.getPos(position));
+        EXPECT_EQ(strlen + sizeof(uint32_t), position);
     }
 
     TEST(BinaryOutputStreamTest, InserStronglyTypedEnum)

@@ -11,6 +11,7 @@
 
 #include "ramses-framework-api/EValidationSeverity.h"
 #include "ramses-framework-api/RamsesFrameworkTypes.h"
+#include "ramses-client-api/RamsesObjectTypes.h"
 #include "Collections/String.h"
 #include "PlatformAbstraction/VariantWrapper.h"
 #include <mutex>
@@ -28,12 +29,22 @@ namespace ramses_internal
     struct SceneCommandFlushSceneVersion
     {
         ramses::sceneVersionTag_t sceneVersion;
+        // work around unsolved gcc bug https://bugzilla.redhat.com/show_bug.cgi?id=1507359
+        uint32_t _dummyValue = 0u;
     };
 
     struct SceneCommandValidationRequest
     {
         ramses::EValidationSeverity severity = ramses::EValidationSeverity_Info;
         String optionalObjectName;
+    };
+
+    struct SceneCommandSetProperty
+    {
+        ramses::sceneObjectId_t id;
+        ramses::ERamsesObjectType type = ramses::ERamsesObjectType_Invalid;
+        String prop;
+        String value;
     };
 
     struct SceneCommandDumpSceneToFile
@@ -45,7 +56,8 @@ namespace ramses_internal
     struct SceneCommandLogResourceMemoryUsage
     {
         // work around unsolved gcc bug https://bugzilla.redhat.com/show_bug.cgi?id=1507359
-        bool _dummyValue = false;
+        uint64_t _dummyValue = 0u;
+        uint32_t _dummyValue2 = 0u;
     };
 
 
@@ -61,6 +73,7 @@ namespace ramses_internal
 
     private:
         using CommandVariant = absl::variant<SceneCommandForceFallback,
+                                           SceneCommandSetProperty,
                                            SceneCommandFlushSceneVersion,
                                            SceneCommandValidationRequest,
                                            SceneCommandDumpSceneToFile,

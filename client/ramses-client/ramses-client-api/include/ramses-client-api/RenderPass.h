@@ -135,7 +135,7 @@ namespace ramses
         int32_t getRenderOrder() const;
 
         /**
-        * @brief Set the clear color for the RenderPass (default: [0,0,0,0])
+        * @brief Set the clear color for the RenderPass (default: [0,0,0,1])
         * @details The clear color will be used to clear a render target assigned to this RenderPass
         *          if clear flag is enabled, see setClearFlag.
         *

@@ -7,6 +7,8 @@
 //  -------------------------------------------------------------------------
 
 #include "EmbeddedCompositor_Wayland/WaylandBufferResource.h"
+#include "EmbeddedCompositor_Wayland/LinuxDmabufBuffer.h"
+#include "EmbeddedCompositor_Wayland/LinuxDmabuf.h"
 
 namespace ramses_internal
 {
@@ -24,7 +26,7 @@ namespace ramses_internal
         wl_buffer_send_release(m_resource);
     }
 
-    int32_t WaylandBufferResource::bufferGetSharedMemoryWidth() const
+    int32_t WaylandBufferResource::getWidth() const
     {
         wl_shm_buffer* sharedMemoryBuffer = wl_shm_buffer_get(m_resource);
 
@@ -32,19 +34,29 @@ namespace ramses_internal
         {
             return wl_shm_buffer_get_width(sharedMemoryBuffer);
         }
+        else if ((m_resource != nullptr) && wl_resource_instance_of(m_resource, &wl_buffer_interface, &LinuxDmabufBuffer::m_bufferInterface))
+        {
+            auto dmabuf = static_cast<LinuxDmabufBufferData*>(wl_resource_get_user_data(m_resource));
+            return (dmabuf != nullptr) ? dmabuf->getWidth() : 0;
+        }
         else
         {
             return 0;
         }
     }
 
-    int32_t WaylandBufferResource::bufferGetSharedMemoryHeight() const
+    int32_t WaylandBufferResource::getHeight() const
     {
         wl_shm_buffer* sharedMemoryBuffer = wl_shm_buffer_get(m_resource);
 
         if (sharedMemoryBuffer)
         {
             return wl_shm_buffer_get_height(sharedMemoryBuffer);
+        }
+        else if ((m_resource != nullptr) && wl_resource_instance_of(m_resource, &wl_buffer_interface, &LinuxDmabufBuffer::m_bufferInterface))
+        {
+            auto dmabuf = static_cast<LinuxDmabufBufferData*>(wl_resource_get_user_data(m_resource));
+            return (dmabuf != nullptr) ? dmabuf->getHeight() : 0;
         }
         else
         {

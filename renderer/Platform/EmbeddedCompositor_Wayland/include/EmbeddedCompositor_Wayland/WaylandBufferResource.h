@@ -19,8 +19,8 @@ namespace ramses_internal
         WaylandBufferResource();
         explicit WaylandBufferResource(wl_resource* resource);
         virtual void           bufferSendRelease();
-        virtual int32_t        bufferGetSharedMemoryWidth() const;
-        virtual int32_t        bufferGetSharedMemoryHeight() const;
+        virtual int32_t        getWidth() const;
+        virtual int32_t        getHeight() const;
         virtual const void*    bufferGetSharedMemoryData() const;
         virtual WaylandBufferResource* clone() const;
     };

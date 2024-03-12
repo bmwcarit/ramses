@@ -13,6 +13,7 @@
 #include "NativeWaylandResourceMock.h"
 #include "WaylandSurfaceMock.h"
 #include "ContextMock.h"
+#include "Context_EGL/Context_EGL.h"
 
 #include "EmbeddedCompositor_Wayland/EmbeddedCompositor_Wayland.h"
 #include "EmbeddedCompositor_Wayland/WaylandSurface.h"
@@ -112,8 +113,8 @@ namespace ramses_internal
         //need to focus on other aspects of resource lifecycle
         NiceMock<EmbeddedCompositor_WaylandMock>        m_compositorMock;
         NiceMock<WaylandSurfaceMock>                    m_surfaceMock;
-        NiceMock<ContextMock>                           m_contextMock;
-        EmbeddedCompositor_Wayland                      m_waylandCompositor{{}, m_contextMock};
+        Context_EGL m_context = {nullptr, nullptr, nullptr, nullptr, nullptr, 0};
+        EmbeddedCompositor_Wayland                      m_waylandCompositor{{}, m_context};
 
         StrictMock<WaylandClientMock>                   m_clientMock;
         StrictMock<NativeWaylandResourceMockWithDestructor>*  m_nativeResourceMock = nullptr;

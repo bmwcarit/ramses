@@ -12,6 +12,8 @@
 namespace ramses_internal
 {
     class WaylandBufferResource;
+    class RendererLogContext;
+    class WaylandEGLExtensionProcs;
 
     class IWaylandBuffer
     {
@@ -21,6 +23,7 @@ namespace ramses_internal
         virtual void reference() = 0;
         virtual void release() = 0;
         virtual bool isSharedMemoryBuffer() const = 0;
+        virtual void logInfos(RendererLogContext& context, const WaylandEGLExtensionProcs& eglExt) const = 0;
     };
 }
 

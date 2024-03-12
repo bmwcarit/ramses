@@ -12,6 +12,7 @@
 #include "Resource/EffectResource.h"
 #include "Device_GL/ShaderProgramInfo.h"
 #include "Utils/ThreadLocalLogForced.h"
+#include "absl/strings/str_split.h"
 
 namespace ramses_internal
 {
@@ -99,9 +100,6 @@ namespace ramses_internal
             glAttachShader(shaderProgramHandle, geometryShaderHandle);
         glLinkProgram(shaderProgramHandle);
 
-        GLint linkStatus;
-        glGetProgramiv(shaderProgramHandle, GL_LINK_STATUS, &linkStatus);
-
         if (CheckShaderProgramLinkStatus(shaderProgramHandle, debugErrorLog))
         {
             programShaderInfoOut.vertexShaderHandle = vertexShaderHandle;
@@ -124,20 +122,23 @@ namespace ramses_internal
 
     Bool ShaderUploader_GL::CheckShaderProgramLinkStatus(GLHandle shaderProgram, String& errorLogOut)
     {
-        GLint linkStatus;
+        GLint linkStatus = GL_FALSE;
         glGetProgramiv(shaderProgram, GL_LINK_STATUS, &linkStatus);
 
         if (GL_FALSE == linkStatus)
         {
-            Int32 infoLength;
-            glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &infoLength);
-            if (infoLength > 0)
+            GLint charBufferSize = 0;
+            glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &charBufferSize);
+            if (charBufferSize > 0)
             {
                 String str;
-                str.resize(infoLength);
+                // charBufferSize includes null termination character and data() returns array which is null-terminated
+                str.resize(charBufferSize - 1);
 
-                Int32 numChars;
-                glGetProgramInfoLog(shaderProgram, infoLength, &numChars, str.data());
+                GLsizei numChars = 0;
+                glGetProgramInfoLog(shaderProgram, charBufferSize, &numChars, str.data());
+                // Might be useful for the case when charBufferSize reported by glGetProgramiv is bigger than the real data
+                // returned by glGetProgramInfoLog. Does not affect performance, it is a case of error handling.
                 str.resize(numChars);
 
                 errorLogOut = "Failed to link shader program:\n";
@@ -169,15 +170,26 @@ namespace ramses_internal
 
             if (compilationResult == GL_FALSE)
             {
-                Int32 infoLength;
-                Int32 numberChars;
-                glGetShaderiv(shaderHandle, GL_INFO_LOG_LENGTH, &infoLength);
+                String info;
 
-                // Allocate Log Space
-                Char* info = new Char[infoLength];
-                glGetShaderInfoLog(shaderHandle, infoLength, &numberChars, info);
-                errorLogOut = String("Unable to compile shader stage: ") + String(info);
-                delete[] info;
+                GLint charBufferSize = 0;
+                glGetShaderiv(shaderHandle, GL_INFO_LOG_LENGTH, &charBufferSize);
+                if (charBufferSize > 0)
+                {
+                    // charBufferSize includes null termination character and data() returns array which is null-terminated
+                    info.resize(charBufferSize - 1);
+                    GLsizei numberChars = 0;
+                    glGetShaderInfoLog(shaderHandle, charBufferSize, &numberChars, info.data());
+                    // Might be useful for the case when charBufferSize reported by glGetShaderiv is bigger than the real data
+                    // returned by glGetShaderInfoLog. Does not affect performance, it is a case of error handling.
+                    info.resize(numberChars);
+                }
+                else
+                {
+                    info = "no info given from compiler";
+                }
+
+                errorLogOut = String("Unable to compile shader stage: ") + info;
 
                 PrintShaderSourceWithLineNumbers(stageSource);
                 glDeleteShader(shaderHandle);
@@ -191,15 +203,9 @@ namespace ramses_internal
     void ShaderUploader_GL::PrintShaderSourceWithLineNumbers(const String& source)
     {
         UInt32 lineNumber = 1;
-        Int prevNewLine = 0;
-        size_t nextNewLine = source.find("\n");
-
-        while (nextNewLine != String::npos)
+        for (const auto& line : absl::StrSplit(source.stdRef(), '\n'))
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Device_Base::PrintShaderSourceWithLineNumbers:  L" << lineNumber << ": " << source.substr(prevNewLine, nextNewLine - prevNewLine));
-
-            prevNewLine = nextNewLine + 1;
-            nextNewLine = source.find("\n", prevNewLine);
+            LOG_ERROR(CONTEXT_RENDERER, "Device_Base::PrintShaderSourceWithLineNumbers:  L" << lineNumber << ": " << String(line));
             ++lineNumber;
         }
     }

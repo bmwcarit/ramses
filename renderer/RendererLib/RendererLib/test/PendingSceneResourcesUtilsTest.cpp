@@ -10,6 +10,10 @@
 #include "RendererAPI/Types.h"
 #include "RendererLib/PendingSceneResourcesUtils.h"
 #include "RendererResourceManagerMock.h"
+#include "RendererLib/RendererCachedScene.h"
+#include "RendererLib/SceneLinksManager.h"
+#include "RendererLib/RendererScenes.h"
+#include "RendererEventCollector.h"
 #include "Scene/Scene.h"
 #include "SceneAllocateHelper.h"
 #include "SceneUtils/ResourceUtils.h"
@@ -21,7 +25,9 @@ class APendingSceneResourcesUtils : public ::testing::Test
 {
 public:
     APendingSceneResourcesUtils()
-        : scene(SceneInfo(sceneID))
+        : rendererScenes(rendererEventCollector)
+        , sceneLinksManager(rendererScenes, rendererEventCollector)
+        , scene(sceneLinksManager, SceneInfo(sceneID))
         , allocateHelper(scene)
     {
         allocateHelper.allocateRenderTarget(renderTargetHandle);
@@ -29,7 +35,7 @@ public:
         allocateHelper.allocateStreamTexture(WaylandIviSurfaceId{ 0u }, ResourceContentHash(1u, 2u), streamTextureHandle);
         allocateHelper.allocateBlitPass(RenderBufferHandle(81u), RenderBufferHandle(82u), blitPassHandle);
         allocateHelper.allocateDataBuffer(EDataBufferType::IndexBuffer, EDataType::UInt32, 10u, dataBufferHandle);
-        allocateHelper.allocateTextureBuffer(ETextureFormat::R8, { { 4, 4 },{ 2, 2 },{ 1, 1 } }, textureBufferHandle);
+        allocateHelper.allocateTextureBuffer(ETextureFormat::R8, { { 32, 32 },{ 16, 16 },{ 8, 8 } }, textureBufferHandle);
     }
 
 protected:
@@ -44,7 +50,11 @@ protected:
     const MemoryHandle dummyHandle = MemoryHandle(123u);
     const MemoryHandle dummyHandle2 = MemoryHandle(124u);
 
-    Scene scene;
+    RendererEventCollector rendererEventCollector;
+    RendererScenes         rendererScenes;
+    SceneLinksManager      sceneLinksManager;
+
+    RendererCachedScene scene;
     SceneAllocateHelper allocateHelper;
     StrictMock<RendererResourceManagerMock> resourceManager;
 };
@@ -97,6 +107,10 @@ TEST_F(APendingSceneResourcesUtils, appliesSceneResourceActions)
     actions.push_back(SceneResourceAction(dataBufferHandle.asMemoryHandle(), ESceneResourceAction_UpdateDataBuffer));
     actions.push_back(SceneResourceAction(textureBufferHandle.asMemoryHandle(), ESceneResourceAction_CreateTextureBuffer));
     actions.push_back(SceneResourceAction(textureBufferHandle.asMemoryHandle(), ESceneResourceAction_UpdateTextureBuffer));
+    const std::array<Byte, 4> data{0};
+    scene.updateTextureBuffer(textureBufferHandle, 0, 0, 0, 1, 1, data.data());
+    scene.updateTextureBuffer(textureBufferHandle, 1, 0, 0, 1, 1, data.data());
+    scene.updateTextureBuffer(textureBufferHandle, 2, 0, 0, 1, 1, data.data());
 
     InSequence seq;
     EXPECT_CALL(resourceManager, uploadRenderTargetBuffer(renderBufferHandle, sceneID, _));
@@ -106,7 +120,7 @@ TEST_F(APendingSceneResourcesUtils, appliesSceneResourceActions)
     EXPECT_CALL(resourceManager, uploadDataBuffer(dataBufferHandle, _, _, _, sceneID));
     EXPECT_CALL(resourceManager, updateDataBuffer(dataBufferHandle, _, _, sceneID));
     EXPECT_CALL(resourceManager, uploadTextureBuffer(textureBufferHandle, _, _, _, _, sceneID));
-    EXPECT_CALL(resourceManager, updateTextureBuffer(textureBufferHandle, _, _, _, _, _, _, sceneID)).Times(3u); // 3 mips
+    EXPECT_CALL(resourceManager, updateTextureBuffer(textureBufferHandle, _, _, _, _, sceneID)).Times(3u); // 3 mips
     PendingSceneResourcesUtils::ApplySceneResourceActions(actions, scene, resourceManager);
 }
 
@@ -136,7 +150,12 @@ TEST_F(APendingSceneResourcesUtils, getsSceneResourcesFromSceneAndApliesThem)
     size_t resSize = 999u;
     ResourceUtils::GetAllSceneResourcesFromScene(actions, scene, resSize);
     EXPECT_FALSE(actions.empty());
-    EXPECT_EQ(21u, resSize);
+    EXPECT_EQ(1344u, resSize);
+
+    static const std::array<Byte, 32*32*4> data{0};
+    scene.updateTextureBuffer(textureBufferHandle, 0u, 0u, 0u, 32, 32, data.data());
+    scene.updateTextureBuffer(textureBufferHandle, 1u, 0u, 0u, 16, 16, data.data());
+    scene.updateTextureBuffer(textureBufferHandle, 2u, 0u, 0u, 8, 8, data.data());
 
     InSequence seq;
     EXPECT_CALL(resourceManager, uploadRenderTargetBuffer(renderBufferHandle, sceneID, _));
@@ -147,9 +166,9 @@ TEST_F(APendingSceneResourcesUtils, getsSceneResourcesFromSceneAndApliesThem)
     EXPECT_CALL(resourceManager, updateDataBuffer(dataBufferHandle, _, _, sceneID));
 
     EXPECT_CALL(resourceManager, uploadTextureBuffer(textureBufferHandle, _, _, _, _, sceneID));
-    EXPECT_CALL(resourceManager, updateTextureBuffer(textureBufferHandle, 0u, 0u, 0u, 4u, 4u, _, sceneID));
-    EXPECT_CALL(resourceManager, updateTextureBuffer(textureBufferHandle, 1u, 0u, 0u, 2u, 2u, _, sceneID));
-    EXPECT_CALL(resourceManager, updateTextureBuffer(textureBufferHandle, 2u, 0u, 0u, 1u, 1u, _, sceneID));
+    EXPECT_CALL(resourceManager, updateTextureBuffer(textureBufferHandle, 0u, Quad{0u, 0u, 32, 32}, 32, _, sceneID));
+    EXPECT_CALL(resourceManager, updateTextureBuffer(textureBufferHandle, 1u, Quad{0u, 0u, 16, 16}, 16, _, sceneID));
+    EXPECT_CALL(resourceManager, updateTextureBuffer(textureBufferHandle, 2u, Quad{0u, 0u, 8, 8}, 8, _, sceneID));
     PendingSceneResourcesUtils::ApplySceneResourceActions(actions, scene, resourceManager);
 }
 
@@ -318,4 +337,40 @@ TEST_F(APendingSceneResourcesUtils, keepsDataBufferUpdateActionForNewlyCreatedAf
         EXPECT_EQ(bufferAction.update, actions.back().action);
     }
 }
+
+TEST_F(APendingSceneResourcesUtils, textureBufferPartialUpdate)
+{
+    SceneResourceActionVector actions;
+    actions.push_back(SceneResourceAction(textureBufferHandle.asMemoryHandle(), ESceneResourceAction_UpdateTextureBuffer));
+
+    const std::array<UInt8, 3 * 4> data{0};
+    scene.updateTextureBuffer(textureBufferHandle, 0, 1, 2, 3, 4, data.data());
+    EXPECT_CALL(resourceManager, updateTextureBuffer(textureBufferHandle, 0u, Quad{1, 2, 3, 4}, 32, _, sceneID));
+    PendingSceneResourcesUtils::ApplySceneResourceActions(actions, scene, resourceManager);
+}
+
+TEST_F(APendingSceneResourcesUtils, textureBufferCombinePartialUpdates)
+{
+    SceneResourceActionVector actions;
+    SceneResourceActionVector actionsNew;
+    actionsNew.push_back(SceneResourceAction(textureBufferHandle.asMemoryHandle(), ESceneResourceAction_UpdateTextureBuffer));
+    actionsNew.push_back(SceneResourceAction(textureBufferHandle.asMemoryHandle(), ESceneResourceAction_UpdateTextureBuffer));
+    actionsNew.push_back(SceneResourceAction(textureBufferHandle.asMemoryHandle(), ESceneResourceAction_UpdateTextureBuffer));
+    actionsNew.push_back(SceneResourceAction(textureBufferHandle.asMemoryHandle(), ESceneResourceAction_UpdateTextureBuffer));
+    actionsNew.push_back(SceneResourceAction(textureBufferHandle.asMemoryHandle(), ESceneResourceAction_UpdateTextureBuffer));
+
+    const std::array<UInt8, 5 * 4> data{0};
+    scene.updateTextureBuffer(textureBufferHandle, 0, 2, 2, 5, 4, data.data());
+    scene.updateTextureBuffer(textureBufferHandle, 1, 1, 1, 2, 2, data.data());
+    scene.updateTextureBuffer(textureBufferHandle, 0, 1, 1, 2, 2, data.data());
+    scene.updateTextureBuffer(textureBufferHandle, 0, 11, 12, 2, 2, data.data());
+    scene.updateTextureBuffer(textureBufferHandle, 1, 0, 0, 3, 4, data.data());
+    PendingSceneResourcesUtils::ConsolidateSceneResourceActions(actionsNew, actions);
+
+    EXPECT_CALL(resourceManager, updateTextureBuffer(textureBufferHandle, 0u, Quad{1, 1, 12, 13}, 32, _, sceneID));
+    EXPECT_CALL(resourceManager, updateTextureBuffer(textureBufferHandle, 1u, Quad{0, 0, 3, 4}, 16, _, sceneID));
+    EXPECT_EQ(actions.size(), 1u);
+    PendingSceneResourcesUtils::ApplySceneResourceActions(actions, scene, resourceManager);
+}
+
 }

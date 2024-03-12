@@ -17,6 +17,7 @@
 #include "WaylandIVISurfaceMock.h"
 #include "WaylandBufferMock.h"
 #include "EmbeddedCompositor_WaylandMock.h"
+#include "WaylandEGLExtensionProcs/WaylandEGLExtensionProcs.h"
 
 
 namespace ramses_internal
@@ -65,6 +66,7 @@ namespace ramses_internal
             {
                 EXPECT_CALL(expectation.first, isSharedMemoryBuffer()).WillOnce(Return(expectation.second));
             }
+            EXPECT_CALL(bufferMock, getResource()).Times(AtMost(1)).WillRepeatedly(ReturnRef(bufferResourceMock));
             EXPECT_CALL(m_iviSurface, getIviId()).Times(AtMost(1)); //in case an ivi-surface is set
 
             m_waylandSurface->surfaceAttach(m_client, bufferResourceMock, 0, 0);
@@ -409,10 +411,11 @@ namespace ramses_internal
     {
         createWaylandSurface();
 
+        WaylandEGLExtensionProcs eglExt(EGL_NO_DISPLAY);
         RendererLogContext logContext(ERendererLogLevelFlag_Details);
-        m_waylandSurface->logInfos(logContext);
+        m_waylandSurface->logInfos(logContext, eglExt);
 
-        EXPECT_STREQ(logContext.getStream().c_str(), "[ivi-surface-id: 4294967295; title: \"\"]\n");
+        EXPECT_STREQ(logContext.getStream().c_str(), "ivi-surface:4294967295; title: \"\"; client[pid:-1 uid:0 gid:0]; commitedFrames: 0\n");
 
         deleteWaylandSurface();
     }
@@ -424,11 +427,12 @@ namespace ramses_internal
 
         WaylandIviSurfaceId iviId(123);
 
+        WaylandEGLExtensionProcs eglExt(EGL_NO_DISPLAY);
         RendererLogContext logContext(ERendererLogLevelFlag_Details);
         EXPECT_CALL(m_iviSurface, getIviId()).WillOnce(Return(iviId));
-        m_waylandSurface->logInfos(logContext);
+        m_waylandSurface->logInfos(logContext, eglExt);
 
-        EXPECT_STREQ(logContext.getStream().c_str(), "[ivi-surface-id: 123; title: \"\"]\n");
+        EXPECT_STREQ(logContext.getStream().c_str(), "ivi-surface:123; title: \"\"; client[pid:-1 uid:0 gid:0]; commitedFrames: 0\n");
 
         deleteWaylandSurface(true);
     }
@@ -440,11 +444,12 @@ namespace ramses_internal
 
         String title("A Title");
 
+        WaylandEGLExtensionProcs eglExt(EGL_NO_DISPLAY);
         RendererLogContext logContext(ERendererLogLevelFlag_Details);
         EXPECT_CALL(m_shellSurface, getTitle()).WillOnce(ReturnRef(title));
-        m_waylandSurface->logInfos(logContext);
+        m_waylandSurface->logInfos(logContext, eglExt);
 
-        EXPECT_STREQ(logContext.getStream().c_str(), "[ivi-surface-id: 4294967295; title: \"A Title\"]\n");
+        EXPECT_STREQ(logContext.getStream().c_str(), "ivi-surface:4294967295; title: \"A Title\"; client[pid:-1 uid:0 gid:0]; commitedFrames: 0\n");
 
         deleteWaylandSurface(false, true);
     }
@@ -458,12 +463,13 @@ namespace ramses_internal
         WaylandIviSurfaceId iviId(123);
         String              title("A Title");
 
+        WaylandEGLExtensionProcs eglExt(EGL_NO_DISPLAY);
         RendererLogContext logContext(ERendererLogLevelFlag_Details);
         EXPECT_CALL(m_iviSurface, getIviId()).WillOnce(Return(iviId));
         EXPECT_CALL(m_shellSurface, getTitle()).WillOnce(ReturnRef(title));
-        m_waylandSurface->logInfos(logContext);
+        m_waylandSurface->logInfos(logContext, eglExt);
 
-        EXPECT_STREQ(logContext.getStream().c_str(), "[ivi-surface-id: 123; title: \"A Title\"]\n");
+        EXPECT_STREQ(logContext.getStream().c_str(), "ivi-surface:123; title: \"A Title\"; client[pid:-1 uid:0 gid:0]; commitedFrames: 0\n");
 
         deleteWaylandSurface(true, true);
     }

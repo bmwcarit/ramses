@@ -23,8 +23,8 @@ namespace ramses_internal
         MOCK_METHOD(void, setImplementation, (const void* implementation, void* data, IWaylandResourceDestroyFuncT destroyCallback), (override));
         MOCK_METHOD(void, addDestroyListener, (wl_listener* listener), (override));
         MOCK_METHOD(wl_resource*, getLowLevelHandle, (), (override));
-        MOCK_METHOD(int32_t, bufferGetSharedMemoryWidth, (), (const, override));
-        MOCK_METHOD(int32_t, bufferGetSharedMemoryHeight, (), (const, override));
+        MOCK_METHOD(int32_t, getWidth, (), (const, override));
+        MOCK_METHOD(int32_t, getHeight, (), (const, override));
         MOCK_METHOD(const void*, bufferGetSharedMemoryData, (), (const, override));
         MOCK_METHOD(void, bufferSendRelease, (), (override));
         MOCK_METHOD(void, destroy, (), (override));

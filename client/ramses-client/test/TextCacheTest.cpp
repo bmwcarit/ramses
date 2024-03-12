@@ -23,7 +23,7 @@
 
 namespace ramses
 {
-    bool operator==(const GlyphMetrics& a, const GlyphMetrics& b)
+    inline bool operator==(const GlyphMetrics& a, const GlyphMetrics& b)
     {
         return a.key == b.key
             && a.posX == b.posX

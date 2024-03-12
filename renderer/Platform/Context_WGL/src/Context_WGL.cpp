@@ -55,7 +55,7 @@ namespace ramses_internal
         if (0 == m_wglContextHandle)
         {
             uint32_t error = GetLastError();
-            LOG_FATAL(CONTEXT_RENDERER, "wglCreateContextAttribsARB failed, returned context handle is 0. GetLastError returned error code " << error);
+            LOG_ERROR(CONTEXT_RENDERER, "wglCreateContextAttribsARB failed, returned context handle is 0. GetLastError returned error code " << error);
             return false;
         }
 

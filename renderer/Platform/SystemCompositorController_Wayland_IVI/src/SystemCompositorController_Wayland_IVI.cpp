@@ -117,7 +117,7 @@ namespace ramses_internal
 
         // This log message is checked by test_testclient_system_compositor_controller.py, so be aware of changing it.
         LOG_INFO_F(CONTEXT_RENDERER, ([&](StringOutputStream& sos) {
-                    sos << "SystemCompositorController_Wayland_IVI::listIVISurfaces Known ivi-ids are:";
+                    sos << "SystemCompositorController_Wayland_IVI::listIVISurfaces Known ivi-surface ids:";
                     for (auto id : sortedList)
                     {
                         sos << ' ' << id;
@@ -136,8 +136,8 @@ namespace ramses_internal
     Bool SystemCompositorController_Wayland_IVI::setSurfaceVisibility(WaylandIviSurfaceId surfaceId, Bool visibility)
     {
         LOG_INFO(CONTEXT_RENDERER,
-                 "SystemCompositorController_Wayland_IVI::setSurfaceVisibility surfaceId: "
-                     << surfaceId.getValue() << " visibility: " << visibility);
+                 "SystemCompositorController_Wayland_IVI::setSurfaceVisibility "
+                     << surfaceId << " visibility: " << visibility);
 
         IVIControllerSurface& controllerSurface = getOrCreateControllerSurface(surfaceId);
         controllerSurface.setVisibility(visibility);
@@ -149,8 +149,7 @@ namespace ramses_internal
     Bool SystemCompositorController_Wayland_IVI::setSurfaceOpacity(WaylandIviSurfaceId surfaceId, Float opacity)
     {
         LOG_INFO(CONTEXT_RENDERER,
-                 "SystemCompositorController_Wayland_IVI::setOpacity surfaceId: " << surfaceId.getValue()
-                                                                                  << " opacity: " << opacity);
+                 "SystemCompositorController_Wayland_IVI::setOpacity " << surfaceId << " opacity: " << opacity);
 
         IVIControllerSurface& controllerSurface = getOrCreateControllerSurface(surfaceId);
 
@@ -166,8 +165,8 @@ namespace ramses_internal
         WaylandIviSurfaceId surfaceId, Int32 x, Int32 y, Int32 width, Int32 height)
     {
         LOG_INFO(CONTEXT_RENDERER,
-                 "SystemCompositorController_Wayland_IVI::setSurfaceDestinationRectangle surfaceId: "
-                     << surfaceId.getValue() << " position: (" << x << ", " << y << ", " << width << ", " << height
+                 "SystemCompositorController_Wayland_IVI::setSurfaceDestinationRectangle "
+                     << surfaceId << " position: (" << x << ", " << y << ", " << width << ", " << height
                      << ")");
 
         IVIControllerSurface& controllerSurface = getOrCreateControllerSurface(surfaceId);
@@ -225,8 +224,7 @@ namespace ramses_internal
                                                                    WaylandIviLayerId   layerId)
     {
         LOG_INFO(CONTEXT_RENDERER,
-                 "SystemCompositorController_Wayland_IVI::addSurfaceToLayer surfaceId: "
-                     << surfaceId.getValue() << "layerId: " << layerId.getValue());
+                 "SystemCompositorController_Wayland_IVI::addSurfaceToLayer " << surfaceId << " " << layerId);
 
         // Workaround for bug in compositor, create a new ivi_controller_layer here, otherwise the surface list of the
         // layer can get wrong, when another application has also changed it in the meantime.
@@ -234,9 +232,7 @@ namespace ramses_internal
         if (nullptr == controllerLayer)
         {
             LOG_ERROR(CONTEXT_RENDERER,
-                      "SystemCompositorController_Wayland_IVI::addSurfaceToLayer ivi_controller_layer_create failed, "
-                      "layer-id: "
-                          << layerId.getValue());
+                      "SystemCompositorController_Wayland_IVI::addSurfaceToLayer ivi_controller_layer_create failed, " << layerId);
             return false;
         }
 
@@ -264,8 +260,7 @@ namespace ramses_internal
                                                                         WaylandIviLayerId   layerId)
     {
         LOG_INFO(CONTEXT_RENDERER,
-                 "SystemCompositorController_Wayland_IVI::removeSurfaceFromLayer surfaceId: "
-                     << surfaceId.getValue() << " layerId: " << layerId.getValue());
+                 "SystemCompositorController_Wayland_IVI::removeSurfaceFromLayer " << surfaceId << " " << layerId);
 
         // Workaround for bug in compositor, create a new ivi_controller_layer here, otherwise the surface list of the
         // layer can get wrong, when another application has also changed it in the meantime.
@@ -274,8 +269,7 @@ namespace ramses_internal
         {
             LOG_ERROR(CONTEXT_RENDERER,
                       "SystemCompositorController_Wayland_IVI::removeSurfaceFromLayer ivi_controller_layer_create "
-                      "failed, layer-id: "
-                          << layerId.getValue());
+                      "failed " << layerId);
             return false;
         }
 
@@ -283,8 +277,7 @@ namespace ramses_internal
         if (nullptr == controllerSurface)
         {
             LOG_ERROR(CONTEXT_RENDERER,
-                      "SystemCompositorController_Wayland_IVI::removeSurfaceFromLayer Surface " << surfaceId.getValue()
-                                                                                                << " does not exist!");
+                      "SystemCompositorController_Wayland_IVI::removeSurfaceFromLayer " << surfaceId << " does not exist!");
             return false;
         }
 
@@ -309,15 +302,14 @@ namespace ramses_internal
     Bool SystemCompositorController_Wayland_IVI::destroySurface(WaylandIviSurfaceId surfaceId)
     {
         LOG_INFO(CONTEXT_RENDERER,
-                 "SystemCompositorController_Wayland_IVI::destroySurface surfaceId: " << surfaceId.getValue());
+                 "SystemCompositorController_Wayland_IVI::destroySurface " << surfaceId);
 
         IVIControllerSurface* controllerSurface = getControllerSurface(surfaceId);
 
         if (nullptr == controllerSurface)
         {
             LOG_ERROR(CONTEXT_RENDERER,
-                      "SystemCompositorController_Wayland_IVI::destroySurface Surface " << surfaceId.getValue()
-                                                                                        << " does not exist!");
+                      "SystemCompositorController_Wayland_IVI::destroySurface " << surfaceId << " does not exist!");
             return false;
         }
         controllerSurface->destroy();
@@ -330,8 +322,8 @@ namespace ramses_internal
     Bool SystemCompositorController_Wayland_IVI::setLayerVisibility(WaylandIviLayerId layerId, Bool visibility)
     {
         LOG_INFO(CONTEXT_RENDERER,
-                 "SystemCompositorController_Wayland_IVI::setLayerVisibility layerId: "
-                     << layerId.getValue() << " visibility: " << visibility);
+                 "SystemCompositorController_Wayland_IVI::setLayerVisibility "
+                     << layerId << " visibility: " << visibility);
 
         // Workaround for bug in compositor, create a new ivi_controller_layer here, otherwise the surface list of the
         // layer can get wrong, when another application has also changed it in the meantime.
@@ -340,8 +332,7 @@ namespace ramses_internal
         {
             LOG_ERROR(CONTEXT_RENDERER,
                       "SystemCompositorController_Wayland_IVI::setLayerVisibility ivi_controller_layer_create "
-                      "failed, layer-id: "
-                          << layerId.getValue());
+                      "failed, " << layerId);
             return false;
         }
 
@@ -396,7 +387,7 @@ namespace ramses_internal
 
             if (nullptr == nativeControllerSurface)
             {
-                LOG_ERROR(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::getOrCreateControllerSurface");
+                LOG_ERROR(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::getOrCreateControllerSurface " << iviId);
             }
 
             controllerSurface = new IVIControllerSurface(nativeControllerSurface, iviId, *this);
@@ -461,15 +452,16 @@ namespace ramses_internal
     {
         UNUSED(controller);
         UNUSED(id_layer);
-        LOG_INFO(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::iviControllerHandleLayer Detected ivi-layer: " << id_layer);
+        LOG_INFO(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::iviControllerHandleLayer Detected " << WaylandIviLayerId(id_layer));
     }
 
     void SystemCompositorController_Wayland_IVI::iviControllerHandleSurface(ivi_controller* controller, uint32_t iviID)
     {
         UNUSED(controller);
-        LOG_INFO(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::iviControllerHandleSurface Detected ivi-surface: " << iviID);
+        const WaylandIviSurfaceId surfaceId{iviID};
+        LOG_INFO(CONTEXT_RENDERER, "SystemCompositorController_Wayland_IVI::iviControllerHandleSurface Detected " << surfaceId);
 
-        getOrCreateControllerSurface(WaylandIviSurfaceId(iviID));
+        getOrCreateControllerSurface(surfaceId);
     }
 
     void SystemCompositorController_Wayland_IVI::RegistryHandleGlobalCallback(

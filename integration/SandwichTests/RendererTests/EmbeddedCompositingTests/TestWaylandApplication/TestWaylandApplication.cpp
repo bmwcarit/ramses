@@ -210,18 +210,18 @@ namespace ramses_internal
 
             bis >> surfaceId.getReference();
 
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message destroy ivi surface for surface with id " << surfaceId.getValue());
+            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message destroy ivi-surface for surface with id " << surfaceId.getValue());
             m_waylandHandler.destroyIVISurface(surfaceId);
             return true;
         }
         case ETestWaylandApplicationMessage::CreateIVISurface:
         {
             TestApplicationSurfaceId surfaceId;
-            UInt32 surfaceIviId;
+            WaylandIviSurfaceId surfaceIviId;
 
-            bis >> surfaceId.getReference() >> surfaceIviId;
+            bis >> surfaceId.getReference() >> surfaceIviId.getReference();
 
-            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message create ivi surface for surface with id " << surfaceId.getValue() << " ivi-id: " << surfaceIviId);
+            LOG_INFO(CONTEXT_RENDERER, "TestWaylandApplication::handleIncomingMessages(): received message create ivi-surface for surface with id " << surfaceId.getValue() << " " << surfaceIviId);
             m_waylandHandler.createIVISurface(surfaceId, surfaceIviId);
             return true;
         }
@@ -259,6 +259,20 @@ namespace ramses_internal
                      "with id "
                          << surfaceId.getValue());
             attachBuffer(surfaceId, commit);
+            return true;
+        }
+        case ETestWaylandApplicationMessage::ReAttachBuffer:
+        {
+            TestApplicationSurfaceId surfaceId;
+            uint32_t count;
+
+            bis >> surfaceId.getReference() >> count;
+
+            LOG_INFO(CONTEXT_RENDERER,
+                     "TestWaylandApplication::handleIncomingMessages(): received message reattach buffer "
+                     "with id "
+                         << surfaceId.getValue());
+            reattachBuffer(surfaceId, count);
             return true;
         }
         case ETestWaylandApplicationMessage::DestroyBuffers:
@@ -460,6 +474,18 @@ namespace ramses_internal
                  "TestWaylandApplication::attachBuffer: attaching buffer" << buffer->getId());
 
         m_waylandHandler.attachBuffer(surfaceId, *buffer, commit);
+    }
+
+    void TestWaylandApplication::reattachBuffer(TestApplicationSurfaceId surfaceId, uint32_t count)
+    {
+        uint32_t width;
+        uint32_t height;
+        m_waylandHandler.getWindowSize(surfaceId, width, height);
+        SHMBuffer* buffer = m_waylandHandler.getFreeSHMBuffer(width, height);
+        LOG_INFO(CONTEXT_RENDERER,
+                 "TestWaylandApplication::reattachBuffer: attaching buffer" << buffer->getId());
+
+        m_waylandHandler.reattachBuffer(surfaceId, *buffer, count);
     }
 
     void TestWaylandApplication::renderFrameToTwoSurfaces(TestApplicationSurfaceId surfaceId1, TestApplicationSurfaceId surfaceId2, bool useCallback)

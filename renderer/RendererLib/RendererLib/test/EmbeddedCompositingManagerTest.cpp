@@ -26,10 +26,10 @@ public:
         ThreadLocalLog::SetPrefix(1);
     }
 
-    void expectStreamTexUpload(WaylandIviSurfaceId sourceId, DeviceResourceHandle textureDeviceHandle = compositedTextureDeviceHandle)
+    void expectStreamTexUpload(WaylandIviSurfaceId iviSurface, DeviceResourceHandle textureDeviceHandle = compositedTextureDeviceHandle)
     {
         EXPECT_CALL(deviceMock, uploadStreamTexture2D(_, _, _, _, _, _)).WillOnce(Return(textureDeviceHandle));
-        EXPECT_CALL(embeddedCompositorMock, isContentAvailableForStreamTexture(sourceId)).WillOnce(Return(false));
+        EXPECT_CALL(embeddedCompositorMock, isContentAvailableForStreamTexture(iviSurface)).WillOnce(Return(false));
     }
 
     void expectStreamTexUnload(DeviceResourceHandle textureDeviceHandle = compositedTextureDeviceHandle)
@@ -37,18 +37,18 @@ public:
         EXPECT_CALL(deviceMock, deleteTexture(textureDeviceHandle));
     }
 
-    void addStreamReference(WaylandIviSurfaceId sourceId, DeviceResourceHandle textureDeviceHandle = compositedTextureDeviceHandle, bool expectTextureUpload = true)
+    void addStreamReference(WaylandIviSurfaceId iviSurface, DeviceResourceHandle textureDeviceHandle = compositedTextureDeviceHandle, bool expectTextureUpload = true)
     {
         if (expectTextureUpload)
-            expectStreamTexUpload(sourceId, textureDeviceHandle);
-        embeddedCompositingManager.refStream(sourceId);
+            expectStreamTexUpload(iviSurface, textureDeviceHandle);
+        embeddedCompositingManager.refStream(iviSurface);
     }
 
-    void removeStreamReference(WaylandIviSurfaceId sourceId, DeviceResourceHandle textureDeviceHandle = compositedTextureDeviceHandle, bool expectTextureUnload = true)
+    void removeStreamReference(WaylandIviSurfaceId iviSurface, DeviceResourceHandle textureDeviceHandle = compositedTextureDeviceHandle, bool expectTextureUnload = true)
     {
         if (expectTextureUnload)
             expectStreamTexUnload(textureDeviceHandle);
-        embeddedCompositingManager.unrefStream(sourceId);
+        embeddedCompositingManager.unrefStream(iviSurface);
     }
 
     void expectStreamTextureChangedState(const WaylandIviSurfaceIdVector& expectedStreamsWithStateChange, const WaylandIviSurfaceIdVector& expectedNewStreams, const WaylandIviSurfaceIdVector& expectedObsoleteStreams)

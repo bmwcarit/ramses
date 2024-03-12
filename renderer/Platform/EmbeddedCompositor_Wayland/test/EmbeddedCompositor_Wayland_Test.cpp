@@ -16,6 +16,7 @@
 #include "WaylandUtilities/UnixDomainSocket.h"
 #include "WaylandUtilities/WaylandEnvironmentUtils.h"
 #include "PlatformAbstraction/PlatformThread.h"
+#include "WaylandEGLExtensionProcs/WaylandEGLExtensionProcs.h"
 #include "Collections/StringOutputStream.h"
 #include "WaylandSurfaceMock.h"
 #include "WaylandBufferMock.h"
@@ -25,6 +26,7 @@
 #include "EmbeddedCompositor_Wayland/WaylandBuffer.h"
 #include "wayland-client.h"
 #include "Utils/ThreadLocalLog.h"
+#include "Context_EGL/Context_EGL.h"
 #include <pwd.h>
 #include <grp.h>
 #include <atomic>
@@ -191,7 +193,7 @@ namespace ramses_internal
             return client.couldConnectToEmbeddedCompositor();
         }
 
-        ContextMock                                 context;
+        Context_EGL                                 context = {nullptr, nullptr, nullptr, nullptr, nullptr, 0};
         std::unique_ptr<EmbeddedCompositor_Wayland> embeddedCompositor;
         UnixDomainSocket                            socket  = UnixDomainSocket("testingSocket", m_initialValueOfXdgRuntimeDir);
 
@@ -399,6 +401,96 @@ namespace ramses_internal
         EXPECT_FALSE(embeddedCompositor->hasUpdatedStreamTextureSources());
     }
 
+    TEST_F(AEmbeddedCompositor_Wayland, QuickReconnect)
+    {
+        EXPECT_TRUE(init("wayland-10"));
+
+        const WaylandIviSurfaceId surfaceIVIId(123);
+
+        embeddedCompositor->addToUpdatedStreamTextureSourceIds(surfaceIVIId);
+
+        auto newStreams = embeddedCompositor->dispatchNewStreamTextureSourceIds();
+        auto obsoleteStreams = embeddedCompositor->dispatchObsoleteStreamTextureSourceIds();
+        EXPECT_EQ(newStreams.size(), 1);
+        EXPECT_EQ(obsoleteStreams.size(), 0);
+
+        for (int i = 1; i < 5; ++i)
+        {
+            int count = i;
+            while (count--)
+            {
+                // quick "reconnect"
+                embeddedCompositor->removeFromUpdatedStreamTextureSourceIds(surfaceIVIId);
+                embeddedCompositor->addToUpdatedStreamTextureSourceIds(surfaceIVIId);
+            }
+
+            // both "newStreams" and "obsoleteStreams" contain the surfaceID
+            // must be handled on client side
+            // see RendererSceneUpdater::handleECStreamAvailabilityChanges()
+            newStreams = embeddedCompositor->dispatchNewStreamTextureSourceIds();
+            obsoleteStreams = embeddedCompositor->dispatchObsoleteStreamTextureSourceIds();
+            EXPECT_EQ(newStreams.size(), 1) << "iteration: " << i;
+            EXPECT_EQ(obsoleteStreams.size(), 1) << "iteration: " << i;
+        }
+    }
+
+    TEST_F(AEmbeddedCompositor_Wayland, QuickConnectAndDisconnect)
+    {
+        EXPECT_TRUE(init("wayland-10"));
+
+        const WaylandIviSurfaceId surfaceIVIId(123);
+
+        for (int i = 1; i < 5; ++i)
+        {
+            int count = i;
+            while (count--)
+            {
+                // connect and disconnect again
+                embeddedCompositor->addToUpdatedStreamTextureSourceIds(surfaceIVIId);
+                embeddedCompositor->removeFromUpdatedStreamTextureSourceIds(surfaceIVIId);
+            }
+
+            auto newStreams = embeddedCompositor->dispatchNewStreamTextureSourceIds();
+            auto obsoleteStreams = embeddedCompositor->dispatchObsoleteStreamTextureSourceIds();
+            EXPECT_TRUE(newStreams.empty()) << "iteration: " << i;
+            EXPECT_TRUE(obsoleteStreams.empty()) << "iteration: " << i;
+        }
+    }
+
+    TEST_F(AEmbeddedCompositor_Wayland, QuickReconnectAndFinallyDisconnect)
+    {
+        EXPECT_TRUE(init("wayland-10"));
+
+        const WaylandIviSurfaceId surfaceIVIId(123);
+
+        embeddedCompositor->addToUpdatedStreamTextureSourceIds(surfaceIVIId);
+
+        auto newStreams = embeddedCompositor->dispatchNewStreamTextureSourceIds();
+        auto obsoleteStreams = embeddedCompositor->dispatchObsoleteStreamTextureSourceIds();
+        EXPECT_EQ(newStreams.size(), 1);
+        EXPECT_EQ(obsoleteStreams.size(), 0);
+
+        for (int i = 1; i < 5; ++i)
+        {
+            int count = i;
+            while (count--)
+            {
+                embeddedCompositor->removeFromUpdatedStreamTextureSourceIds(surfaceIVIId);
+                embeddedCompositor->addToUpdatedStreamTextureSourceIds(surfaceIVIId);
+            }
+            embeddedCompositor->removeFromUpdatedStreamTextureSourceIds(surfaceIVIId);
+
+            newStreams = embeddedCompositor->dispatchNewStreamTextureSourceIds();
+            obsoleteStreams = embeddedCompositor->dispatchObsoleteStreamTextureSourceIds();
+            EXPECT_EQ(newStreams.size(), 0) << "iteration: " << i;
+            EXPECT_EQ(obsoleteStreams.size(), 1) << "iteration: " << i;
+
+            embeddedCompositor->addToUpdatedStreamTextureSourceIds(surfaceIVIId);
+            newStreams = embeddedCompositor->dispatchNewStreamTextureSourceIds();
+            EXPECT_EQ(newStreams.size(), 1) << "iteration: " << i;
+        }
+    }
+
     TEST_F(AEmbeddedCompositor_Wayland, CanDispatchUpdatedStreamTextureSourceIds)
     {
         EXPECT_TRUE(init("wayland-10"));
@@ -561,10 +653,10 @@ namespace ramses_internal
 
         RendererLogContext logContext(ERendererLogLevelFlag_Details);
 
-        EXPECT_CALL(surface, logInfos(Ref(logContext))).WillOnce(LogSomeSurfaceLogToContext());
+        EXPECT_CALL(surface, logInfos(Ref(logContext), _)).WillOnce(LogSomeSurfaceLogToContext());
         embeddedCompositor->logInfos(logContext);
 
-        EXPECT_STREQ(logContext.getStream().c_str(), "1 connected wayland client(s)\n  SomeSurfaceLog");
+        EXPECT_STREQ(logContext.getStream().c_str(), "1 wayland surface(s)\n  SomeSurfaceLog0 wayland buffer(s)\n0 wayland region(s) - [not supported]\n");
     }
 
     TEST_F(AEmbeddedCompositor_Wayland, getOrCreateBufferCreatesNewBuffer)

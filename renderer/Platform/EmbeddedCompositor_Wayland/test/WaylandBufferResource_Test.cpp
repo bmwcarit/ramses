@@ -223,11 +223,11 @@ namespace ramses_internal
             AWaylandBufferResource* awaylandBufferResource = static_cast<AWaylandBufferResource*>(wl_resource_get_user_data(surfaceResource));
 
             WaylandBufferResource waylandBufferResource(bufferResource);
-            int32_t width = waylandBufferResource.bufferGetSharedMemoryWidth();
+            int32_t width = waylandBufferResource.getWidth();
 
             EXPECT_EQ(10, width);
 
-            int32_t height = waylandBufferResource.bufferGetSharedMemoryHeight();
+            int32_t height = waylandBufferResource.getHeight();
             EXPECT_EQ(20, height);
 
             const uint8_t* data = static_cast<const uint8_t*>(waylandBufferResource.bufferGetSharedMemoryData());
@@ -319,7 +319,7 @@ namespace ramses_internal
         wl_resource*    resource = wl_resource_create(m_client, &wl_buffer_interface, 1, 0);
         WaylandBufferResource waylandBufferResource(resource);
 
-        EXPECT_EQ(waylandBufferResource.bufferGetSharedMemoryWidth(), 0);
+        EXPECT_EQ(waylandBufferResource.getWidth(), 0);
         waylandBufferResource.destroy();
     }
 
@@ -332,7 +332,7 @@ namespace ramses_internal
         wl_resource*    resource = wl_resource_create(m_client, &wl_buffer_interface, 1, 0);
         WaylandBufferResource waylandBufferResource(resource);
 
-        EXPECT_EQ(waylandBufferResource.bufferGetSharedMemoryHeight(), 0);
+        EXPECT_EQ(waylandBufferResource.getHeight(), 0);
         waylandBufferResource.destroy();
     }
 

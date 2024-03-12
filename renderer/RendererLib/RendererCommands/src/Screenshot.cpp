@@ -8,13 +8,14 @@
 
 #include "RendererCommands/Screenshot.h"
 #include "RendererLib/RendererCommandBuffer.h"
+#include "Utils/LogMacros.h"
 
 namespace ramses_internal
 {
     Screenshot::Screenshot(RendererCommandBuffer& rendererCommandBuffer)
         : m_rendererCommandBuffer(rendererCommandBuffer)
     {
-        description = "save a screenshot";
+        description = "saves a screenshot. Options:[-filename FILENAME -displayId DISPLAYID -sendViaDLT -ob BUFFERID]";
         registerKeyword("p");
         registerKeyword("screenshot");
     }
@@ -25,13 +26,15 @@ namespace ramses_internal
         {
             EOption_None = 0,
             EOption_Filename,
-            EOption_Display
+            EOption_Display,
+            EOption_OffscreenBuffer,
         };
 
         EOption lastOption = EOption_None;
 
         std::string         filename = "unnamed.png";
         DisplayHandle       display = DisplayHandle(0);
+        OffscreenBufferHandle offscreenBuffer;
         Bool                sendViaDLT = false;
 
         for (const auto& arg : input)
@@ -48,6 +51,10 @@ namespace ramses_internal
             {
                 sendViaDLT = true;
             }
+            else if (arg == "-ob")
+            {
+                lastOption = EOption_OffscreenBuffer;
+            }
             else
             {
                 switch( lastOption )
@@ -60,21 +67,22 @@ namespace ramses_internal
                     filename   = arg;
                     lastOption = EOption_None;
                     break;
-
+                case EOption_OffscreenBuffer:
+                    offscreenBuffer = OffscreenBufferHandle(atoi(arg.c_str()));
+                    lastOption = EOption_None;
+                    break;
                 case EOption_None:
                     if( contains_c(m_keywords, arg) ) // check whether a keyword is the current argument
                     {
                         continue;
                     }
-                    return false;
-
-                default:
+                    LOG_ERROR_P(CONTEXT_RAMSH, "Unknown option: {}", arg);
                     return false;
                 }
             }
         }
 
-        m_rendererCommandBuffer.enqueueCommand(RendererCommand::ReadPixels{ display, {}, 0u, 0u, 0u, 0u, true, sendViaDLT, String(std::move(filename)) });
+        m_rendererCommandBuffer.enqueueCommand(RendererCommand::ReadPixels{ display, offscreenBuffer, 0u, 0u, 0u, 0u, true, sendViaDLT, String(std::move(filename)) });
 
         return true;
     }

@@ -131,6 +131,8 @@ public:
             m_sceneControl->setSceneMapping(scene->getSceneId(), display);
         }
         m_sceneControl->setSceneMapping(guiSceneId, display);
+        // inspection gui must be drawn on top
+        m_sceneControl->setSceneDisplayBufferAssignment(guiSceneId, ramses::displayBufferId_t(), 255);
         if (scene)
         {
             m_sceneControl->setSceneState(scene->getSceneId(), ramses::RendererSceneState::Rendered);

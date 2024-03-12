@@ -14,6 +14,8 @@
 #include "RendererLib/DisplayConfig.h"
 #include "Context_EGL/Context_EGL.h"
 #include "Device_GL/Device_GL.h"
+#include "Utils/ThreadLocalLog.h"
+#include "absl/types/optional.h"
 
 #ifdef DEVICE_EGL_EXTENSION_SUPPORTED
 #include "Device_EGL_Extension/Device_EGL_Extension.h"
@@ -34,14 +36,34 @@ namespace ramses_internal
 
         virtual bool createContext(const DisplayConfig& displayConfig) override
         {
-            m_context = createContextInternal(displayConfig, nullptr);
+            if (m_glesMinorVersion.has_value())
+            {
+                m_context = createContextInternal(displayConfig, nullptr, *m_glesMinorVersion);
+            }
+            else
+            {
+                const std::array<EGLint, 3> minorVersions = {2, 1, 0};
+                for (auto minor : minorVersions)
+                {
+                    m_context = createContextInternal(displayConfig, nullptr, minor);
+                    if (m_context)
+                    {
+                        m_glesMinorVersion = minor;
+                        break;
+                    }
+                    LOG_ERROR_RP(
+                        CONTEXT_RENDERER, "Context_EGL::init(): Failed to create GLES 3.{} context. Ramses will crash if any scene uses GLES 3.{} features.", minor, minor);
+                }
+            }
+
             return m_context != nullptr;
         }
 
         virtual bool createContextUploading() override
         {
             assert(m_context);
-            m_contextUploading = createContextInternal(DisplayConfig{}, static_cast<Context_EGL*>(m_context.get()));
+            assert(m_glesMinorVersion.has_value());
+            m_contextUploading = createContextInternal(DisplayConfig{}, static_cast<Context_EGL*>(m_context.get()), *m_glesMinorVersion);
             return m_contextUploading != nullptr;
         }
 
@@ -81,7 +103,7 @@ namespace ramses_internal
         virtual uint32_t getSwapInterval() const = 0;
 
     private:
-        std::unique_ptr<IContext> createContextInternal(const DisplayConfig& displayConfig, Context_EGL* sharedContext)
+        std::unique_ptr<IContext> createContextInternal(const DisplayConfig& displayConfig, Context_EGL* sharedContext, EGLint minorVersion)
         {
             assert(m_window);
             WindowT* platformWindow = static_cast<WindowT*>(m_window.get());
@@ -91,7 +113,7 @@ namespace ramses_internal
             {
                 swapInterval = getSwapInterval();
             }
-            const std::vector<EGLint> contextAttributes = GetContextAttributes();
+            const std::vector<EGLint> contextAttributes = GetContextAttributes(minorVersion);
             const std::vector<EGLint> surfaceAttributes = GetSurfaceAttributes(platformWindow->getMSAASampleCount(), displayConfig.getDepthStencilBufferType());
 
             auto context = std::make_unique<Context_EGL>(
@@ -104,7 +126,10 @@ namespace ramses_internal
                 sharedContext);
 
             if (context->init())
+            {
+                LOG_INFO_RP(CONTEXT_RENDERER, "Context_EGL::init(): EGL 3.{} context creation succeeded (swap interval:{})", minorVersion, swapInterval);
                 return context;
+            }
 
             return {};
         }
@@ -118,12 +143,13 @@ namespace ramses_internal
             return {};
         }
 
-        static std::vector<EGLint> GetContextAttributes()
+        static std::vector<EGLint> GetContextAttributes(EGLint minorVersion)
         {
             return {
                 EGL_CONTEXT_CLIENT_VERSION,
                 3,
-
+                EGL_CONTEXT_MINOR_VERSION,
+                minorVersion,
                 EGL_NONE
             };
         }
@@ -190,6 +216,8 @@ namespace ramses_internal
                 EGL_NONE
             };
         }
+
+        absl::optional<EGLint> m_glesMinorVersion;
     };
 }
 

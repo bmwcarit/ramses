@@ -22,6 +22,16 @@ namespace ramses_internal
     using WaylandIviSurfaceIdVector = std::vector<WaylandIviSurfaceId>;
 }
 
-MAKE_STRONGLYTYPEDVALUE_PRINTABLE(ramses_internal::WaylandIviSurfaceId)
+template <>
+struct fmt::formatter<ramses_internal::WaylandIviSurfaceId> {
+    template<typename ParseContext>
+    constexpr auto parse(ParseContext& ctx)  {
+        return ctx.begin();
+    }
+    template<typename FormatContext>
+    constexpr auto format(const ramses_internal::WaylandIviSurfaceId& value, FormatContext& ctx) {
+        return fmt::format_to(ctx.out(), "ivi-surface:{}", value.getValue());
+    }
+};
 
 #endif

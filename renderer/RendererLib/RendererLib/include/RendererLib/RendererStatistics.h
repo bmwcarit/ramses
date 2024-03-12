@@ -38,13 +38,13 @@ namespace ramses_internal
 
         void resourceUploaded(UInt byteSize);
         void sceneResourceUploaded(SceneId sceneId, UInt byteSize);
-        void streamTextureUpdated(WaylandIviSurfaceId sourceId, UInt numUpdates);
+        void streamTextureUpdated(WaylandIviSurfaceId iviSurface, UInt numUpdates);
         void shaderCompiled(std::chrono::microseconds microsecondsUsed, const String& name, SceneId sceneid);
         void setVRAMUsage(uint64_t totalUploaded, uint64_t gpuCacheSize);
 
         void untrackScene(SceneId sceneId);
         void untrackOffscreenBuffer(DeviceResourceHandle offscreenBuffer);
-        void untrackStreamTexture(WaylandIviSurfaceId sourceId);
+        void untrackStreamTexture(WaylandIviSurfaceId iviSurface);
 
         void addExpirationOffset(SceneId sceneId, int64_t expirationOffset);
 

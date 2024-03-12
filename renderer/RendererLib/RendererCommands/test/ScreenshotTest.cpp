@@ -25,10 +25,10 @@ public:
     }
 
 protected:
-    void expectScreenshotCommand(const std::string& filename, const DisplayHandle& displayHandle = DisplayHandle(0u), bool autoSize = true)
+    void expectScreenshotCommand(const std::string& filename, const DisplayHandle& displayHandle = DisplayHandle(0u), bool autoSize = true, const OffscreenBufferHandle& obHandle = OffscreenBufferHandle::Invalid())
     {
         StrictMock<RendererCommandVisitorMock> cmdVisitor;
-        EXPECT_CALL(cmdVisitor, handleReadPixels(displayHandle, OffscreenBufferHandle::Invalid(), _, _, _, _, autoSize, String(filename)));
+        EXPECT_CALL(cmdVisitor, handleReadPixels(displayHandle, obHandle, _, _, _, _, autoSize, String(filename)));
         cmdVisitor.visit(m_rendererCommandBuffer);
     }
 
@@ -50,6 +50,13 @@ TEST_F(AScreenshot, executesScreenshotWithFilename)
     expectScreenshotCommand(filename);
 }
 
+TEST_F(AScreenshot, executesScreenshotWithOffscreenBuffer)
+{
+    const std::string filename("someFilename.png");
+    EXPECT_TRUE(m_cmd.executeInput({"-filename", filename, "-ob", "42"}));
+    expectScreenshotCommand(filename, DisplayHandle(0), true, OffscreenBufferHandle(42));
+}
+
 TEST_F(AScreenshot, executesScreenshotWithDisplay)
 {
     const DisplayHandle displayHandle(23u);
@@ -60,6 +67,7 @@ TEST_F(AScreenshot, executesScreenshotWithDisplay)
 TEST_F(AScreenshot, brokenArgumentsAreNotExecuted)
 {
     EXPECT_FALSE(m_cmd.executeInput(std::vector<std::string>{"foo"}));
+    EXPECT_FALSE(m_cmd.executeInput(std::vector<std::string>{"-foo"}));
     EXPECT_FALSE(m_cmd.executeInput(std::vector<std::string>{"-filename", "firstfile.png", "secondfile.png"}));
     EXPECT_FALSE(m_cmd.executeInput(std::vector<std::string>{"-displayId", "0", "1", "2"}));
 }

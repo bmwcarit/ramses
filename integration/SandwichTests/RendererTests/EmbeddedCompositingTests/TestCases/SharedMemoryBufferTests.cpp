@@ -6,12 +6,38 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
+#include "ramses-renderer-api/IRendererEventHandler.h"
+#include "ramses-renderer-api/IRendererSceneControlEventHandler.h"
 #include "SharedMemoryBufferTests.h"
 #include "TestScenes/EmbeddedCompositorScene.h"
 #include "Utils/LogMacros.h"
 
+#include <unordered_set>
+
 namespace ramses_internal
 {
+    class StreamAvailabilityHandler : public ramses::RendererEventHandlerEmpty, public ramses::RendererSceneControlEventHandlerEmpty
+    {
+    public:
+        void streamAvailabilityChanged(ramses::waylandIviSurfaceId_t streamId, bool available) override
+        {
+            ++callbacks;
+            if (available)
+            {
+                LOG_INFO_P(CONTEXT_RENDERER, "stream available: {}", streamId.getValue());
+                availableStreams.insert(streamId);
+            }
+            else
+            {
+                LOG_INFO_P(CONTEXT_RENDERER, "stream unavailable: {}", streamId.getValue());
+                availableStreams.erase(streamId);
+            }
+        }
+
+        std::unordered_set<ramses::waylandIviSurfaceId_t> availableStreams;
+        int callbacks = 0;
+    };
+
     void SharedMemoryBufferTests::setUpEmbeddedCompositingTestCases(EmbeddedCompositingTestsFramework& testFramework)
     {
         ramses::DisplayConfig displayConfig = RendererTestUtils::CreateTestDisplayConfig(0u, true);
@@ -23,6 +49,7 @@ namespace ramses_internal
         testFramework.createTestCase(ShowFallbackTextureWhenBufferIsDetachedFromSurface, *this, "ShowFallbackTextureWhenBufferIsDetachedFromSurface").m_displayConfigs.push_back(displayConfig);
         testFramework.createTestCase(ShowFallbackTextureWhenBufferIsDetachedFromSurfaceAndLastFrameNotUsedForRendering, *this, "ShowFallbackTextureWhenBufferIsDetachedFromSurfaceAndLastFrameNotUsedForRendering").m_displayConfigs.push_back(displayConfig);
         testFramework.createTestCase(ClientAttachesAndDestroysBufferWithoutCommit, *this, "ClientAttachesAndDestroysBufferWithoutCommit").m_displayConfigs.push_back(displayConfig);
+        testFramework.createTestCase(QuickBufferReAttach, *this, "QuickBufferReAttach").m_displayConfigs.push_back(displayConfig);
         testFramework.createTestCase(SwitchBetweenBufferTypes_ShmThenEgl, *this, "SwitchBetweenBufferTypes_ShmThenEgl").m_displayConfigs.push_back(displayConfig);
         testFramework.createTestCase(SwitchBetweenBufferTypes_EglThenShmThenEgl, *this, "SwitchBetweenBufferTypes_EglThenShmThenEgl").m_displayConfigs.push_back(displayConfig);
         testFramework.createTestCase(SwitchBetweenBufferTypes_EglThenShmThenDestroyShmThenEgl, *this, "SwitchBetweenBufferTypes_EglThenShmThenDestroyShmThenEgl").m_displayConfigs.push_back(displayConfig);
@@ -73,6 +100,39 @@ namespace ramses_internal
                 testResultValue &= renderAndCheckOneSharedMemoryFrame(testFramework, surfaceId, ETriangleColor::White, streamTextureSourceId, frameCounter, "EC_ShMemWhiteTriangle");
             }
 
+            testFramework.stopTestApplicationAndWaitUntilDisconnected();
+            break;
+        }
+        case QuickBufferReAttach:
+        {
+            testFramework.startTestApplicationAndWaitUntilConnected();
+            testFramework.createAndShowScene<EmbeddedCompositorScene>(EmbeddedCompositorScene::SINGLE_STREAM_TEXTURE, DisplayWidth, DisplayHeight);
+            const TestApplicationSurfaceId surfaceId = testFramework.sendCreateSurfaceWithoutEGLContextToTestApplication(255, 255);
+            StreamAvailabilityHandler handler;
+            testFramework.sendCreateIVISurfaceToTestApplication(surfaceId, streamTextureSourceId);
+            testFramework.sendRenderOneFrameToSharedMemoryBufferToTestApplication(surfaceId);
+            testFramework.waitForContentOnStreamTexture(streamTextureSourceId);
+            testFramework.renderOneFrame();
+            testFramework.dispatchRendererEvents(handler, handler);
+            if (handler.availableStreams.empty())
+            {
+                LOG_ERROR_P(CONTEXT_RENDERER, "Test surface {} is unavailable", surfaceId.getValue());
+                testResultValue = false;
+            }
+            else
+            {
+                const auto iviSurface = *handler.availableStreams.begin();
+                const auto callbacks = handler.callbacks;
+                testFramework.sendReAttachBufferToTestApplication(surfaceId, 1);
+                testFramework.waitUntilNumberOfCommitedFramesForIviSurface(streamTextureSourceId, 3);
+                testFramework.renderOneFrame();
+                testFramework.dispatchRendererEvents(handler, handler);
+                if (handler.availableStreams.count(iviSurface) != 1 || handler.callbacks == callbacks)
+                {
+                    LOG_ERROR_P(CONTEXT_RENDERER, "Stream surface {} is unavailable after reattach", surfaceId.getValue());
+                    testResultValue = false;
+                }
+            }
             testFramework.stopTestApplicationAndWaitUntilDisconnected();
             break;
         }

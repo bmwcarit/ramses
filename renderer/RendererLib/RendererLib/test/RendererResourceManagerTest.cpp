@@ -456,8 +456,8 @@ TEST_F(ARendererResourceManager, canUploadAndUpdateAndUnloadTextureBuffer_WithOn
 
     const Byte dummyTexture[10] = {};
     EXPECT_CALL(platform.renderBackendMock.deviceMock, bindTexture(DeviceMock::FakeTextureDeviceHandle));
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadTextureData(DeviceMock::FakeTextureDeviceHandle, 0u, 2u, 3u, 0u, 4u, 5u, 1u, dummyTexture, 0u));
-    resourceManager.updateTextureBuffer(textureBuffer, 0u, 2u, 3u, 4u, 5u, dummyTexture, fakeSceneId);
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadTextureData(DeviceMock::FakeTextureDeviceHandle, 0u, 2u, 3u, 0u, 4u, 5u, 1u, dummyTexture, 0u, 10u));
+    resourceManager.updateTextureBuffer(textureBuffer, 0u, Quad{2u, 3u, 4u, 5u}, 10u, dummyTexture, fakeSceneId);
 
     EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteTexture(DeviceMock::FakeTextureDeviceHandle));
     resourceManager.unloadTextureBuffer(textureBuffer, fakeSceneId);
@@ -475,8 +475,8 @@ TEST_F(ARendererResourceManager, canUploadAndUpdateAndUnloadTextureBuffer_WithSe
 
     const Byte dummyTexture[10] = {};
     EXPECT_CALL(platform.renderBackendMock.deviceMock, bindTexture(DeviceMock::FakeTextureDeviceHandle));
-    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadTextureData(DeviceMock::FakeTextureDeviceHandle, 1u, 2u, 3u, 0u, 4u, 5u, 1u, _, 0u));
-    resourceManager.updateTextureBuffer(textureBuffer, 1u, 2u, 3u, 4u, 5u, dummyTexture, fakeSceneId);
+    EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadTextureData(DeviceMock::FakeTextureDeviceHandle, 1u, 2u, 3u, 0u, 4u, 5u, 1u, _, 0u, 10u));
+    resourceManager.updateTextureBuffer(textureBuffer, 1u, Quad{2u, 3u, 4u, 5u}, 10u, dummyTexture, fakeSceneId);
 
     EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteTexture(DeviceMock::FakeTextureDeviceHandle));
     resourceManager.unloadTextureBuffer(textureBuffer, fakeSceneId);

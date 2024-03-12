@@ -22,6 +22,10 @@ namespace ramses_internal
         VectorBinaryOutputStream os(vec);
         EXPECT_TRUE(vec.empty());
         EXPECT_EQ(0u, os.asSpan().size());
+
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, os.getPos(position));
+        EXPECT_EQ(0u, position);
     }
 
     TEST_F(AVectorBinaryOutputStream, canInitializePrefilled)
@@ -30,6 +34,10 @@ namespace ramses_internal
         VectorBinaryOutputStream os(vec);
         EXPECT_EQ(3u, vec.size());
         EXPECT_EQ(0u, os.asSpan().size());
+
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, os.getPos(position));
+        EXPECT_EQ(0u, position);
     }
 
     TEST_F(AVectorBinaryOutputStream, canWriteTo)
@@ -42,6 +50,10 @@ namespace ramses_internal
         EXPECT_EQ(4u, os.asSpan()[0]);
         EXPECT_EQ(3u, os.asSpan()[1]);
         EXPECT_EQ(std::vector<Byte>({4, 3}), vec);
+
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, os.getPos(position));
+        EXPECT_EQ(2u, position);
     }
 
     TEST_F(AVectorBinaryOutputStream, canWriteToPrefilled)
@@ -55,5 +67,9 @@ namespace ramses_internal
         EXPECT_EQ(5u, os.asSpan()[0]);
         EXPECT_EQ(4u, os.asSpan()[1]);
         EXPECT_EQ(std::vector<Byte>({1, 2, 3, 5, 4}), vec);
+
+        size_t position = std::numeric_limits<size_t>::max();
+        EXPECT_EQ(EStatus::Ok, os.getPos(position));
+        EXPECT_EQ(2u, position);
     }
 }

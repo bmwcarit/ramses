@@ -119,6 +119,7 @@
 #include "fmt/format.h"
 
 #include <array>
+#include "Utils/BinaryOutputStream.h"
 
 namespace ramses
 {
@@ -2098,6 +2099,37 @@ namespace ramses
         return serialize(outputStream, serializationContext);
     }
 
+    status_t SceneImpl::serialize(std::vector<ramses_internal::Byte>& outputBuffer, bool compress) const
+    {
+        ramses_internal::BinaryOutputStream outputStream;
+        ramses_internal::RamsesVersion::WriteToStream(outputStream, ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING, ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH);
+
+        const auto headerOffset = outputStream.getSize();
+
+        // reserve space for offset to SceneObjects and LL-Objects
+        outputStream << static_cast<uint64_t>(0);
+        outputStream << static_cast<uint64_t>(0);
+        const uint64_t offsetSceneObjectsStart = outputStream.getSize();
+        const status_t status = writeSceneObjectsToStream(outputStream);
+
+        const auto offsetLLResourcesStart = outputStream.getSize();
+        ResourceObjects resources;
+        resources.reserve(m_resources.size());
+        for (auto const& res : m_resources)
+            resources.push_back(res.second);
+        getClientImpl().writeLowLevelResourcesToStream(resources, outputStream, compress);
+
+        outputBuffer = outputStream.release();
+        outputStream << static_cast<uint64_t>(offsetSceneObjectsStart);
+        outputStream << static_cast<uint64_t>(offsetLLResourcesStart);
+        const auto offsets = outputStream.release();
+
+        assert(offsets.size() == 2*sizeof(uint64_t));
+        std::copy(offsets.begin(), offsets.end(), outputBuffer.begin() + headerOffset);
+
+        return status;
+    }
+
     status_t SceneImpl::saveToFile(const char* fileName, bool compress) const
     {
         if (fileName == nullptr)
@@ -2105,41 +2137,17 @@ namespace ramses
 
         LOG_INFO_P(CONTEXT_CLIENT, "Scene::saveToFile: filename '{}', compress {}", fileName, compress);
 
+        std::vector<ramses_internal::Byte> outputBuffer;
+        const status_t status = serialize(outputBuffer, compress);
+        if (status != StatusOK)
+            return status;
+
         ramses_internal::File outputFile(fileName);
-        ramses_internal::BinaryFileOutputStream outputStream(outputFile);
-        if (!outputFile.isOpen())
+        if (!outputFile.open(ramses_internal::File::Mode::WriteNewBinary))
             return addErrorEntry(fmt::format("Scene::saveToFile failed, could not open file for writing: '{}'", fileName));
 
-        ramses_internal::RamsesVersion::WriteToStream(outputStream, ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_STRING, ::ramses_sdk::RAMSES_SDK_GIT_COMMIT_HASH);
-
-        ramses_internal::UInt bytesForVersion = 0;
-        if (!outputFile.getPos(bytesForVersion))
-            return addErrorEntry(fmt::format("Scene::saveToFile failed, error getting save file position: '{}'", fileName));
-
-        // reserve space for offset to SceneObjects and LL-Objects
-        const uint64_t bytesForOffsets = sizeof(uint64_t) * 2u;
-        const uint64_t offsetSceneObjectsStart = bytesForVersion + bytesForOffsets;
-
-        if (!outputFile.seek(static_cast<ramses_internal::Int>(offsetSceneObjectsStart), ramses_internal::File::SeekOrigin::BeginningOfFile))
-            return addErrorEntry(fmt::format("Scene::saveToFile failed, error seeking file: '{}'", fileName));
-
-        const status_t status = writeSceneObjectsToStream(outputStream);
-
-        ramses_internal::UInt offsetLLResourcesStart = 0;
-        if (!outputFile.getPos(offsetLLResourcesStart))
-            return addErrorEntry(fmt::format("Scene::saveToFile failed, error getting save file position: '{}'", fileName));
-
-        ResourceObjects resources;
-        resources.reserve(m_resources.size());
-        for (auto const& res : m_resources)
-            resources.push_back(res.second);
-        getClientImpl().writeLowLevelResourcesToStream(resources, outputStream, compress);
-
-        if (!outputFile.seek(bytesForVersion, ramses_internal::File::SeekOrigin::BeginningOfFile))
-            return addErrorEntry(fmt::format("Scene::saveToFile failed, error seeking file: '{}'", fileName));
-
-        outputStream << static_cast<uint64_t>(offsetSceneObjectsStart);
-        outputStream << static_cast<uint64_t>(offsetLLResourcesStart);
+        if (!outputFile.write(outputBuffer.data(), outputBuffer.size()))
+            return addErrorEntry(fmt::format("Scene::saveToFile failed, write failed: '{}'", fileName));
 
         if (!outputFile.close())
             return addErrorEntry(fmt::format("Scene::saveToFile failed, close file failed: '{}'", fileName));

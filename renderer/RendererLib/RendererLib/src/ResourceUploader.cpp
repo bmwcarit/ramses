@@ -135,7 +135,7 @@ namespace ramses_internal
                 const UInt32 width = TextureMathUtils::GetMipSize(mipLevel, texture.getWidth());
                 const UInt32 height = TextureMathUtils::GetMipSize(mipLevel, texture.getHeight());
                 const UInt32 depth = TextureMathUtils::GetMipSize(mipLevel, texture.getDepth());
-                device.uploadTextureData(textureDeviceHandle, mipLevel, 0u, 0u, 0u, width, height, depth, pData, mipDataSizes[mipLevel]);
+                device.uploadTextureData(textureDeviceHandle, mipLevel, 0u, 0u, 0u, width, height, depth, pData, mipDataSizes[mipLevel], 0);
                 pData += mipDataSizes[mipLevel];
             }
             break;
@@ -147,7 +147,7 @@ namespace ramses_internal
                 {
                     const UInt32 faceSize = TextureMathUtils::GetMipSize(mipLevel, texture.getWidth());
                     // texture faceID is encoded in Z offset
-                    device.uploadTextureData(textureDeviceHandle, mipLevel, 0u, 0u, faceId, faceSize, faceSize, 1u, pData, mipDataSizes[mipLevel]);
+                    device.uploadTextureData(textureDeviceHandle, mipLevel, 0u, 0u, faceId, faceSize, faceSize, 1u, pData, mipDataSizes[mipLevel], 0);
                     pData += mipDataSizes[mipLevel];
                 }
             }

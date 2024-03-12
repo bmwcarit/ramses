@@ -44,14 +44,14 @@ namespace ramses_internal
         void                            killTestApplication(uint32_t testAppIdx = 0u);
 
         //wait for events
-        void                            waitForContentOnStreamTexture(WaylandIviSurfaceId sourceId, uint32_t displayIdx = 0u);
-        void                            waitForUnavailablilityOfContentOnStreamTexture(WaylandIviSurfaceId sourceId);
-        void                            waitForSurfaceAvailableForStreamTexture(WaylandIviSurfaceId sourceId);
-        void                            waitForSurfaceUnavailableForStreamTexture(WaylandIviSurfaceId sourceId);
-        bool                            waitForStreamSurfaceAvailabilityChange(WaylandIviSurfaceId streamSource, bool available);
-        Bool                            waitUntilNumberOfCommitedFramesForIviSurface(WaylandIviSurfaceId waylandSurfaceId, UInt64 numberOfComittedBuffers, UInt32 timeoutMilliseconds = std::numeric_limits<ramses_internal::UInt32>::max());
-        void                            waitForBufferAttachedToIviSurface(WaylandIviSurfaceId waylandSurfaceId);
-        void                            waitForNoBufferAttachedToIviSurface(WaylandIviSurfaceId waylandSurfaceId);
+        void                            waitForContentOnStreamTexture(WaylandIviSurfaceId iviSurface, uint32_t displayIdx = 0u);
+        void                            waitForUnavailablilityOfContentOnStreamTexture(WaylandIviSurfaceId iviSurface);
+        void                            waitForSurfaceAvailableForStreamTexture(WaylandIviSurfaceId iviSurface);
+        void                            waitForSurfaceUnavailableForStreamTexture(WaylandIviSurfaceId iviSurface);
+        bool                            waitForStreamSurfaceAvailabilityChange(WaylandIviSurfaceId iviSurface, bool available);
+        Bool                            waitUntilNumberOfCommitedFramesForIviSurface(WaylandIviSurfaceId iviSurface, UInt64 numberOfComittedBuffers, UInt32 timeoutMilliseconds = std::numeric_limits<ramses_internal::UInt32>::max());
+        void                            waitForBufferAttachedToIviSurface(WaylandIviSurfaceId iviSurface);
+        void                            waitForNoBufferAttachedToIviSurface(WaylandIviSurfaceId iviSurface);
         void                            waitUntilNumberOfCompositorConnections(UInt32 numberOfConnections, bool doResourceUpdate = false, uint32_t displayIdx = 0u);
 
         //send message to test app
@@ -62,11 +62,12 @@ namespace ramses_internal
         void                            sendDestroyShellSurfaceToTestApplication(TestApplicationShellSurfaceId shellSurfaceId, uint32_t testAppIdx = 0u);
         TestApplicationSurfaceId        sendCreateSurfaceWithoutEGLContextToTestApplication(UInt32 width, UInt32 height, uint32_t testAppIdx = 0u);
         void                            sendDestroySurfaceToTestApplication(TestApplicationSurfaceId surfaceId, uint32_t testAppIdx = 0u);
-        void                            sendCreateIVISurfaceToTestApplication(TestApplicationSurfaceId surfaceId, WaylandIviSurfaceId newSurfaceIviId, uint32_t testAppIdx = 0u);
+        void                            sendCreateIVISurfaceToTestApplication(TestApplicationSurfaceId surfaceId, WaylandIviSurfaceId iviSurface, uint32_t testAppIdx = 0u);
         void                            sendDestroyIVISurfaceToTestApplication(TestApplicationSurfaceId surfaceId, uint32_t testAppIdx = 0u);
         void                            sendRenderOneFrameToEGLBufferToTestApplication(TestApplicationSurfaceId surfaceId, bool waitOnFramecallback = false, uint32_t testAppIdx = 0u);
         void                            sendRenderOneFrameToSharedMemoryBufferToTestApplication(TestApplicationSurfaceId surfaceId, bool waitOnFramecallback = false, uint32_t testAppIdx = 0u);
         void                            sendAttachBufferToTestApplication(TestApplicationSurfaceId surfaceId, bool commit = false, uint32_t testAppIdx = 0u);
+        void                            sendReAttachBufferToTestApplication(TestApplicationSurfaceId surfaceId, uint32_t count, uint32_t testAppIdx = 0u);
         void                            sendDestroyBuffersToTestApplication(uint32_t testAppIdx = 0u);
         void                            sendRenderOneFrameToTwoSurfacesAndWaitOnFrameCallbackToTestApplication(TestApplicationSurfaceId surfaceId1, TestApplicationSurfaceId surfaceId2, uint32_t testAppIdx = 0u);
         void                            sendAdditionalConnectToEmbeddedCompositorToTestApplication(uint32_t testAppIdx = 0u);
@@ -83,8 +84,8 @@ namespace ramses_internal
 
         //local renderer
         void                            renderOneFrame();
-        void                            setSurfaceVisibility(WaylandIviSurfaceId surfaceId, bool visibility);
-        String                          getTitleOfIviSurface(WaylandIviSurfaceId waylandSurfaceId);
+        void                            setSurfaceVisibility(WaylandIviSurfaceId iviSurface, bool visibility);
+        String                          getTitleOfIviSurface(WaylandIviSurfaceId iviSurface);
         void                            logEmbeddedCompositor(RendererLogContext& logContext);
 
         // This is needed due to the conflict resulting from mandating the possibility to set EC config on both RendererConfig

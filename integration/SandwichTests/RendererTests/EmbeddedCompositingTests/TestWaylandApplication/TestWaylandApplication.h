@@ -40,6 +40,7 @@ namespace ramses_internal
         void renderFrameToEGLBuffer(TestApplicationSurfaceId surfaceId, bool useCallback);
         void renderFrameToSharedMemoryBuffer(TestApplicationSurfaceId surfaceId, bool useCallback);
         void attachBuffer(TestApplicationSurfaceId surfaceId, bool commit);
+        void reattachBuffer(TestApplicationSurfaceId surfaceId, uint32_t count);
         void renderFrameToTwoSurfaces(TestApplicationSurfaceId surfaceId1, TestApplicationSurfaceId surfaceId2, bool useCallback);
         void setTriangleColor(ETriangleColor color);
         void detachBufferFromSurface(TestApplicationSurfaceId surfaceId);

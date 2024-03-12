@@ -33,6 +33,19 @@ namespace ramses_internal
         } \
     };
 
+#define DEFINE_UINT_CONVERTER(TYPE) \
+    template<> \
+    struct ArgumentConverter<TYPE> \
+    { \
+        static inline bool tryConvert(const RamshArgumentData& data, TYPE& value) \
+        { \
+            UInt64 val = 0; \
+            bool result = ArgumentConverter<UInt64>::tryConvert(data,val); \
+            value = static_cast<TYPE>(val); \
+            return result; \
+        } \
+    };
+
 namespace ramses_internal
 {
     // converts raw binary data
@@ -122,17 +135,28 @@ namespace ramses_internal
         static inline bool tryConvert(const RamshArgumentData& data, Int64& value)
         {
             Char* endptr;
-            value = static_cast<Int64>(strtol(data.c_str(),&endptr,10));
+            value = static_cast<Int64>(strtoll(data.c_str(),&endptr,10));
+            // conversion is only successful if anything was converted
+            return endptr != data.c_str();
+        }
+    };
+
+    template<>
+    struct ArgumentConverter<UInt64>
+    {
+        static inline bool tryConvert(const RamshArgumentData& data, UInt64& value)
+        {
+            Char* endptr;
+            value = static_cast<UInt64>(strtoull(data.c_str(),&endptr,10));
             // conversion is only successful if anything was converted
             return endptr != data.c_str();
         }
     };
 
     // convertes which use the standard converter for int-types and just cast the value to the right type
-    DEFINE_INT_CONVERTER(UInt64)
-    DEFINE_INT_CONVERTER(UInt32)
+    DEFINE_UINT_CONVERTER(UInt32)
     DEFINE_INT_CONVERTER(Int32)
-    DEFINE_INT_CONVERTER(UInt16)
+    DEFINE_UINT_CONVERTER(UInt16)
     DEFINE_INT_CONVERTER(Int16)
 
     template<>

@@ -34,7 +34,7 @@ namespace ramses_internal
         MOCK_METHOD(void, surfaceDamageBuffer, (IWaylandClient& client, int32_t x, int32_t y, int32_t width, int32_t height), (override));
         MOCK_METHOD(void, setShellSurface, (IWaylandShellSurface* shellSurface), (override));
         MOCK_METHOD(bool, hasShellSurface, (), (const, override));
-        MOCK_METHOD(void, logInfos, (RendererLogContext& context), (const, override));
+        MOCK_METHOD(void, logInfos, (RendererLogContext& context, const WaylandEGLExtensionProcs&), (const, override));
         MOCK_METHOD(WaylandIviSurfaceId, getIviSurfaceId, (), (const, override));
         MOCK_METHOD(void, sendFrameCallbacks, (UInt32 time), (override));
         MOCK_METHOD(IWaylandBuffer*, getWaylandBuffer, (), (const, override));

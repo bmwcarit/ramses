@@ -315,6 +315,48 @@ namespace ramses_internal
         testScenesAndRenderer.destroyRenderer();
     }
 
+    TEST_F(ARendererLifecycleTest, DestroyDisplayAndRemapSceneToOtherDisplay_LocalOnly)
+    {
+        ramses::SceneConfig config;
+        config.setPublicationMode(ramses::EScenePublicationMode_LocalOnly);
+        const ramses::sceneId_t sceneId = createScene<MultipleTrianglesScene>(MultipleTrianglesScene::THREE_TRIANGLES, Vector3(0.0f, 0.0f, 5.0f), WindowWidth, WindowHeight, config);
+        testScenesAndRenderer.initializeRenderer();
+        testScenesAndRenderer.publish(sceneId);
+        testScenesAndRenderer.flush(sceneId);
+
+        {
+            const ramses::displayId_t display0 = createDisplayForWindow(0u);
+            ASSERT_TRUE(ramses::displayId_t::Invalid() != display0);
+
+            testRenderer.setSceneMapping(sceneId, display0);
+            testRenderer.setSceneState(sceneId, ramses::RendererSceneState::Rendered);
+            testRenderer.doOneLoop(); // calls addSubscriber, but does NOT send the scene
+            // LocalOnly scenes cannot send the initial flush automatically
+            testRenderer.doOneLoop();
+            testRenderer.doOneLoop();
+            testRenderer.setSceneState(sceneId, ramses::RendererSceneState::Available); // unsubscribes the scene
+            testRenderer.doOneLoop();
+            testRenderer.doOneLoop();
+            testRenderer.destroyDisplay(display0);
+        }
+
+        {
+            testScenesAndRenderer.flush(sceneId);
+            const ramses::displayId_t display1 = createDisplayForWindow(1u);
+            ASSERT_TRUE(ramses::displayId_t::Invalid() != display1);
+            testRenderer.setSceneMapping(sceneId, display1);
+            testRenderer.setSceneState(sceneId, ramses::RendererSceneState::Rendered);
+            testRenderer.doOneLoop(); // calls addSubscriber
+            testScenesAndRenderer.flush(sceneId); // sends the scene !
+            ASSERT_TRUE(testRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered));
+
+            ASSERT_TRUE(checkScreenshot(display1, "ARendererInstance_Three_Triangles"));
+        }
+
+        testScenesAndRenderer.unpublish(sceneId);
+        testScenesAndRenderer.destroyRenderer();
+    }
+
     TEST_F(ARendererLifecycleTest, RenderScene_Threaded)
     {
         testScenesAndRenderer.initializeRenderer();
@@ -1742,6 +1784,36 @@ namespace ramses_internal
         testRenderer.waitForFlush(sceneId, ramses::sceneVersionTag_t{ 1u });
 
         testScenesAndRenderer.unpublish(sceneId);
+        testScenesAndRenderer.destroyRenderer();
+    }
+
+    TEST_F(ARendererLifecycleTest, confidenceTest_contextEnabledWhenCreatingAndDestroyingDisplaysOBsInParticularOrder)
+    {
+        testScenesAndRenderer.initializeRenderer();
+        // create 2 displays, each with OB
+        const auto display1 = createDisplayForWindow(1u);
+        const auto ob1 = testRenderer.createOffscreenBuffer(display1, 16u, 16u, false);
+        const auto display2 = createDisplayForWindow(2u);
+        const auto ob2 = testRenderer.createOffscreenBuffer(display2, 16u, 16u, false);
+        ASSERT_TRUE(display1.isValid() && display2.isValid() && ob1.isValid() && ob2.isValid());
+        testRenderer.doOneLoop();
+
+        // create another OB on 1st display
+        const auto ob3 = testRenderer.createOffscreenBuffer(display1, 16u, 16u, false);
+        ASSERT_TRUE(ob3.isValid());
+        testRenderer.doOneLoop();
+
+        // destroy 2nd display/OB
+        testRenderer.destroyOffscreenBuffer(display2, ob2);
+        testRenderer.destroyDisplay(display2);
+        testRenderer.doOneLoop();
+
+        // create another OB on 1st display
+        // this requires context enabled on 1st display and would crash otherwise
+        const auto ob4 = testRenderer.createOffscreenBuffer(display1, 16u, 16u, false);
+        ASSERT_TRUE(ob4.isValid());
+        testRenderer.doOneLoop();
+
         testScenesAndRenderer.destroyRenderer();
     }
 }

@@ -25,7 +25,7 @@ namespace ramses_internal
         bool wasSuccessfullyInitialized() const;
 
         virtual void resourceDestroyed() override;
-        virtual void iviApplicationIVISurfaceCreate(IWaylandClient& client, uint32_t iviId, INativeWaylandResource& surfaceResource, uint32_t id) override;
+        virtual void iviApplicationIVISurfaceCreate(IWaylandClient& client, WaylandIviSurfaceId iviId, INativeWaylandResource& surfaceResource, uint32_t id) override;
 
     private:
         static void ResourceDestroyedCallback(wl_resource* iviApplicationConnectionResource);

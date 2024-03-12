@@ -41,13 +41,7 @@ namespace ramses_internal
 #endif
     }
 
-    RamsesLogger::~RamsesLogger()
-    {
-        for (auto& ctx : m_logContexts)
-        {
-            delete ctx;
-        }
-    }
+    RamsesLogger::~RamsesLogger() = default;
 
     void RamsesLogger::UpdateConsoleLogLevelFromDefine(ELogLevel& loglevel)
     {
@@ -85,11 +79,6 @@ namespace ramses_internal
 
     void RamsesLogger::initialize(const CommandLineParser& parser, const String& idString, const String& descriptionString, bool disableDLT, bool enableDLTApplicationRegistration)
     {
-        if (m_isInitialized)
-        {
-            // should not be called multiple times but happens when more than one RamsesFramework is created
-            LOG_WARN(CONTEXT_FRAMEWORK, "RamsesLogger::initialize called more than once");
-        }
         m_isInitialized = true;
 
         bool pushLogLevelToDltDaemon = false;
@@ -151,7 +140,7 @@ namespace ramses_internal
         }
 
         // create DLT adapter and appender
-        if (!m_dltLogAppender && !disableDLT)
+        if (!disableDLT)
         {
             const ramses_internal::ArgumentString dltAppId(parser, "dai", "dlt-app-id", idString);
             const ramses_internal::ArgumentString dltAppDescription(parser, "dad", "dlt-app-description", descriptionString);
@@ -159,24 +148,40 @@ namespace ramses_internal
 
             if (!dltAppIdAsString.empty())
             {
+                LOG_INFO(CONTEXT_FRAMEWORK, "RamsesLogger::initialize: Initializing DLT adapter");
                 if (!enableDLTApplicationRegistration)
                     LOG_INFO(CONTEXT_FRAMEWORK, "RamsesLogger::initialize: Reuse exising DLT application registration");
 
-                DltAdapter* dltAdapter = DltAdapter::getDltAdapter();
-                if (dltAdapter->initialize(dltAppIdAsString, dltAppDescription, enableDLTApplicationRegistration,
-                                           [this](const String& contextId_, int logLevel_) {
-                                               dltLogLevelChangeCallback(contextId_, logLevel_);
-                                           },
-                                           m_logContexts, pushLogLevelToDltDaemon))
-                {
-                    m_dltLogAppender = std::make_unique<DltLogAppender>();
+                bool alreadyHadDltAppender = false;
 
+                {
+                    std::lock_guard<std::mutex> guard(m_appenderLock);
+                    alreadyHadDltAppender = (m_dltLogAppender != nullptr);
+
+                    if (!alreadyHadDltAppender)
                     {
-                        std::lock_guard<std::mutex> guard(m_appenderLock);
-                        m_logAppenders.push_back(m_dltLogAppender.get());
+                        std::vector<LogContext*> logContextPtrs;
+                        for (auto& ctx : m_logContexts)
+                            logContextPtrs.push_back(ctx.get());
+                        DltAdapter* dltAdapter = DltAdapter::getDltAdapter();
+                        if (dltAdapter->initialize(dltAppIdAsString, dltAppDescription, enableDLTApplicationRegistration,
+                                            [this](const String& contextId_, int logLevel_) {
+                                                dltLogLevelChangeCallback(contextId_, logLevel_);
+                                            },
+                                            logContextPtrs, pushLogLevelToDltDaemon))
+                        {
+                            m_dltLogAppender = std::make_unique<DltLogAppender>();
+                            m_logAppenders.push_back(m_dltLogAppender.get());
+                        }
                     }
                 }
-                else
+
+                if (alreadyHadDltAppender)
+                {
+                    LOG_INFO(CONTEXT_FRAMEWORK, "RamsesLogger::initialize: skipped DLT initialization because a DLT adapter already exists");
+                }
+
+                if (!m_dltLogAppender)
                 {
                     LOG_WARN(CONTEXT_FRAMEWORK, "RamsesLogger::initialize: DLT disabled because initialize failed");
                 }
@@ -273,6 +278,16 @@ namespace ramses_internal
         return DltAdapter::getDltAdapter()->transmitFile(m_fileTransferContext, path, deleteFile);
     }
 
+    bool RamsesLogger::transmit(std::vector<Byte> && data, const String &filename) const
+    {
+        if (!m_dltLogAppender)
+        {
+            return false;
+        }
+
+        return DltAdapter::getDltAdapter()->transmit(m_fileTransferContext, std::move(data), filename);
+    }
+
     bool RamsesLogger::registerInjectionCallback(LogContext& ctx, UInt32 serviceId, int (*callback)(UInt32 serviceId, void* data, UInt32 length))
     {
         if (!m_dltLogAppender)
@@ -295,9 +310,9 @@ namespace ramses_internal
             LOG_ERROR(CONTEXT_FRAMEWORK, "RamsesLogger::createContext: Context creation not allowed after initialize");
             assert(false);
         }
-        LogContext* ctx = new LogContext(name, id);
-        m_logContexts.push_back(ctx);
-        return *ctx;
+        m_logContexts.push_back(std::make_unique<LogContext>(name, id));
+
+        return *m_logContexts.back();
     }
 
     void RamsesLogger::dltLogLevelChangeCallback(const String& contextId, int logLevelAsInt)
@@ -331,7 +346,7 @@ namespace ramses_internal
     {
         for (const auto& ctx : m_logContexts)
             if (contextId == ctx->getContextId())
-                return ctx;
+                return ctx.get();
         return nullptr;
     }
 

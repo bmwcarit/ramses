@@ -35,12 +35,12 @@ namespace ramses
     public:
         /**
         * @brief Sets blending factors for source/destination color/alpha.
-        * Blending operations need to be set as well in order to enable blending.
+        * Blending operations need to be set as well in order to enable blending (see #ramses::Appearance::setBlendingOperations()).
         *
-        * @param[in] srcColor Source color blending factor
-        * @param[in] destColor Destination color blending factor
-        * @param[in] srcAlpha Source alpha blending factor
-        * @param[in] destAlpha Destination alpha blending factor
+        * @param[in] srcColor Source color blending factor, default: #ramses::EBlendFactor_SrcAlpha
+        * @param[in] destColor Destination color blending factor, default: #ramses::EBlendFactor_OneMinusSrcAlpha
+        * @param[in] srcAlpha Source alpha blending factor, default: #ramses::EBlendFactor_One
+        * @param[in] destAlpha Destination alpha blending factor, default: #ramses::EBlendFactor_One
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
@@ -60,10 +60,11 @@ namespace ramses
 
         /**
         * @brief Sets blending operation for color and alpha.
-        * Blending factors need to be set as well in order to enable blending.
+        * To use blending also set the correct blending factors (see #ramses::Appearance::setBlendingFactors()).
+        * Blending operations are disabled by default
         *
-        * @param[in] operationColor Blending operation for color
-        * @param[in] operationAlpha Blending operation for alpha
+        * @param[in] operationColor Blending operation for color, default: #ramses::EBlendOperation_Disabled
+        * @param[in] operationAlpha Blending operation for alpha, default: #ramses::EBlendOperation_Disabled
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
@@ -106,6 +107,7 @@ namespace ramses
 
         /**
         * @brief Enables or disables writing to depth buffer.
+        * The default value is #ramses::EDepthWrite_Enabled
         *
         * @param[in] mode Flag denoting enabling or disabling depth writes.
         * @return status == 0 for success, otherwise the returned status can be used
@@ -123,8 +125,7 @@ namespace ramses
 
         /**
         * @brief Sets depth comparison function.
-        * Depth writing has to be enabled in order for this to have any effect.
-        * Default depth comparison function is less or equal.
+        * Default depth comparison function is #ramses::EDepthFunc_LessEqual.
         *
         * @param[in] func Depth comparison function to be used
         * @return status == 0 for success, otherwise the returned status can be used
@@ -143,6 +144,7 @@ namespace ramses
 
         /**
         * @brief Enables or disables scissor test and sets region for scissor test
+        * Scissor test is disabled by default (#ramses::EScissorTest_Disabled)
         *
         * @param[in] state Flag denoting enabling or disabling scissor test.
         * @param[in] x Offset of scissor region on x-axis.
@@ -176,11 +178,11 @@ namespace ramses
 
         /**
         * @brief Sets stencil function, reference and mask value for stencil testing.
-        * Stencil is disabled by default.
+        * Stencil test is disabled by default.
         *
-        * @param[in] func Stencil function to be used
-        * @param[in] ref Stencil reference value to be used
-        * @param[in] mask Stencil mask value to be used
+        * @param[in] func Stencil function to be used, default: #ramses::EStencilFunc_Disabled
+        * @param[in] ref Stencil reference value to be used, default: 0
+        * @param[in] mask Stencil mask value to be used, default: 0xff
         * @return status == 0 for success, otherwise the returned status can be used
         *         to resolve error message using getStatusMessage().
         */
@@ -199,7 +201,7 @@ namespace ramses
 
         /**
         * @brief Sets stencil operations for stencil testing.
-        * Default stencil operation values are keep.
+        * Default stencil operation values are #ramses::EStencilOperation_Keep.
         *
         * @param[in] sfail Stencil operation when stencil test fails
         * @param[in] dpfail Stencil operation when the stencil test passes, but the depth test fails
@@ -222,7 +224,7 @@ namespace ramses
 
         /**
         * @brief Sets the culling mode indicating which side of mesh will be removed before rasterization.
-        * Default culling mode is BackFaceCulling.
+        * Default culling mode is #ramses::ECullMode_BackFacing.
         *
         * @param[in] mode Culling mode to be used.
         * @return status == 0 for success, otherwise the returned status can be used
@@ -232,7 +234,7 @@ namespace ramses
 
         /**
         * @brief Sets the draw mode indicating by which primitive the mesh will be rendered
-        * Default draw mode is Triangles.
+        * Default draw mode is #ramses::EDrawMode_Triangles.
         *
         * @param[in] mode Draw mode to be used.
         * @return status == 0 for success, otherwise the returned status can be used

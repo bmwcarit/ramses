@@ -11,23 +11,42 @@
 
 #include "Platform_Base/Platform_Base.h"
 #include "Context_WGL/WglExtensions.h"
+#include "absl/types/optional.h"
+#include "RendererAPI/EDeviceTypeId.h"
 
 namespace ramses_internal
 {
-    class Platform_Windows_WGL : public Platform_Base
+    class Platform_Windows_WGL final : public Platform_Base
     {
-    protected:
-        explicit Platform_Windows_WGL(const RendererConfig& rendererConfig);
+    public:
+        explicit Platform_Windows_WGL(const RendererConfig& rendererConfig, EDeviceTypeId deviceType);
 
+    protected:
         virtual bool createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override;
         virtual bool createContext(const DisplayConfig& displayConfig) override;
         virtual bool createContextUploading() override;
 
+        virtual bool createDevice() override;
+        virtual bool createDeviceUploading() override;
+
         WglExtensions m_wglExtensions;
 
     private:
-        // must be implemented by sub-classes
-        virtual const Int32* getContextAttributes() = 0;
+        struct ContextConfig
+        {
+            UInt8              majorVersion  = 4;
+            std::vector<UInt8> minorVersions = {2};
+            bool               embedded      = false;
+        };
+
+        std::unique_ptr<IContext> createContextInternal(const DisplayConfig& displayConfig, UInt8 minorVersion);
+
+        std::vector<Int32> getContextAttributes(Int32 minorVersion);
+
+        std::string getMajorVersionString() const;
+
+        ContextConfig         m_contextConfig;
+        absl::optional<UInt8> m_contextMinorVersion;
     };
 }
 

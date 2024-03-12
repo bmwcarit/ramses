@@ -13,7 +13,7 @@
 
 namespace ramses_internal
 {
-    class IScene;
+    class RendererCachedScene;
     class IRendererResourceManager;
     class FrameTimer;
 
@@ -21,7 +21,7 @@ namespace ramses_internal
     {
     public:
         static void ConsolidateSceneResourceActions(const SceneResourceActionVector& newActions, SceneResourceActionVector& currentActionsInOut);
-        static bool ApplySceneResourceActions(const SceneResourceActionVector& actions, const IScene& scene, IRendererResourceManager& resourceManager, const FrameTimer* frameTimer = nullptr);
+        static bool ApplySceneResourceActions(const SceneResourceActionVector& actions, const RendererCachedScene& scene, IRendererResourceManager& resourceManager, const FrameTimer* frameTimer = nullptr);
 
     private:
         static Bool RemoveSceneResourceActionIfContained(SceneResourceActionVector& actions, MemoryHandle handle, ESceneResourceAction action);

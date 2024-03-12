@@ -68,9 +68,28 @@ namespace ramses_internal
         virtual void                        setBlitPassRenderOrder(BlitPassHandle passHandle, Int32 renderOrder) override;
         virtual void                        setBlitPassEnabled(BlitPassHandle passHandle, Bool isEnabled) override;
 
+        virtual TextureBufferHandle         allocateTextureBuffer(ETextureFormat textureFormat, const MipMapDimensions& mipMapDimensions, TextureBufferHandle handle) override;
+        void                                releaseTextureBuffer(TextureBufferHandle handle) override;
+        virtual void                        updateTextureBuffer             (TextureBufferHandle handle, UInt32 mipLevel, UInt32 x, UInt32 y, UInt32 width, UInt32 height, const Byte* data) override;
+
         const RenderingPassInfoVector&      getSortedRenderingPasses        () const;
         const RenderableVector&             getOrderedRenderablesForPass    (RenderPassHandle pass) const;
         const Matrix44f&                    getRenderableWorldMatrix        (RenderableHandle renderable) const;
+
+        using TextureBufferUpdate = std::vector<Quad>;
+
+        const TextureBufferUpdate& getTextureBufferUpdate(TextureBufferHandle handle) const
+        {
+            assert(handle.asMemoryHandle() < getTextureBufferCount());
+            return m_textureBufferUpdates[handle.asMemoryHandle()];
+        }
+
+        void popTextureBufferUpdate(TextureBufferHandle handle) const
+        {
+            assert(handle.asMemoryHandle() < getTextureBufferCount());
+            for (auto& mip : m_textureBufferUpdates[handle.asMemoryHandle()])
+                mip = {};
+        }
 
     private:
         void updatePassRenderableSorting();
@@ -88,6 +107,8 @@ namespace ramses_internal
 
         using RenderPasses = HashSet<RenderPassHandle>;
         mutable RenderPasses m_renderOncePassesToRender;
+
+        mutable std::vector<TextureBufferUpdate> m_textureBufferUpdates;
 
         bool m_hasActiveShaderAnimation = false;
     };

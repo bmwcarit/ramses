@@ -13,6 +13,7 @@
 #include "RendererLib/RendererLogContext.h"
 #include "EmbeddedCompositor_Wayland/IWaylandClient.h"
 #include "wayland-server.h"
+#include "Utils/LogLevel.h"
 
 namespace ramses_internal
 {
@@ -40,7 +41,7 @@ namespace ramses_internal
         virtual void resetNumberOfCommitedFrames() override;
         virtual uint64_t getNumberOfCommitedFramesSinceBeginningOfTime() const override;
         virtual void sendFrameCallbacks(UInt32 time) override;
-        virtual void logInfos(RendererLogContext& context) const override;
+        virtual void logInfos(RendererLogContext& context, const WaylandEGLExtensionProcs& eglExt) const override;
         virtual void bufferDestroyed(IWaylandBuffer& buffer) override;
         virtual void resourceDestroyed() override;
         virtual void surfaceAttach(IWaylandClient& client, WaylandBufferResource& bufferResource, int x, int y) override;
@@ -60,6 +61,7 @@ namespace ramses_internal
         void setBufferToSurface(IWaylandBuffer& buffer);
         void unsetBufferFromSurface();
         void setWaylandBuffer(IWaylandBuffer* buffer);
+        void logSurfaceAttach(ELogLevel level, const char* stage, IWaylandBuffer* buffer, int x, int y);
 
         static void SurfaceDestroyCallback(wl_client* client, wl_resource* surfaceResource);
         static void SurfaceAttachCallback(wl_client*, wl_resource* surfaceResource, wl_resource* bufferResource, int x, int y);

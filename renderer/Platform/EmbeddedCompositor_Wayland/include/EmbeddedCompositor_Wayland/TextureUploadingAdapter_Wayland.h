@@ -23,8 +23,10 @@ namespace ramses_internal
         TextureUploadingAdapter_Wayland(IDevice& device, wl_display* waylandWindowDisplay, wl_display* embeddedCompositingDisplay);
         ~TextureUploadingAdapter_Wayland();
 
-        void uploadTextureFromWaylandResource(DeviceResourceHandle textureHandle, EGLClientBuffer bufferResource);
+        void uploadTextureFromWaylandResource(DeviceResourceHandle textureHandle, wl_resource* bufferResource);
         bool uploadTextureFromLinuxDmabuf(DeviceResourceHandle textureHandle, LinuxDmabufBufferData* dmabuf);
+
+        const WaylandEGLExtensionProcs& getEGLExtension() const;
 
     private:
         class DmabufEglImage
@@ -46,12 +48,17 @@ namespace ramses_internal
 
         DmabufEglImage* importDmabufToEglImage(LinuxDmabufBufferData* dmabuf);
 
-        const WaylandEGLExtensionProcs  m_waylandEglExtensionProcs;
-        wl_display* const               m_embeddedCompositingDisplay;
+        const WaylandEGLExtensionProcs   m_waylandEglExtensionProcs;
+        wl_display* const                m_embeddedCompositingDisplay;
         std::unordered_map<LinuxDmabufBufferData*, DmabufEglImage*> m_dmabufEglImagesMap;
 
         friend class DmabufEglImage;
     };
+
+    inline const WaylandEGLExtensionProcs& TextureUploadingAdapter_Wayland::getEGLExtension() const
+    {
+        return m_waylandEglExtensionProcs;
+    }
 }
 
 #endif

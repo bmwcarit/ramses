@@ -8,6 +8,7 @@
 
 #include "RendererLib/SceneResourceUploader.h"
 #include "RendererLib/IRendererResourceManager.h"
+#include "RendererLib/RendererCachedScene.h"
 #include "SceneAPI/RenderBuffer.h"
 #include "SceneAPI/IScene.h"
 #include "SceneAPI/TextureBuffer.h"
@@ -53,15 +54,21 @@ namespace ramses_internal
         resourceManager.uploadTextureBuffer(textureBuffer, mip0.width, mip0.height, texBuffer.textureFormat, static_cast<UInt32>(mipMaps.size()), scene.getSceneId());
     }
 
-    void SceneResourceUploader::UpdateTextureBuffer(const IScene& scene, TextureBufferHandle textureBuffer, IRendererResourceManager& resourceManager)
+    void SceneResourceUploader::UpdateTextureBuffer(const RendererCachedScene& scene, TextureBufferHandle textureBuffer, IRendererResourceManager& resourceManager)
     {
         const TextureBuffer& texBuffer = scene.getTextureBuffer(textureBuffer);
+
+        const auto& update = scene.getTextureBufferUpdate(textureBuffer);
         const auto& mipMaps = texBuffer.mipMaps;
+        assert(update.size() == mipMaps.size());
         for (UInt32 mipLevel = 0u; mipLevel < static_cast<uint32_t>(mipMaps.size()); ++mipLevel)
         {
             const auto& mip = mipMaps[mipLevel];
-            resourceManager.updateTextureBuffer(textureBuffer, mipLevel, 0u, 0u, mip.width, mip.height, texBuffer.mipMaps[mipLevel].data.data(), scene.getSceneId());
+            const auto& quad = update[mipLevel];
+            if (quad.getArea() != 0)
+                resourceManager.updateTextureBuffer(textureBuffer, mipLevel, quad, mip.width, mip.data.data(), scene.getSceneId());
         }
+        scene.popTextureBufferUpdate(textureBuffer);
     }
 
     void SceneResourceUploader::UploadVertexArray(const IScene& scene, RenderableHandle renderableHandle, IRendererResourceManager& resourceManager)
