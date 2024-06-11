@@ -22,7 +22,7 @@ jobs:
     strategy:
       matrix:
         target-platform: [host-os]
-        os: [ubuntu-20.04, ubuntu-22.04, windows-2022, macos-12]
+        os: [ubuntu-20.04, ubuntu-22.04, windows-2019, macos-12]
         type: [Debug, Release]
         compiler: [default]
         include:
@@ -38,7 +38,7 @@ jobs:
             compiler: clang
         # on Windows we skip Debug because otherwise the hosted runner runs out of space
         exclude:
-          - os: windows-2022
+          - os: windows-2019
             type: Debug
 
     steps:
