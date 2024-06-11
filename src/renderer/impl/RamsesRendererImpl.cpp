@@ -40,7 +40,7 @@ namespace ramses::internal
         , m_binaryShaderCache(config.impl().getBinaryShaderCache() ? new BinaryShaderCacheProxy(*(config.impl().getBinaryShaderCache())) : nullptr)
         , m_rendererFrameworkLogic(framework.getScenegraphComponent(), m_rendererCommandBuffer, framework.getFrameworkLock())
         , m_threadWatchdog(framework.getThreadWatchdogConfig(), ERamsesThreadIdentifier::Renderer)
-        , m_displayDispatcher{ std::make_unique<DisplayDispatcher>(std::make_unique<PlatformFactory>(), config.impl().getInternalRendererConfig(), m_rendererFrameworkLogic, m_threadWatchdog) }
+        , m_displayDispatcher{ std::make_unique<DisplayDispatcher>(std::make_unique<PlatformFactory>(), config.impl().getInternalRendererConfig(), m_rendererFrameworkLogic, m_threadWatchdog, m_framework.getFeatureLevel()) }
         , m_systemCompositorEnabled(config.impl().getInternalRendererConfig().getSystemCompositorControlEnabled())
         , m_loopMode(ELoopMode::UpdateAndRender)
         , m_rendererLoopThreadType(ERendererLoopThreadType_Undefined)

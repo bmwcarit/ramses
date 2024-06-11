@@ -12,7 +12,7 @@
 
 namespace ramses::internal
 {
-    ClientScene* SceneFactory::createScene(const SceneInfo& sceneInfo)
+    ClientScene* SceneFactory::createScene(const SceneInfo& sceneInfo, EFeatureLevel featureLevel)
     {
         if (m_scenes.count(sceneInfo.sceneID) != 0)
         {
@@ -20,7 +20,7 @@ namespace ramses::internal
             return nullptr;
         }
 
-        auto newScene = std::make_unique<ClientScene>(sceneInfo);
+        auto newScene = std::make_unique<ClientScene>(sceneInfo, featureLevel);
         auto* newScenePtr = newScene.get();
         m_scenes.insert({ newScene->getSceneId(), std::move(newScene) });
 

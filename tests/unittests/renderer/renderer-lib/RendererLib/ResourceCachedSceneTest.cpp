@@ -11,7 +11,8 @@
 #include "internal/RendererLib/RendererResourceManager.h"
 #include "internal/RendererLib/RendererScenes.h"
 #include "internal/RendererLib/RendererEventCollector.h"
-#include "SceneAllocateHelper.h"
+#include "DeviceMock.h"
+#include "MockResourceHash.h"
 #include <array>
 
 namespace ramses::internal
@@ -21,7 +22,7 @@ namespace ramses::internal
     public:
         explicit AResourceCachedScene(bool indexArrayAvailable = true)
             : rendererScenes(rendererEventCollector)
-            , scene(rendererScenes.createScene(SceneInfo()))
+            , scene(rendererScenes.createScene(SceneInfo{}))
             , sceneAllocator(scene)
             , sceneHelper(scene, indexArrayAvailable)
         {
@@ -727,6 +728,71 @@ namespace ramses::internal
 
         EXPECT_CALL(sceneHelper.resourceManager, getStreamBufferDeviceHandle(streamBuffer)).WillOnce(Return(DeviceResourceHandle::Invalid()));
         updateResourcesAndExpectTexture(textureSampler, { }, DeviceMock::FakeTextureDeviceHandle);
+    }
+    //uniform buffers
+    TEST_F(AResourceCachedScene, CanGetDeviceHandleForUniformBuffer)
+    {
+        const RenderableHandle renderable = sceneHelper.createRenderable();
+
+        //create data instance with one uniform buffer
+        const auto uniformLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::UniformBuffer} }, MockResourceHash::EffectHash);
+        const auto uniformDataInstance = sceneAllocator.allocateDataInstance(uniformLayout);
+        const auto ubHandle = sceneAllocator.allocateUniformBuffer(123u);
+        scene.setDataUniformBuffer(uniformDataInstance, DataFieldHandle{ 0u }, ubHandle);
+        scene.setRenderableDataInstance(renderable, ERenderableDataSlotType_Uniforms, uniformDataInstance);
+
+        sceneHelper.createAndAssignVertexDataInstance(renderable);
+        sceneHelper.setResourcesToRenderable(renderable);
+
+        EXPECT_CALL(sceneHelper.resourceManager, getUniformBufferDeviceHandle(ubHandle, scene.getSceneId()));
+        updateRenderableResourcesAndVertexArray({ renderable });
+
+        EXPECT_FALSE(scene.renderableResourcesDirty(renderable));
+        const auto& uniformBuffersEntry = scene.getCachedHandlesForUniformInstancesBuffers()[renderable.asMemoryHandle()];
+        ASSERT_EQ(1u, uniformBuffersEntry.size());
+        EXPECT_EQ(DeviceMock::FakeUniformBufferDeviceHandle, uniformBuffersEntry[0]);
+    }
+
+    TEST_F(AResourceCachedScene, CanGetDeviceHandleForUniformBuffer_IfDataInstanceUpdated)
+    {
+        const RenderableHandle renderable = sceneHelper.createRenderable();
+
+        //create data instance with one uniform buffer
+        const auto uniformLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::UniformBuffer} }, MockResourceHash::EffectHash);
+        const auto uniformDataInstance = sceneAllocator.allocateDataInstance(uniformLayout);
+        const auto ubHandle = sceneAllocator.allocateUniformBuffer(123u);
+        scene.setDataUniformBuffer(uniformDataInstance, DataFieldHandle{ 0u }, ubHandle);
+        scene.setRenderableDataInstance(renderable, ERenderableDataSlotType_Uniforms, uniformDataInstance);
+
+        sceneHelper.createAndAssignVertexDataInstance(renderable);
+        sceneHelper.setResourcesToRenderable(renderable);
+
+        EXPECT_CALL(sceneHelper.resourceManager, getUniformBufferDeviceHandle(ubHandle, scene.getSceneId()));
+        updateRenderableResourcesAndVertexArray({ renderable });
+
+        //create a 2nd data instance with 2 uniform buffers
+        const auto uniformLayout2 = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::UniformBuffer}, DataFieldInfo{EDataType::UniformBuffer} }, MockResourceHash::EffectHash);
+        const auto uniformDataInstance2 = sceneAllocator.allocateDataInstance(uniformLayout2);
+        const auto ubHandle2 = sceneAllocator.allocateUniformBuffer(123u);
+        const auto ubHandle3 = sceneAllocator.allocateUniformBuffer(123u);
+
+        scene.setDataUniformBuffer(uniformDataInstance2, DataFieldHandle{ 0u }, ubHandle2);
+        scene.setDataUniformBuffer(uniformDataInstance2, DataFieldHandle{ 1u }, ubHandle3);
+        scene.setRenderableDataInstance(renderable, ERenderableDataSlotType_Uniforms, uniformDataInstance2);
+        scene.updateRenderablesResourcesDirtiness();
+        ASSERT_TRUE(scene.renderableResourcesDirty(renderable));
+
+        constexpr DeviceResourceHandle ubDeviceHandle2{ 789u };
+        constexpr DeviceResourceHandle ubDeviceHandle3{ 345u };
+        EXPECT_CALL(sceneHelper.resourceManager, getUniformBufferDeviceHandle(ubHandle2, scene.getSceneId())).WillOnce(Return(ubDeviceHandle2));
+        EXPECT_CALL(sceneHelper.resourceManager, getUniformBufferDeviceHandle(ubHandle3, scene.getSceneId())).WillOnce(Return(ubDeviceHandle3));
+        updateRenderableResourcesAndVertexArray({ renderable });
+
+        EXPECT_FALSE(scene.renderableResourcesDirty(renderable));
+        const auto& uniformBuffersEntry = scene.getCachedHandlesForUniformInstancesBuffers()[renderable.asMemoryHandle()];
+        ASSERT_EQ(2u, uniformBuffersEntry.size());
+        EXPECT_EQ(ubDeviceHandle2, uniformBuffersEntry[0]);
+        EXPECT_EQ(ubDeviceHandle3, uniformBuffersEntry[1]);
     }
 
     //vertex arrays

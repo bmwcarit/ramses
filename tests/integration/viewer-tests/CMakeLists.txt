@@ -17,7 +17,7 @@ createModule(
     TYPE            BINARY
     ENABLE_INSTALL  ${ramses-sdk_ENABLE_INSTALL}
     INCLUDE_PATHS   ${PROJECT_SOURCE_DIR}/tools/ramses-viewer
-                    ${PROJECT_SOURCE_DIR}/tests/unittests/client/logic/shared
+                    ${PROJECT_SOURCE_DIR}/tests/unittests/client/utils
     SRC_FILES       LogicViewerAppTest.cpp
     RESOURCE_FOLDERS res
 

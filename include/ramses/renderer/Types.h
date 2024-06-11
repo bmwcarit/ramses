@@ -293,7 +293,8 @@ namespace ramses
     {
         GLES_3_0,
         GL_4_2,
-        GL_4_5
+        GL_4_5,
+        Vulkan
     };
 
     /**

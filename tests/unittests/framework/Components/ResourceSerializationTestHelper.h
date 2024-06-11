@@ -122,16 +122,51 @@ namespace ramses::internal
             frag[i] = 'b';
             geom[i] = 'c';
         }
-        auto* resource = new EffectResource(vert, frag, geom, EDrawMode::Points, EffectInputInformationVector(), EffectInputInformationVector(), "effect name");
+        auto* resource = new EffectResource(vert, frag, geom, {}, EDrawMode::Points, EffectInputInformationVector(), EffectInputInformationVector(), "effect name", EFeatureLevel_Latest);
         return resource;
     }
 
     template <>
     inline void ResourceSerializationTestHelper::CompareTypedResources(const EffectResource& a, const EffectResource& b)
     {
+        EXPECT_EQ(a.getName(), b.getName());
+        EXPECT_EQ(a.getGeometryShaderInputType(), b.getGeometryShaderInputType());
+
         EXPECT_STREQ(a.getVertexShader(), b.getVertexShader());
         EXPECT_STREQ(a.getFragmentShader(), b.getFragmentShader());
         EXPECT_STREQ(a.getGeometryShader(), b.getGeometryShader());
         EXPECT_EQ(a.getGeometryShaderInputType(), b.getGeometryShaderInputType());
+
+        ASSERT_EQ(a.getVertexShaderSPIRVSize(), b.getVertexShaderSPIRVSize());
+        ASSERT_EQ(a.getFragmentShaderSPIRVSize(), b.getFragmentShaderSPIRVSize());
+        ASSERT_EQ(a.getGeometryShaderSPIRVSize(), b.getGeometryShaderSPIRVSize());
+
+        if (a.getVertexShaderSPIRVSize() == 0)
+        {
+            // No SPIRV in effect
+            return;
+        }
+
+        // check alignment
+        EXPECT_EQ(0u, uintptr_t(a.getVertexShaderSPIRV()) % sizeof(uint32_t));
+        EXPECT_EQ(0u, uintptr_t(a.getFragmentShaderSPIRV()) % sizeof(uint32_t));
+        EXPECT_EQ(0u, uintptr_t(a.getGeometryShaderSPIRV()) % sizeof(uint32_t));
+
+        EXPECT_EQ(0u, uintptr_t(b.getVertexShaderSPIRV()) % sizeof(uint32_t));
+        EXPECT_EQ(0u, uintptr_t(b.getFragmentShaderSPIRV()) % sizeof(uint32_t));
+        EXPECT_EQ(0u, uintptr_t(b.getGeometryShaderSPIRV()) % sizeof(uint32_t));
+
+        // check contents
+        auto checkSPIRVContents = [](const uint32_t* aSpirv, const uint32_t* bSpirv, std::size_t sizeInBytes) {
+            if (sizeInBytes == 0u)
+                return;
+            const SPIRVShaderBlob aSpirvBlob(aSpirv, aSpirv + sizeInBytes / sizeof(uint32_t));
+            const SPIRVShaderBlob bSpirvBlob(bSpirv, bSpirv + sizeInBytes / sizeof(uint32_t));
+            EXPECT_EQ(aSpirvBlob, bSpirvBlob);
+        };
+
+        checkSPIRVContents(a.getVertexShaderSPIRV(), b.getVertexShaderSPIRV(), a.getVertexShaderSPIRVSize());
+        checkSPIRVContents(a.getFragmentShaderSPIRV(), b.getFragmentShaderSPIRV(), a.getFragmentShaderSPIRVSize());
+        checkSPIRVContents(a.getGeometryShaderSPIRV(), b.getGeometryShaderSPIRV(), a.getGeometryShaderSPIRVSize());
     }
 }

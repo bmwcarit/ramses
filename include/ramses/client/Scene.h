@@ -214,6 +214,7 @@ namespace ramses
         bool destroy(SceneObject& object);
 
         /**
+         * \deprecated { This feature will not be available in next major release, contact developer team immediately if you plan on using it }
          * @brief   Expiration timestamp is a point in time till which the scene is considered to be up-to-date.
          * @details Logic on renderer side will check the time every frame and in case it detects the scene
          *          to be rendered after its expiration timestamp it will generate an event (#ramses::IRendererSceneControlEventHandler::sceneExpired).
@@ -234,7 +235,7 @@ namespace ramses
          *
         * @return true for success, false otherwise (check log or #ramses::RamsesFramework::getLastError for details).
          */
-        bool setExpirationTimestamp(uint64_t ptpExpirationTimestampInMilliseconds);
+        [[deprecated]] bool setExpirationTimestamp(uint64_t ptpExpirationTimestampInMilliseconds);
 
         /**
         * @brief   Commits all changes done to the scene since the last flush or since scene creation.
@@ -776,6 +777,7 @@ namespace ramses
         bool createTextureConsumer(const TextureSamplerExternal& sampler, dataConsumerId_t dataId);
 
         /**
+        * \deprecated { This feature will not be available in next major release, contact developer team immediately if you plan on using it }
         * @brief Creates a new SceneReference object.
         * @details The SceneReference object references a scene, which might be unknown
         *          to this RamsesClient, but is or expected to be known to the RamsesRenderer subscribed to this scene.
@@ -793,7 +795,7 @@ namespace ramses
         * @param[in] name The optional name of the created SceneReference.
         * @return A pointer to the created SceneReference.
         */
-        SceneReference* createSceneReference(sceneId_t referencedScene, std::string_view name = {});
+        [[deprecated]] SceneReference* createSceneReference(sceneId_t referencedScene, std::string_view name = {});
 
         /**
         * @brief Tell the RamsesRenderer to link a data provider to a data consumer across two scenes.

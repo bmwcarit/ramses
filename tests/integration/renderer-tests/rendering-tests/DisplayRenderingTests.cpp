@@ -72,6 +72,11 @@ namespace ramses::internal
         testFramework.createTestCase(DisplayRenderingTest_FramebufferWithoutStencil , *this, "DisplayRenderingTest_FramebufferWithoutStencil").m_displayConfigs.push_back(displayConfigWithoutStencil);
 
         testFramework.createTestCase(DisplayRenderingTest_AsyncEffectUploadDisabled, *this, "DisplayRenderingTest_AsyncEffectUploadDisabled").m_displayConfigs.push_back(displayConfigWithoutAsyncEffectUpload);
+
+        ramses::DisplayConfig displayConfigMsaa = RendererTestUtils::CreateTestDisplayConfig(0);
+        displayConfigMsaa.setWindowRectangle(0, 0, DisplayWidth, DisplayHeight);
+        displayConfigMsaa.setMultiSampling(4u);
+        testFramework.createTestCase(DisplayRenderingTest_ReadPixelsMSAA, *this, "DisplayRenderingTest_ReadPixelsMSAA").m_displayConfigs.push_back(displayConfigMsaa);
     }
 
     bool DisplayRenderingTests::run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase)
@@ -109,13 +114,15 @@ namespace ramses::internal
             return RunFramebufferWithoutDepthAndStencilTest(testFramework);
         case DisplayRenderingTest_FramebufferWithoutStencil:
             return RunFramebufferWithoutStencil(testFramework);
+        case DisplayRenderingTest_ReadPixelsMSAA:
+            return RunTwoScenesTest(testFramework, true);
         default:
             assert(!"Invalid renderer test ID!");
             return false;
         }
     }
 
-    bool DisplayRenderingTests::RunTwoScenesTest(RendererTestsFramework& testFramework)
+    bool DisplayRenderingTests::RunTwoScenesTest(RendererTestsFramework& testFramework, bool msaa)
     {
         const ramses::sceneId_t sceneId = testFramework.getScenesRegistry().createScene<ramses::internal::MultipleTrianglesScene>(ramses::internal::MultipleTrianglesScene::THREE_TRIANGLES,
             glm::vec3(2.0f, 0.0f, 5.0f), DisplayWidth, DisplayHeight);
@@ -127,7 +134,7 @@ namespace ramses::internal
         testFramework.getSceneToRendered(sceneId);
         testFramework.getSceneToRendered(otherId);
 
-        return testFramework.renderAndCompareScreenshot("ARendererDisplays_TwoScenes");
+        return testFramework.renderAndCompareScreenshot("ARendererDisplays_TwoScenes", 0u, msaa ? 0.8f : RendererTestUtils::DefaultMaxAveragePercentPerPixel);
     }
 
     bool DisplayRenderingTests::RunUnpublishTest(RendererTestsFramework& testFramework)

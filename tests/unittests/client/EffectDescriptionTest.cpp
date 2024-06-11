@@ -23,24 +23,35 @@ namespace ramses::internal
     protected:
         EEffectUniformSemantic getSemanticForUniform(std::string_view inputName)
         {
-            EFixedSemantics* internalSemantic = effectDesc.impl().getSemanticsMap().get(std::string{inputName});
-            if (internalSemantic == nullptr)
+            auto internalSemanticIt = effectDesc.impl().getSemanticsMap().find(std::string{inputName});
+            if (internalSemanticIt == effectDesc.impl().getSemanticsMap().end())
             {
                 return EEffectUniformSemantic::Invalid;
             }
 
-            return EffectInputSemanticUtils::GetEffectUniformSemanticFromInternal(*internalSemantic);
+            return EffectInputSemanticUtils::GetEffectUniformSemanticFromInternal(internalSemanticIt->second);
+        }
+
+        EEffectUniformSemantic getSemanticForUniform(UniformBufferBinding uboBinding)
+        {
+            auto internalSemanticIt = effectDesc.impl().getSemanticsMap().find(uboBinding);
+            if (internalSemanticIt == effectDesc.impl().getSemanticsMap().end())
+            {
+                return EEffectUniformSemantic::Invalid;
+            }
+
+            return EffectInputSemanticUtils::GetEffectUniformSemanticFromInternal(internalSemanticIt->second);
         }
 
         EEffectAttributeSemantic getSemanticForAttribute(std::string_view inputName)
         {
-            EFixedSemantics* internalSemantic = effectDesc.impl().getSemanticsMap().get(std::string{inputName});
-            if (internalSemantic == nullptr)
+            auto internalSemanticIt = effectDesc.impl().getSemanticsMap().find(std::string{ inputName });
+            if (internalSemanticIt == effectDesc.impl().getSemanticsMap().end())
             {
                 return EEffectAttributeSemantic::Invalid;
             }
 
-            return EffectInputSemanticUtils::GetEffectAttributeSemanticFromInternal(*internalSemantic);
+            return EffectInputSemanticUtils::GetEffectAttributeSemanticFromInternal(internalSemanticIt->second);
         }
 
         EffectDescription effectDesc;
@@ -122,7 +133,7 @@ namespace ramses::internal
 
     TEST_F(EffectDescriptionTest, addSemanticNameAsNULLReportsError)
     {
-        EXPECT_FALSE(effectDesc.setUniformSemantic({}, EEffectUniformSemantic::ViewMatrix));
+        EXPECT_FALSE(effectDesc.setUniformSemantic("", EEffectUniformSemantic::ViewMatrix));
         EXPECT_EQ(0u, effectDesc.impl().getSemanticsMap().size());
     }
 
@@ -131,6 +142,7 @@ namespace ramses::internal
         const char* semantic1 = "my_semantic";
         const char* semantic2 = "my_semantic2";
         const char* semantic3 = "my_semantic3";
+        const UniformBufferBinding uboBinding{ 1u };
         const EEffectUniformSemantic semanticType1 = EEffectUniformSemantic::ViewMatrix;
         const EEffectUniformSemantic semanticType2 = EEffectUniformSemantic::ViewMatrix;
         const EEffectAttributeSemantic semanticType3 = EEffectAttributeSemantic::TextPositions;
@@ -144,11 +156,14 @@ namespace ramses::internal
         EXPECT_EQ(semanticType2, getSemanticForUniform(semantic2));
         EXPECT_EQ(2u, effectDesc.impl().getSemanticsMap().size());
 
+        EXPECT_TRUE(effectDesc.setUniformSemantic(uboBinding.getValue(), EEffectUniformSemantic::ModelBlock));
+        EXPECT_EQ(EEffectUniformSemantic::ModelBlock, getSemanticForUniform(uboBinding));
+
         EXPECT_TRUE(effectDesc.setAttributeSemantic(semantic3, semanticType3));
         EXPECT_EQ(semanticType1, getSemanticForUniform(semantic1));
         EXPECT_EQ(semanticType2, getSemanticForUniform(semantic2));
         EXPECT_EQ(semanticType3, getSemanticForAttribute(semantic3));
-        EXPECT_EQ(3u, effectDesc.impl().getSemanticsMap().size());
+        EXPECT_EQ(4u, effectDesc.impl().getSemanticsMap().size());
     }
 
     TEST_F(EffectDescriptionTest, retrievesUnknownTypeForSemanticNotAdded)

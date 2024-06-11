@@ -225,7 +225,7 @@ namespace ramses::internal
         using ramses::internal::SceneInfo;
         ramses::internal::SceneId internalSceneId(sceneId.getValue());
 
-        EXPECT_CALL(sceneActionsCollector, handleNewSceneAvailable(SceneInfo(internalSceneId, scene->getName()), _));
+        EXPECT_CALL(sceneActionsCollector, handleNewSceneAvailable(SceneInfo{ internalSceneId, "" }, _));
         EXPECT_CALL(sceneActionsCollector, handleInitializeScene(_, _));
         EXPECT_CALL(sceneActionsCollector, handleSceneUpdate_rvr(ramses::internal::SceneId(sceneId.getValue()), _, _));
         EXPECT_CALL(sceneActionsCollector, handleSceneBecameUnavailable(internalSceneId, _));
@@ -245,6 +245,10 @@ namespace ramses::internal
         EXPECT_EQ(client.impl().findSceneReference(sceneId_t{ 123 }, sceneId_t{ 456 }), nullptr);
     }
 
+#ifndef _MSC_VER
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
     TEST_F(ALocalRamsesClient, returnsNullptrOnFindSceneReferenceIfWrongReferencedSceneIdIsProvided)
     {
         auto scene = client.createScene(sceneId_t{ 123 });
@@ -425,6 +429,9 @@ namespace ramses::internal
         testing::StrictMock<ClientEventHandlerMock> handler;
         client.dispatchEvents(handler);
     }
+#ifndef _MSC_VER
+#pragma GCC diagnostic pop
+#endif
 
     TEST(ARamsesFrameworkImplInAClientLib, canCreateAClient)
     {

@@ -35,9 +35,11 @@
 #include "internal/Core/TaskFramework/EnqueueOnlyOneAtATimeQueue.h"
 #include "internal/Core/TaskFramework/TaskForwardingQueue.h"
 #include "internal/PlatformAbstraction/Collections/HashMap.h"
+#include "internal/glslEffectBlock/GlslangInitializer.h"
 #include "impl/RamsesFrameworkTypesImpl.h"
 #include "impl/SceneImpl.h"
 #include "impl/SceneConfigImpl.h"
+#include "impl/SaveFileConfigImpl.h"
 
 #include <memory>
 #include <string_view>
@@ -58,6 +60,8 @@ namespace ramses::internal
 {
     class IInputStream;
     class PrintSceneList;
+    class SetProperty;
+    class SetPropertyAll;
     class FlushSceneVersion;
     class BinaryFileOutputStream;
     class BinaryFileInputStream;
@@ -107,6 +111,11 @@ namespace ramses::internal
 
         bool loadSceneFromFileAsync(std::string_view fileName, const SceneConfigImpl& config);
 
+        bool mergeSceneFromFile(ramses::Scene& scene, std::string_view fileName);
+        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
+        bool mergeSceneFromMemory(ramses::Scene& scene, std::unique_ptr<std::byte[], void (*)(const std::byte*)> data, size_t size);
+        bool mergeSceneFromFileDescriptor(ramses::Scene& scene, int fd, size_t offset, size_t length);
+
         bool dispatchEvents(IClientEventHandler& clientEventHandler);
 
         const SceneVector& getListOfScenes() const;
@@ -135,7 +144,7 @@ namespace ramses::internal
         ramses::internal::ManagedResource createManagedArrayResource(size_t numElements, ramses::EDataType type, const void* arrayData, std::string_view name);
         template <typename MipDataStorageType>
         ramses::internal::ManagedResource createManagedTexture(ramses::internal::EResourceType textureType, uint32_t width, uint32_t height, uint32_t depth, ETextureFormat format, const std::vector<MipDataStorageType>& mipLevelData, bool generateMipChain, const TextureSwizzle& swizzle, std::string_view name);
-        ramses::internal::ManagedResource createManagedEffect(const EffectDescription& effectDesc, std::string_view name, std::string& errorMessages);
+        ramses::internal::ManagedResource createManagedEffect(const EffectDescription& effectDesc, ERenderBackendCompatibility compatibility, std::string_view name, std::string& errorMessages);
 
         void writeLowLevelResourcesToStream(const ResourceObjects& resources, ramses::internal::IOutputStream& resourceOutputStream, bool compress) const;
         static bool ReadRamsesVersionAndPrintWarningOnMismatch(ramses::internal::IInputStream& inputStream, std::string_view verboseFileName, EFeatureLevel featureLevel);
@@ -144,6 +153,10 @@ namespace ramses::internal
         static bool GetFeatureLevelFromFile(int fd, size_t offset, size_t length, EFeatureLevel& detectedFeatureLevel);
 
     private:
+        // This make sure that glslang init/deinit is called maximum once per client to reduce overhead
+        // i.e., since init/deinit internally get called in glslang only when ref-count is Zero
+        GlslangInitializer m_glslangInitializer;
+
         struct SceneCreationConfig
         {
             std::string caller;
@@ -185,12 +198,22 @@ namespace ramses::internal
 
         ramses::internal::ManagedResource manageResource(const ramses::internal::IResource* res);
 
-        Scene* loadSceneSynchonousCommon(const SceneCreationConfig& cconf);
+        Scene* loadSceneSynchronousCommon(const SceneCreationConfig& cconf);
         SceneOwningPtr loadSceneFromCreationConfig(const SceneCreationConfig& cconf);
         SceneOwningPtr loadSceneObjectFromStream(const std::string& caller,
                                          std::string const& filename,
                                          ramses::internal::IInputStream& inputStream, const SceneConfigImpl& config);
         void finalizeLoadedScene(SceneOwningPtr scene);
+        bool readInitialSceneInformation(const SceneCreationConfig& cconfig, SaveFileConfigImpl::ExporterVersion& exporter, std::vector<std::byte>& sceneData);
+        void readAndRegisterResourceFile(IInputStream& inputStream, ramses::Scene& scene, const SceneCreationConfig& cconfig);
+
+        bool mergeSceneSynchronousCommon(ramses::Scene& scene, const SceneCreationConfig& cconfig);
+        bool mergeSceneFromCreationConfig(ramses::Scene& scene, const SceneCreationConfig& cconfig);
+        bool mergeSceneObjectFromStream(ramses::Scene& scene,
+                                        const std::string& caller,
+                                        std::string const& filename,
+                                        ramses::internal::IInputStream& inputStream,
+                                        const SceneConfigImpl& config);
 
         void validateScenes(ValidationReportImpl& report) const;
 
@@ -203,6 +226,8 @@ namespace ramses::internal
         SceneVector m_scenes;
 
         std::shared_ptr<ramses::internal::PrintSceneList> m_cmdPrintSceneList;
+        std::shared_ptr<ramses::internal::SetProperty> m_cmdSetProperty;
+        std::shared_ptr<ramses::internal::SetPropertyAll> m_cmdSetPropertyAll;
         std::shared_ptr<ramses::internal::ValidateCommand> m_cmdPrintValidation;
         std::shared_ptr<ramses::internal::FlushSceneVersion> m_cmdFlushSceneVersion;
         std::shared_ptr<ramses::internal::DumpSceneToFile> m_cmdDumpSceneToFile;

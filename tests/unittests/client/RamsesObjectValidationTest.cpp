@@ -6,6 +6,19 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
+#include "ClientTestUtils.h"
+#include "CreationHelper.h"
+#include "ramses/client/RenderBuffer.h"
+#include "ramses/client/RenderGroup.h"
+#include "ramses/client/RenderPass.h"
+#include "ramses/client/logic/AppearanceBinding.h"
+#include "ramses/client/logic/CameraBinding.h"
+#include "ramses/client/logic/MeshNodeBinding.h"
+#include "ramses/client/logic/NodeBinding.h"
+#include "ramses/client/logic/RenderBufferBinding.h"
+#include "ramses/client/logic/RenderGroupBinding.h"
+#include "ramses/client/logic/RenderGroupBindingElements.h"
+#include "ramses/client/logic/RenderPassBinding.h"
 #include "ramses/framework/ValidationReport.h"
 #include "ramses/framework/RamsesObject.h"
 #include "impl/RamsesObjectImpl.h"
@@ -148,5 +161,239 @@ namespace ramses::internal
         EXPECT_TRUE(report.hasIssue());
 
         EXPECT_EQ(4u, report.getIssues().size());
+    }
+
+    class ASceneObjectBindingValidation : public LocalTestClientWithScene, public ::testing::Test
+    {
+    protected:
+        LogicEngine* le{ m_scene.createLogicEngine() };
+    };
+
+    TEST_F(ASceneObjectBindingValidation, reportsErrorIfAppearanceBindingBoundMoreThanOnce)
+    {
+        auto& obj = createObject<Appearance>("");
+        le->createAppearanceBinding(obj);
+        ValidationReport report;
+        m_scene.validate(report);
+        EXPECT_FALSE(report.hasError());
+
+        auto* invalidBinding = le->createAppearanceBinding(obj);
+        report.clear();
+        m_scene.validate(report);
+        EXPECT_TRUE(report.hasError());
+
+        le->destroy(*invalidBinding);
+        report.clear();
+        m_scene.validate(report);
+        EXPECT_FALSE(report.hasError());
+    }
+
+    TEST_F(ASceneObjectBindingValidation, reportsErrorIfCameraBindingBoundMoreThanOnce)
+    {
+        auto& obj = createObject<PerspectiveCamera>("");
+        SetValidPerspectiveCameraParameters(obj);
+        le->createCameraBinding(obj);
+        ValidationReport report;
+        m_scene.validate(report);
+        EXPECT_FALSE(report.hasError());
+
+        auto* invalidBinding = le->createCameraBinding(obj);
+        report.clear();
+        m_scene.validate(report);
+        EXPECT_TRUE(report.hasError());
+
+        le->destroy(*invalidBinding);
+        report.clear();
+        m_scene.validate(report);
+        EXPECT_FALSE(report.hasError());
+    }
+
+    TEST_F(ASceneObjectBindingValidation, reportsErrorIfMeshNodeBindingBoundMoreThanOnce)
+    {
+        auto& obj = createValidMeshNode();
+        le->createMeshNodeBinding(obj);
+        ValidationReport report;
+        m_scene.validate(report);
+        EXPECT_FALSE(report.hasError());
+
+        auto* invalidBinding = le->createMeshNodeBinding(obj);
+        report.clear();
+        m_scene.validate(report);
+        EXPECT_TRUE(report.hasError());
+
+        le->destroy(*invalidBinding);
+        report.clear();
+        m_scene.validate(report);
+        EXPECT_FALSE(report.hasError());
+    }
+
+    TEST_F(ASceneObjectBindingValidation, reportsErrorIfNodeBindingBoundMoreThanOnce)
+    {
+        auto& obj = createObject<Node>("");
+        le->createNodeBinding(obj);
+        ValidationReport report;
+        m_scene.validate(report);
+        EXPECT_FALSE(report.hasError());
+
+        auto* invalidBinding = le->createNodeBinding(obj);
+        report.clear();
+        m_scene.validate(report);
+        EXPECT_TRUE(report.hasError());
+
+        le->destroy(*invalidBinding);
+        report.clear();
+        m_scene.validate(report);
+        EXPECT_FALSE(report.hasError());
+    }
+
+    TEST_F(ASceneObjectBindingValidation, reportsErrorIfRenderBufferBindingBoundMoreThanOnce)
+    {
+        auto& obj = createObject<ramses::RenderBuffer>("");
+        le->createRenderBufferBinding(obj);
+        ValidationReport report;
+        m_scene.validate(report);
+        EXPECT_FALSE(report.hasError());
+
+        auto* invalidBinding = le->createRenderBufferBinding(obj);
+        report.clear();
+        m_scene.validate(report);
+        EXPECT_TRUE(report.hasError());
+
+        le->destroy(*invalidBinding);
+        report.clear();
+        m_scene.validate(report);
+        EXPECT_FALSE(report.hasError());
+    }
+
+    TEST_F(ASceneObjectBindingValidation, reportsErrorIfRenderGroupBindingBoundMoreThanOnce)
+    {
+        auto& renderGroup = createObject<ramses::RenderGroup>("");
+        MeshNode& mesh = createValidMeshNode();
+        EXPECT_TRUE(renderGroup.addMeshNode(mesh, 3));
+        RenderGroupBindingElements elements;
+        EXPECT_TRUE(elements.addElement(mesh, "Mesh Node"));
+
+        le->createRenderGroupBinding(renderGroup, elements);
+        ValidationReport report;
+        m_scene.validate(report);
+        EXPECT_FALSE(report.hasError());
+
+        auto* invalidBinding = le->createRenderGroupBinding(renderGroup, elements);
+        report.clear();
+        m_scene.validate(report);
+        EXPECT_TRUE(report.hasError());
+
+        le->destroy(*invalidBinding);
+        report.clear();
+        m_scene.validate(report);
+        EXPECT_FALSE(report.hasError());
+    }
+
+    TEST_F(ASceneObjectBindingValidation, reportsErrorIfRenderPassBindingBoundMoreThanOnce)
+    {
+        auto& renderPass = createObject<ramses::RenderPass>("");
+        le->createRenderPassBinding(renderPass);
+        ValidationReport report;
+        m_scene.validate(report);
+        EXPECT_FALSE(report.hasError());
+
+        auto* invalidBinding = le->createRenderPassBinding(renderPass);
+        report.clear();
+        m_scene.validate(report);
+        EXPECT_TRUE(report.hasError());
+
+        le->destroy(*invalidBinding);
+        report.clear();
+        m_scene.validate(report);
+        EXPECT_FALSE(report.hasError());
+    }
+
+    TEST_F(ASceneObjectBindingValidation, reportsErrorIfBindingBoundMoreThanOnceInDifferentLogicEngines)
+    {
+        auto& meshnode = createValidMeshNode();
+        auto* binding = le->createMeshNodeBinding(meshnode);
+        ValidationReport report;
+        m_scene.validate(report);
+        EXPECT_FALSE(report.hasError());
+
+        LogicEngine* le2{ m_scene.createLogicEngine() };
+        le2->createMeshNodeBinding(meshnode);
+        report.clear();
+        m_scene.validate(report);
+        EXPECT_TRUE(report.hasError());
+
+        le->destroy(*binding);
+        report.clear();
+        m_scene.validate(report);
+        EXPECT_FALSE(report.hasError());
+    }
+
+    TEST_F(ASceneObjectBindingValidation, validateCameraBindingAndNodeBindingToSameCameraObject)
+    {
+        auto& obj = createObject<PerspectiveCamera>("");
+        SetValidPerspectiveCameraParameters(obj);
+        le->createCameraBinding(obj);
+        ValidationReport report;
+        m_scene.validate(report);
+        EXPECT_FALSE(report.hasError());
+
+        le->createNodeBinding(obj);
+        report.clear();
+        m_scene.validate(report);
+        EXPECT_FALSE(report.hasError());
+
+        auto* invalidNodeBinding = le->createNodeBinding(obj);
+        report.clear();
+        m_scene.validate(report);
+        EXPECT_TRUE(report.hasError());
+
+        le->destroy(*invalidNodeBinding);
+        report.clear();
+        m_scene.validate(report);
+        EXPECT_FALSE(report.hasError());
+
+        auto* invalidCamBinding = le->createCameraBinding(obj);
+        report.clear();
+        m_scene.validate(report);
+        EXPECT_TRUE(report.hasError());
+
+        le->destroy(*invalidCamBinding);
+        report.clear();
+        m_scene.validate(report);
+        EXPECT_FALSE(report.hasError());
+    }
+
+    TEST_F(ASceneObjectBindingValidation, validateMeshNodeBindingAndNodeBindingToSameMeshNodeObject)
+    {
+        auto& obj = createValidMeshNode();
+        le->createMeshNodeBinding(obj);
+        ValidationReport report;
+        m_scene.validate(report);
+        EXPECT_FALSE(report.hasError());
+
+        le->createNodeBinding(obj);
+        report.clear();
+        m_scene.validate(report);
+        EXPECT_FALSE(report.hasError());
+
+        auto* invalidNodeBinding = le->createNodeBinding(obj);
+        report.clear();
+        m_scene.validate(report);
+        EXPECT_TRUE(report.hasError());
+
+        le->destroy(*invalidNodeBinding);
+        report.clear();
+        m_scene.validate(report);
+        EXPECT_FALSE(report.hasError());
+
+        auto* invalidMeshNodeBinding = le->createMeshNodeBinding(obj);
+        report.clear();
+        m_scene.validate(report);
+        EXPECT_TRUE(report.hasError());
+
+        le->destroy(*invalidMeshNodeBinding);
+        report.clear();
+        m_scene.validate(report);
+        EXPECT_FALSE(report.hasError());
     }
 }

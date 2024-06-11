@@ -17,6 +17,7 @@ COMPILERS = [
     'gcc',
     'llvm',
     'clang-tidy',
+    'clang15'
 ]
 
 # Default is the first entry
@@ -48,5 +49,7 @@ class CommonConfig:
             return self.src_dir / 'cmake/toolchain/Linux_X86_64.toolchain'
         elif self.compiler in ['llvm', 'clang-tidy']:
             return self.src_dir / 'cmake/toolchain/Linux_X86_64_llvm.toolchain'
+        elif self.compiler in ['clang15']:
+            return self.src_dir / 'cmake/toolchain/Linux_X86_64_clang15.toolchain'
         else:
             return None

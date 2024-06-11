@@ -32,13 +32,17 @@ namespace ramses::internal
     class RamsesBindingImpl : public LogicNodeImpl
     {
     public:
-        explicit RamsesBindingImpl(SceneImpl& scene, std::string_view name, sceneObjectId_t id) noexcept;
+        explicit RamsesBindingImpl(SceneImpl& scene, std::string_view name, sceneObjectId_t id, SceneObject& boundObject) noexcept;
+
+        [[nodiscard]] const SceneObject& getBoundObject() const;
 
     protected:
         // Used by subclasses to handle serialization
         [[nodiscard]] static flatbuffers::Offset<rlogic_serialization::RamsesReference> SerializeRamsesReference(const ramses::SceneObject& object, flatbuffers::FlatBufferBuilder& builder);
 
         void setRootInputs(std::unique_ptr<PropertyImpl> rootInputs);
+
+        std::reference_wrapper<SceneObject> m_boundObject;
 
     private:
         using LogicNodeImpl::setRootProperties;

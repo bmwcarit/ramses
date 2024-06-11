@@ -265,6 +265,7 @@ namespace ramses::internal
     {
         CameraBinding& cameraBinding = *m_logicEngine->createCameraBinding(*m_perspectiveCam, "");
         EXPECT_EQ(m_perspectiveCam, &cameraBinding.getRamsesCamera());
+        EXPECT_EQ(m_perspectiveCam, &cameraBinding.impl().getBoundObject());
     }
 
     TEST_F(ACameraBinding, HasInputsAfterInitializingWithPerspectiveCamera)
@@ -488,13 +489,6 @@ namespace ramses::internal
                 EXPECT_EQ(EPropertySemantics::BindingInput, inputProperty->impl().getPropertySemantics());
             }
         }
-    }
-
-    TEST_F(ACameraBinding, ReturnsBoundRamsesCamera)
-    {
-        auto* cameraBinding = m_logicEngine->createCameraBinding(*m_perspectiveCam, "");
-
-        EXPECT_EQ(m_perspectiveCam, &cameraBinding->getRamsesCamera());
     }
 
     TEST_F(ACameraBinding, DoesNotModifyRamsesWithoutUpdateBeingCalledWithPerspectiveCamera)

@@ -29,7 +29,8 @@ namespace ramses::internal
                                const_cast<RendererEventCollector&>(rendererEventCollector),
                                const_cast<FrameTimer&>(frameTimer),
                                const_cast<SceneExpirationMonitor&>(expirationMonitor),
-                               const_cast<IThreadAliveNotifier&>(notifier))
+                               const_cast<IThreadAliveNotifier&>(notifier),
+                               EFeatureLevel_Latest)
     {
     }
 
@@ -75,7 +76,7 @@ namespace ramses::internal
     std::unique_ptr<IRendererResourceManager> RendererSceneUpdaterFacade::createResourceManager(
         IRenderBackend& renderBackend,
         IEmbeddedCompositingManager& embeddedCompositingManager,
-        const DisplayConfig& displayConfig,
+        const DisplayConfigData& displayConfig,
         IBinaryShaderCache* binaryShaderCache)
     {
         RendererSceneUpdaterPartialMock::createResourceManager(renderBackend, embeddedCompositingManager, displayConfig, binaryShaderCache);

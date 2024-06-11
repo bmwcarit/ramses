@@ -7,6 +7,7 @@
 //  -------------------------------------------------------------------------
 #include "ViewerHeadlessApp.h"
 #include "ImguiWrapper.h"
+#include "CLI/CLI.hpp"
 
 namespace ramses::internal
 {
@@ -25,6 +26,7 @@ namespace ramses::internal
     void ViewerHeadlessApp::registerOptions(CLI::App& cli)
     {
         ViewerApp::registerOptions(cli);
+        cli.get_option("scene")->required();
     }
 
     ViewerHeadlessApp::ExitCode ViewerHeadlessApp::run()

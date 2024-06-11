@@ -6,7 +6,7 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "internal/Core/Utils/LogMacros.h"
 #include "internal/Core/Utils/Warnings.h"
 
@@ -15,7 +15,7 @@
 
 namespace ramses::internal
 {
-    Window_Android::Window_Android(const DisplayConfig& displayConfig, IWindowEventHandler &windowEventHandler, uint32_t id)
+    Window_Android::Window_Android(const DisplayConfigData& displayConfig, IWindowEventHandler &windowEventHandler, uint32_t id)
         : Window_Base(displayConfig, windowEventHandler, id)
         , m_nativeWindow(static_cast<ANativeWindow*>(displayConfig.getAndroidNativeWindow().getValue()))
     {

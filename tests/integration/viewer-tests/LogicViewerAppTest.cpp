@@ -120,7 +120,7 @@ Pos=0,0
 Size=540,720
 Collapsed=0
 
-[Window][Scene[1]: simple triangle scene (FeatureLevel 01)]
+[Window][Scene[1]: simple triangle scene (FeatureLevel 02)]
 Pos=0,0
 Size=540,720
 Collapsed=0
@@ -574,7 +574,12 @@ namespace ramses::internal
         EXPECT_EQ("143262", str); // image differences
     }
 
-    TYPED_TEST(ALogicViewerApp_T, emptyParam)
+    TEST_F(ALogicViewerGuiApp, emptyParam)
+    {
+        EXPECT_EQ(0, this->createApp());
+    }
+
+    TEST_F(ALogicViewerHeadlessApp, emptyParam)
     {
         EXPECT_EQ(static_cast<int>(CLI::ExitCodes::RequiredError), this->createApp());
     }
@@ -596,13 +601,13 @@ namespace ramses::internal
     TYPED_TEST(ALogicViewerApp_T, luaFileDoesNotExist)
     {
         testing::internal::CaptureStderr();
-        EXPECT_EQ(static_cast<int>(CLI::ExitCodes::ValidationError), this->createApp({ ramsesFile, "notExisting.lua" }));
+        EXPECT_EQ(static_cast<int>(CLI::ExitCodes::ValidationError), this->createApp({ ramsesFile, "--lua", "notExisting.lua" }));
         EXPECT_THAT(testing::internal::GetCapturedStderr(), testing::HasSubstr("File does not exist: notExisting.lua"));
     }
 
     TYPED_TEST(ALogicViewerApp_T, writeLuaSimplified)
     {
-        EXPECT_EQ(0, this->createApp({ "--write-config", ramsesFile }));
+        EXPECT_EQ(0, this->createApp({"--write-config", "--", ramsesFile}));
         EXPECT_FALSE(this->m_app->getSettings()->luaPreferSimplified);
         this->m_app->getSettings()->luaPreferSimplified = true;
         EXPECT_EQ(ViewerApp::ExitCode::Ok, this->m_app->run());
@@ -611,7 +616,7 @@ namespace ramses::internal
 
     TYPED_TEST(ALogicViewerApp_T, writeLuaNotSimplifiedIdentifiers)
     {
-        EXPECT_EQ(0, this->createApp({ "--write-config", ramsesFile }));
+        EXPECT_EQ(0, this->createApp({"--write-config", "--", ramsesFile}));
         EXPECT_FALSE(this->m_app->getSettings()->luaPreferIdentifiers);
         this->m_app->getSettings()->luaPreferIdentifiers = true;
         EXPECT_EQ(ViewerApp::ExitCode::Ok, this->m_app->run());
@@ -620,7 +625,7 @@ namespace ramses::internal
 
     TYPED_TEST(ALogicViewerApp_T, writeLuaNotSimplifiedObjectIds)
     {
-        EXPECT_EQ(0, this->createApp({ "--write-config", ramsesFile }));
+        EXPECT_EQ(0, this->createApp({"--write-config", "--", ramsesFile}));
         EXPECT_FALSE(this->m_app->getSettings()->luaPreferObjectIds);
         this->m_app->getSettings()->luaPreferObjectIds = true;
         EXPECT_EQ(ViewerApp::ExitCode::Ok, this->m_app->run());
@@ -629,7 +634,7 @@ namespace ramses::internal
 
     TYPED_TEST(ALogicViewerApp_T, writeDefaultLuaConfiguration)
     {
-        EXPECT_EQ(0, this->createApp({ "--write-config", ramsesFile }));
+        EXPECT_EQ(0, this->createApp({"--write-config", "--", ramsesFile}));
         EXPECT_EQ(ViewerApp::ExitCode::Ok, this->m_app->run());
         EXPECT_TRUE(fs::exists(luaFile));
         EXPECT_EQ(Result(), this->m_app->getLogicViewer()->loadLuaFile(luaFile));
@@ -667,8 +672,8 @@ namespace ramses::internal
         EXPECT_TRUE(m_app->doOneLoop());
         EXPECT_TRUE(m_app->doOneLoop());
         EXPECT_TRUE(m_app->doOneLoop());
-        auto imgui = m_app->getImguiClientHelper();
-        imgui->windowClosed(ramses::displayId_t());
+        auto ctrl = m_app->getRendererControl();
+        ctrl->windowClosed(ramses::displayId_t());
         EXPECT_FALSE(m_app->doOneLoop());
     }
 
@@ -680,8 +685,8 @@ namespace ramses::internal
         EXPECT_TRUE(m_app->doOneLoop());
         EXPECT_TRUE(m_app->doOneLoop());
         EXPECT_TRUE(m_app->doOneLoop());
-        auto imgui = m_app->getImguiClientHelper();
-        imgui->windowClosed(ramses::displayId_t());
+        auto ctrl = m_app->getRendererControl();
+        ctrl->windowClosed(ramses::displayId_t());
         EXPECT_FALSE(m_app->doOneLoop());
     }
 
@@ -968,7 +973,8 @@ namespace ramses::internal
             end
         )");
         EXPECT_TRUE(keyPress(ramses::EKeyCode_F5)); // reload configuration
-        EXPECT_TRUE(keyPress(ramses::EKeyCode_F11)); // hide UI
+        EXPECT_TRUE(keyPress(ramses::EKeyCode_F11)); // hide main window
+        EXPECT_TRUE(keyPress(ramses::EKeyCode_F10)); // hide Logic window
 
         EXPECT_EQ(Result(), m_app->getLogicViewer()->call("screenshot"));
         EXPECT_TRUE(CompareImage("screenshot.png", "ALogicViewerApp_clearColorCmdLine.png", 0.5f)); // increased tolerance due to some platforms being 1/255 off covering large area (as background)

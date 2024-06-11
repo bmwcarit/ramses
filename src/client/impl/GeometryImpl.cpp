@@ -80,8 +80,8 @@ namespace ramses::internal
 
         DeserializationContext::ReadDependentPointerAndStoreAsID(inStream, m_effectImpl);
 
-        inStream >> m_attributeLayout;
-        inStream >> m_attributeInstance;
+        serializationContext.deserializeAndMap(inStream, m_attributeLayout);
+        serializationContext.deserializeAndMap(inStream, m_attributeInstance);
         inStream >> m_indicesCount;
 
         serializationContext.addForDependencyResolve(this);
@@ -328,8 +328,7 @@ namespace ramses::internal
             return false;
         }
 
-        // data field index on low level scene is indexed starting after reserved slot for indices
-        const ramses::internal::DataFieldHandle dataField(static_cast<uint32_t>(input.getInputIndex()) + IndicesDataFieldIndex + 1u);
+        const auto dataField(input.getDataFieldHandle());
         getIScene().setDataResource(m_attributeInstance, dataField, bufferResource.getLowlevelResourceHash(), ramses::internal::DataBufferHandle::Invalid(), instancingDivisor, offset, stride);
 
         return true;
@@ -370,8 +369,7 @@ namespace ramses::internal
             return false;
         }
 
-        // data field index on low level scene is indexed starting after reserved slot for indices
-        const ramses::internal::DataFieldHandle dataField(static_cast<uint32_t>(input.getInputIndex()) + IndicesDataFieldIndex + 1u);
+        const auto dataField(input.getDataFieldHandle());
         getIScene().setDataResource(m_attributeInstance, dataField, ramses::internal::ResourceContentHash::Invalid(), dataBufferHandle, instancingDivisor, offset, stride);
 
         return true;

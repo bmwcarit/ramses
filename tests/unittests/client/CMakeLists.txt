@@ -14,30 +14,27 @@ if(ramses-sdk_TEXT_SUPPORT)
         text/*.cpp)
 endif()
 
-if(ramses-sdk_ENABLE_LOGIC)
-    file(GLOB_RECURSE RAMSES_CLIENT_LOGIC_TEST_FILES
-        logic/*.cpp
-        logic/*.h
-    )
-
-    set(RAMSES_CLIENT_LOGIC_TEST_INCLUDE_DIRS
-        logic/shared
-    )
-endif()
+file(GLOB_RECURSE RAMSES_CLIENT_LOGIC_TEST_FILES
+    logic/*.cpp
+    logic/*.h
+)
 
 createModule(
     NAME                    ramses-client-test
     TYPE                    BINARY
     INCLUDE_PATHS           .
-                            ${RAMSES_CLIENT_LOGIC_TEST_INCLUDE_DIRS}
+                            utils
     SRC_FILES               *.h
                             *.cpp
+                            utils/*.h
+                            utils/*.cpp
                             ${RAMSES_CLIENT_TEXT_TEST_FILES}
                             ${RAMSES_CLIENT_LOGIC_TEST_FILES}
     RESOURCE_FOLDERS        res
     DEPENDENCIES            ramses-client
                             framework-test-utils
                             ramses-gmock-main
+                            glslang-init-gtest-env
 )
 
 makeTestFromTarget(

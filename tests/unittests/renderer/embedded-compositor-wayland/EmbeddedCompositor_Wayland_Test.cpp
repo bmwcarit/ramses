@@ -8,8 +8,8 @@
 
 #include "gmock/gmock.h"
 #include "TestWithWaylandEnvironment.h"
-#include "internal/RendererLib/RendererConfig.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/RendererConfigData.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/EmbeddedCompositor_Wayland.h"
 #include "ContextMock.h"
 #include "PlatformMock.h"
@@ -166,7 +166,7 @@ namespace ramses::internal
                 WaylandEnvironmentUtils::UnsetVariable(WaylandEnvironmentVariable::XDGRuntimeDir);
             }
 
-            DisplayConfig displayConfig;
+            DisplayConfigData displayConfig;
             displayConfig.setWaylandEmbeddedCompositingSocketName(ecSocketName);
             displayConfig.setWaylandEmbeddedCompositingSocketGroup(ecSocketGroup);
             displayConfig.setWaylandEmbeddedCompositingSocketFD(ecSocketFD);

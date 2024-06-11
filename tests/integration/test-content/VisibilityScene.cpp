@@ -19,8 +19,8 @@ namespace ramses::internal
         : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
     {
         ramses::Effect* effect = getTestEffect("ramses-test-client-basic");
-        Triangle triangle1(m_scene, *effect, TriangleAppearance::EColor_Red, 1.f, TriangleGeometry::EVerticesOrder_CCW);
-        Triangle triangle2(m_scene, *effect, TriangleAppearance::EColor_Blue, 1.f, TriangleGeometry::EVerticesOrder_CW); // different vertices order forces different indices resource used
+        Triangle triangle1(m_scene, *effect, TriangleAppearance::EColor::Red, 1.f, TriangleGeometry::EVerticesOrder_CCW);
+        Triangle triangle2(m_scene, *effect, TriangleAppearance::EColor::Blue, 1.f, TriangleGeometry::EVerticesOrder_CW); // different vertices order forces different indices resource used
         triangle2.GetAppearance().setCullingMode(ramses::ECullMode::Disabled);
 
         auto triangle1mesh = m_scene.createMeshNode("triangle1");

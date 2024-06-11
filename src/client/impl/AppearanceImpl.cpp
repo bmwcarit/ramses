@@ -30,6 +30,7 @@
 #include "internal/SceneGraph/SceneUtils/DataLayoutCreationHelper.h"
 #include "internal/SceneGraph/SceneUtils/ISceneDataArrayAccessor.h"
 #include "internal/SceneGraph/SceneUtils/DataInstanceHelper.h"
+#include "internal/SceneGraph/SceneUtils/UniformBufferUtils.h"
 #include "internal/SceneGraph/SceneAPI/EDataType.h"
 #include <algorithm>
 
@@ -254,9 +255,9 @@ namespace ramses::internal
 
         DeserializationContext::ReadDependentPointerAndStoreAsID(inStream, m_effectImpl);
 
-        inStream >> m_renderStateHandle;
-        inStream >> m_uniformLayout;
-        inStream >> m_uniformInstance;
+        serializationContext.deserializeAndMap(inStream, m_renderStateHandle);
+        serializationContext.deserializeAndMap(inStream, m_uniformLayout);
+        serializationContext.deserializeAndMap(inStream, m_uniformInstance);
 
         uint32_t bindableInputCount = 0u;
         inStream >> bindableInputCount;
@@ -270,7 +271,7 @@ namespace ramses::internal
 
             BindableInput bindableInput;
             DeserializationContext::ReadDependentPointerAndStoreAsID(inStream, bindableInput.externallyBoundDataObject);
-            inStream >> bindableInput.dataReference;
+            serializationContext.deserializeAndMap(inStream, bindableInput.dataReference);
 
             m_bindableInputs.put(inputIndex, bindableInput);
         }
@@ -385,6 +386,17 @@ namespace ramses::internal
 
     void AppearanceImpl::deinitializeFrameworkData()
     {
+        const auto& dataFields = getIScene().getDataLayout(m_uniformLayout).getDataFields();
+        for (DataFieldHandle datFieldHandle{ 0u }; datFieldHandle < dataFields.size(); ++datFieldHandle)
+        {
+            const auto& field = dataFields[datFieldHandle.asMemoryHandle()];
+            if (field.dataType == EDataType::UniformBuffer && field.semantics == EFixedSemantics::Invalid)
+            {
+                const auto ubHandle = getIScene().getDataUniformBuffer(m_uniformInstance, datFieldHandle);
+                getIScene().releaseUniformBuffer(ubHandle);
+            }
+        }
+
         getIScene().releaseDataInstance(m_uniformInstance);
         m_uniformInstance = DataInstanceHandle::Invalid();
 
@@ -426,21 +438,36 @@ namespace ramses::internal
 
     void AppearanceImpl::createUniformDataInstance(const EffectImpl& effect)
     {
-        InputIndexVector referencedInputs;
         const EffectInputInformationVector& uniformsInputInfo = effect.getUniformInputInformation();
-        m_uniformLayout = DataLayoutCreationHelper::CreateUniformDataLayoutMatchingEffectInputs(getIScene(), uniformsInputInfo, referencedInputs, effect.getLowlevelResourceHash());
+        InputIndexVector referencedInputs;
+        std::tie(m_uniformLayout, referencedInputs) = DataLayoutCreationHelper::CreateUniformDataLayoutMatchingEffectInputs(getIScene(), uniformsInputInfo, effect.getLowlevelResourceHash());
 
         m_uniformInstance = getIScene().allocateDataInstance(m_uniformLayout, {});
 
         m_bindableInputs.reserve(m_bindableInputs.size() + referencedInputs.size());
         for (const auto& refInput : referencedInputs)
         {
-            const DataFieldHandle dataField(refInput);
+            const DataFieldHandle dataField(uniformsInputInfo[refInput].dataFieldHandle);
 
             BindableInput bindableInput;
             bindableInput.externallyBoundDataObject = nullptr;
             bindableInput.dataReference = DataLayoutCreationHelper::CreateAndBindDataReference(getIScene(), m_uniformInstance, dataField, uniformsInputInfo[refInput].dataType);
             m_bindableInputs.put(refInput, bindableInput);
+        }
+
+        createUniformBuffers(uniformsInputInfo);
+    }
+
+    void AppearanceImpl::createUniformBuffers(const EffectInputInformationVector& uniformsInputs)
+    {
+        for (const auto& uniformInput : uniformsInputs)
+        {
+            if (uniformInput.dataType == EDataType::UniformBuffer && uniformInput.semantics == EFixedSemantics::Invalid)
+            {
+                assert(uniformInput.uniformBufferElementSize.isValid());
+                const auto ubHandle = getIScene().allocateUniformBuffer(uniformInput.uniformBufferElementSize.getValue(), {});
+                getIScene().setDataUniformBuffer(m_uniformInstance, uniformInput.dataFieldHandle, ubHandle);
+            }
         }
     }
 
@@ -508,7 +535,7 @@ namespace ramses::internal
             return false;
         }
 
-        const DataFieldHandle dataField(inputIndex);
+        const DataFieldHandle dataField = input.getDataFieldHandle();
         if (isBindable)
         {
             const DataInstanceHandle dataReference = getDataReference(dataField, input.getInternalDataType());
@@ -517,6 +544,10 @@ namespace ramses::internal
             {
                 ISceneDataArrayAccessor::SetDataArray<T>(&getIScene(), dataReference, DataFieldHandle(0u), 1u, values);
             }
+        }
+        else if (input.getUniformBufferFieldOffset().isValid())
+        {
+            setUniformBufferField(elementCount, values, input);
         }
         else
         {
@@ -530,6 +561,39 @@ namespace ramses::internal
         }
 
         return true;
+    }
+
+    template <typename T>
+    void AppearanceImpl::setUniformBufferField(size_t elementCount, const T* values, const EffectInputImpl& input)
+    {
+        const DataFieldHandle dataField = input.getDataFieldHandle();
+        const auto fieldOffset = input.getUniformBufferFieldOffset().getValue();
+        const auto ubHandle = getIScene().getDataUniformBuffer(m_uniformInstance, dataField);
+        const std::byte* currentValueRaw = getIScene().getUniformBuffer(ubHandle).data.data() + fieldOffset;
+
+        if (UniformBufferUtils::IsDataTightlyPacked<T>(elementCount))
+        {
+            // optimally only types which fall into this category should be used, i.e., mat4, vec4, mat34, mat24
+            // or scalars that could be tightly packed according to their situation in std140
+            const auto size = uint32_t(elementCount * sizeof(T));
+            if (PlatformMemory::Compare(currentValueRaw, values, size) != 0)
+            {
+                getIScene().updateUniformBuffer(ubHandle, fieldOffset, size, reinterpret_cast<const std::byte*>(values));
+            }
+        }
+        else
+        {
+            const auto elementSize = input.getUniformBufferElementSize().getValue();
+            for (uint32_t i = 0u; i < elementCount; ++i)
+            {
+                const auto elementArrayOffset = i * elementSize;
+                const auto newValuePadded{ UniformBufferUtils::Pad(values[i]) };
+                if (PlatformMemory::Compare(currentValueRaw + elementArrayOffset, &newValuePadded, elementSize) != 0)
+                {
+                    getIScene().updateUniformBuffer(ubHandle, fieldOffset + elementArrayOffset, elementSize, reinterpret_cast<const std::byte*>(&newValuePadded));
+                }
+            }
+        }
     }
 
     template <typename T>
@@ -551,11 +615,15 @@ namespace ramses::internal
             return false;
         }
 
-        const DataFieldHandle dataField(static_cast<uint32_t>(input.getInputIndex()));
+        const DataFieldHandle dataField = input.getDataFieldHandle();
         if (isBindable)
         {
             const DataInstanceHandle dataReference = getDataReference(dataField, input.getInternalDataType());
             PlatformMemory::Copy(values, ISceneDataArrayAccessor::GetDataArray<T>(&getIScene(), dataReference, DataFieldHandle(0u)), EnumToSize(input.getInternalDataType()));
+        }
+        else if (input.getUniformBufferFieldOffset().isValid())
+        {
+            getUniformBufferField(elementCount, values, input);
         }
         else
         {
@@ -563,6 +631,29 @@ namespace ramses::internal
         }
 
         return true;
+    }
+
+    template <typename T>
+    void AppearanceImpl::getUniformBufferField(size_t elementCount, T* values, const EffectInputImpl& input) const
+    {
+        const DataFieldHandle dataField = input.getDataFieldHandle();
+        const auto fieldOffset = input.getUniformBufferFieldOffset().getValue();
+        const auto ubHandle = getIScene().getDataUniformBuffer(m_uniformInstance, dataField);
+        const std::byte* fieldDataRaw = getIScene().getUniformBuffer(ubHandle).data.data() + fieldOffset;
+        if (UniformBufferUtils::IsDataTightlyPacked<T>(elementCount))
+        {
+            PlatformMemory::Copy(values, fieldDataRaw, elementCount * sizeof(T));
+        }
+        else
+        {
+            for (uint32_t i = 0u; i < elementCount; ++i)
+            {
+                const auto elementArrayOffset = i * input.getUniformBufferElementSize().getValue();
+                using PaddingT = typename UniformBufferUtils::std140_padding_info<T>::padding_type_t;
+                const auto& valueWithPaddingRef = *reinterpret_cast<const PaddingT*>(fieldDataRaw + elementArrayOffset);
+                UniformBufferUtils::RemovePadding(valueWithPaddingRef, values[i]);
+            }
+        }
     }
 
     bool AppearanceImpl::setInputTexture(const EffectInputImpl& input, const TextureSamplerImpl& textureSampler)
@@ -583,7 +674,7 @@ namespace ramses::internal
             {ramses::internal::EDataType::TextureSampler2D, ramses::internal::EDataType::TextureSampler3D, ramses::internal::EDataType::TextureSamplerCube}))
             return false;
 
-        const DataFieldHandle dataField(static_cast<uint32_t>(input.getInputIndex()));
+        const DataFieldHandle dataField = input.getDataFieldHandle();
         const auto samplerHandle = getIScene().getDataTextureSamplerHandle(m_uniformInstance, dataField);
         if (samplerHandle.isValid())
         {
@@ -607,7 +698,7 @@ namespace ramses::internal
             {ramses::internal::EDataType::TextureSampler2DMS}))
             return false;
 
-        const DataFieldHandle dataField(static_cast<uint32_t>(input.getInputIndex()));
+        const DataFieldHandle dataField = input.getDataFieldHandle();
         const auto samplerHandle = getIScene().getDataTextureSamplerHandle(m_uniformInstance, dataField);
         if (samplerHandle.isValid())
         {
@@ -631,7 +722,7 @@ namespace ramses::internal
             {ramses::internal::EDataType::TextureSamplerExternal}))
             return false;
 
-        const DataFieldHandle dataField(static_cast<uint32_t>(input.getInputIndex()));
+        const DataFieldHandle dataField = input.getDataFieldHandle();
         const auto samplerHandle = getIScene().getDataTextureSamplerHandle(m_uniformInstance, dataField);
         if (samplerHandle.isValid())
         {
@@ -658,6 +749,12 @@ namespace ramses::internal
 
         if (!checkEffectInputValidityAndValueCompatibility(input, 1u, {DataTypeUtils::ConvertDataTypeToInternal(dataObject.getDataType())}))
             return false;
+
+        if (input.getUniformBufferFieldOffset().isValid())
+        {
+            getErrorReporting().set("Appearance::bindInput failed, input is part of a uniform buffer");
+            return false;
+        }
 
         const auto inputIndex = static_cast<uint32_t>(input.getInputIndex());
         BindableInput* bindableInput = m_bindableInputs.get(inputIndex);
@@ -695,7 +792,7 @@ namespace ramses::internal
         if (!checkEffectInputValidityAndValueCompatibility(input, 1u, {textureSampler.getTextureDataType()}))
             return false;
 
-        const DataFieldHandle dataField(static_cast<uint32_t>(input.getInputIndex()));
+        const DataFieldHandle dataField = input.getDataFieldHandle();
         const TextureSamplerHandle samplerHandle = textureSampler.getTextureSamplerHandle();
         getIScene().setDataTextureSamplerHandle(m_uniformInstance, dataField, samplerHandle);
         return true;
@@ -704,7 +801,7 @@ namespace ramses::internal
     bool AppearanceImpl::bindInputInternal(const EffectInputImpl& input, const DataObjectImpl& dataObject)
     {
         const auto inputIndex = static_cast<uint32_t>(input.getInputIndex());
-        const DataFieldHandle dataField(inputIndex);
+        const DataFieldHandle dataField = input.getDataFieldHandle();
         getIScene().setDataReference(m_uniformInstance, dataField, dataObject.getDataReference());
 
         BindableInput* bindableInput = m_bindableInputs.get(inputIndex);

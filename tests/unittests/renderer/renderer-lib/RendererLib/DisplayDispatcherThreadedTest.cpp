@@ -23,7 +23,7 @@ namespace ramses::internal
     {
     public:
         ADisplayDispatcherThreaded()
-            : m_displayDispatcher(RendererConfig{}, m_sceneEventSender, m_notifier, true)
+            : m_displayDispatcher(RendererConfigData{}, m_sceneEventSender, m_notifier, true)
         {
             m_displayDispatcher.setLoopMode(ELoopMode::UpdateOnly);
             m_displayDispatcher.m_expectedLoopModeForNewDisplays = ELoopMode::UpdateOnly;
@@ -41,7 +41,7 @@ namespace ramses::internal
 
         void createDisplay(DisplayHandle displayHandle)
         {
-            m_commandBuffer.enqueueCommand(RendererCommand::CreateDisplay{ displayHandle, DisplayConfig{}, nullptr });
+            m_commandBuffer.enqueueCommand(RendererCommand::CreateDisplay{ displayHandle, DisplayConfigData{}, nullptr });
 
             EXPECT_CALL(m_displayDispatcher, createDisplayBundle(displayHandle, _));
             update();
@@ -258,7 +258,7 @@ namespace ramses::internal
         DisplayHandle display{ 1u };
         for (int i = 0; i < 20; ++i)
         {
-            m_commandBuffer.enqueueCommand(RendererCommand::CreateDisplay{ display++, DisplayConfig{}, nullptr });
+            m_commandBuffer.enqueueCommand(RendererCommand::CreateDisplay{ display++, DisplayConfigData{}, nullptr });
             m_displayDispatcher.dispatchCommands(m_commandBuffer);
         }
 
@@ -290,7 +290,7 @@ namespace ramses::internal
         DisplayHandle display{ 1u };
         for (int i = 0; i < 20; ++i)
         {
-            m_commandBuffer.enqueueCommand(RendererCommand::CreateDisplay{ display++, DisplayConfig{}, nullptr });
+            m_commandBuffer.enqueueCommand(RendererCommand::CreateDisplay{ display++, DisplayConfigData{}, nullptr });
             m_displayDispatcher.dispatchCommands(m_commandBuffer);
         }
 

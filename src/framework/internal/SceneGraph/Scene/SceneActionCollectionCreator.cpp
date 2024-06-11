@@ -25,8 +25,9 @@
 
 namespace ramses::internal
 {
-    SceneActionCollectionCreator::SceneActionCollectionCreator(SceneActionCollection& collection_)
-        : collection(collection_)
+    SceneActionCollectionCreator::SceneActionCollectionCreator(SceneActionCollection& collection_, EFeatureLevel featureLevel)
+        : collection{ collection_ }
+        , m_featureLevel{ featureLevel }
     {
     }
 
@@ -647,6 +648,14 @@ namespace ramses::internal
         collection.write(dataRef);
     }
 
+    void SceneActionCollectionCreator::setDataUniformBuffer(DataInstanceHandle handle, DataFieldHandle field, UniformBufferHandle uniformBufferHandle)
+    {
+        collection.beginWriteSceneAction(ESceneActionId::SetDataUniformBuffer);
+        collection.write(handle);
+        collection.write(field);
+        collection.write(uniformBufferHandle);
+    }
+
     void SceneActionCollectionCreator::allocateTextureSampler(const TextureSampler& sampler, TextureSamplerHandle handle)
     {
         collection.beginWriteSceneAction(ESceneActionId::AllocateTextureSampler);
@@ -740,6 +749,27 @@ namespace ramses::internal
         collection.write(handle);
         collection.write(offsetInBytes);
         collection.write(data, dataSizeInBytes);
+    }
+
+    void SceneActionCollectionCreator::allocateUniformBuffer(uint32_t size, UniformBufferHandle handle)
+    {
+        collection.beginWriteSceneAction(ESceneActionId::AllocateUniformBuffer);
+        collection.write(handle);
+        collection.write(size);
+    }
+
+    void SceneActionCollectionCreator::releaseUniformBuffer(UniformBufferHandle uniformBufferHandle)
+    {
+        collection.beginWriteSceneAction(ESceneActionId::ReleaseUniformBuffer);
+        collection.write(uniformBufferHandle);
+    }
+
+    void SceneActionCollectionCreator::updateUniformBuffer(UniformBufferHandle handle, uint32_t offset, uint32_t size, const std::byte* data)
+    {
+        collection.beginWriteSceneAction(ESceneActionId::UpdateUniformBuffer);
+        collection.write(handle);
+        collection.write(offset);
+        collection.write(data, size);
     }
 
     void SceneActionCollectionCreator::allocateTextureBuffer(EPixelStorageFormat textureFormat, const MipMapDimensions& mipMapDimensions, TextureBufferHandle handle)
@@ -916,6 +946,8 @@ namespace ramses::internal
         collection.write(sizeInfo.renderStateCount);
         collection.write(sizeInfo.datalayoutCount);
         collection.write(sizeInfo.datainstanceCount);
+        if (m_featureLevel >= EFeatureLevel_02)
+            collection.write(sizeInfo.uniformBufferCount);
         collection.write(sizeInfo.renderGroupCount);
         collection.write(sizeInfo.renderPassCount);
         collection.write(sizeInfo.blitPassCount);

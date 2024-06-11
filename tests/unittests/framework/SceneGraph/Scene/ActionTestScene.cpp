@@ -11,8 +11,10 @@
 
 namespace ramses::internal
 {
-    ActionTestScene::ActionTestScene(const SceneInfo& sceneInfo)
-        : m_scene(sceneInfo)
+    ActionTestScene::ActionTestScene(const SceneInfo& sceneInfo, EFeatureLevel featureLevel)
+        : m_scene{ sceneInfo }
+        , m_actionCollector{ sceneInfo, featureLevel }
+        , m_featureLevel{ featureLevel }
     {
     }
 
@@ -24,6 +26,21 @@ namespace ramses::internal
     SceneId ActionTestScene::getSceneId() const
     {
         return m_scene.getSceneId();
+    }
+
+    ERenderBackendCompatibility ActionTestScene::getRenderBackendCompatibility() const
+    {
+        return m_scene.getRenderBackendCompatibility();
+    }
+
+    EVulkanAPIVersion ActionTestScene::getVulkanAPIVersion() const
+    {
+        return m_scene.getVulkanAPIVersion();
+    }
+
+    ESPIRVVersion ActionTestScene::getSPIRVVersion() const
+    {
+        return m_scene.getSPIRVVersion();
     }
 
     void ActionTestScene::setEffectTimeSync(FlushTime::Clock::time_point /*t*/)
@@ -471,6 +488,11 @@ namespace ramses::internal
         return m_scene.getDataReference(containerHandle, field);
     }
 
+    UniformBufferHandle ActionTestScene::getDataUniformBuffer(DataInstanceHandle containerHandle, DataFieldHandle field) const
+    {
+        return m_scene.getDataUniformBuffer(containerHandle, field);
+    }
+
     float ActionTestScene::getDataSingleFloat(DataInstanceHandle containerHandle, DataFieldHandle field) const
     {
         return m_scene.getDataSingleFloat(containerHandle, field);
@@ -618,6 +640,12 @@ namespace ramses::internal
     void ActionTestScene::setDataReference(DataInstanceHandle containerHandle, DataFieldHandle field, DataInstanceHandle dataRef)
     {
         m_actionCollector.setDataReference(containerHandle, field, dataRef);
+        flushPendingSceneActions();
+    }
+
+    void ActionTestScene::setDataUniformBuffer(DataInstanceHandle containerHandle, DataFieldHandle field, UniformBufferHandle uniformBufferHandle)
+    {
+        m_actionCollector.setDataUniformBuffer(containerHandle, field, uniformBufferHandle);
         flushPendingSceneActions();
     }
 
@@ -904,6 +932,40 @@ namespace ramses::internal
         return m_scene.getDataBuffer(handle);
     }
 
+    UniformBufferHandle ActionTestScene::allocateUniformBuffer(uint32_t size, UniformBufferHandle handle)
+    {
+        const auto actualHandle = m_actionCollector.allocateUniformBuffer(size, handle);
+        flushPendingSceneActions();
+        return actualHandle;
+    }
+
+    void ActionTestScene::releaseUniformBuffer(UniformBufferHandle uniformBufferHandle)
+    {
+        m_actionCollector.releaseUniformBuffer(uniformBufferHandle);
+        flushPendingSceneActions();
+    }
+
+    void ActionTestScene::updateUniformBuffer(UniformBufferHandle uniformBufferHandle, uint32_t offset, uint32_t size, const std::byte* data)
+    {
+        m_actionCollector.updateUniformBuffer(uniformBufferHandle, offset, size, data);
+        flushPendingSceneActions();
+    }
+
+    bool ActionTestScene::isUniformBufferAllocated(UniformBufferHandle uniformBufferHandle) const
+    {
+        return m_scene.isUniformBufferAllocated(uniformBufferHandle);
+    }
+
+    uint32_t ActionTestScene::getUniformBufferCount() const
+    {
+        return m_scene.getUniformBufferCount();
+    }
+
+    const UniformBuffer& ActionTestScene::getUniformBuffer(UniformBufferHandle uniformBufferHandle) const
+    {
+        return m_scene.getUniformBuffer(uniformBufferHandle);
+    }
+
     TextureBufferHandle ActionTestScene::allocateTextureBuffer(EPixelStorageFormat textureFormat, const MipMapDimensions& mipMapDimensions, TextureBufferHandle handle)
     {
         const TextureBufferHandle actualHandle = m_actionCollector.allocateTextureBuffer(textureFormat, mipMapDimensions, handle);
@@ -1188,7 +1250,7 @@ namespace ramses::internal
     void ActionTestScene::flushPendingSceneActions()
     {
         SceneActionCollection& actionCollection = m_actionCollector.getSceneActionCollection();
-        SceneActionApplier::ApplyActionsOnScene(const_cast<Scene&>(m_scene), actionCollection);
+        SceneActionApplier::ApplyActionsOnScene(const_cast<Scene&>(m_scene), actionCollection, m_featureLevel);
         m_actionCollector.getSceneActionCollection().clear();
     }
 

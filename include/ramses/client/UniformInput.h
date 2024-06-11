@@ -39,6 +39,15 @@ namespace ramses
         [[nodiscard]] size_t getElementCount() const;
 
         /**
+        * @brief Returns the binding specified in the layout for uniform buffer declaration in the shader.
+        * @details If the uniform object input reports to either a uniform buffer or a uniform buffer field/item,
+        *          then the binding specified for the uniform buffer in layout is returned. Same value is returned
+        *          for inputs representing a uniform buffer and all its fields.
+        * @return the uniform buffer binding or nullopt if the input is neither a uniform buffer nor a field within a uniform buffer
+        */
+        [[nodiscard]] std::optional<uint32_t> getUniformBufferBinding() const;
+
+        /**
         * @brief Destructor of UniformInput.
         */
         ~UniformInput();

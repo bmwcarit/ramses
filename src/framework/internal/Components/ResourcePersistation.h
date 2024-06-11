@@ -11,6 +11,7 @@
 #include "internal/PlatformAbstraction/Collections/Vector.h"
 #include "ManagedResource.h"
 #include "internal/PlatformAbstraction/Collections/Pair.h"
+#include "ramses/framework/EFeatureLevel.h"
 #include <memory>
 
 namespace ramses::internal
@@ -26,7 +27,7 @@ namespace ramses::internal
         static void WriteNamedResourcesWithTOCToStream(IOutputStream& outStream, const ManagedResourceVector& resourcesForFile, bool compress);
         static void WriteOneResourceToStream(IOutputStream& outStream, const ManagedResource& resource);
 
-        static std::unique_ptr<IResource> ReadOneResourceFromStream(IInputStream& inStream, const ResourceContentHash& hash);
-        static std::unique_ptr<IResource> RetrieveResourceFromStream(IInputStream& inStream, const ResourceFileEntry& entry);
+        static std::unique_ptr<IResource> ReadOneResourceFromStream(IInputStream& inStream, const ResourceContentHash& hash, EFeatureLevel featureLevel);
+        static std::unique_ptr<IResource> RetrieveResourceFromStream(IInputStream& inStream, const ResourceFileEntry& entry, EFeatureLevel featureLevel);
     };
 }

@@ -77,6 +77,13 @@ namespace ramses::internal
         const ESceneStateInternal currentSceneState = sceneInfo.currentState;
         const ESceneStateInternal targetSceneState = sceneInfo.targetState;
 
+        if (targetSceneState == ESceneStateInternal::Published && currentSceneState == ESceneStateInternal::Published && sceneInfo.lastCommandWaitigForReply == ESceneStateCommand::Subscribe)
+        {
+            LOG_INFO(CONTEXT_RENDERER, "RendererSceneControlLogic initiating exceptional unsubscribe of scene with id: {}", sceneId);
+            m_sceneStateControl.handleSceneUnsubscriptionRequest(sceneId, false);
+            sceneInfo.lastCommandWaitigForReply = ESceneStateCommand::Unsubscribe;
+        }
+
         if (currentSceneState == targetSceneState)
             return;
 

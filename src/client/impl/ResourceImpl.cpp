@@ -17,7 +17,6 @@
 #include "internal/ClientApplicationLogic.h"
 #include "internal/Components/ManagedResource.h"
 
-#include "internal/PlatformAbstraction/Collections/StringOutputStream.h"
 #include "internal/Core/Utils/BinaryOutputStream.h"
 #include "impl/RamsesObjectTypeUtils.h"
 #include "city.h"

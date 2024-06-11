@@ -9,7 +9,7 @@
 #pragma once
 
 #include "internal/RendererLib/DisplayBundle.h"
-#include "internal/RendererLib/RendererConfig.h"
+#include "internal/RendererLib/RendererConfigData.h"
 #include "internal/RendererLib/SceneDisplayTracker.h"
 #include "internal/RendererLib/DisplayThread.h"
 #include "internal/RendererLib/Enums/ELoopMode.h"
@@ -24,16 +24,17 @@ namespace ramses::internal
     class Ramsh;
     class IEmbeddedCompositingManager;
     class IEmbeddedCompositor;
-    class DisplayConfig;
+    class DisplayConfigData;
 
     class DisplayDispatcher
     {
     public:
         DisplayDispatcher(
             std::unique_ptr<IPlatformFactory> platformFactory,
-            RendererConfig config,
+            RendererConfigData config,
             IRendererSceneEventSender& rendererSceneSender,
-            IThreadAliveNotifier& notifier);
+            IThreadAliveNotifier& notifier,
+            EFeatureLevel featureLevel);
         virtual ~DisplayDispatcher() = default;
 
         void dispatchCommands(RendererCommandBuffer& cmds);
@@ -52,7 +53,7 @@ namespace ramses::internal
         void setMinFrameDuration(std::chrono::microseconds minFrameDuration, DisplayHandle display);
         [[nodiscard]] std::chrono::microseconds getMinFrameDuration(DisplayHandle display) const;
 
-        [[nodiscard]] const RendererConfig& getRendererConfig() const;
+        [[nodiscard]] const RendererConfigData& getRendererConfig() const;
 
         // needed for EC tests...
         IEmbeddedCompositingManager& getECManager(DisplayHandle display);
@@ -76,10 +77,10 @@ namespace ramses::internal
             uint32_t lastFrameCounter = 0;
         };
         // virtual to allow mock of display thread
-        virtual Display createDisplayBundle(DisplayHandle displayHandle, const DisplayConfig& dispConfig);
+        virtual Display createDisplayBundle(DisplayHandle displayHandle, const DisplayConfigData& dispConfig);
 
         std::unique_ptr<IPlatformFactory> m_platformFactory;
-        const RendererConfig m_rendererConfig;
+        const RendererConfigData m_rendererConfig;
         IRendererSceneEventSender& m_rendererSceneSender;
 
         SceneDisplayTracker m_sceneDisplayTrackerForCommands;
@@ -104,6 +105,8 @@ namespace ramses::internal
         std::unordered_map<DisplayHandle, std::chrono::microseconds> m_minFrameDurationsPerDisplay;
 
         IThreadAliveNotifier& m_notifier;
+
+        EFeatureLevel m_featureLevel = EFeatureLevel_Latest;
 
         // flag to force context enable for next doOneLoop (relevant only for non-threaded mode)
         bool m_forceContextEnableNextLoop = false;

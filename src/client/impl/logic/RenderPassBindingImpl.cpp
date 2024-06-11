@@ -22,7 +22,7 @@
 namespace ramses::internal
 {
     RenderPassBindingImpl::RenderPassBindingImpl(SceneImpl& scene, ramses::RenderPass& ramsesRenderPass, std::string_view name, sceneObjectId_t id)
-        : RamsesBindingImpl{ scene, name, id }
+        : RamsesBindingImpl{ scene, name, id, ramsesRenderPass }
         , m_ramsesRenderPass{ ramsesRenderPass }
     {
     }

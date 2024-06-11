@@ -90,13 +90,13 @@ namespace ramses::internal
         EXPECT_CALL(callback, unregisterThread(ERamsesThreadIdentifier::Workers));
 
         EXPECT_CALL(callback, notifyThread(ERamsesThreadIdentifier::Workers)).Times(6);
-        EXPECT_EQ(0ms, watchdogNotifer.calculateTimeout());
+        EXPECT_EQ(1ms, watchdogNotifer.calculateTimeout()); // timeout of 0ms would block (e.g. BlockingQueue<T>::pop())
         watchdogNotifer.notifyWatchdog();
-        EXPECT_EQ(0ms, watchdogNotifer.calculateTimeout());
+        EXPECT_EQ(1ms, watchdogNotifer.calculateTimeout());
         watchdogNotifer.notifyWatchdog();
-        EXPECT_EQ(0ms, watchdogNotifer.calculateTimeout());
+        EXPECT_EQ(1ms, watchdogNotifer.calculateTimeout());
         watchdogNotifer.notifyWatchdog();
-        EXPECT_EQ(0ms, watchdogNotifer.calculateTimeout());
+        EXPECT_EQ(1ms, watchdogNotifer.calculateTimeout());
         watchdogNotifer.notifyWatchdog();
         watchdogNotifer.notifyWatchdog();
         watchdogNotifer.notifyWatchdog();

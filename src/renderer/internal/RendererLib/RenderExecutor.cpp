@@ -234,109 +234,138 @@ namespace ramses::internal
                 DataInstanceHandle dataRef = renderScene.getDataReference(uniformData, constantField);
                 const DataLayoutHandle dataRefLayout = renderScene.getLayoutOfDataInstance(dataRef);
                 const EDataType dataTypeRef = renderScene.getDataLayout(dataRefLayout).getField(DataFieldHandle(0u)).dataType;
-                executeConstant(dataTypeRef, 1u, dataRef, DataFieldHandle(0u), constantField);
+                executeConstant(DataFieldInfo{ dataTypeRef, 1u }, dataRef, DataFieldHandle(0u), constantField);
             }
             else
             {
-                executeConstant(field.dataType, field.elementCount, uniformData, constantField, constantField);
+                executeConstant(field, uniformData, constantField, constantField);
             }
         }
     }
 
-    void RenderExecutor::executeConstant(EDataType dataType, uint32_t elementCount, DataInstanceHandle dataInstance, DataFieldHandle dataInstancefield, DataFieldHandle uniformInputField) const
+    void RenderExecutor::executeConstant(const DataFieldInfo& field, DataInstanceHandle dataInstance, DataFieldHandle dataInstancefield, DataFieldHandle uniformInputField) const
     {
         IDevice& device = m_state.getDevice();
         const ResourceCachedScene& renderScene = m_state.getScene();
 
-        switch (dataType)
+        switch (field.dataType)
         {
         case EDataType::Float:
         {
             const float* value = renderScene.getDataFloatArray(dataInstance, dataInstancefield);
-            device.setConstant(uniformInputField, elementCount, value);
+            device.setConstant(uniformInputField, field.elementCount, value);
             break;
         }
 
         case EDataType::Vector2F:
         {
             const auto* value = renderScene.getDataVector2fArray(dataInstance, dataInstancefield);
-            device.setConstant(uniformInputField, elementCount, value);
+            device.setConstant(uniformInputField, field.elementCount, value);
             break;
         }
 
         case EDataType::Vector3F:
         {
             const auto* value = renderScene.getDataVector3fArray(dataInstance, dataInstancefield);
-            device.setConstant(uniformInputField, elementCount, value);
+            device.setConstant(uniformInputField, field.elementCount, value);
             break;
         }
 
         case EDataType::Vector4F:
         {
             const auto* value = renderScene.getDataVector4fArray(dataInstance, dataInstancefield);
-            device.setConstant(uniformInputField, elementCount, value);
+            device.setConstant(uniformInputField, field.elementCount, value);
             break;
         }
 
         case EDataType::Matrix22F:
         {
             const auto* value = renderScene.getDataMatrix22fArray(dataInstance, dataInstancefield);
-            device.setConstant(uniformInputField, elementCount, value);
+            device.setConstant(uniformInputField, field.elementCount, value);
             break;
         }
 
         case EDataType::Matrix33F:
         {
             const auto* value = renderScene.getDataMatrix33fArray(dataInstance, dataInstancefield);
-            device.setConstant(uniformInputField, elementCount, value);
+            device.setConstant(uniformInputField, field.elementCount, value);
             break;
         }
 
         case EDataType::Matrix44F:
         {
             const auto* value = renderScene.getDataMatrix44fArray(dataInstance, dataInstancefield);
-            device.setConstant(uniformInputField, elementCount, value);
+            device.setConstant(uniformInputField, field.elementCount, value);
             break;
         }
 
         case EDataType::Bool:
         {
             const bool* value = renderScene.getDataBooleanArray(dataInstance, dataInstancefield);
-            device.setConstant(uniformInputField, elementCount, value);
+            device.setConstant(uniformInputField, field.elementCount, value);
             break;
         }
 
         case EDataType::Int32:
         {
             const int32_t* value = renderScene.getDataIntegerArray(dataInstance, dataInstancefield);
-            device.setConstant(uniformInputField, elementCount, value);
+            device.setConstant(uniformInputField, field.elementCount, value);
             break;
         }
 
         case EDataType::Vector2I:
         {
             const glm::ivec2* value = renderScene.getDataVector2iArray(dataInstance, dataInstancefield);
-            device.setConstant(uniformInputField, elementCount, value);
+            device.setConstant(uniformInputField, field.elementCount, value);
             break;
         }
 
         case EDataType::Vector3I:
         {
             const auto* value = renderScene.getDataVector3iArray(dataInstance, dataInstancefield);
-            device.setConstant(uniformInputField, elementCount, value);
+            device.setConstant(uniformInputField, field.elementCount, value);
             break;
         }
 
         case EDataType::Vector4I:
         {
             const auto* value = renderScene.getDataVector4iArray(dataInstance, dataInstancefield);
-            device.setConstant(uniformInputField, elementCount, value);
+            device.setConstant(uniformInputField, field.elementCount, value);
             break;
         }
 
         case EDataType::DataReference:
             assert(false && "Multiple level data referencing not supported");
             break;
+
+        case EDataType::UniformBuffer:
+        {
+            DeviceResourceHandle deviceHandle{};
+            switch (field.semantics)
+            {
+            case EFixedSemantics::Invalid:
+                deviceHandle = renderScene.getCachedHandlesForUniformInstancesBuffers()[m_state.getRenderable().asMemoryHandle()][dataInstancefield.asMemoryHandle()];
+                break;
+            case EFixedSemantics::ModelBlock:
+                deviceHandle = renderScene.getDeviceHandle(m_state.getRenderable());
+                break;
+            case EFixedSemantics::CameraBlock:
+                deviceHandle = renderScene.getDeviceHandle(m_state.getCamera());
+                break;
+            case EFixedSemantics::ModelCameraBlock:
+                deviceHandle = renderScene.getDeviceHandle(m_state.getRenderable(), m_state.getCamera());
+                break;
+            case EFixedSemantics::FramebufferBlock:
+            case EFixedSemantics::SceneBlock:
+                return; // TODO _SEMANTICUBO_
+            default:
+                assert(false);
+            }
+
+            assert(deviceHandle.isValid());
+            device.activateUniformBuffer(deviceHandle, dataInstancefield);
+            break;
+        }
 
         case EDataType::TextureSampler2D:
         case EDataType::TextureSampler3D:
@@ -470,6 +499,13 @@ namespace ramses::internal
         auto& scene = const_cast<RendererCachedScene&>(m_state.getScene());
         switch (semantics)
         {
+        case EFixedSemantics::ModelBlock:
+        case EFixedSemantics::CameraBlock:
+        case EFixedSemantics::ModelCameraBlock:
+        case EFixedSemantics::FramebufferBlock:
+        case EFixedSemantics::SceneBlock:
+            // do nothing since UBOs were already set/updated within "update loop"
+            break;
         case EFixedSemantics::ViewMatrix:
         {
             const auto& mat = m_state.getViewMatrix();

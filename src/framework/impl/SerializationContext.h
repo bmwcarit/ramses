@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "internal/SceneGraph/Scene/SceneMergeHandleMapping.h"
 #include "ramses/framework/RamsesFrameworkTypes.h"
 #include "internal/PlatformAbstraction/Collections/HashMap.h"
 #include "internal/PlatformAbstraction/Collections/HashSet.h"
@@ -29,7 +30,7 @@ namespace ramses::internal
         using RamsesObjectImplSet = HashSet<RamsesObjectImpl *>;
 
     public:
-        explicit DeserializationContext(const SceneConfigImpl& loadConfig);
+        explicit DeserializationContext(const SceneConfigImpl& loadConfig, SceneMergeHandleMapping* mapping = nullptr);
 
         void resize(uint32_t totalObjects, uint32_t nodeCount);
         static ObjectIDType GetObjectIDNull();
@@ -46,17 +47,24 @@ namespace ramses::internal
         // phase 2: resolve dependencies
         bool resolveDependencies();
 
+        template<typename T>
+        void deserializeAndMap(IInputStream& inStream, TypedMemoryHandle<T>& handle);
+
         template <typename OBJECT_TYPE>
         void      resolveDependencyIDImplAndStoreAsPointer(OBJECT_TYPE*& ptrId) const;
         [[nodiscard]] NodeImpl* getNodeImplForHandle(NodeHandle /*nodeHandle*/) const;
 
         [[nodiscard]] const SceneConfigImpl& getLoadConfig() const;
 
+        [[nodiscard]] SceneMergeHandleMapping* getSceneMergeHandleMapping();
+        [[nodiscard]] const SceneMergeHandleMapping* getSceneMergeHandleMapping() const;
+
     private:
         std::vector<RamsesObjectImpl*> m_objectImpls;
         std::vector<NodeImpl*>         m_nodeMap;
         RamsesObjectImplSet m_dependingObjects;
         const SceneConfigImpl&     m_loadConfig;
+        SceneMergeHandleMapping* m_mapping = nullptr;
     };
 
     class SerializationContext
@@ -97,5 +105,22 @@ namespace ramses::internal
         inStream >> objID;
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) ptr really stores an id here
         ptr = reinterpret_cast<PTR_TYPE*>(size_t(objID));
+    }
+
+    template<typename T>
+    inline void DeserializationContext::deserializeAndMap(IInputStream& inStream, TypedMemoryHandle<T>& handle)
+    {
+        TypedMemoryHandle<T> tmpHandle;
+        inStream >> tmpHandle;
+        auto* mapping = getSceneMergeHandleMapping();
+        if (mapping && tmpHandle.isValid())
+        {
+            handle = mapping->getMapping(tmpHandle);
+            assert(handle.isValid());
+        }
+        else
+        {
+            handle = tmpHandle;
+        }
     }
 }

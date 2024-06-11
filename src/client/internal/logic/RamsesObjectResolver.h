@@ -25,6 +25,7 @@ namespace ramses::internal
 {
     class ErrorReporting;
     class SceneImpl;
+    class SceneMergeHandleMapping;
 
     class IRamsesObjectResolver
     {
@@ -42,7 +43,7 @@ namespace ramses::internal
     class RamsesObjectResolver final : public IRamsesObjectResolver
     {
     public:
-        explicit RamsesObjectResolver(ErrorReporting& errorReporting, SceneImpl& scene);
+        explicit RamsesObjectResolver(ErrorReporting& errorReporting, SceneImpl& scene, const SceneMergeHandleMapping* mapping);
 
         [[nodiscard]] ramses::Node* findRamsesNodeInScene(std::string_view logicNodeName, ramses::sceneObjectId_t objectId) const override;
         [[nodiscard]] ramses::Appearance* findRamsesAppearanceInScene(std::string_view logicNodeName, ramses::sceneObjectId_t objectId) const override;
@@ -57,5 +58,6 @@ namespace ramses::internal
 
         ErrorReporting& m_errors;
         SceneImpl& m_scene;
+        const SceneMergeHandleMapping* m_mapping = nullptr;
     };
 }

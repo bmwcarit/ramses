@@ -74,6 +74,28 @@ namespace ramses
         return status;
     }
 
+    bool RamsesClient::mergeSceneFromFile(Scene & scene, std::string_view fileName)
+    {
+        auto status = m_impl.mergeSceneFromFile(scene, fileName);
+        LOG_HL_CLIENT_API1(status, fileName);
+        return status;
+    }
+
+    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
+    bool RamsesClient::mergeSceneFromMemory(Scene& scene, std::unique_ptr<std::byte[], void(*)(const std::byte*)> data, size_t size)
+    {
+        auto status = m_impl.mergeSceneFromMemory(scene, std::move(data), size);
+        LOG_HL_CLIENT_API1(status, size);
+        return status;
+    }
+
+    bool RamsesClient::mergeSceneFromFileDescriptor(Scene& scene, int fd, size_t offset, size_t length)
+    {
+        auto status = m_impl.mergeSceneFromFileDescriptor(scene, fd, offset, length);
+        LOG_HL_CLIENT_API3(status, fd, offset, length);
+        return status;
+    }
+
     bool RamsesClient::GetFeatureLevelFromFile(std::string_view fileName, EFeatureLevel& detectedFeatureLevel)
     {
         const bool ret = internal::RamsesClientImpl::GetFeatureLevelFromFile(fileName, detectedFeatureLevel);

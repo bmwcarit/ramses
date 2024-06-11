@@ -6,75 +6,27 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-IF(CMAKE_SYSTEM_NAME MATCHES "Windows")
+find_path(GLES3_INCLUDE_DIRS GLES3/gl3.h
+    PATHS
+    /usr/include
+)
 
-    # we always use the Khronos reference headers
-    SET(OpenGL_INCLUDE_DIRS
-        ${ramses-sdk_SOURCE_DIR}/external/khronos
+find_library(GLES3_LIBRARIES
+    NAMES GLESv3 GLESv2
+)
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(OpenGL DEFAULT_MSG GLES3_LIBRARIES GLES3_INCLUDE_DIRS)
+
+if (OpenGL_FOUND)
+    add_library(OpenGL::GLES3 UNKNOWN IMPORTED)
+    set_target_properties(OpenGL::GLES3 PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${GLES3_INCLUDE_DIRS}"
+        IMPORTED_LOCATION "${GLES3_LIBRARIES}"
+        )
+
+    mark_as_advanced(
+        GLES3_INCLUDE_DIRS
+        GLES3_LIBRARIES
     )
-
-    # Windows has all OpenGL/WGL symbols in one lib - opengl32.lib
-    SET(OpenGL_LIBRARIES opengl32)
-    set(OpenGL_DEFINITIONS "-DDESKTOP_GL")
-
-    MARK_AS_ADVANCED(
-        OpenGL_INCLUDE_DIRS
-        OpenGL_LIBRARIES
-        OpenGL_DEFINITIONS
-    )
-
-    SET(OpenGL_FOUND TRUE)
-
-ELSEIF(CMAKE_SYSTEM_NAME MATCHES "Linux")
-
-    # we always use the Khronos reference headers
-    SET(OpenGL_INCLUDE_DIRS
-        ${ramses-sdk_SOURCE_DIR}/external/khronos
-    )
-
-    # only check, if systems has GLESv3 headers, if yes we
-    # assume the system is GLESv3 enabled.
-    # we still use the included khronos GLESv3 headers.
-    FIND_PATH(GLESv3_INCLUDE_DIRS_IN_SYSROOT GLES3/gl3.h
-        /usr/include
-    )
-
-    # GL ES 3 is implemented in GLESv2 (in mesa)
-    FIND_LIBRARY(OpenGL_LIBRARIES
-        NAMES GLESv2
-        PATHS
-    )
-
-    IF(OpenGL_LIBRARIES AND GLESv3_INCLUDE_DIRS_IN_SYSROOT)
-        SET(OpenGL_FOUND TRUE)
-    ENDIF()
-
-    MARK_AS_ADVANCED(
-        OpenGL_INCLUDE_DIRS
-        OpenGL_LIBRARIES
-    )
-
-ELSEIF(CMAKE_SYSTEM_NAME MATCHES "Android")
-
-    # only check, if systems has GLESv3 headers, if yes we
-    # assume the system is GLESv3 enabled.
-    # we still use the included khronos GLESv3 headers.
-    FIND_PATH(OpenGL_INCLUDE_DIRS_IN_SYSROOT GLES3/gl3.h
-        /usr/include
-    )
-
-    FIND_LIBRARY(OpenGL_LIBRARIES
-        NAMES GLESv3
-        PATHS
-    )
-
-    IF(OpenGL_LIBRARIES AND OpenGL_INCLUDE_DIRS_IN_SYSROOT)
-        SET(OpenGL_FOUND TRUE)
-    ENDIF()
-
-    MARK_AS_ADVANCED(
-        OpenGL_INCLUDE_DIRS
-        OpenGL_LIBRARIES
-    )
-
-ENDIF()
+endif()

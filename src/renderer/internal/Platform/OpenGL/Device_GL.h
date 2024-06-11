@@ -16,6 +16,7 @@
 
 #include <unordered_map>
 #include <string>
+#include <mutex>
 
 namespace ramses::internal
 {
@@ -66,6 +67,11 @@ namespace ramses::internal
         bool setConstant(DataFieldHandle field, uint32_t count, const glm::mat4*  value) override;
 
         void readPixels(uint8_t* buffer, uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
+
+        DeviceResourceHandle    allocateUniformBuffer   (uint32_t totalSizeInBytes) override;
+        void                    uploadUniformBufferData (DeviceResourceHandle handle, const std::byte* data, uint32_t dataSize) override;
+        void                    activateUniformBuffer   (DeviceResourceHandle handle, DataFieldHandle field) override;
+        void                    deleteUniformBuffer     (DeviceResourceHandle handle) override;
 
         DeviceResourceHandle    allocateVertexBuffer  (uint32_t totalSizeInBytes) override;
         void                    uploadVertexBufferData(DeviceResourceHandle handle, const std::byte* data, uint32_t dataSize) override;
@@ -151,13 +157,14 @@ namespace ramses::internal
         uint32_t                    m_activeIndexArraySizeBytes = 0u;
 
         DebugOutput                 m_debugOutput;
-        HashSet<std::string>        m_apiExtensions;
         std::vector<GLint>          m_supportedBinaryProgramFormats;
         IDeviceExtension*           m_deviceExtension = nullptr;
         const DeviceResourceHandle  m_emptyExternalTextureResource;
         std::vector<GLint>          m_containerForBoolValues;
 
         std::unordered_map<uint64_t, DeviceResourceHandle> m_textureSamplerObjectsCache;
+
+        static std::mutex s_gladMutex;
 
         bool allBuffersHaveTheSameSize(const DeviceHandleVector& renderBuffers) const;
         static void BindRenderBufferToRenderTarget(const RenderBufferGPUResource& renderBufferGpuResource, size_t colorBufferSlot);
@@ -178,8 +185,7 @@ namespace ramses::internal
         static void AllocateTextureStorage(const GLTextureInfo& texInfo, uint32_t mipLevels, uint32_t sampleCount = 0);
         static void UploadTextureMipMapData(uint32_t mipLevel, uint32_t x, uint32_t y, uint32_t z, uint32_t width, uint32_t height, uint32_t depth, const GLTextureInfo& texInfo, const std::byte *pData, uint32_t dataSize, uint32_t stride);
 
-        bool isApiExtensionAvailable(const std::string& extensionName) const;
         void queryDeviceDependentFeatures();
-        void loadOpenGLExtensions();
+        static void PrintOpenGLExtensions();
     };
 }

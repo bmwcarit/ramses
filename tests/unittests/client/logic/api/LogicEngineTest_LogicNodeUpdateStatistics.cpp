@@ -116,6 +116,32 @@ namespace ramses::internal
         EXPECT_TRUE(m_logMessages[5].find("Slowest nodes [name:time_us]: [test node2:10] [test node1:3]") != std::string::npos);
     }
 
+    TEST_F(ALogicEngine_LogicObjectStatistics, verifyLogsDeletedNodes)
+    {
+        LogicNodeUpdateStatistics statistics;
+        statistics.setLoggingRate(1u);
+
+        for (int i = 0; i < 2; ++i)
+        {
+            UpdateReport report;
+            auto* node       = m_logicEngine->createTimerNode(fmt::format("test node{}", i));
+            auto& dummyNodes = const_cast<UpdateReport::LogicNodesTimed&>(report.getNodesExecuted());
+            dummyNodes.emplace_back(&static_cast<LogicNode*>(node)->impl(), std::chrono::microseconds(100 + i));
+            statistics.collect(report, dummyNodes.size());
+            m_logicEngine->destroy(*node);
+        }
+
+        statistics.calculateAndLog();
+
+        ASSERT_EQ(6u, m_logMessages.size());
+        EXPECT_THAT(m_logMessages[0], ::testing::HasSubstr("First Statistics Log"));
+        EXPECT_THAT(m_logMessages[1], ::testing::HasSubstr("Update Execution time (min/max/avg): 0/0/0 [u]sec"));
+        EXPECT_THAT(m_logMessages[2], ::testing::HasSubstr("Time between Update calls"));
+        EXPECT_THAT(m_logMessages[3], ::testing::HasSubstr("Nodes Executed (min/max/avg): 0%/0%/0% (0/0/0) of 1 nodes total"));
+        EXPECT_THAT(m_logMessages[4], ::testing::HasSubstr("Activated links (min/max/avg): 0/0/0"));
+        EXPECT_THAT(m_logMessages[5], ::testing::HasSubstr("Slowest nodes [name:time_us]: [test node1:101] [test node0:100]"));
+    }
+
     TEST_F(ALogicEngine_LogicObjectStatistics, verifyLogsForFiveNodesWithSameTime)
     {
         LogicNodeUpdateStatistics statistics;

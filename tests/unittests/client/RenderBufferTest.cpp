@@ -23,7 +23,7 @@ namespace ramses::internal
     class RenderBufferTest : public LocalTestClientWithScene, public testing::Test
     {
     protected:
-        void useInRenderPass(const ramses::RenderBuffer& rb)
+        ramses::RenderPass* useInRenderPass(const ramses::RenderBuffer& rb)
         {
             RenderTargetDescription rtDesc;
             rtDesc.addRenderBuffer(rb);
@@ -34,6 +34,7 @@ namespace ramses::internal
             orthoCam->setViewport(0, 0, 100, 200);
             rp->setCamera(*orthoCam);
             rp->setRenderTarget(rt);
+            return rp;
         }
 
         void useInBlitPassAsSource(const ramses::RenderBuffer& rb)
@@ -91,6 +92,9 @@ namespace ramses::internal
         ValidationReport report;
         renderBuffer->validate(report);
         EXPECT_TRUE(report.hasIssue());
+        ASSERT_EQ(2, report.getIssues().size());
+        EXPECT_THAT(report.getIssues()[0].message, ::testing::HasSubstr("is not set as destination in any RenderPass or BlitPass"));
+        EXPECT_THAT(report.getIssues()[1].message, ::testing::HasSubstr("is neither used in a TextureSampler for reading nor set as source in a BlitPass"));
     }
 
     TEST_F(RenderBufferTest, reportsWarningIfUsedInRenderPassButNotReferencedByAnySamplerNorUsedAsBlitPassSource)
@@ -101,6 +105,8 @@ namespace ramses::internal
         ValidationReport report;
         renderBuffer->validate(report);
         EXPECT_TRUE(report.hasIssue());
+        ASSERT_EQ(1, report.getIssues().size());
+        EXPECT_THAT(report.getIssues()[0].message, ::testing::HasSubstr("is neither used in a TextureSampler for reading nor set as source in a BlitPass"));
     }
 
     TEST_F(RenderBufferTest, reportsWarningIfReferencedBySamplerButNotUsedInAnyRenderPassNorUsedAsBlitPassDestination)
@@ -111,6 +117,22 @@ namespace ramses::internal
         ValidationReport report;
         renderBuffer->validate(report);
         EXPECT_TRUE(report.hasIssue());
+        ASSERT_EQ(1, report.getIssues().size());
+        EXPECT_THAT(report.getIssues()[0].message, ::testing::HasSubstr("is used in a TextureSampler or BlitPass for reading, but is not set as destination"));
+    }
+
+    TEST_F(RenderBufferTest, reportsWarningIfReferencedBySamplerButRenderPassDisabled)
+    {
+        const ramses::RenderBuffer* renderBuffer = m_scene.createRenderBuffer(400u, 400u, ERenderBufferFormat::RGBA8, ERenderBufferAccessMode::ReadWrite);
+        ASSERT_TRUE(renderBuffer != nullptr);
+        auto rp = useInRenderPass(*renderBuffer);
+        rp->setEnabled(false);
+        m_scene.createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Nearest, *renderBuffer);
+        ValidationReport report;
+        renderBuffer->validate(report);
+        EXPECT_TRUE(report.hasIssue());
+        ASSERT_EQ(1, report.getIssues().size());
+        EXPECT_THAT(report.getIssues()[0].message, ::testing::HasSubstr("is used in a TextureSampler or BlitPass for reading, but assigned RenderPass is not enabled"));
     }
 
     TEST_F(RenderBufferTest, validatesWhenUsedInRenderPassAndReferencedBySampler)

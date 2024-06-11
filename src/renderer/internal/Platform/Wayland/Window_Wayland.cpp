@@ -9,12 +9,12 @@
 #include "internal/Platform/Wayland/Window_Wayland.h"
 #include "internal/Core/Utils/LogMacros.h"
 #include "internal/Platform/Wayland/WaylandEnvironmentUtils.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include <poll.h>
 
 namespace ramses::internal
 {
-    Window_Wayland::Window_Wayland(const DisplayConfig& displayConfig,
+    Window_Wayland::Window_Wayland(const DisplayConfigData& displayConfig,
                                    IWindowEventHandler& windowEventHandler,
                                    uint32_t               id,
                                    std::chrono::microseconds frameCallbackMaxPollTime)

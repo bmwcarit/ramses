@@ -73,6 +73,7 @@ namespace ramses::internal
         RamsesLoggerConfig loggerConfig;
         uint32_t periodicLogTimeout = 2u;
 
+        // useful for tests to check invalid feature levels
         void setFeatureLevelNoCheck(EFeatureLevel featureLevel);
 
     private:

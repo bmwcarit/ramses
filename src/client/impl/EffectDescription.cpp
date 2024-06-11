@@ -93,6 +93,13 @@ namespace ramses
         return status;
     }
 
+    bool EffectDescription::setUniformSemantic(uint32_t uniformBufferBinding, EEffectUniformSemantic semanticType)
+    {
+        const auto status = m_impl->setUniformSemantic(uniformBufferBinding, semanticType);
+        LOG_HL_CLIENT_API2(status, uniformBufferBinding, semanticType);
+        return status;
+    }
+
     bool EffectDescription::setAttributeSemantic(std::string_view inputName, EEffectAttributeSemantic semanticType)
     {
         const auto status = m_impl->setAttributeSemantic(inputName, semanticType);

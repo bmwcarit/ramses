@@ -23,7 +23,7 @@ namespace ramses::internal
     {
         ramses::Effect* effect = getTestEffect("ramses-test-client-basic");
 
-        Triangle redTriangle(m_scene, *effect, TriangleAppearance::EColor_Red);
+        Triangle redTriangle(m_scene, *effect, TriangleAppearance::EColor::Red);
 
         const std::array translation = {
             -1.0f,  0.0f, -12.0f,
@@ -59,7 +59,7 @@ namespace ramses::internal
         case CHANGE_APPEARANCE:
         {
             ramses::Effect* effectExt = getTestEffect("ramses-test-client-basic-extended");
-            Triangle blueTriangle(m_scene, *effectExt, TriangleAppearance::EColor_Blue);
+            Triangle blueTriangle(m_scene, *effectExt, TriangleAppearance::EColor::Blue);
             ramses::Appearance& appearance = blueTriangle.GetAppearance();
 
             appearance.setInputValue(*effectExt->findUniformInput("redgreen_offset"), ramses::vec2f{ 0.5f, 0.5f });

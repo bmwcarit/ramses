@@ -53,7 +53,7 @@ namespace ramses::internal
         bool enable() override;
         bool disable() override;
 
-        void* getProcAddress(const char* name) const override;
+        [[nodiscard]] GlProcLoadFunc getGlProcLoadFunc() const override;
 
         [[nodiscard]] EGLDisplay getEglDisplay() const;
 

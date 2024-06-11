@@ -140,7 +140,7 @@ namespace ramses::internal
     ramses::RendererConfig RendererTestUtils::CreateTestRendererConfig()
     {
         ramses::RendererConfig rendererConfig(*defaultRendererConfig);
-        auto& internalRendererConfig = const_cast<ramses::internal::RendererConfig&>(rendererConfig.impl().getInternalRendererConfig());
+        auto& internalRendererConfig = const_cast<ramses::internal::RendererConfigData&>(rendererConfig.impl().getInternalRendererConfig());
 
         if (WaylandDisplayForSystemCompositorController.has_value())
         {

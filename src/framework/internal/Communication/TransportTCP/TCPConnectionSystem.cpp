@@ -948,6 +948,13 @@ namespace ramses::internal
                        << s.friendlyName;
         }
         msg.stream << static_cast<uint32_t>(featureLevel);
+
+        if (featureLevel >= EFeatureLevel_02)
+        {
+            for (const auto& sceneInfo : newScenes)
+                msg.stream << sceneInfo.renderBackendCompatibility << sceneInfo.vulkanAPIVersion << sceneInfo.spirvVersion;
+        }
+
         return postMessageForSending(std::move(msg));
     }
 
@@ -968,6 +975,13 @@ namespace ramses::internal
                        << s.friendlyName;
         }
         msg.stream << static_cast<uint32_t>(featureLevel);
+
+        if (featureLevel >= EFeatureLevel_02)
+        {
+            for (const auto& sceneInfo : availableScenes)
+                msg.stream << sceneInfo.renderBackendCompatibility << sceneInfo.vulkanAPIVersion << sceneInfo.spirvVersion;
+        }
+
         return postMessageForSending(std::move(msg));
     }
 
@@ -992,6 +1006,12 @@ namespace ramses::internal
             uint32_t featureLevelInt = 0u;
             stream >> featureLevelInt;
             const auto featureLevel = static_cast<EFeatureLevel>(featureLevelInt);
+
+            if (featureLevel >= EFeatureLevel_02)
+            {
+                for (auto& sceneInfo : newScenes)
+                    stream >> sceneInfo.renderBackendCompatibility >> sceneInfo.vulkanAPIVersion >> sceneInfo.spirvVersion;
+            }
 
             LOG_DEBUG_F(CONTEXT_COMMUNICATION, ([&](StringOutputStream& sos) {
                                                     sos << "TCPConnectionSystem(" << m_participantAddress.getParticipantName() << ")::handlePublishScene: from " << pp->address.getParticipantId() << " [";

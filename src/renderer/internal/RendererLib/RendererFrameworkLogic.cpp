@@ -41,11 +41,11 @@ namespace ramses::internal
 
         if (m_sceneClients.contains(newScene.sceneID))
         {
-            LOG_WARN(CONTEXT_RENDERER, "RendererFrameworkLogic::handleNewScenesAvailable: ignore already published scene: {} @ {} name:{} publicationmode: {}", newScene.sceneID, providerID, newScene.friendlyName, EnumToString(newScene.publicationMode));
+            LOG_WARN(CONTEXT_RENDERER, "RendererFrameworkLogic::handleNewScenesAvailable: ignore already published scene: {} @ {} name:{} publicationmode: {} renderBackendCompatibility: {}", newScene.sceneID, providerID, newScene.friendlyName, EnumToString(newScene.publicationMode), newScene.renderBackendCompatibility);
             return;
         }
         m_sceneClients.put(newScene.sceneID, std::make_pair(providerID, newScene.friendlyName));
-        m_rendererCommands.enqueueCommand(RendererCommand::ScenePublished{ newScene.sceneID, newScene.publicationMode });
+        m_rendererCommands.enqueueCommand(RendererCommand::ScenePublished{ newScene.sceneID, newScene.publicationMode, newScene.renderBackendCompatibility, newScene.vulkanAPIVersion, newScene.spirvVersion });
     }
 
     void RendererFrameworkLogic::handleSceneBecameUnavailable(const SceneId& unavailableScene, const Guid& providerID)

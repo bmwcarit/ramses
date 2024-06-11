@@ -6,6 +6,4 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #  -------------------------------------------------------------------------
 
-if(ramses-sdk_ENABLE_LOGIC)
-    add_subdirectory(ramses-viewer)
-endif()
+add_subdirectory(ramses-viewer)

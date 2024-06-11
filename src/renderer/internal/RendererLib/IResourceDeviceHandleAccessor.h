@@ -12,6 +12,7 @@
 #include "internal/SceneGraph/SceneAPI/Handles.h"
 #include "internal/SceneGraph/SceneAPI/SceneId.h"
 #include "internal/RendererLib/Types.h"
+#include "internal/RendererLib/SemanticUniformBufferHandle.h"
 
 namespace ramses::internal
 {
@@ -27,7 +28,7 @@ namespace ramses::internal
         [[nodiscard]] virtual DeviceResourceHandle getOffscreenBufferDeviceHandle(OffscreenBufferHandle bufferHandle) const = 0;
         [[nodiscard]] virtual DeviceResourceHandle getOffscreenBufferColorBufferDeviceHandle(OffscreenBufferHandle bufferHandle) const = 0;
         [[nodiscard]] virtual int                  getDmaOffscreenBufferFD(OffscreenBufferHandle bufferHandle) const = 0;
-        [[nodiscard]] virtual uint32_t               getDmaOffscreenBufferStride(OffscreenBufferHandle bufferHandle) const = 0;
+        [[nodiscard]] virtual uint32_t             getDmaOffscreenBufferStride(OffscreenBufferHandle bufferHandle) const = 0;
         [[nodiscard]] virtual OffscreenBufferHandle getOffscreenBufferHandle(DeviceResourceHandle bufferDeviceHandle) const = 0;
         [[nodiscard]] virtual DeviceResourceHandle getStreamBufferDeviceHandle(StreamBufferHandle bufferHandle) const = 0;
         [[nodiscard]] virtual DeviceResourceHandle getExternalBufferDeviceHandle(ExternalBufferHandle bufferHandle) const = 0;
@@ -36,6 +37,8 @@ namespace ramses::internal
         [[nodiscard]] virtual DeviceResourceHandle getDataBufferDeviceHandle(DataBufferHandle dataBufferHandle, SceneId sceneId) const = 0;
         [[nodiscard]] virtual DeviceResourceHandle getTextureBufferDeviceHandle(TextureBufferHandle textureBufferHandle, SceneId sceneId) const = 0;
         [[nodiscard]] virtual DeviceResourceHandle getVertexArrayDeviceHandle(RenderableHandle renderableHandle, SceneId sceneId) const = 0;
+        [[nodiscard]] virtual DeviceResourceHandle getUniformBufferDeviceHandle(UniformBufferHandle uniformBufferHandle, SceneId sceneId) const = 0;
+        [[nodiscard]] virtual DeviceResourceHandle getUniformBufferDeviceHandle(SemanticUniformBufferHandle handle, SceneId sceneId) const = 0;
     };
 }
 

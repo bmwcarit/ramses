@@ -18,7 +18,10 @@ namespace ramses::internal
     public:
         static bool RegisterRendererFactory();
 
-        RendererUniquePtr createRenderer(RamsesFrameworkImpl& framework, const ramses::RendererConfig& config) const override;
+        RendererUniquePtr createRenderer(
+            RamsesFrameworkImpl& framework,
+            const ramses::RendererConfig& config,
+            std::string_view loggingInstanceName) const override;
     };
 }
 

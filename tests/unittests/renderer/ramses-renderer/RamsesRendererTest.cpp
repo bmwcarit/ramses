@@ -126,7 +126,10 @@ namespace ramses::internal
         static ramses::RendererConfig CreateRendererConfigWithSystemCompositor()
         {
             ramses::RendererConfig config;
+WARNINGS_PUSH
+WARNING_DISABLE_LINUX(-Wdeprecated-declarations)
             config.enableSystemCompositorControl();
+WARNINGS_POP
             return config;
         }
     };
@@ -450,6 +453,8 @@ namespace ramses::internal
     /*
     * SystemCompositorControl
     */
+WARNINGS_PUSH
+WARNING_DISABLE_LINUX(-Wdeprecated-declarations)
     TEST_F(ARamsesRenderer, createsNoCommandForSystemCompositorControllerIfNotEnabledFromConfig)
     {
         EXPECT_FALSE(renderer.setSurfaceVisibility(0, true));
@@ -501,6 +506,7 @@ namespace ramses::internal
         EXPECT_CALL(cmdVisitor, systemCompositorScreenshot(std::string_view{"name"}, -1));
         cmdVisitor.visit(commandBuffer);
     }
+WARNINGS_POP
 
     /*
     * Threading and thread sanitizer tests
@@ -560,12 +566,15 @@ namespace ramses::internal
         renderer.destroyOffscreenBuffer(displayId, ob);
         renderer.flush();
 
+WARNINGS_PUSH
+WARNING_DISABLE_LINUX(-Wdeprecated-declarations)
         renderer.setSurfaceVisibility(0u, true);
         renderer.setSurfaceOpacity(0u, 1.0f);
         renderer.setSurfaceRectangle(0u, 0, 0, 0, 0);
         renderer.takeSystemCompositorScreenshot("", -1);
         renderer.setFrameTimerLimits(10001u, 10000u, 10000u);
         renderer.setLayerVisibility(0u, true);
+WARNINGS_POP
         renderer.flush();
 
         renderer.dispatchEvents(eventHandler);

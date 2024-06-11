@@ -165,7 +165,7 @@ namespace ramses::internal
         ramses::Node& farTriangleTransNode = *m_scene.createNode();
         farTriangleTransNode.translate({ 0.5f, 0.0f, zTranslate });
 
-        ramses::MeshNode& meshNode2 = createMesh(getEffectRenderOneBuffer(), TriangleAppearance::EColor_Blue);
+        ramses::MeshNode& meshNode2 = createMesh(getEffectRenderOneBuffer(), TriangleAppearance::EColor::Blue);
         farTriangleTransNode.addChild(meshNode2);
         transNode.addChild(farTriangleTransNode);
 

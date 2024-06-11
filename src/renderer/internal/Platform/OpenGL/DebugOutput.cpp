@@ -8,34 +8,13 @@
 
 #include "internal/Platform/OpenGL/DebugOutput.h"
 
-#include "internal/RendererLib/PlatformInterface/IContext.h"
-
 #include "internal/Core/Utils/LogMacros.h"
 #include <array>
 #include <cassert>
 
 namespace ramses::internal
 {
-#if defined(__linux__) || defined(__APPLE__)
-    #define GL_DEBUG_TYPE_ERROR                 GL_DEBUG_TYPE_ERROR_KHR
-    #define GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR    GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_KHR
-    #define GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR   GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_KHR
-    #define GL_DEBUG_TYPE_PORTABILITY           GL_DEBUG_TYPE_PORTABILITY_KHR
-    #define GL_DEBUG_TYPE_PERFORMANCE           GL_DEBUG_TYPE_PERFORMANCE_KHR
-    #define GL_DEBUG_TYPE_MARKER                GL_DEBUG_TYPE_MARKER_KHR
-    #define GL_DEBUG_TYPE_PUSH_GROUP            GL_DEBUG_TYPE_PUSH_GROUP_KHR
-    #define GL_DEBUG_TYPE_POP_GROUP             GL_DEBUG_TYPE_POP_GROUP_KHR
-    #define GL_DEBUG_TYPE_OTHER                 GL_DEBUG_TYPE_OTHER_KHR
-
-    #define GL_DEBUG_SOURCE_API                 GL_DEBUG_SOURCE_API_KHR
-    #define GL_DEBUG_TYPE_PERFORMANCE           GL_DEBUG_TYPE_PERFORMANCE_KHR
-    #define GL_DEBUG_OUTPUT                     GL_DEBUG_OUTPUT_KHR
-    #define GL_DEBUG_OUTPUT_SYNCHRONOUS         GL_DEBUG_OUTPUT_SYNCHRONOUS_KHR
-
-    #define APIENTRY                            GL_APIENTRY
-#endif
-
-    static void APIENTRY debugCallback(GLenum /*source*/,
+    static void GLAPIENTRY debugCallback(GLenum /*source*/,
                                        GLenum type,
                                        GLuint /*id*/,
                                        GLenum /*severity*/,
@@ -66,29 +45,12 @@ namespace ramses::internal
         }
     }
 
-    bool DebugOutput::loadExtensionFunctionPointer(const IContext& context)
+    void DebugOutput::enable()
     {
-#if defined(__linux__) || defined(__APPLE__)
-        glDebugMessageCallback =
-            reinterpret_cast<PFNGLDEBUGMESSAGECALLBACKKHRPROC>(context.getProcAddress("glDebugMessageCallbackKHR"));
-        glDebugMessageControl =
-            reinterpret_cast<PFNGLDEBUGMESSAGECONTROLKHRPROC>(context.getProcAddress("glDebugMessageControlKHR"));
-#else
-        glDebugMessageCallback =
-            reinterpret_cast<PFNGLDEBUGMESSAGECALLBACKPROC>(context.getProcAddress("glDebugMessageCallback"));
-        glDebugMessageControl =
-            reinterpret_cast<PFNGLDEBUGMESSAGECONTROLPROC>(context.getProcAddress("glDebugMessageControl"));
-#endif
-
-        return isAvailable();
-    }
-
-    bool DebugOutput::enable(const IContext& context)
-    {
-        if (!loadExtensionFunctionPointer(context))
+        if (!IsAvailable())
         {
-            LOG_INFO(CONTEXT_RENDERER, "Could not found OpenGL debug output extension");
-            return false;
+            LOG_INFO(CONTEXT_RENDERER, "Could not find OpenGL debug output extension");
+            return;
         }
 
         glEnable(GL_DEBUG_OUTPUT);
@@ -103,11 +65,9 @@ namespace ramses::internal
         // ... except redundant state change warnings on nvidia cards
         const std::array<const GLuint, 1> messageIds{{8}};
         glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_PERFORMANCE, GL_DONT_CARE, static_cast<GLsizei>(messageIds.size()), messageIds.data(), GL_FALSE);
-
-        return true;
     }
 
-    bool DebugOutput::isAvailable() const
+    bool DebugOutput::IsAvailable()
     {
         return (glDebugMessageCallback != nullptr && glDebugMessageControl != nullptr);
     }

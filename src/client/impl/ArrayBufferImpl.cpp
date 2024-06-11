@@ -86,7 +86,7 @@ namespace ramses::internal
         if (!SceneObjectImpl::deserialize(inStream, serializationContext))
             return false;
 
-        inStream >> m_dataBufferHandle;
+        serializationContext.deserializeAndMap(inStream, m_dataBufferHandle);
 
         return true;
     }

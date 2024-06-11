@@ -9,7 +9,7 @@
 #include "gmock/gmock.h"
 #include "internal/Platform/Windows/Window_Windows.h"
 #include "WindowEventHandlerMock.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "internal/RendererLib/Enums/EKeyModifier.h"
 
 using namespace testing;
@@ -63,7 +63,7 @@ namespace ramses::internal
             processAllEvents();
         }
 
-        DisplayConfig config;
+        DisplayConfigData config;
         NiceMock<WindowEventHandlerMock> eventHandlerMock;
         Window_Windows window;
     };
@@ -79,7 +79,7 @@ namespace ramses::internal
 
     TEST(Window_Windows, propagatesResizeEvents)
     {
-        DisplayConfig config;
+        DisplayConfigData config;
         config.setResizable(true);
         NiceMock<WindowEventHandlerMock> eventHandlerMock;
         Window_Windows window(config, eventHandlerMock, 0);
@@ -99,7 +99,7 @@ namespace ramses::internal
 
     TEST(Window_Windows, propagatesWindowMoveEvents)
     {
-        DisplayConfig config;
+        DisplayConfigData config;
         config.setResizable(true);
         NiceMock<WindowEventHandlerMock> eventHandlerMock;
         Window_Windows window(config, eventHandlerMock, 0);
@@ -249,7 +249,7 @@ namespace ramses::internal
 
     TEST_F(AWindowWindows, canSetExternallyOwnedWindowSize)
     {
-        DisplayConfig otherConfig;
+        DisplayConfigData otherConfig;
         otherConfig.setWindowsWindowHandle(WindowsWindowHandle{window.getNativeWindowHandle()});
         Window_Windows externallyOwnedWindow(otherConfig, eventHandlerMock, 123u);
         ASSERT_TRUE(externallyOwnedWindow.init());

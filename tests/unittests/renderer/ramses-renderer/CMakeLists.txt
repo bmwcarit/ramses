@@ -12,7 +12,8 @@ createModule(
     SRC_FILES               *.h
                             *.cpp
     DEPENDENCIES            ramses-client
-                            ramses-renderer
+                            ramses-renderer-impl
+                            PlatformFactoryFake
                             ramses-gmock-main
                             renderer-test-common
 )

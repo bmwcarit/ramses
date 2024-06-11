@@ -62,7 +62,8 @@ namespace ramses::internal
 
         [[nodiscard]] const ramses::ValidationReport& getValidationReport() const;
 
-        [[nodiscard]] const std::string& getSceneFile() const;
+        [[nodiscard]] const std::string& getSceneFile(std::size_t i = 0) const;
+        [[nodiscard]] const std::vector<std::string>& getSceneFiles() const;
 
         [[nodiscard]] const std::string& getLuaFile() const;
 
@@ -88,7 +89,7 @@ namespace ramses::internal
         void printValidationReport() const;
         void printValidationReport(std::ostream& os) const;
 
-        std::string m_sceneFile;
+        std::vector<std::string> m_sceneFiles;
         std::string m_validationReportFile;
         std::string m_luaFile;
         std::string m_luaFunction;
@@ -140,9 +141,15 @@ namespace ramses::internal
         return m_validationReport;
     }
 
-    inline const std::string& ViewerApp::getSceneFile() const
+    inline const std::string& ViewerApp::getSceneFile(std::size_t i) const
     {
-        return m_sceneFile;
+        assert(i < m_sceneFiles.size());
+        return m_sceneFiles[i];
+    }
+
+    inline const std::vector<std::string>& ViewerApp::getSceneFiles() const
+    {
+        return m_sceneFiles;
     }
 
     inline const std::string& ViewerApp::getLuaFile() const

@@ -15,8 +15,9 @@
 
 namespace ramses::internal
 {
-    RamsesBindingImpl::RamsesBindingImpl(SceneImpl& scene, std::string_view name, sceneObjectId_t id) noexcept
+    RamsesBindingImpl::RamsesBindingImpl(SceneImpl& scene, std::string_view name, sceneObjectId_t id, SceneObject& boundObject) noexcept
         : LogicNodeImpl{ scene, name, id }
+        , m_boundObject{ boundObject }
     {
         // Bindings are not supposed to do anything unless user set an actual value to them
         // Thus, they are not dirty by default!
@@ -35,6 +36,11 @@ namespace ramses::internal
         builder.Finish(ramsesRef);
 
         return ramsesRef;
+    }
+
+    const SceneObject& RamsesBindingImpl::getBoundObject() const
+    {
+        return m_boundObject;
     }
 
     void RamsesBindingImpl::setRootInputs(std::unique_ptr<PropertyImpl> rootInputs)

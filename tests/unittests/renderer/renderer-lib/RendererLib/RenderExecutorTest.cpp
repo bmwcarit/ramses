@@ -14,7 +14,7 @@
 #include "internal/RendererLib/RendererScenes.h"
 #include "internal/SceneGraph/SceneUtils/DataLayoutCreationHelper.h"
 #include "internal/RendererLib/RendererEventCollector.h"
-#include "SceneAllocateHelper.h"
+#include "TestSceneHelper.h"
 #include "internal/PlatformAbstraction/PlatformMath.h"
 #include "internal/Components/EffectUniformTime.h"
 #include "MockResourceHash.h"
@@ -124,14 +124,21 @@ namespace ramses::internal {
             dataRefFieldMatrix22f  = DataFieldHandle(7);
             uniformInputs.push_back(EffectInputInformation("textureFieldExternal", 1, EDataType::TextureSamplerExternal, EFixedSemantics::Invalid));
             textureFieldExternal = DataFieldHandle(8);
-
             uniformInputs.push_back(EffectInputInformation("dataRefFieldBool", 1, EDataType::Bool, EFixedSemantics::Invalid));
             dataRefFieldBool = DataFieldHandle(9);
+            uniformInputs.push_back(EffectInputInformation("uniformBuffer", 1, EDataType::UniformBuffer, EFixedSemantics::Invalid));
+            uniformBufferField = DataFieldHandle{ 10 };
+            uniformInputs.push_back(EffectInputInformation("modelUniformBuffer", 1, EDataType::UniformBuffer, EFixedSemantics::ModelBlock));
+            modelUniformBufferField = DataFieldHandle{ 11 };
+            uniformInputs.push_back(EffectInputInformation("cameraUniformBuffer", 1, EDataType::UniformBuffer, EFixedSemantics::CameraBlock));
+            cameraUniformBufferField = DataFieldHandle{ 12 };
+            uniformInputs.push_back(EffectInputInformation("modelCameraUniformBuffer", 1, EDataType::UniformBuffer, EFixedSemantics::ModelCameraBlock));
+            modelCameraUniformBufferField = DataFieldHandle{ 13 };
 
             if (withTimeMs)
             {
                 uniformInputs.push_back(EffectInputInformation("timeMs", 1, EDataType::Int32, EFixedSemantics::TimeMs));
-                dataRefTimeMs  = DataFieldHandle(10);
+                dataRefTimeMs  = DataFieldHandle(14);
             }
 
             attributeInputs.push_back(EffectInputInformation("vertPosField", 1, EDataType::Vector3Buffer, EFixedSemantics::Invalid));
@@ -149,6 +156,10 @@ namespace ramses::internal {
         DataFieldHandle dataRefField2;
         DataFieldHandle dataRefFieldMatrix22f;
         DataFieldHandle dataRefFieldBool;
+        DataFieldHandle uniformBufferField;
+        DataFieldHandle modelUniformBufferField;
+        DataFieldHandle cameraUniformBufferField;
+        DataFieldHandle modelCameraUniformBufferField;
         DataFieldHandle dataRefTimeMs;
         DataFieldHandle textureField;
         DataFieldHandle textureFieldMS;
@@ -156,6 +167,10 @@ namespace ramses::internal {
         DataFieldHandle fieldModelMatrix;
         DataFieldHandle fieldViewMatrix;
         DataFieldHandle fieldProjMatrix;
+
+        static constexpr DeviceResourceHandle modelUniformBufferDeviceHandle{ 453u };
+        static constexpr DeviceResourceHandle cameraUniformBufferDeviceHandle{ 454u };
+        static constexpr DeviceResourceHandle modelCameraUniformBufferDeviceHandle{ 455u };
     };
 
 
@@ -166,7 +181,7 @@ namespace ramses::internal {
             : device(renderer.deviceMock)
             , renderContext{ DeviceMock::FakeFrameBufferRenderTargetDeviceHandle, fakeViewportWidth, fakeViewportHeight, {}, EClearFlag::All, glm::vec4{0.f}, false }
             , rendererScenes(rendererEventCollector)
-            , scene(rendererScenes.createScene(SceneInfo()))
+            , scene(rendererScenes.createScene(SceneInfo{}))
             , sceneAllocator(scene)
             , fakeEffectInputs(withTimeMs)
             , indicesField(0u)
@@ -179,15 +194,36 @@ namespace ramses::internal {
             , fieldViewMatrix         (fakeEffectInputs.fieldViewMatrix        )
             , fieldProjMatrix         (fakeEffectInputs.fieldProjMatrix        )
         {
-            InputIndexVector referencedInputs;
-            scene.preallocateSceneSize(SceneSizeInformation(0u, 0u, 0u, 0u, 0u, 1u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u));
-            uniformLayout = DataLayoutCreationHelper::CreateUniformDataLayoutMatchingEffectInputs(scene, fakeEffectInputs.uniformInputs, referencedInputs, MockResourceHash::EffectHash, DataLayoutHandle(0u));
+            scene.preallocateSceneSize(SceneSizeInformation(0u, 0u, 0u, 0u, 0u, 1u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u));
+            std::tie(uniformLayout, std::ignore) = DataLayoutCreationHelper::CreateUniformDataLayoutMatchingEffectInputs(scene, fakeEffectInputs.uniformInputs, MockResourceHash::EffectHash, DataLayoutHandle(0u));
 
             DataFieldInfoVector dataFields(3u);
             dataFields[indicesField.asMemoryHandle()] = DataFieldInfo(EDataType::Indices, 1u, EFixedSemantics::Indices);
             dataFields[vertPosField.asMemoryHandle()] = DataFieldInfo(EDataType::Vector3Buffer, 1u, EFixedSemantics::Invalid);
             dataFields[vertTexcoordField.asMemoryHandle()] = DataFieldInfo(EDataType::Vector2Buffer, 1u, EFixedSemantics::TextPositionsAttribute);
             geometryLayout = sceneAllocator.allocateDataLayout(dataFields, MockResourceHash::EffectHash, DataLayoutHandle(2u));
+
+            static constexpr size_t ExpectedModelUBOSize = 1 * 16 * 4;
+            static constexpr size_t ExpectedCameraUBOSize = 2 * 16 * 4 + 1 * 3 * 4;
+            static constexpr size_t ExpectedModelCameraUBOSize = 3 * 16 * 4;
+            ON_CALL(resourceManager, uploadUniformBuffer(Matcher<SemanticUniformBufferHandle>(_), ExpectedModelUBOSize, scene.getSceneId()))
+                .WillByDefault([](SemanticUniformBufferHandle handle, auto /*size*/, auto /*sceneId*/)
+                    {
+                        EXPECT_EQ(handle.getType(), SemanticUniformBufferHandle::Type::Model);
+                        return FakeEffectInputs::modelUniformBufferDeviceHandle;
+                    });
+            ON_CALL(resourceManager, uploadUniformBuffer(Matcher<SemanticUniformBufferHandle>(_), ExpectedCameraUBOSize, scene.getSceneId()))
+                .WillByDefault([](SemanticUniformBufferHandle handle, auto /*size*/, auto /*sceneId*/)
+                    {
+                        EXPECT_EQ(handle.getType(), SemanticUniformBufferHandle::Type::Camera);
+                        return FakeEffectInputs::cameraUniformBufferDeviceHandle;
+                    });
+            ON_CALL(resourceManager, uploadUniformBuffer(Matcher<SemanticUniformBufferHandle>(_), ExpectedModelCameraUBOSize, scene.getSceneId()))
+                .WillByDefault([](SemanticUniformBufferHandle handle, auto /*size*/, auto /*sceneId*/)
+                    {
+                        EXPECT_EQ(handle.getType(), SemanticUniformBufferHandle::Type::ModelCamera);
+                        return FakeEffectInputs::modelCameraUniformBufferDeviceHandle;
+                    });
         }
 
     protected:
@@ -213,6 +249,7 @@ namespace ramses::internal {
         TextureSamplerHandle sampler;
         TextureSamplerHandle samplerMS;
         TextureSamplerHandle samplerExternal;
+        UniformBufferHandle uniformBuffer;
         const DataFieldHandle indicesField;
         const DataFieldHandle vertPosField;
         const DataFieldHandle vertTexcoordField;
@@ -242,30 +279,13 @@ namespace ramses::internal {
         RenderPassHandle createRenderPassWithCamera(const ProjectionParams& params, const Viewport& viewport = { fakeViewportX, fakeViewportY, fakeViewportWidth, fakeViewportHeight })
         {
             const RenderPassHandle pass = sceneAllocator.allocateRenderPass();
-            const NodeHandle cameraNode = sceneAllocator.allocateNode();
-            const auto dataLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference} }, {});
-            const auto dataInstance = sceneAllocator.allocateDataInstance(dataLayout);
-            const auto vpDataRefLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::Vector2I} }, {});
-            const auto vpOffsetInstance = sceneAllocator.allocateDataInstance(vpDataRefLayout);
-            const auto vpSizeInstance = sceneAllocator.allocateDataInstance(vpDataRefLayout);
-            const auto frustumPlanesLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::Vector4F} }, {});
-            const auto frustumPlanes = sceneAllocator.allocateDataInstance(frustumPlanesLayout);
-            const auto frustumNearFarLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::Vector2F} }, {});
-            const auto frustumNearFar = sceneAllocator.allocateDataInstance(frustumNearFarLayout);
-            scene.setDataReference(dataInstance, Camera::ViewportOffsetField, vpOffsetInstance);
-            scene.setDataReference(dataInstance, Camera::ViewportSizeField, vpSizeInstance);
-            scene.setDataReference(dataInstance, Camera::FrustumPlanesField, frustumPlanes);
-            scene.setDataReference(dataInstance, Camera::FrustumNearFarPlanesField, frustumNearFar);
-            const CameraHandle camera = sceneAllocator.allocateCamera(params.getProjectionType(), cameraNode, dataInstance);
-
-            scene.setDataSingleVector4f(frustumPlanes, DataFieldHandle{ 0 }, { params.leftPlane, params.rightPlane, params.bottomPlane, params.topPlane });
-            scene.setDataSingleVector2f(frustumNearFar, DataFieldHandle{ 0 }, { params.nearPlane, params.farPlane });
-
-            scene.setDataSingleVector2i(vpOffsetInstance, DataFieldHandle{ 0 }, { viewport.posX, viewport.posY });
-            scene.setDataSingleVector2i(vpSizeInstance, DataFieldHandle{ 0 }, { int32_t(viewport.width), int32_t(viewport.height) });
-
+            TestSceneHelper sceneHelper(scene, false ,false);
+            const CameraHandle cameraHandle = sceneHelper.createCamera(params, { viewport.posX, viewport.posY }, { int32_t(viewport.width), int32_t(viewport.height) });
+            const auto& camera = scene.getCamera(cameraHandle);
+            const NodeHandle cameraNode = camera.node;
             sceneAllocator.allocateTransform(cameraNode);
-            scene.setRenderPassCamera(pass, camera);
+            scene.setRenderPassCamera(pass, cameraHandle);
+
             return pass;
         }
 
@@ -285,6 +305,8 @@ namespace ramses::internal {
 
         DataInstances createTestDataInstance(bool setTextureSampler = true, bool setIndexArray = true)
         {
+            uniformBuffer = sceneAllocator.allocateUniformBuffer(10u);
+
             //create samplers
             sampler = sceneAllocator.allocateTextureSampler({ { ETextureAddressMode::Clamp, ETextureAddressMode::Repeat, ETextureAddressMode::Mirror, ETextureSamplingMethod::Nearest_MipMapNearest, ETextureSamplingMethod::Nearest, 2u }, MockResourceHash::TextureHash });
             samplerMS = sceneAllocator.allocateTextureSampler({ {}, MockResourceHash::TextureHash });
@@ -311,7 +333,7 @@ namespace ramses::internal {
             // explicit preallocation needed because here we use DataLayoutCreationHelper which allocates inside,
             // we cannot use scene allocation helper
             MemoryHandle nextHandle = std::max(scene.getDataInstanceCount(), scene.getDataLayoutCount());
-            scene.preallocateSceneSize(SceneSizeInformation(0u, 0u, 0u, 0u, 0u, nextHandle + 4u, nextHandle + 4u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u));
+            scene.preallocateSceneSize(SceneSizeInformation(0u, 0u, 0u, 0u, 0u, nextHandle + 4u, nextHandle + 4u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u));
             dataRef1 = DataLayoutCreationHelper::CreateAndBindDataReference(
                 scene, dataInstances.first, fakeEffectInputs.dataRefField1, EDataType::Float, DataLayoutHandle(nextHandle), DataInstanceHandle(nextHandle));
             dataRef2 = DataLayoutCreationHelper::CreateAndBindDataReference(
@@ -324,6 +346,8 @@ namespace ramses::internal {
             scene.setDataSingleFloat(dataRef2, DataFieldHandle(0u), -666.f);
             scene.setDataSingleMatrix22f(dataRefMatrix22f, DataFieldHandle(0u), glm::mat2(1, 2, 3, 4));
             scene.setDataSingleBoolean(dataRefBool, DataFieldHandle(0u), true);
+
+            scene.setDataUniformBuffer(dataInstances.first, fakeEffectInputs.uniformBufferField, uniformBuffer);
 
             if (setIndexArray)
             {
@@ -484,6 +508,10 @@ namespace ramses::internal {
             EXPECT_CALL(device, activateTextureSamplerObject(Property(&TextureSamplerStates::hash, Eq(expectedSamplerExternalStates.hash())), textureFieldExternal)).InSequence(deviceSequence);
 
             EXPECT_CALL(device, setConstant(fakeEffectInputs.dataRefFieldBool, 1, Matcher<const bool*>(Pointee(Eq(true)))))                                     .InSequence(deviceSequence);
+            EXPECT_CALL(device, activateUniformBuffer(DeviceMock::FakeUniformBufferDeviceHandle, fakeEffectInputs.uniformBufferField))                          .InSequence(deviceSequence);
+            EXPECT_CALL(device, activateUniformBuffer(fakeEffectInputs.modelUniformBufferDeviceHandle, fakeEffectInputs.modelUniformBufferField))               .InSequence(deviceSequence);
+            EXPECT_CALL(device, activateUniformBuffer(fakeEffectInputs.cameraUniformBufferDeviceHandle, fakeEffectInputs.cameraUniformBufferField))             .InSequence(deviceSequence);
+            EXPECT_CALL(device, activateUniformBuffer(fakeEffectInputs.modelCameraUniformBufferDeviceHandle, fakeEffectInputs.modelCameraUniformBufferField))   .InSequence(deviceSequence);
 
             if (fakeEffectInputs.dataRefTimeMs.isValid())
             {
@@ -540,10 +568,22 @@ namespace ramses::internal {
 
         void updateScenes(const RenderableVector& renderablesWithUpdatedVAOs)
         {
+            // simulate order of commands done by RendererSceneUpdater
             scene.updateRenderablesAndResourceCache(resourceManager);
+            for (const auto& passInfo : scene.getSortedRenderingPasses())
+            {
+                if (passInfo.getType() == ERenderingPassType::RenderPass)
+                {
+                    const auto camera = scene.getRenderPass(passInfo.getRenderPassHandle()).camera;
+                    const auto& passRenderables = scene.getOrderedRenderablesForPass(passInfo.getRenderPassHandle());
+                    scene.collectDirtySemanticUniformBuffers(passRenderables, camera);
+                }
+            }
             scene.updateRenderableVertexArrays(resourceManager, renderablesWithUpdatedVAOs);
             scene.markVertexArraysClean();
             scene.updateRenderableWorldMatrices();
+            scene.updateSemanticUniformBuffers();
+            scene.uploadSemanticUniformBuffers(resourceManager);
         }
 
         void expectRenderingWithProjection(RenderableHandle renderable, const glm::mat4& projMatrix, const uint32_t instanceCount = 1u)

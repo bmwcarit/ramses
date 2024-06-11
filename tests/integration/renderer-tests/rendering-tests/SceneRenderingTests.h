@@ -57,6 +57,8 @@ namespace ramses::internal
             CameraTest_Perspective,
             CameraTest_Orthographic,
             CameraTest_Viewport,
+            CameraTest_Perspective_UBO,
+            CameraTest_Orthographic_UBO,
 
             SceneModificationTest_DeleteMeshNode,
             SceneModificationTest_Invisible,
@@ -65,6 +67,10 @@ namespace ramses::internal
             SceneModificationTest_RotateAndScale,
             SceneModificationTest_CameraTransformation,
             SceneModificationTest_MeshRenderOrder,
+            SceneModificationTest_RotateAndScale_UBO1,
+            SceneModificationTest_RotateAndScale_UBO2,
+            SceneModificationTest_RotateAndScale_UBO3,
+            SceneModificationTest_CameraTransformation_UBO,
 
             GeometryTest_SharedAppearance,
             GeometryTest_32bitIndices,
@@ -153,7 +159,9 @@ namespace ramses::internal
             GeometryShaderGlslV310Extension_TrianglesInTriangleStripOut,
             GeometryShaderGlslV310Extension_TrianglesInPointsOut,
 
-            EulerRotationConventions
+            EulerRotationConventions,
+            MultipleTextures_ThreeMultiplexedTextures,
+            MultipleTextures_ThreeMultiplexedTextures_UBO,
         };
     };
 }

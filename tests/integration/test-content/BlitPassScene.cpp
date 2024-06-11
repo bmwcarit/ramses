@@ -194,7 +194,7 @@ namespace ramses::internal
         if (BLITS_DEPTH_STENCIL_BUFFER == state)
         {
             //add another mesh that is filtered by stencil
-            ramses::MeshNode& meshNode2 = createMesh(getEffectRenderOneBuffer(), TriangleAppearance::EColor_Green);
+            ramses::MeshNode& meshNode2 = createMesh(getEffectRenderOneBuffer(), TriangleAppearance::EColor::Green);
             meshNode2.getAppearance()->setStencilFunction(ramses::EStencilFunc::NotEqual, 0u, 0xff);
 
             ramses::Node& transNode2 = *m_scene.createNode();

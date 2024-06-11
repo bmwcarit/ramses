@@ -30,7 +30,8 @@ namespace ramses::internal
         const ATOM atom = RegisterClassA(&windowClass);
         if (0 == atom)
         {
-            GetLastError();
+            const auto err = GetLastError();
+            LOG_ERROR(CONTEXT_RENDERER, "HiddenWindow: Failed to register window class (error {})", err);
             return;
         }
 
@@ -57,6 +58,8 @@ namespace ramses::internal
 
         if (0 == windowHandle)
         {
+            const auto err = GetLastError();
+            LOG_ERROR(CONTEXT_RENDERER, "HiddenWindow: Failed to create window (error {})", err);
             return;
         }
 
@@ -66,6 +69,7 @@ namespace ramses::internal
 
         if (0 == displayHandle)
         {
+            LOG_ERROR(CONTEXT_RENDERER, "HiddenWindow: Failed to get window handle");
             return;
         }
 

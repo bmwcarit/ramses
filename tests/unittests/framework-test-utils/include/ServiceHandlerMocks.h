@@ -13,6 +13,7 @@
 #include "internal/SceneReferencing/SceneReferenceEvent.h"
 #include "internal/Communication/TransportCommon/ServiceHandlerInterfaces.h"
 #include "internal/Components/ISceneProviderEventConsumer.h"
+#include "TestEqualHelper.h"
 
 namespace ramses::internal
 {

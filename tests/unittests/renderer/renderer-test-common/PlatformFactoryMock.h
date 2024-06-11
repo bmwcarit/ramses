@@ -25,7 +25,7 @@ namespace ramses::internal
                 return std::make_unique<PlatformMock<::testing::NiceMock>>();});
         }
 
-        MOCK_METHOD(std::unique_ptr<IPlatform>, createPlatform, (const RendererConfig& rendererConfig, const DisplayConfig& dispConfig), (override));
+        MOCK_METHOD(std::unique_ptr<IPlatform>, createPlatform, (const RendererConfigData& rendererConfig, const DisplayConfigData& dispConfig), (override));
     };
 
     using PlatformFactoryNiceMock = PlatformFactoryMock< ::testing::NiceMock>;

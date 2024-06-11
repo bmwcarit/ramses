@@ -16,8 +16,10 @@ namespace ramses::internal
 {
     class DataLayoutCachedScene : public ActionCollectingScene
     {
+        using BaseT = ActionCollectingScene;
+
     public:
-        explicit DataLayoutCachedScene(const SceneInfo& sceneInfo = SceneInfo());
+        explicit DataLayoutCachedScene(const SceneInfo& sceneInfo = {}, EFeatureLevel featureLevel = EFeatureLevel_Latest);
 
         DataLayoutHandle            allocateDataLayout(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle) override;
         void                        releaseDataLayout(DataLayoutHandle handle) override;

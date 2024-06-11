@@ -19,6 +19,7 @@
 #include "internal/SceneGraph/SceneAPI/Handles.h"
 #include "internal/SceneGraph/SceneAPI/EDataType.h"
 #include "internal/PlatformAbstraction/Collections/HashMap.h"
+#include "internal/SceneGraph/Resource/EffectInputInformation.h"
 
 #include <memory>
 #include <string_view>
@@ -93,6 +94,7 @@ namespace ramses::internal
 
     private:
         void createUniformDataInstance(const EffectImpl& effect);
+        void createUniformBuffers(const EffectInputInformationVector& uniformsInputs);
 
         [[nodiscard]] bool checkEffectInputValidityAndValueCompatibility(const EffectInputImpl& input, size_t valueElementCount, std::initializer_list<ramses::internal::EDataType> valueDataType) const;
         [[nodiscard]] DataInstanceHandle getDataReference(DataFieldHandle dataField, ramses::internal::EDataType expectedDataType) const;
@@ -101,6 +103,11 @@ namespace ramses::internal
         bool setDataArrayChecked(size_t elementCount, const T* values, const EffectInputImpl& input);
         template <typename T>
         bool getDataArrayChecked(size_t elementCount, T* values, const EffectInputImpl& input) const;
+
+        template <typename T>
+        void setUniformBufferField(size_t elementCount, const T* values, const EffectInputImpl& input);
+        template <typename T>
+        void getUniformBufferField(size_t elementCount, T* values, const EffectInputImpl& input) const;
 
         bool setInputTextureInternal(const EffectInputImpl& input, const TextureSamplerImpl& textureSampler);
         bool bindInputInternal(const EffectInputImpl& input, const DataObjectImpl& dataObject);

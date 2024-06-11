@@ -15,4 +15,14 @@ namespace ramses::internal
         static RamsesLogger logger;
         return logger;
     }
+
+    void RamsesLoggerPrefixesExported::SetRamsesLoggerPrefixesExported(std::string_view instance, std::string_view thread, std::string_view additional)
+    {
+        RamsesLogger::SetPrefixes(instance, thread, additional);
+    }
+
+    void RamsesLoggerPrefixesExported::SetRamsesLoggerPrefixAdditionalExported(std::string_view additional)
+    {
+        RamsesLogger::SetPrefixAdditional(additional);
+    }
 }

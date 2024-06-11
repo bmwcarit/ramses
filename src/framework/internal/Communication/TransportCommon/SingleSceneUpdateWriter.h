@@ -10,6 +10,7 @@
 
 #include "internal/Components/SceneUpdate.h"
 #include "internal/Core/Utils/RawBinaryOutputStream.h"
+#include "ramses/framework/EFeatureLevel.h"
 #include "absl/types/span.h"
 
 namespace ramses::internal
@@ -19,7 +20,12 @@ namespace ramses::internal
     class SingleSceneUpdateWriter
     {
     public:
-        SingleSceneUpdateWriter(const SceneUpdate& update, absl::Span<std::byte> packetMem, const std::function<bool(size_t)>& writeDoneFunc, StatisticCollectionScene& sceneStatistics);
+        SingleSceneUpdateWriter(
+            const SceneUpdate& update,
+            absl::Span<std::byte> packetMem,
+            const std::function<bool(size_t)>& writeDoneFunc,
+            StatisticCollectionScene& sceneStatistics,
+            EFeatureLevel featureLevel);
 
         bool write();
 
@@ -52,5 +58,6 @@ namespace ramses::internal
         std::vector<std::byte>             m_temporaryMemToSerializeDescription;  // optimization to avoid allocations
         StatisticCollectionScene&          m_sceneStatistics;
         uint64_t                           m_overallSize{0};
+        EFeatureLevel                      m_featureLevel = EFeatureLevel_Latest;
     };
 }

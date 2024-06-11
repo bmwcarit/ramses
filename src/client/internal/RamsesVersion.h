@@ -31,6 +31,5 @@ namespace ramses::internal
 
         void WriteToStream(IOutputStream& stream, std::string_view versionString, std::string_view gitHash, EFeatureLevel featureLevel);
         bool ReadFromStream(IInputStream& stream, VersionInfo& outVersion, EFeatureLevel& outFeatureLevel);
-        bool MatchesMajorMinor(uint32_t currentMajor, uint32_t currentMinor, const VersionInfo& in);
     }
 }

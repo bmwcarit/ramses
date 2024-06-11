@@ -20,7 +20,7 @@
 namespace ramses::internal
 {
     RenderGroupBindingImpl::RenderGroupBindingImpl(SceneImpl& scene, ramses::RenderGroup& ramsesRenderGroup, const RenderGroupBindingElementsImpl& elements, std::string_view name, sceneObjectId_t id)
-        : RamsesBindingImpl{ scene, name, id }
+        : RamsesBindingImpl{ scene, name, id, ramsesRenderGroup }
         , m_ramsesRenderGroup{ ramsesRenderGroup }
         , m_elements{ elements.getElements() }
     {

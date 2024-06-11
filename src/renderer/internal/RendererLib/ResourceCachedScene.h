@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "internal/RendererLib/TextureLinkCachedScene.h"
+#include "internal/RendererLib/SemanticUniformBufferScene.h"
 
 namespace ramses::internal
 {
@@ -21,8 +21,13 @@ namespace ramses::internal
     };
     using VertexArrayCache = std::vector<VertexArrayCacheEntry>;
 
-    class ResourceCachedScene : public TextureLinkCachedScene
+    using UniformBuffersCacheEntry = DeviceHandleVector;
+    using UniformBuffersCache = std::vector<UniformBuffersCacheEntry>;
+
+    class ResourceCachedScene : public SemanticUniformBufferScene
     {
+        using BaseT = SemanticUniformBufferScene;
+
     public:
         explicit ResourceCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo = SceneInfo());
 
@@ -56,6 +61,7 @@ namespace ramses::internal
         const DeviceHandleVector&           getCachedHandlesForRenderTargets() const;
         const DeviceHandleVector&           getCachedHandlesForBlitPassRenderTargets() const;
         const BoolVector&                   getVertexArraysDirtinessFlags() const;
+        const UniformBuffersCache&          getCachedHandlesForUniformInstancesBuffers() const;
 
         void updateRenderableResources(const IResourceDeviceHandleAccessor& resourceAccessor);
         void updateRenderablesResourcesDirtiness();
@@ -85,6 +91,7 @@ namespace ramses::internal
         bool checkAndUpdateEffectResource(const IResourceDeviceHandleAccessor& resourceAccessor, RenderableHandle renderable);
         bool checkAndUpdateTextureResources(const IResourceDeviceHandleAccessor& resourceAccessor, RenderableHandle renderable);
         bool checkGeometryResources(const IResourceDeviceHandleAccessor& resourceAccessor, RenderableHandle renderable);
+        bool checkAndUpdateUniformBuffers(const IResourceDeviceHandleAccessor& resourceAccessor, RenderableHandle renderable);
         void checkAndUpdateRenderTargetResources(const IResourceDeviceHandleAccessor& resourceAccessor);
         void checkAndUpdateBlitPassResources(const IResourceDeviceHandleAccessor& resourceAccessor);
 
@@ -98,6 +105,7 @@ namespace ramses::internal
         mutable DeviceHandleVector m_deviceHandleCacheForTextures;
         DeviceHandleVector         m_renderTargetCache;
         DeviceHandleVector         m_blitPassCache;
+        UniformBuffersCache        m_uniformBuffersCache;
 
         mutable bool       m_renderableResourcesDirtinessNeedsUpdate = false;
         mutable bool       m_renderableVertexArraysDirty = false;

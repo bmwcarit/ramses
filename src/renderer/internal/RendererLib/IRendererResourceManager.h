@@ -13,7 +13,6 @@
 #include "internal/SceneGraph/SceneAPI/RenderBuffer.h"
 #include "internal/SceneGraph/SceneAPI/SceneTypes.h"
 #include "internal/SceneGraph/SceneAPI/TextureSamplerStates.h"
-#include "internal/SceneGraph/SceneAPI/EDataType.h"
 #include "internal/SceneGraph/Resource/ResourceTypes.h"
 #include "internal/Components/ManagedResource.h"
 #include "ramses/renderer/Types.h"
@@ -61,6 +60,14 @@ namespace ramses::internal
 
         virtual void             uploadVertexArray(RenderableHandle renderableHandle, const VertexArrayInfo& vertexArrayInfo, SceneId sceneId) = 0;
         virtual void             unloadVertexArray(RenderableHandle renderableHandle, SceneId sceneId) = 0;
+
+        virtual void             uploadUniformBuffer(UniformBufferHandle uniformBufferHandle, uint32_t size, SceneId sceneId) = 0;
+        virtual void             unloadUniformBuffer(UniformBufferHandle uniformBufferHandle, SceneId sceneId) = 0;
+        virtual void             updateUniformBuffer(UniformBufferHandle uniformBufferHandle, uint32_t size, const std::byte* data,  SceneId sceneId) = 0;
+
+        virtual DeviceResourceHandle uploadUniformBuffer(SemanticUniformBufferHandle handle, uint32_t size, SceneId sceneId) = 0;
+        virtual void             unloadUniformBuffer(SemanticUniformBufferHandle handle, SceneId sceneId) = 0;
+        virtual void             updateUniformBuffer(SemanticUniformBufferHandle handle, uint32_t size, const std::byte* data, SceneId sceneId) = 0;
 
         virtual void             unloadAllSceneResourcesForScene(SceneId sceneId) = 0;
         virtual void             unreferenceAllResourcesForScene(SceneId sceneId) = 0;

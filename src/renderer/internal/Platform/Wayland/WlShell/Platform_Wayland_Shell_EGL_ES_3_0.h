@@ -15,10 +15,10 @@ namespace ramses::internal
     class Platform_Wayland_Shell_EGL_ES_3_0 : public Platform_Wayland_EGL
     {
     public:
-        explicit Platform_Wayland_Shell_EGL_ES_3_0(const RendererConfig& rendererConfig);
+        explicit Platform_Wayland_Shell_EGL_ES_3_0(const RendererConfigData& rendererConfig);
 
     protected:
-        bool                         createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override;
+        bool                         createWindow(const DisplayConfigData& displayConfig, IWindowEventHandler& windowEventHandler) override;
     };
 }
 

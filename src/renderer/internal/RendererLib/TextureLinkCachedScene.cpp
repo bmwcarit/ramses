@@ -14,19 +14,19 @@
 namespace ramses::internal
 {
     TextureLinkCachedScene::TextureLinkCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo)
-        : DataReferenceLinkCachedScene(sceneLinksManager, sceneInfo)
+        : BaseT(sceneLinksManager, sceneInfo)
     {
     }
 
     DataSlotHandle TextureLinkCachedScene::allocateDataSlot(const DataSlot& dataSlot, DataSlotHandle handle)
     {
-        const DataSlotHandle actualHandle = DataReferenceLinkCachedScene::allocateDataSlot(dataSlot, handle);
+        const DataSlotHandle actualHandle = BaseT::allocateDataSlot(dataSlot, handle);
 
         if (dataSlot.type == EDataSlotType::TextureConsumer)
         {
             const auto sampler = dataSlot.attachedTextureSampler;
             assert(sampler.isValid() && isTextureSamplerAllocated(sampler));
-            m_fallbackTextureSamplers[sampler] = DataReferenceLinkCachedScene::getTextureSampler(sampler);
+            m_fallbackTextureSamplers[sampler] = BaseT::getTextureSampler(sampler);
         }
 
         return actualHandle;
@@ -35,7 +35,7 @@ namespace ramses::internal
     void TextureLinkCachedScene::releaseDataSlot(DataSlotHandle handle)
     {
         const TextureSamplerHandle sampler = getDataSlot(handle).attachedTextureSampler;
-        DataReferenceLinkCachedScene::releaseDataSlot(handle);
+        BaseT::releaseDataSlot(handle);
 
         auto it = m_fallbackTextureSamplers.find(sampler);
         if (it != m_fallbackTextureSamplers.end())
@@ -44,7 +44,7 @@ namespace ramses::internal
 
     void TextureLinkCachedScene::setDataSlotTexture(DataSlotHandle handle, const ResourceContentHash& texture)
     {
-        DataReferenceLinkCachedScene::setDataSlotTexture(handle, texture);
+        BaseT::setDataSlotTexture(handle, texture);
         m_sceneLinksManager.getTextureLinkManager().setTextureToConsumers(getSceneId(), handle, texture);
     }
 

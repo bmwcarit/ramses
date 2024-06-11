@@ -67,7 +67,7 @@ namespace ramses::internal
             for(uint32_t i = 0u; i < count; ++i)
             {
                 const auto randomString = std::to_string(++createdEffectCounter);
-                const EffectResource* effect = new EffectResource(randomString, "", "", {}, {}, {}, "");
+                const EffectResource* effect = new EffectResource(randomString, "", "", {}, {}, {}, {}, "", EFeatureLevel_Latest);
                 result.push_back(effect);
 
                 createdEffects.emplace_back(effect); //keep track of created resource to avoid mem-leak

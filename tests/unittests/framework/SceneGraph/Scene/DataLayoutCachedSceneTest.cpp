@@ -17,7 +17,7 @@ namespace ramses::internal
     {
     public:
         ADataLayoutCachedScene()
-            : scene(SceneInfo())
+            : scene(SceneInfo(), EFeatureLevel_Latest)
         {
         }
 

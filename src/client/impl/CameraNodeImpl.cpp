@@ -11,6 +11,8 @@
 #include "impl/DataObjectImpl.h"
 #include "impl/SerializationContext.h"
 #include "impl/ErrorReporting.h"
+#include "impl/RamsesClientImpl.h"
+#include "impl/RamsesFrameworkImpl.h"
 #include "internal/SceneGraph/Scene/ClientScene.h"
 #include "internal/SceneGraph/SceneUtils/DataInstanceHelper.h"
 #include "internal/Core/Math3d/CameraMatrixHelper.h"
@@ -51,16 +53,16 @@ namespace ramses::internal
         if (!NodeImpl::deserialize(inStream, serializationContext))
             return false;
 
-        inStream >> m_cameraHandle;
-        inStream >> m_dataLayout;
-        inStream >> m_dataInstance;
-        inStream >> m_viewportDataReferenceLayout;
-        inStream >> m_viewportOffsetDataReference;
-        inStream >> m_viewportSizeDataReference;
-        inStream >> m_frustumPlanesDataReferenceLayout;
-        inStream >> m_frustumPlanesDataReference;
-        inStream >> m_frustumNearFarDataReferenceLayout;
-        inStream >> m_frustumNearFarDataReference;
+        serializationContext.deserializeAndMap(inStream, m_cameraHandle);
+        serializationContext.deserializeAndMap(inStream, m_dataLayout);
+        serializationContext.deserializeAndMap(inStream, m_dataInstance);
+        serializationContext.deserializeAndMap(inStream, m_viewportDataReferenceLayout);
+        serializationContext.deserializeAndMap(inStream, m_viewportOffsetDataReference);
+        serializationContext.deserializeAndMap(inStream, m_viewportSizeDataReference);
+        serializationContext.deserializeAndMap(inStream, m_frustumPlanesDataReferenceLayout);
+        serializationContext.deserializeAndMap(inStream, m_frustumPlanesDataReference);
+        serializationContext.deserializeAndMap(inStream, m_frustumNearFarDataReferenceLayout);
+        serializationContext.deserializeAndMap(inStream, m_frustumNearFarDataReference);
         inStream >> m_frustumInitialized;
         inStream >> m_viewportInitialized;
 

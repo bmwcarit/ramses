@@ -47,14 +47,14 @@ namespace ramses::internal
             m_testFramework.filterTestCases(filterIn, filterOut);
         }
 
-        bool runTests()
+        [[nodiscard]] bool runTests()
         {
             return m_testFramework.runAllTests();
         }
 
-        void logReport()
+        [[nodiscard]] std::string generateReport() const
         {
-            fmt::print("{}\n", m_testFramework.generateReport());
+            return m_testFramework.generateReport();
         }
 
     protected:

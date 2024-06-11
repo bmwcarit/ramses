@@ -7,13 +7,13 @@
 //  -------------------------------------------------------------------------
 
 #include "gtest/gtest.h"
-#include "internal/RendererLib/RendererConfig.h"
+#include "internal/RendererLib/RendererConfigData.h"
 
 namespace ramses::internal
 {
     TEST(AInternalRendererConfig, hasDefaultValues)
     {
-        ramses::internal::RendererConfig config;
+        ramses::internal::RendererConfigData config;
         EXPECT_FALSE(config.getSystemCompositorControlEnabled());
         EXPECT_EQ(std::chrono::microseconds{10000u}, config.getFrameCallbackMaxPollTime());
         EXPECT_EQ("", config.getWaylandDisplayForSystemCompositorController());
@@ -21,14 +21,14 @@ namespace ramses::internal
 
     TEST(AInternalRendererConfig, canEnableSystemCompositorControl)
     {
-        ramses::internal::RendererConfig config;
+        ramses::internal::RendererConfigData config;
         config.enableSystemCompositorControl();
         EXPECT_TRUE(config.getSystemCompositorControlEnabled());
     }
 
     TEST(AInternalRendererConfig, canSetGetMaxFramecallbackPollTime)
     {
-        ramses::internal::RendererConfig config;
+        ramses::internal::RendererConfigData config;
 
         config.setFrameCallbackMaxPollTime(std::chrono::microseconds{123u});
         EXPECT_EQ(std::chrono::microseconds{123u}, config.getFrameCallbackMaxPollTime());
@@ -36,7 +36,7 @@ namespace ramses::internal
 
     TEST(AInternalRendererConfig, canSetGetWaylandDisplayForSystemCompositorController)
     {
-        ramses::internal::RendererConfig config;
+        ramses::internal::RendererConfigData config;
 
         config.setWaylandDisplayForSystemCompositorController("ramses wd");
         EXPECT_EQ("ramses wd", config.getWaylandDisplayForSystemCompositorController());

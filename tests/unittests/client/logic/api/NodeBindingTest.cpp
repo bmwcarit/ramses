@@ -232,6 +232,7 @@ namespace ramses::internal
     {
         NodeBinding& nodeBinding = *m_logicEngine->createNodeBinding(*m_node, ERotationType::Euler_XYZ, "");
         EXPECT_EQ(m_node, &nodeBinding.getRamsesNode());
+        EXPECT_EQ(m_node, &nodeBinding.impl().getBoundObject());
     }
 
     TEST_F(ANodeBinding, DoesNotModifyRamsesWithoutUpdateBeingCalled)

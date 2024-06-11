@@ -11,13 +11,13 @@
 
 namespace ramses::internal
 {
-    DisplayDispatcherMock::DisplayDispatcherMock(const RendererConfig& config, IRendererSceneEventSender& rendererSceneSender, IThreadAliveNotifier& notifier)
-        : DisplayDispatcher(std::make_unique<PlatformFactoryNiceMock>(), config, rendererSceneSender, notifier)
+    DisplayDispatcherMock::DisplayDispatcherMock(const RendererConfigData& config, IRendererSceneEventSender& rendererSceneSender, IThreadAliveNotifier& notifier)
+        : DisplayDispatcher(std::make_unique<PlatformFactoryNiceMock>(), config, rendererSceneSender, notifier, EFeatureLevel_Latest)
     {
     }
     DisplayDispatcherMock::~DisplayDispatcherMock() = default;
 
-    DisplayDispatcherFacade::DisplayDispatcherFacade(const RendererConfig& config, IRendererSceneEventSender& rendererSceneSender, IThreadAliveNotifier& notifier, bool threaded)
+    DisplayDispatcherFacade::DisplayDispatcherFacade(const RendererConfigData& config, IRendererSceneEventSender& rendererSceneSender, IThreadAliveNotifier& notifier, bool threaded)
         : DisplayDispatcherMock(config, rendererSceneSender, notifier)
         , m_threaded{ threaded }
     {
@@ -100,7 +100,7 @@ namespace ramses::internal
         return bundle;
     }
 
-    DisplayDispatcher::Display DisplayDispatcherFacade::createDisplayBundle(DisplayHandle displayHandle, const DisplayConfig& dispConfig)
+    DisplayDispatcher::Display DisplayDispatcherFacade::createDisplayBundle(DisplayHandle displayHandle, const DisplayConfigData& dispConfig)
     {
         DisplayDispatcherMock::createDisplayBundle(displayHandle, dispConfig);
         return m_useNiceMock ? createDisplayBundleMocks<::testing::NiceMock>() : createDisplayBundleMocks<::testing::StrictMock>();

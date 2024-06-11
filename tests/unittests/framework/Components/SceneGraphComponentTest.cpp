@@ -32,9 +32,9 @@ public:
         , remoteParticipantID(12)
         , sceneGraphComponent(localParticipantID, communicationSystem, connectionStatusUpdateNotifier, resourceComponent, frameworkLock, ramses::EFeatureLevel_Latest)
     {
-        localSceneIdInfo = SceneInfo(localSceneId, "sceneName", EScenePublicationMode::LocalOnly);
+        localSceneIdInfo = SceneInfo{ localSceneId, "sceneName", EScenePublicationMode::LocalOnly, ERenderBackendCompatibility::VulkanAndOpenGL, EVulkanAPIVersion::Version_1_1, ESPIRVVersion::Version_1_2 };
         localSceneIdInfoVector.push_back(localSceneIdInfo);
-        localAndRemoteSceneIdInfo = SceneInfo(localSceneId, "sceneName", EScenePublicationMode::LocalAndRemote);
+        localAndRemoteSceneIdInfo = SceneInfo{ localSceneId, "sceneName", EScenePublicationMode::LocalAndRemote, ERenderBackendCompatibility::VulkanAndOpenGL, EVulkanAPIVersion::Version_1_1, ESPIRVVersion::Version_1_2 };
         localAndRemoteSceneIdInfoVector.push_back(localAndRemoteSceneIdInfo);
     }
 
@@ -51,7 +51,7 @@ public:
     std::vector<std::vector<std::byte>> actionsToChunks(const SceneActionCollection& actions, uint32_t chunkSize = 100000, const ManagedResourceVector& resources = {}, const FlushInformation& flushinfo = {})
     {
         SceneUpdate update{actions.copy(), resources, flushinfo.copy()};
-        return TestSerializeSceneUpdateToVectorChunked(SceneUpdateSerializer(update, sceneStatistics), chunkSize);
+        return TestSerializeSceneUpdateToVectorChunked(SceneUpdateSerializer(update, sceneStatistics, EFeatureLevel_Latest), chunkSize);
     }
 
     void expectSendSceneActionsToNetwork(Guid remote, SceneId sceneId, const SceneActionCollection& expectedActions)
@@ -64,13 +64,13 @@ public:
         });
     }
 
-    void publishScene(uint32_t sceneId, std::string_view name, EScenePublicationMode pubMode)
+    void publishScene(uint32_t sceneId, std::string name, EScenePublicationMode pubMode)
     {
-        SceneInfo info(SceneId(sceneId), name, pubMode);
+        SceneInfo info{ SceneId(sceneId), std::move(name), pubMode };
         EXPECT_CALL(consumer, handleNewSceneAvailable(info, _));
         if (pubMode != EScenePublicationMode::LocalOnly)
             EXPECT_CALL(communicationSystem, broadcastNewScenesAvailable(SceneInfoVector{info}, ramses::EFeatureLevel_Latest));
-        sceneGraphComponent.sendPublishScene(SceneId(sceneId), pubMode, name);
+        sceneGraphComponent.sendPublishScene(info);
     }
 
 protected:
@@ -111,20 +111,20 @@ TEST_F(ASceneGraphComponent, sendsSceneToLocalConsumer)
     sceneGraphComponent.setSceneRendererHandler(&consumer);
 
     EXPECT_CALL(consumer, handleInitializeScene(_, _)).Times(1);
-    sceneGraphComponent.sendCreateScene(localParticipantID, SceneId(666u), EScenePublicationMode::LocalAndRemote);
+    sceneGraphComponent.sendCreateScene(localParticipantID, SceneInfo{ SceneId(666u), "", EScenePublicationMode::LocalAndRemote });
 }
 
 TEST_F(ASceneGraphComponent, doesntSendSceneIfLocalConsumerIsntSet)
 {
     EXPECT_CALL(consumer, handleInitializeScene(_, localParticipantID)).Times(0);
 
-    sceneGraphComponent.sendCreateScene(localParticipantID, SceneId(666u), EScenePublicationMode::LocalAndRemote);
+    sceneGraphComponent.sendCreateScene(localParticipantID, SceneInfo{ SceneId(666u), "", EScenePublicationMode::LocalAndRemote });
 }
 
 TEST_F(ASceneGraphComponent, sendsSceneToRemoteProvider)
 {
     EXPECT_CALL(communicationSystem, sendInitializeScene(remoteParticipantID, SceneId(666u)));
-    sceneGraphComponent.sendCreateScene(remoteParticipantID, SceneId(666u), EScenePublicationMode::LocalAndRemote);
+    sceneGraphComponent.sendCreateScene(remoteParticipantID, SceneInfo{ SceneId(666u), "", EScenePublicationMode::LocalAndRemote });
 }
 
 TEST_F(ASceneGraphComponent, publishesSceneAtLocalConsumerInLocalAndRemoteMode)
@@ -133,7 +133,7 @@ TEST_F(ASceneGraphComponent, publishesSceneAtLocalConsumerInLocalAndRemoteMode)
 
     EXPECT_CALL(consumer, handleNewSceneAvailable(localAndRemoteSceneIdInfo, _));
     EXPECT_CALL(communicationSystem, broadcastNewScenesAvailable(localAndRemoteSceneIdInfoVector, ramses::EFeatureLevel_Latest));
-    sceneGraphComponent.sendPublishScene(localSceneId, EScenePublicationMode::LocalAndRemote, "sceneName");
+    sceneGraphComponent.sendPublishScene(localAndRemoteSceneIdInfo);
 }
 
 TEST_F(ASceneGraphComponentNotConnected, publishesSceneAtLocalConsumerInLocalAndRemoteMode)
@@ -142,7 +142,7 @@ TEST_F(ASceneGraphComponentNotConnected, publishesSceneAtLocalConsumerInLocalAnd
     {
         EXPECT_CALL(consumer, handleNewSceneAvailable(localAndRemoteSceneIdInfo, _));
         EXPECT_CALL(communicationSystem, broadcastNewScenesAvailable(_, ramses::EFeatureLevel_Latest)).Times(0);
-        sceneGraphComponent.sendPublishScene(localSceneId, EScenePublicationMode::LocalAndRemote, "sceneName");
+        sceneGraphComponent.sendPublishScene(localAndRemoteSceneIdInfo);
     }
     {
         EXPECT_CALL(consumer, handleSceneBecameUnavailable(localAndRemoteSceneIdInfo.sceneID, _));
@@ -156,19 +156,19 @@ TEST_F(ASceneGraphComponent, publishesSceneAtLocalConsumerInLocalOnlyMode)
     sceneGraphComponent.setSceneRendererHandler(&consumer);
 
     EXPECT_CALL(consumer, handleNewSceneAvailable(localSceneIdInfo, _));
-    sceneGraphComponent.sendPublishScene(localSceneId, EScenePublicationMode::LocalOnly, "sceneName");
+    sceneGraphComponent.sendPublishScene(localSceneIdInfo);
 }
 
 TEST_F(ASceneGraphComponent, doesntPublishSceneIfLocalConsumerIsntSet)
 {
     EXPECT_CALL(consumer, handleNewSceneAvailable(localAndRemoteSceneIdInfo, _)).Times(0);
     EXPECT_CALL(communicationSystem, broadcastNewScenesAvailable(localSceneIdInfoVector, ramses::EFeatureLevel_Latest));
-    sceneGraphComponent.sendPublishScene(localSceneId, EScenePublicationMode::LocalAndRemote, "sceneName");
+    sceneGraphComponent.sendPublishScene(localAndRemoteSceneIdInfo);
 }
 
 TEST_F(ASceneGraphComponent, doesNotPublishSceneToRemoteProviderInLocalOnlyMode)
 {
-    sceneGraphComponent.sendPublishScene(remoteSceneId, EScenePublicationMode::LocalOnly, "sceneName");
+    sceneGraphComponent.sendPublishScene(localSceneIdInfo);
     // no expect needed, StrictMock on communicationSystem checks it already
 }
 
@@ -176,14 +176,14 @@ TEST_F(ASceneGraphComponent, publishesSceneAtRemoteProvider)
 {
     sceneGraphComponent.newParticipantHasConnected(Guid(33));
 
-    SceneInfoVector newScenes(1, SceneInfo(remoteSceneId, "sceneName"));
+    SceneInfoVector newScenes(1, SceneInfo{ remoteSceneId, "sceneName" });
     EXPECT_CALL(communicationSystem, broadcastNewScenesAvailable(newScenes, ramses::EFeatureLevel_Latest));
-    sceneGraphComponent.sendPublishScene(remoteSceneId, EScenePublicationMode::LocalAndRemote, "sceneName");
+    sceneGraphComponent.sendPublishScene(SceneInfo{ remoteSceneId, "sceneName", EScenePublicationMode::LocalAndRemote });
 }
 
 TEST_F(ASceneGraphComponent, alreadyPublishedSceneGetsRepublishedWhenLocalConsumerIsSet)
 {
-    sceneGraphComponent.sendPublishScene(localSceneId, EScenePublicationMode::LocalOnly, "sceneName");
+    sceneGraphComponent.sendPublishScene(localSceneIdInfo);
 
     EXPECT_CALL(consumer, handleNewSceneAvailable(localSceneIdInfo, _));
     sceneGraphComponent.setSceneRendererHandler(&consumer);
@@ -194,7 +194,7 @@ TEST_F(ASceneGraphComponent, locallySubscribedScenesGetUnsubscibedWhenLocalConsu
     sceneGraphComponent.setSceneRendererHandler(&consumer);
 
     SceneId sceneId(1);
-    SceneInfo sceneInfo(SceneInfo(sceneId, "foo"));
+    SceneInfo sceneInfo{ sceneId, "foo" };
     ClientScene scene(sceneInfo);
 
     sceneGraphComponent.handleCreateScene(scene, false, eventConsumer);
@@ -219,9 +219,9 @@ TEST_F(ASceneGraphComponent, unpublishesSceneAtLocalConsumer)
     const SceneId sceneId(999);
     sceneGraphComponent.setSceneRendererHandler(&consumer);
 
-    SceneInfoVector newScenes(1, SceneInfo(sceneId, "sceneName"));
-    EXPECT_CALL(consumer, handleNewSceneAvailable(SceneInfo(sceneId, "sceneName", EScenePublicationMode::LocalOnly), _));
-    sceneGraphComponent.sendPublishScene(sceneId, EScenePublicationMode::LocalOnly, "sceneName");
+    SceneInfoVector newScenes(1, SceneInfo{ sceneId, "sceneName" });
+    EXPECT_CALL(consumer, handleNewSceneAvailable(SceneInfo{ sceneId, "sceneName", EScenePublicationMode::LocalOnly }, _));
+    sceneGraphComponent.sendPublishScene(SceneInfo{ sceneId, "sceneName", EScenePublicationMode::LocalOnly });
 
     EXPECT_CALL(consumer, handleSceneBecameUnavailable(sceneId, _));
     sceneGraphComponent.sendUnpublishScene(sceneId, EScenePublicationMode::LocalOnly);
@@ -232,14 +232,14 @@ TEST_F(ASceneGraphComponent, doesntUnpublishSceneIfLocalConsumerIsntSet)
     EXPECT_CALL(consumer, handleSceneBecameUnavailable(_, _)).Times(0);
 
     const SceneId sceneId(1ull << 63);
-    sceneGraphComponent.sendPublishScene(sceneId, EScenePublicationMode::LocalOnly, "sceneName");
+    sceneGraphComponent.sendPublishScene(SceneInfo{ sceneId, "sceneName", EScenePublicationMode::LocalOnly });
     sceneGraphComponent.sendUnpublishScene(sceneId, EScenePublicationMode::LocalOnly);
 }
 
 TEST_F(ASceneGraphComponent, doesNotUnpublishesSceneAtRemoteProviderIfSceneWasPublishedLocalOnly)
 {
     const SceneId sceneId(1ull << 63);
-    sceneGraphComponent.sendPublishScene(sceneId, EScenePublicationMode::LocalOnly, "sceneName");
+    sceneGraphComponent.sendPublishScene(SceneInfo{ sceneId, "sceneName", EScenePublicationMode::LocalOnly });
     sceneGraphComponent.sendUnpublishScene(sceneId, EScenePublicationMode::LocalOnly);
     // expect noting on remote, checked by strict mock
 }
@@ -249,18 +249,18 @@ TEST_F(ASceneGraphComponent, unpublishesSceneAtRemoteProvider)
     const SceneId sceneId(1ull << 63);
     sceneGraphComponent.newParticipantHasConnected(Guid(33));
     EXPECT_CALL(communicationSystem, broadcastNewScenesAvailable(_, ramses::EFeatureLevel_Latest));
-    sceneGraphComponent.sendPublishScene(sceneId, EScenePublicationMode::LocalAndRemote, "sceneName");
+    sceneGraphComponent.sendPublishScene(SceneInfo{ sceneId, "sceneName", EScenePublicationMode::LocalAndRemote });
 
-    SceneInfoVector unavailableScenes(1, SceneInfo(sceneId, "sceneName"));
+    SceneInfoVector unavailableScenes(1, SceneInfo{ sceneId, "sceneName" });
     EXPECT_CALL(communicationSystem, broadcastScenesBecameUnavailable(unavailableScenes));
     sceneGraphComponent.sendUnpublishScene(sceneId, EScenePublicationMode::LocalAndRemote);
 }
 
 TEST_F(ASceneGraphComponent, sendsAvailableScenesToNewParticipant)
 {
-    SceneInfoVector newScenes(1, SceneInfo(remoteSceneId, "sceneName"));
+    SceneInfoVector newScenes(1, SceneInfo{ remoteSceneId, "sceneName" });
     EXPECT_CALL(communicationSystem, broadcastNewScenesAvailable(newScenes, ramses::EFeatureLevel_Latest));
-    sceneGraphComponent.sendPublishScene(remoteSceneId, EScenePublicationMode::LocalAndRemote, "sceneName");
+    sceneGraphComponent.sendPublishScene(SceneInfo{ remoteSceneId, "sceneName", EScenePublicationMode::LocalAndRemote });
 
     Guid id(33);
     EXPECT_CALL(communicationSystem, sendScenesAvailable(id, newScenes, ramses::EFeatureLevel_Latest));
@@ -269,8 +269,8 @@ TEST_F(ASceneGraphComponent, sendsAvailableScenesToNewParticipant)
 
 TEST_F(ASceneGraphComponentNotConnected, sendsAvailableScenesToNewParticipant)
 {
-    SceneInfoVector newScenes(1, SceneInfo(remoteSceneId, "sceneName"));
-    sceneGraphComponent.sendPublishScene(remoteSceneId, EScenePublicationMode::LocalAndRemote, "sceneName");
+    SceneInfoVector newScenes(1, SceneInfo{ remoteSceneId, "sceneName" });
+    sceneGraphComponent.sendPublishScene(SceneInfo{ remoteSceneId, "sceneName", EScenePublicationMode::LocalAndRemote });
 
     Guid id(33);
     EXPECT_CALL(communicationSystem, sendScenesAvailable(id, newScenes, ramses::EFeatureLevel_Latest));
@@ -279,8 +279,8 @@ TEST_F(ASceneGraphComponentNotConnected, sendsAvailableScenesToNewParticipant)
 
 TEST_F(ASceneGraphComponent, doesNotSendAvailableSceneToNewParticipantIfLocalOnlyScene)
 {
-    SceneInfoVector newScenes(1, SceneInfo(remoteSceneId, "sceneName"));
-    sceneGraphComponent.sendPublishScene(remoteSceneId, EScenePublicationMode::LocalOnly, "sceneName");
+    SceneInfoVector newScenes(1, SceneInfo{ remoteSceneId, "sceneName" });
+    sceneGraphComponent.sendPublishScene(SceneInfo{ remoteSceneId, "sceneName", EScenePublicationMode::LocalOnly });
 
     Guid id(33);
     EXPECT_CALL(communicationSystem, sendScenesAvailable(id, newScenes, ramses::EFeatureLevel_Latest)).Times(0);
@@ -346,7 +346,7 @@ TEST_F(ASceneGraphComponent, sendsResourcesCompressedToRemoteProvider)
 {
     SceneId sceneId;
     EXPECT_CALL(communicationSystem, sendInitializeScene(_, _)).Times(1);
-    sceneGraphComponent.sendCreateScene(remoteParticipantID, sceneId, EScenePublicationMode::LocalAndRemote);
+    sceneGraphComponent.sendCreateScene(remoteParticipantID, SceneInfo{ sceneId, "", EScenePublicationMode::LocalAndRemote });
 
     ResourceBlob blob(1024 * EnumToSize(EDataType::Float));
     std::generate(blob.data(), blob.data() + blob.size(), [](){ static uint8_t i{9}; return std::byte(++i); });
@@ -380,7 +380,7 @@ TEST_F(ASceneGraphComponent, sendsSceneActionToRemoteProvider)
 {
     SceneId sceneId;
     EXPECT_CALL(communicationSystem, sendInitializeScene(_, _)).Times(1);
-    sceneGraphComponent.sendCreateScene(remoteParticipantID, sceneId, EScenePublicationMode::LocalAndRemote);
+    sceneGraphComponent.sendCreateScene(remoteParticipantID, SceneInfo{ sceneId, "", EScenePublicationMode::LocalAndRemote });
 
     SceneActionCollection list(CreateFakeSceneActionCollectionFromTypes({ ESceneActionId::TestAction }));
     expectSendSceneActionsToNetwork(remoteParticipantID, sceneId, list);
@@ -393,7 +393,7 @@ TEST_F(ASceneGraphComponent, sendsAllSceneActionsAtOnceToRemoteProvider)
 {
     SceneId sceneId(1);
     EXPECT_CALL(communicationSystem, sendInitializeScene(_, _)).Times(1);
-    sceneGraphComponent.sendCreateScene(remoteParticipantID, sceneId, EScenePublicationMode::LocalAndRemote);
+    sceneGraphComponent.sendCreateScene(remoteParticipantID, SceneInfo{ sceneId, "", EScenePublicationMode::LocalAndRemote });
 
     SceneActionCollection list(CreateFakeSceneActionCollectionFromTypes({ ESceneActionId::TestAction, ESceneActionId::SetDataVector2fArray, ESceneActionId::AllocateNode }));
     expectSendSceneActionsToNetwork(remoteParticipantID, sceneId, list);
@@ -405,7 +405,7 @@ TEST_F(ASceneGraphComponent, sendsAllSceneActionsAtOnceToRemoteProvider)
 TEST_F(ASceneGraphComponent, doesNotsendSceneUpdateToRemoteIfSceneWasPublishedLocalOnly)
 {
     const SceneId sceneId(111);
-    sceneGraphComponent.sendPublishScene(sceneId, EScenePublicationMode::LocalOnly, "sceneName");
+    sceneGraphComponent.sendPublishScene(SceneInfo{ sceneId, "sceneName", EScenePublicationMode::LocalOnly });
     SceneActionCollection list(CreateFakeSceneActionCollectionFromTypes({ ESceneActionId::TestAction }));
 
     SceneUpdate update;
@@ -421,7 +421,7 @@ TEST_F(ASceneGraphComponent, canSendSceneActionsToLocalAndRemote)
 
     const SceneId sceneId(456);
     EXPECT_CALL(communicationSystem, sendInitializeScene(_, _)).Times(1);
-    sceneGraphComponent.sendCreateScene(remoteParticipantID, sceneId, EScenePublicationMode::LocalAndRemote);
+    sceneGraphComponent.sendCreateScene(remoteParticipantID, SceneInfo{ sceneId, "", EScenePublicationMode::LocalAndRemote });
 
     SceneActionCollection list(CreateFakeSceneActionCollectionFromTypes({ ESceneActionId::TestAction }));
     InSequence seq;
@@ -441,7 +441,7 @@ TEST_F(ASceneGraphComponent, canRepublishALocalOnlySceneToBeDistributedRemotely)
 
     // publish LocalOnly
     EXPECT_CALL(consumer, handleNewSceneAvailable(localSceneIdInfo, _));
-    sceneGraphComponent.sendPublishScene(localSceneId, EScenePublicationMode::LocalOnly, "sceneName");
+    sceneGraphComponent.sendPublishScene(localSceneIdInfo);
     Mock::VerifyAndClearExpectations(&communicationSystem);
 
     // unpublish
@@ -451,10 +451,10 @@ TEST_F(ASceneGraphComponent, canRepublishALocalOnlySceneToBeDistributedRemotely)
     Mock::VerifyAndClearExpectations(&consumer);
 
     // publish LocalAndRemote
-    SceneInfoVector newScenes(1, SceneInfo(localSceneId, "sceneName"));
+    SceneInfoVector newScenes(1, localAndRemoteSceneIdInfo);
     EXPECT_CALL(consumer, handleNewSceneAvailable(localAndRemoteSceneIdInfo, localParticipantID));
     EXPECT_CALL(communicationSystem, broadcastNewScenesAvailable(newScenes, ramses::EFeatureLevel_Latest));
-    sceneGraphComponent.sendPublishScene(localSceneId, EScenePublicationMode::LocalAndRemote, "sceneName");
+    sceneGraphComponent.sendPublishScene(localAndRemoteSceneIdInfo);
 }
 
 TEST_F(ASceneGraphComponent, canRepublishARemoteSceneToBeLocalOnly)
@@ -465,7 +465,7 @@ TEST_F(ASceneGraphComponent, canRepublishARemoteSceneToBeLocalOnly)
     // publish LocalAndRemote
     EXPECT_CALL(consumer, handleNewSceneAvailable(localAndRemoteSceneIdInfo, localParticipantID));
     EXPECT_CALL(communicationSystem, broadcastNewScenesAvailable(localAndRemoteSceneIdInfoVector, ramses::EFeatureLevel_Latest));
-    sceneGraphComponent.sendPublishScene(localSceneId, EScenePublicationMode::LocalAndRemote, "sceneName");
+    sceneGraphComponent.sendPublishScene(localAndRemoteSceneIdInfo);
     Mock::VerifyAndClearExpectations(&communicationSystem);
     Mock::VerifyAndClearExpectations(&consumer);
 
@@ -478,7 +478,7 @@ TEST_F(ASceneGraphComponent, canRepublishARemoteSceneToBeLocalOnly)
 
     // publish LocalOnly
     EXPECT_CALL(consumer, handleNewSceneAvailable(_, _));
-    sceneGraphComponent.sendPublishScene(localSceneId, EScenePublicationMode::LocalOnly, "sceneName");
+    sceneGraphComponent.sendPublishScene(localSceneIdInfo);
     Mock::VerifyAndClearExpectations(&communicationSystem);
 }
 
@@ -486,7 +486,7 @@ TEST_F(ASceneGraphComponent, disconnectFromNetworkBroadcastsScenesUnavailableOnN
 {
     sceneGraphComponent.setSceneRendererHandler(&consumer);
     publishScene(1, "name", EScenePublicationMode::LocalAndRemote);
-    EXPECT_CALL(communicationSystem, broadcastScenesBecameUnavailable(SceneInfoVector{ SceneInfo(SceneId(1), "name") }));
+    EXPECT_CALL(communicationSystem, broadcastScenesBecameUnavailable(SceneInfoVector{ SceneInfo{ SceneId(1), "name" } }));
     sceneGraphComponent.disconnectFromNetwork();
 }
 
@@ -502,24 +502,24 @@ TEST_F(ASceneGraphComponent, disconnectFromNetworkBroadcastsScenesUnavailableOnN
     sceneGraphComponent.disconnectFromNetwork();
 
     ASSERT_EQ(2u, unpubScenes.size());
-    EXPECT_TRUE(contains_c(unpubScenes, SceneInfo(SceneId(1), "name1")));
-    EXPECT_TRUE(contains_c(unpubScenes, SceneInfo(SceneId(3), "name3")));
+    EXPECT_TRUE(contains_c(unpubScenes, SceneInfo{ SceneId(1), "name1" }));
+    EXPECT_TRUE(contains_c(unpubScenes, SceneInfo{ SceneId(3), "name3" }));
 }
 
 TEST_F(ASceneGraphComponent, sendsPublishForNewParticipantsAfterDisconnect)
 {
     sceneGraphComponent.setSceneRendererHandler(&consumer);
     publishScene(1, "name", EScenePublicationMode::LocalAndRemote);
-    EXPECT_CALL(communicationSystem, broadcastScenesBecameUnavailable(SceneInfoVector{ SceneInfo(SceneId(1), "name") }));
+    EXPECT_CALL(communicationSystem, broadcastScenesBecameUnavailable(SceneInfoVector{ SceneInfo{ SceneId(1), "name" } }));
     sceneGraphComponent.disconnectFromNetwork();
 
-    EXPECT_CALL(communicationSystem, sendScenesAvailable(remoteParticipantID, SceneInfoVector{ SceneInfo(SceneId(1), "name") }, ramses::EFeatureLevel_Latest));
+    EXPECT_CALL(communicationSystem, sendScenesAvailable(remoteParticipantID, SceneInfoVector{ SceneInfo{ SceneId(1), "name" } }, ramses::EFeatureLevel_Latest));
     sceneGraphComponent.newParticipantHasConnected(remoteParticipantID);
 }
 
 TEST_F(ASceneGraphComponent, disconnectDoesNotAffectLocalScenesAtAllButUnpublishesRemoteScenes)
 {
-    SceneInfo sceneInfo(SceneInfo(SceneId(1), "foo"));
+    SceneInfo sceneInfo{ SceneId(1), "foo" };
     ClientScene scene(sceneInfo);
 
     sceneGraphComponent.setSceneRendererHandler(&consumer);
@@ -584,10 +584,10 @@ TEST_F(ASceneGraphComponent, disconnectDoesNotAffectLocalScenesAtAllButUnpublish
         event1.sceneid = SceneId{ 123 };
         ResourceAvailabilityEvent event2;
         event2.sceneid = SceneId{ 10000 };
-        SceneInfo sceneInfo1(SceneInfo(SceneId{ 123 }, "foo"));
+        SceneInfo sceneInfo1{ SceneId{ 123 }, "foo" };
         ClientScene scene1(sceneInfo1);
         sceneGraphComponent.handleCreateScene(scene1, false, eventConsumer);
-        SceneInfo sceneInfo2(SceneInfo(SceneId{ 10000 }, "bar"));
+        SceneInfo sceneInfo2{ SceneId{ 10000 }, "bar" };
         ClientScene scene2(sceneInfo2);
         sceneGraphComponent.handleCreateScene(scene2, false, scene2Consumer);
 
@@ -646,7 +646,7 @@ TEST_F(ASceneGraphComponent, sendResourceAvailabilityEventViaCommSystemForRemote
 TEST_F(ASceneGraphComponent, sendSceneReferenceEventForLocalParticipantCallsHandlerDirectly)
 {
     SceneReferenceEvent event(SceneId{ 123 });
-    SceneInfo sceneInfo(SceneInfo(SceneId{ 123 }, "foo"));
+    SceneInfo sceneInfo{ SceneId{ 123 }, "foo" };
     ClientScene scene(sceneInfo);
     sceneGraphComponent.handleCreateScene(scene, false, eventConsumer);
     event.type = SceneReferenceEventType::SceneFlushed;
@@ -665,7 +665,7 @@ TEST_F(ASceneGraphComponent, sendSceneReferenceEventForLocalParticipantCallsHand
 TEST_F(ASceneGraphComponent, sendResourceAvailabilityEventForLocalParticipantCallsHandlerDirectly)
 {
     SceneReferenceEvent event(SceneId { 123 });
-    SceneInfo sceneInfo(SceneInfo(SceneId{ 123 }, "foo"));
+    SceneInfo sceneInfo{ SceneId{ 123 }, "foo" };
     ClientScene scene(sceneInfo);
     sceneGraphComponent.handleCreateScene(scene, false, eventConsumer);
     event.type = SceneReferenceEventType::SceneFlushed;
@@ -696,7 +696,7 @@ TEST_F(ASceneGraphComponent, doesNotSendResourceAvailabilityEventForLocalPartici
 TEST_F(ASceneGraphComponent, unpacksRendererEventToSceneReferenceEventAndForwardsToHandler)
 {
     SceneReferenceEvent event(SceneId{ 123 });
-    SceneInfo sceneInfo(SceneInfo(SceneId{ 123 }, "foo"));
+    SceneInfo sceneInfo{ SceneId{ 123 }, "foo" };
     ClientScene scene(sceneInfo);
     sceneGraphComponent.handleCreateScene(scene, false, eventConsumer);
     event.type = SceneReferenceEventType::SceneFlushed;
@@ -718,7 +718,7 @@ TEST_F(ASceneGraphComponent, unpacksRendererEventToResourceAvailabilityEventAndF
 {
     ResourceAvailabilityEvent event;
     event.sceneid = SceneId { 123 };
-    SceneInfo sceneInfo(SceneInfo(SceneId{ 123 }, "foo"));
+    SceneInfo sceneInfo{ SceneId{ 123 }, "foo" };
     ClientScene scene(sceneInfo);
     sceneGraphComponent.handleCreateScene(scene, false, eventConsumer);
     event.availableResources.emplace_back(1, 2);
@@ -755,10 +755,10 @@ TEST_F(ASceneGraphComponent, forwardsEventsToCorrectHandler)
 
     SceneReferenceEvent event1(SceneId{ 123 });
     SceneReferenceEvent event2(SceneId{ 10000 });
-    SceneInfo sceneInfo1(SceneInfo(SceneId{ 123 }, "foo"));
+    SceneInfo sceneInfo1{ SceneId{ 123 }, "foo" };
     ClientScene scene1(sceneInfo1);
     sceneGraphComponent.handleCreateScene(scene1, false, eventConsumer);
-    SceneInfo sceneInfo2(SceneInfo(SceneId{ 10000 }, "bar"));
+    SceneInfo sceneInfo2{ SceneId{ 10000 }, "bar" };
     ClientScene scene2(sceneInfo2);
     sceneGraphComponent.handleCreateScene(scene2, false, scene2Consumer);
 
@@ -791,8 +791,8 @@ TEST_F(ASceneGraphComponent, forwardsPublishFromRemoteToConsumer)
     sceneGraphComponent.newParticipantHasConnected(Guid(33));
     sceneGraphComponent.newParticipantHasConnected(Guid(22));
 
-    SceneInfo info_33(SceneId(1), "", EScenePublicationMode::LocalAndRemote);
-    SceneInfo info_22(SceneId(2), "", EScenePublicationMode::LocalAndRemote);
+    SceneInfo info_33{ SceneId(1), "", EScenePublicationMode::LocalAndRemote };
+    SceneInfo info_22{ SceneId(2), "", EScenePublicationMode::LocalAndRemote };
 
     EXPECT_CALL(consumer, handleNewSceneAvailable(info_33, Guid(33)));
     sceneGraphComponent.handleNewScenesAvailable({info_33}, Guid(33), ramses::EFeatureLevel_Latest);
@@ -807,8 +807,8 @@ TEST_F(ASceneGraphComponent, forwardsUnpublishFromRemoteToConsumer)
     sceneGraphComponent.newParticipantHasConnected(Guid(33));
     sceneGraphComponent.newParticipantHasConnected(Guid(22));
 
-    SceneInfo info_33(SceneId(1), "", EScenePublicationMode::LocalAndRemote);
-    SceneInfo info_22(SceneId(2), "", EScenePublicationMode::LocalAndRemote);
+    SceneInfo info_33{ SceneId(1), "", EScenePublicationMode::LocalAndRemote };
+    SceneInfo info_22{ SceneId(2), "", EScenePublicationMode::LocalAndRemote };
 
     EXPECT_CALL(consumer, handleNewSceneAvailable(info_33, Guid(33)));
     sceneGraphComponent.handleNewScenesAvailable({info_33}, Guid(33), ramses::EFeatureLevel_Latest);
@@ -826,8 +826,8 @@ TEST_F(ASceneGraphComponent, unpublishesRemoteScenesToConsumerOnParticipantDisco
     sceneGraphComponent.newParticipantHasConnected(Guid(33));
     sceneGraphComponent.newParticipantHasConnected(Guid(22));
 
-    SceneInfo info_33(SceneId(1), "", EScenePublicationMode::LocalAndRemote);
-    SceneInfo info_22(SceneId(2), "", EScenePublicationMode::LocalAndRemote);
+    SceneInfo info_33{ SceneId(1), "", EScenePublicationMode::LocalAndRemote };
+    SceneInfo info_22{ SceneId(2), "", EScenePublicationMode::LocalAndRemote };
 
     EXPECT_CALL(consumer, handleNewSceneAvailable(info_33, _));
     sceneGraphComponent.handleNewScenesAvailable({info_33}, Guid(33), ramses::EFeatureLevel_Latest);
@@ -845,7 +845,7 @@ TEST_F(ASceneGraphComponent, ignoresDuplicatePublishFromOtherRemote)
     sceneGraphComponent.newParticipantHasConnected(Guid(22));
     sceneGraphComponent.newParticipantHasConnected(Guid(33));
 
-    SceneInfo info_22(SceneId(2), "", EScenePublicationMode::LocalAndRemote);
+    SceneInfo info_22{ SceneId(2), "", EScenePublicationMode::LocalAndRemote };
 
     EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
     sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(22), ramses::EFeatureLevel_Latest);
@@ -857,7 +857,7 @@ TEST_F(ASceneGraphComponent, unpublishesFirstOnDuplicatePublishFromSameRemote)
     sceneGraphComponent.setSceneRendererHandler(&consumer);
     sceneGraphComponent.newParticipantHasConnected(Guid(22));
 
-    SceneInfo info_22(SceneId(2), "", EScenePublicationMode::LocalAndRemote);
+    SceneInfo info_22{ SceneId(2), "", EScenePublicationMode::LocalAndRemote };
 
     EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
     sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(22), ramses::EFeatureLevel_Latest);
@@ -872,7 +872,7 @@ TEST_F(ASceneGraphComponent, ignoresPublishOfMismatchedFeatureLevelSceneFromRemo
     sceneGraphComponent.setSceneRendererHandler(&consumer);
     sceneGraphComponent.newParticipantHasConnected(Guid(22));
 
-    SceneInfo info_22(SceneId(2), "", EScenePublicationMode::LocalAndRemote);
+    SceneInfo info_22{ SceneId(2), "", EScenePublicationMode::LocalAndRemote };
 
     EXPECT_CALL(consumer, handleNewSceneAvailable(_, _)).Times(0);
     sceneGraphComponent.handleNewScenesAvailable({ info_22 }, Guid(22), static_cast<ramses::EFeatureLevel>(99));
@@ -883,7 +883,7 @@ TEST_F(ASceneGraphComponent, ignoresDuplicateUnpublishFromRemote)
     sceneGraphComponent.setSceneRendererHandler(&consumer);
     sceneGraphComponent.newParticipantHasConnected(Guid(22));
 
-    SceneInfo info_22(SceneId(2), "", EScenePublicationMode::LocalAndRemote);
+    SceneInfo info_22{ SceneId(2), "", EScenePublicationMode::LocalAndRemote };
     EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
     sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(22), ramses::EFeatureLevel_Latest);
 
@@ -897,7 +897,7 @@ TEST_F(ASceneGraphComponent, forwardsInitializeSceneToConsumer)
     sceneGraphComponent.setSceneRendererHandler(&consumer);
     sceneGraphComponent.newParticipantHasConnected(Guid(22));
 
-    SceneInfo info_22(SceneId(2), "", EScenePublicationMode::LocalAndRemote);
+    SceneInfo info_22{ SceneId(2), "", EScenePublicationMode::LocalAndRemote };
     EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
     sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(22), ramses::EFeatureLevel_Latest);
 
@@ -919,7 +919,7 @@ TEST_F(ASceneGraphComponent, ignoresInitializeSceneFromWrongProvider)
     sceneGraphComponent.newParticipantHasConnected(Guid(22));
     sceneGraphComponent.newParticipantHasConnected(Guid(33));
 
-    SceneInfo info_22(SceneId(2), "", EScenePublicationMode::LocalAndRemote);
+    SceneInfo info_22{ SceneId(2), "", EScenePublicationMode::LocalAndRemote };
     EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
     sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(22), ramses::EFeatureLevel_Latest);
 
@@ -931,7 +931,7 @@ TEST_F(ASceneGraphComponent, forwardsSceneActionListFromRemote)
     sceneGraphComponent.setSceneRendererHandler(&consumer);
     sceneGraphComponent.newParticipantHasConnected(Guid(22));
 
-    SceneInfo info_22(SceneId(2), "", EScenePublicationMode::LocalAndRemote);
+    SceneInfo info_22{ SceneId(2), "", EScenePublicationMode::LocalAndRemote };
     EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
     sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(22), ramses::EFeatureLevel_Latest);
 
@@ -967,7 +967,7 @@ TEST_F(ASceneGraphComponent, ignoreSceneActionsFromRemoteWithoutInitializeScene)
     sceneGraphComponent.setSceneRendererHandler(&consumer);
     sceneGraphComponent.newParticipantHasConnected(Guid(22));
 
-    SceneInfo info_22(SceneId(2), "", EScenePublicationMode::LocalAndRemote);
+    SceneInfo info_22{ SceneId(2), "", EScenePublicationMode::LocalAndRemote };
     EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
     sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(22), ramses::EFeatureLevel_Latest);
 
@@ -981,7 +981,7 @@ TEST_F(ASceneGraphComponent, ignoreSceneActionsFromRemoteFromWrongProvider)
     sceneGraphComponent.newParticipantHasConnected(Guid(22));
     sceneGraphComponent.newParticipantHasConnected(Guid(33));
 
-    SceneInfo info_22(SceneId(2), "", EScenePublicationMode::LocalAndRemote);
+    SceneInfo info_22{ SceneId(2), "", EScenePublicationMode::LocalAndRemote };
     EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
     sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(22), ramses::EFeatureLevel_Latest);
 
@@ -997,7 +997,7 @@ TEST_F(ASceneGraphComponent, ignoreSceneActionsFromRemoteWithEmptyData)
     sceneGraphComponent.setSceneRendererHandler(&consumer);
     sceneGraphComponent.newParticipantHasConnected(Guid(22));
 
-    SceneInfo info_22(SceneId(2), "", EScenePublicationMode::LocalAndRemote);
+    SceneInfo info_22{ SceneId(2), "", EScenePublicationMode::LocalAndRemote };
     EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
     sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(22), ramses::EFeatureLevel_Latest);
 
@@ -1012,7 +1012,7 @@ TEST_F(ASceneGraphComponent, stopsDeserilizationFromRemotAfterInvalidPacket)
     sceneGraphComponent.setSceneRendererHandler(&consumer);
     sceneGraphComponent.newParticipantHasConnected(Guid(22));
 
-    SceneInfo info_22(SceneId(2), "", EScenePublicationMode::LocalAndRemote);
+    SceneInfo info_22{ SceneId(2), "", EScenePublicationMode::LocalAndRemote };
     EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
     sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(22), ramses::EFeatureLevel_Latest);
 
@@ -1039,7 +1039,7 @@ TEST_F(ASceneGraphComponent, brokenActionDeserilizeFromRemoteIsClearOnNextInitia
     sceneGraphComponent.setSceneRendererHandler(&consumer);
     sceneGraphComponent.newParticipantHasConnected(Guid(22));
 
-    SceneInfo info_22(SceneId(2), "", EScenePublicationMode::LocalAndRemote);
+    SceneInfo info_22{ SceneId(2), "", EScenePublicationMode::LocalAndRemote };
     EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
     sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(22), ramses::EFeatureLevel_Latest);
 
@@ -1065,7 +1065,7 @@ TEST_F(ASceneGraphComponent, canHandleSceneActionFromRemoteSplitInMultipleChunks
     sceneGraphComponent.setSceneRendererHandler(&consumer);
     sceneGraphComponent.newParticipantHasConnected(Guid(22));
 
-    SceneInfo info_22(SceneId(2), "", EScenePublicationMode::LocalAndRemote);
+    SceneInfo info_22{ SceneId(2), "", EScenePublicationMode::LocalAndRemote };
     EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
     sceneGraphComponent.handleNewScenesAvailable({info_22}, Guid(22), ramses::EFeatureLevel_Latest);
 
@@ -1091,7 +1091,7 @@ TEST_F(ASceneGraphComponent, deserializesAndForwardsFlushInformationFromRemote)
     sceneGraphComponent.setSceneRendererHandler(&consumer);
     sceneGraphComponent.newParticipantHasConnected(Guid(22));
 
-    SceneInfo info_22(SceneId(2), "", EScenePublicationMode::LocalAndRemote);
+    SceneInfo info_22{ SceneId(2), "", EScenePublicationMode::LocalAndRemote };
     EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
     sceneGraphComponent.handleNewScenesAvailable({ info_22 }, Guid(22), ramses::EFeatureLevel_Latest);
 
@@ -1141,7 +1141,7 @@ TEST_F(ASceneGraphComponent, deserializesResourcesFromRemote)
     sceneGraphComponent.setSceneRendererHandler(&consumer);
     sceneGraphComponent.newParticipantHasConnected(Guid(22));
 
-    SceneInfo info_22(SceneId(2), "", EScenePublicationMode::LocalAndRemote);
+    SceneInfo info_22{ SceneId(2), "", EScenePublicationMode::LocalAndRemote };
     EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
     sceneGraphComponent.handleNewScenesAvailable({ info_22 }, Guid(22), ramses::EFeatureLevel_Latest);
 
@@ -1180,7 +1180,7 @@ TEST_F(ASceneGraphComponent, deserializesResourcesFromRemote_SmallChunks)
     sceneGraphComponent.setSceneRendererHandler(&consumer);
     sceneGraphComponent.newParticipantHasConnected(Guid(22));
 
-    SceneInfo info_22(SceneId(2), "", EScenePublicationMode::LocalAndRemote);
+    SceneInfo info_22{ SceneId(2), "", EScenePublicationMode::LocalAndRemote };
     EXPECT_CALL(consumer, handleNewSceneAvailable(info_22, Guid(22)));
     sceneGraphComponent.handleNewScenesAvailable({ info_22 }, Guid(22), ramses::EFeatureLevel_Latest);
 
@@ -1219,7 +1219,7 @@ TEST_F(ASceneGraphComponent, deserializesResourcesFromRemote_SmallChunks)
 TEST_F(ASceneGraphComponent, returnsFalseForFlushOnWrongResolvedResourceNumber_Shadow)
 {
     const SceneId sceneId(1u);
-    SceneInfo sceneInfo(SceneInfo(sceneId, "foo"));
+    SceneInfo sceneInfo{ sceneId, "foo" };
     ClientScene scene(sceneInfo);
 
     sceneGraphComponent.setSceneRendererHandler(&consumer);
@@ -1245,7 +1245,7 @@ TEST_F(ASceneGraphComponent, returnsFalseForFlushOnWrongResolvedResourceNumber_S
 TEST_F(ASceneGraphComponent, returnsFalseForFlushOnWrongResolvedResourceNumber_Direct)
 {
     const SceneId sceneId(1u);
-    SceneInfo sceneInfo(SceneInfo(sceneId, "foo"));
+    SceneInfo sceneInfo{ sceneId, "foo" };
     ClientScene scene(sceneInfo);
 
     sceneGraphComponent.setSceneRendererHandler(&consumer);
@@ -1271,7 +1271,7 @@ TEST_F(ASceneGraphComponent, sendSceneUpdatePassesSceneStatisticsToSerializer)
 {
     SceneId sceneId;
     EXPECT_CALL(communicationSystem, sendInitializeScene(_, _)).Times(1);
-    sceneGraphComponent.sendCreateScene(remoteParticipantID, sceneId, EScenePublicationMode::LocalAndRemote);
+    sceneGraphComponent.sendCreateScene(remoteParticipantID, SceneInfo{ localSceneId, "", EScenePublicationMode::LocalAndRemote });
 
     EXPECT_CALL(communicationSystem, sendSceneUpdate(remoteParticipantID, sceneId, _)).WillOnce([&](auto /*unused*/, auto /*unused*/, auto& serializer) {
         const auto& stats = static_cast<const SceneUpdateSerializer&>(serializer).getStatisticCollection();

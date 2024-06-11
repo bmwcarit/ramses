@@ -10,8 +10,8 @@
 
 namespace ramses::internal
 {
-    DataLayoutCachedScene::DataLayoutCachedScene(const SceneInfo& sceneInfo)
-        : ActionCollectingScene(sceneInfo)
+    DataLayoutCachedScene::DataLayoutCachedScene(const SceneInfo& sceneInfo, EFeatureLevel featureLevel)
+        : BaseT(sceneInfo, featureLevel)
         , m_dataLayoutCache(32u)
     {
     }
@@ -32,7 +32,7 @@ namespace ramses::internal
 
     void DataLayoutCachedScene::releaseDataLayout(DataLayoutHandle handle)
     {
-        const size_t fieldCount = ActionCollectingScene::getDataLayout(handle).getFieldCount();
+        const size_t fieldCount = BaseT::getDataLayout(handle).getFieldCount();
         assert(fieldCount < m_dataLayoutCache.size());
 
         DataLayoutCacheGroup& dataLayouts = m_dataLayoutCache[fieldCount];
@@ -43,14 +43,14 @@ namespace ramses::internal
         entry.m_usageCount--;
         if (entry.m_usageCount == 0u)
         {
-            ActionCollectingScene::releaseDataLayout(handle);
+            BaseT::releaseDataLayout(handle);
             dataLayouts.remove(handle);
         }
     }
 
     DataLayoutHandle DataLayoutCachedScene::allocateAndCacheDataLayout(const DataFieldInfoVector& dataFields, const ResourceContentHash& effectHash, DataLayoutHandle handle)
     {
-        const DataLayoutHandle actualHandle = ActionCollectingScene::allocateDataLayout(dataFields, effectHash, handle);
+        const DataLayoutHandle actualHandle = BaseT::allocateDataLayout(dataFields, effectHash, handle);
 
         const size_t fieldCount = dataFields.size();
         if (m_dataLayoutCache.size() <= fieldCount)

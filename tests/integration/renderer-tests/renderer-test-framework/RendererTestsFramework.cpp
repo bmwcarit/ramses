@@ -11,7 +11,6 @@
 #include "ramses/renderer/IRendererEventHandler.h"
 #include "impl/DisplayConfigImpl.h"
 #include "IRendererTest.h"
-#include "impl/DisplayConfigImpl.h"
 #include "internal/Core/Utils/LogMacros.h"
 #include "internal/PlatformAbstraction/PlatformTime.h"
 #include "RendererTestUtils.h"
@@ -362,8 +361,9 @@ namespace ramses::internal
             const auto& testCaseName = testCase->m_name;
             const bool excludedByFilterIn = processFilterIn && !NameMatchesFilter(testCaseName, filterIn);
             const bool excludedByFilterOut = processFilterOut && NameMatchesFilter(testCaseName, filterOut);
+            const bool excludedByFeatureLevel = (std::count(testCase->m_featureLevelsToTest.cbegin(), testCase->m_featureLevelsToTest.cend(), m_testScenesAndRenderer.getFeatureLevel()) == 0);
 
-            if (excludedByFilterIn || excludedByFilterOut)
+            if (excludedByFilterIn || excludedByFilterOut || excludedByFeatureLevel)
             {
                 delete testCase;
             }
@@ -383,8 +383,8 @@ namespace ramses::internal
 
         for (size_t i = 0; i < a.size(); ++i)
         {
-            const ramses::internal::DisplayConfig& displayConfigA = a[i].impl().getInternalDisplayConfig();
-            const ramses::internal::DisplayConfig& displayConfigB = b[i].impl().getInternalDisplayConfig();
+            const auto& displayConfigA = a[i].impl().getInternalDisplayConfig();
+            const auto& displayConfigB = b[i].impl().getInternalDisplayConfig();
 
             if (displayConfigA != displayConfigB)
             {
@@ -443,8 +443,8 @@ namespace ramses::internal
         {
             assert(i < m_displays.size());
 
-            ramses::internal::DisplayConfig currentDisplayConfig = m_displays[i].config.impl().getInternalDisplayConfig();
-            ramses::internal::DisplayConfig requestedDisplayConfig = testCase.m_displayConfigs[i].impl().getInternalDisplayConfig();
+            auto currentDisplayConfig = m_displays[i].config.impl().getInternalDisplayConfig();
+            auto requestedDisplayConfig = testCase.m_displayConfigs[i].impl().getInternalDisplayConfig();
 
             // ignore wayland ID in comparison as this is different for every test display config
             requestedDisplayConfig.setWaylandIviSurfaceID(currentDisplayConfig.getWaylandIviSurfaceID());
@@ -583,10 +583,10 @@ namespace ramses::internal
     {
         ramses::internal::StringOutputStream str;
 
-        str << "\n\n--- Rendering test report begin ---\n";
+        if (!m_passedTestCases.empty() || !m_failedTestCases.empty())
         {
             str << "\n  Passed rendering test cases: " << m_passedTestCases.size();
-            for(const auto& testCase : m_passedTestCases)
+            for (const auto& testCase : m_passedTestCases)
             {
                 str << "\n    " << testCase->m_name;
             }
@@ -596,12 +596,13 @@ namespace ramses::internal
             {
                 str << "\n    " << testCase->m_name;
             }
+            str << "\n  Time elapsed: " << static_cast<float>(m_elapsedTime) * 0.001f << " s";
 
             if (m_failedTestCases.empty())
             {
                 str << "\n";
                 str << "\n  ------------------";
-                str << "\n  --- ALL PASSED ---";
+                str << "\n  ----- PASSED -----";
                 str << "\n  ------------------";
             }
             else
@@ -611,10 +612,9 @@ namespace ramses::internal
                 str << "\n  !!! FAILED TESTS !!!";
                 str << "\n  !!!!!!!!!!!!!!!!!!!!";
             }
-
-            str << "\n\n  Total time elapsed: " << static_cast<float>(m_elapsedTime) * 0.001f << " s";
         }
-        str << "\n\n--- End of rendering test report ---\n\n";
+        else
+            str << "\n  No rendering tests ran.";
 
         return str.release();
     }

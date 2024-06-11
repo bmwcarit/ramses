@@ -10,7 +10,7 @@
 
 #include "internal/SceneGraph/Resource/EResourceCompressionStatus.h"
 #include "internal/SceneGraph/Resource/IResource.h"
-
+#include "ramses/framework/EFeatureLevel.h"
 #include <cstdint>
 
 namespace ramses::internal
@@ -32,6 +32,6 @@ namespace ramses::internal
         void SerializeResourceMetadata(IOutputStream& output, const IResource& resource);
         uint32_t ResourceMetadataSize(const IResource& resource);
 
-        DeserializedResourceHeader ResourceFromMetadataStream(IInputStream& input);
+        DeserializedResourceHeader ResourceFromMetadataStream(IInputStream& input, EFeatureLevel featureLevel);
     }
 }

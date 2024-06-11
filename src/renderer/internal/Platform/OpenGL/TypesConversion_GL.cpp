@@ -574,8 +574,6 @@ namespace ramses::internal
         case GL_COMPRESSED_RGBA8_ETC2_EAC:
             return EPixelStorageFormat::ETC2RGBA;
         case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
-        case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
-        case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
             // not supported by ramses
         default:
             return EPixelStorageFormat::Invalid;

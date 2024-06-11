@@ -30,8 +30,8 @@ namespace ramses::internal
         : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
     {
         ramses::Effect* effect = (state == DATA_CONSUMER_MS) ? getTestEffect("ramses-test-client-render-one-buffer-ms") : getTestEffect("ramses-test-client-textured");
-        Triangle triangle1(scene, *effect, TriangleAppearance::EColor_Red);
-        Triangle triangle2(scene, *effect, TriangleAppearance::EColor_Green);
+        Triangle triangle1(scene, *effect, TriangleAppearance::EColor::None);
+        Triangle triangle2(scene, *effect, TriangleAppearance::EColor::None);
 
         ramses::MeshNode* mesh1 = scene.createMeshNode();
         ramses::MeshNode* mesh2 = scene.createMeshNode();

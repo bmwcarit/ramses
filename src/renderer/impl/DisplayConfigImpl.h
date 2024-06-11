@@ -9,7 +9,7 @@
 #pragma once
 
 #include "ramses/renderer/Types.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "impl/DataTypesImpl.h"
 
 namespace CLI
@@ -30,10 +30,12 @@ namespace ramses::internal
         [[nodiscard]] EDeviceType getDeviceType() const;
         [[nodiscard]] bool setWindowType(EWindowType windowType);
         [[nodiscard]] EWindowType getWindowType() const;
+        [[nodiscard]] bool setWindowTitle(std::string_view windowTitle);
+        [[nodiscard]] std::string_view getWindowTitle() const;
         [[nodiscard]] bool setWindowRectangle(int32_t x, int32_t y, uint32_t width, uint32_t height);
         [[nodiscard]] bool getWindowRectangle(int32_t& x, int32_t& y, uint32_t& width, uint32_t& height) const;
         [[nodiscard]] bool setFullscreen(bool fullscreen);
-        [[nodiscard]] bool     isFullscreen() const;
+        [[nodiscard]] bool isFullscreen() const;
         [[nodiscard]] bool setMultiSampling(uint32_t numSamples);
         [[nodiscard]] bool getMultiSamplingSamples(uint32_t& numSamples) const;
         [[nodiscard]] bool setWaylandIviSurfaceID(waylandIviSurfaceId_t waylandIviSurfaceID);
@@ -84,9 +86,9 @@ namespace ramses::internal
         void validate(ValidationReportImpl& report) const;
 
         //impl methods
-        [[nodiscard]] const ramses::internal::DisplayConfig& getInternalDisplayConfig() const;
+        [[nodiscard]] const ramses::internal::DisplayConfigData& getInternalDisplayConfig() const;
 
     private:
-        ramses::internal::DisplayConfig m_internalConfig;
+        ramses::internal::DisplayConfigData m_internalConfig;
     };
 }

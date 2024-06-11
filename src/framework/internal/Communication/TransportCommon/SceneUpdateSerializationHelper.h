@@ -8,8 +8,8 @@
 
 #pragma once
 
+#include "ramses/framework/EFeatureLevel.h"
 #include "absl/types/span.h"
-
 #include <cstdint>
 #include <vector>
 #include <memory>
@@ -33,12 +33,12 @@ namespace ramses::internal
         absl::Span<const std::byte> SerializeDescription(const IResource& resource, std::vector<std::byte>& workingMemory);
         absl::Span<const std::byte> SerializeData(const IResource& resource);
 
-        std::unique_ptr<IResource> Deserialize(absl::Span<const std::byte> description, absl::Span<const std::byte> data);
+        std::unique_ptr<IResource> Deserialize(absl::Span<const std::byte> description, absl::Span<const std::byte> data, EFeatureLevel featureLevel);
     }
 
     namespace FlushInformationSerialization
     {
-        absl::Span<const std::byte> SerializeInfos(const FlushInformation& flushInfos, std::vector<std::byte>& workingMemory);
-        FlushInformation Deserialize(absl::Span<const std::byte> flushInfoBlob);
+        absl::Span<const std::byte> SerializeInfos(const FlushInformation& flushInfos, std::vector<std::byte>& workingMemory, EFeatureLevel featureLevel);
+        FlushInformation Deserialize(absl::Span<const std::byte> flushInfoBlob, EFeatureLevel featureLevel);
     }
 }

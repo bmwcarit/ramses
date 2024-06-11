@@ -21,6 +21,9 @@ namespace ramses::internal
     SceneT<MEMORYPOOL>::SceneT(const SceneInfo& sceneInfo)
         : m_name(sceneInfo.friendlyName)
         , m_sceneId(sceneInfo.sceneID)
+        , m_renderBackendCompatibility(sceneInfo.renderBackendCompatibility)
+        , m_vulkanAPIVersion(sceneInfo.vulkanAPIVersion)
+        , m_spirvVersion(sceneInfo.spirvVersion)
         , m_effectTimeSync(FlushTime::InvalidTimestamp)
     {
     }
@@ -29,6 +32,24 @@ namespace ramses::internal
     void SceneT<MEMORYPOOL>::setEffectTimeSync(FlushTime::Clock::time_point t)
     {
         m_effectTimeSync = t;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    ERenderBackendCompatibility SceneT<MEMORYPOOL>::getRenderBackendCompatibility() const
+    {
+        return m_renderBackendCompatibility;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    EVulkanAPIVersion SceneT<MEMORYPOOL>::getVulkanAPIVersion() const
+    {
+        return m_vulkanAPIVersion;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    ESPIRVVersion SceneT<MEMORYPOOL>::getSPIRVVersion() const
+    {
+        return m_spirvVersion;
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -239,6 +260,56 @@ namespace ramses::internal
     const GeometryDataBuffer& SceneT<MEMORYPOOL>::getDataBuffer(DataBufferHandle handle) const
     {
         return *m_dataBuffers.getMemory(handle);
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    UniformBufferHandle SceneT<MEMORYPOOL>::allocateUniformBuffer(uint32_t size, UniformBufferHandle handle)
+    {
+        const auto allocatedHandle = m_uniformBuffers.allocate(handle);
+        auto* uniformBuffer = m_uniformBuffers.getMemory(allocatedHandle);
+        uniformBuffer->data.resize(size);
+
+        return allocatedHandle;
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    void SceneT<MEMORYPOOL>::releaseUniformBuffer(UniformBufferHandle handle)
+    {
+        assert(m_uniformBuffers.isAllocated(handle));
+        m_uniformBuffers.release(handle);
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    void SceneT<MEMORYPOOL>::updateUniformBuffer(UniformBufferHandle uniformBufferHandle, uint32_t offset, uint32_t size, const std::byte* data)
+    {
+        auto* uniformBuffer = m_uniformBuffers.getMemory(uniformBufferHandle);
+        assert(offset + size <= uniformBuffer->data.size());
+
+        PlatformMemory::Copy(uniformBuffer->data.data() + offset, data, size);
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    uint32_t SceneT<MEMORYPOOL>::getUniformBufferCount() const
+    {
+        return m_uniformBuffers.getTotalCount();
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    const UniformBuffer& SceneT<MEMORYPOOL>::getUniformBuffer(UniformBufferHandle uniformBufferHandle) const
+    {
+        return *m_uniformBuffers.getMemory(uniformBufferHandle);
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    bool SceneT<MEMORYPOOL>::isUniformBufferAllocated(UniformBufferHandle uniformBufferHandle) const
+    {
+        return m_uniformBuffers.isAllocated(uniformBufferHandle);
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    const typename SceneT<MEMORYPOOL>::UniformBufferMemoryPool& SceneT<MEMORYPOOL>::getUniformBuffers() const
+    {
+        return m_uniformBuffers;
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -877,6 +948,12 @@ namespace ramses::internal
     }
 
     template <template<typename, typename> class MEMORYPOOL>
+    void SceneT<MEMORYPOOL>::setDataUniformBuffer(DataInstanceHandle containerHandle, DataFieldHandle fieldId, UniformBufferHandle uniformBufferHandle)
+    {
+        setInstanceDataInternal<UniformBufferHandle>(containerHandle, fieldId, 1, &uniformBufferHandle);
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
     DataInstanceHandle SceneT<MEMORYPOOL>::allocateDataInstance(DataLayoutHandle layoutHandle, DataInstanceHandle instanceHandle)
     {
         const DataLayout& layout = *m_dataLayoutMemory.getMemory(layoutHandle);
@@ -1023,6 +1100,7 @@ namespace ramses::internal
         m_textureSamplers.preallocateSize(sizeInfo.textureSamplerCount);
         m_dataSlots.preallocateSize(sizeInfo.dataSlotCount);
         m_dataBuffers.preallocateSize(sizeInfo.dataBufferCount);
+        m_uniformBuffers.preallocateSize(sizeInfo.uniformBufferCount);
         m_textureBuffers.preallocateSize(sizeInfo.textureBufferCount);
         m_pickableObjects.preallocateSize(sizeInfo.pickableObjectCount);
         m_sceneReferences.preallocateSize(sizeInfo.sceneReferenceCount);
@@ -1190,6 +1268,7 @@ namespace ramses::internal
         sizeInfo.textureSamplerCount = m_textureSamplers.getTotalCount();
         sizeInfo.dataSlotCount = m_dataSlots.getTotalCount();
         sizeInfo.dataBufferCount = m_dataBuffers.getTotalCount();
+        sizeInfo.uniformBufferCount = m_uniformBuffers.getTotalCount();
         sizeInfo.textureBufferCount = m_textureBuffers.getTotalCount();
         sizeInfo.pickableObjectCount = m_pickableObjects.getTotalCount();
         sizeInfo.sceneReferenceCount = m_sceneReferences.getTotalCount();

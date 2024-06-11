@@ -9,6 +9,7 @@
 #pragma once
 
 #include "impl/SceneObjectImpl.h"
+#include "internal/SceneGraph/Scene/SceneMergeHandleMapping.h"
 #include "ramses/client/logic/AnimationTypes.h"
 #include "ramses/client/logic/LogicEngine.h"
 #include "ramses/client/logic/LogicEngineReport.h"
@@ -70,6 +71,7 @@ namespace ramses::internal
     class RamsesBindingImpl;
     class ValidationReportImpl;
     class ApiObjects;
+    class SceneMergeHandleMapping;
 
     class LogicEngineImpl : public SceneObjectImpl
     {
@@ -141,7 +143,10 @@ namespace ramses::internal
 
         [[nodiscard]] bool updateNodes(const NodeVector& nodes);
 
-        [[nodiscard]] bool loadFromByteData(const void* byteData, size_t byteSize, bool enableMemoryVerification, const std::string& dataSourceDescription);
+        [[nodiscard]] bool updateSkinBindings();
+        [[nodiscard]] bool updateNode(LogicNodeImpl& node);
+
+        [[nodiscard]] bool loadFromByteData(const void* byteData, size_t byteSize, bool enableMemoryVerification, const std::string& dataSourceDescription, const SceneMergeHandleMapping* mapping);
 
         EFeatureLevel m_featureLevel;
 

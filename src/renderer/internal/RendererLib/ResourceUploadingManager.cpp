@@ -11,7 +11,7 @@
 #include "internal/RendererLib/IResourceUploader.h"
 #include "internal/RendererLib/FrameTimer.h"
 #include "internal/RendererLib/RendererStatistics.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "internal/RendererLib/PlatformInterface/IRenderBackend.h"
 #include "internal/RendererLib/PlatformInterface/IEmbeddedCompositingManager.h"
 #include "internal/RendererLib/PlatformInterface/IDevice.h"
@@ -27,8 +27,8 @@ namespace ramses::internal
         RendererResourceRegistry& resources,
         std::unique_ptr<IResourceUploader> uploader,
         IRenderBackend& renderBackend,
-        AsyncEffectUploader& asyncEffectUploader,
-        const DisplayConfig& displayConfig,
+        AsyncEffectUploader* asyncEffectUploader,
+        const DisplayConfigData& displayConfig,
         const FrameTimer& frameTimer,
         RendererStatistics& stats)
         : m_resources(resources)
@@ -93,7 +93,10 @@ namespace ramses::internal
 
     void ResourceUploadingManager::syncEffects()
     {
-        m_asyncEffectUploader.sync(m_effectsToUpload, m_effectsUploadedTemp);
+        assert(m_asyncEffectUploader || m_effectsToUpload.empty());
+        if (!m_asyncEffectUploader)
+            return;
+        m_asyncEffectUploader->sync(m_effectsToUpload, m_effectsUploadedTemp);
         m_effectsToUpload.clear();
 
         for (auto& e : m_effectsUploadedTemp)
@@ -188,6 +191,7 @@ namespace ramses::internal
         uint32_t vramSize = 0;
         // upload to GPU
         const auto deviceHandle = m_uploader->uploadResource(m_renderBackend, rd, vramSize);
+        assert(deviceHandle.has_value() || m_asyncEffectUploader);
         if (deviceHandle.has_value())
         {
             if (deviceHandle.value().isValid())

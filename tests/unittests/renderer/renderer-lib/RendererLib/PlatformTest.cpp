@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "Platform_BaseMock.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "internal/RendererLib/PlatformInterface/IRenderBackend.h"
 #include "WindowEventHandlerMock.h"
 #include "RenderBackendMock.h"
@@ -76,8 +76,8 @@ namespace ramses::internal
             VerifyAndClearExpectationsOnRenderBackendMockObjects(platform);
         }
 
-        RendererConfig                  rendererConfig;
-        DisplayConfig                   displayConfig;
+        RendererConfigData              rendererConfig;
+        DisplayConfigData               displayConfig;
         WindowEventHandlerMock          windowEventHandlerMock;
     };
 

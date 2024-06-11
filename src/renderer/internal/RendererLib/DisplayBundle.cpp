@@ -20,13 +20,14 @@ namespace ramses::internal
         IRendererSceneEventSender& rendererSceneSender,
         IPlatform& platform,
         IThreadAliveNotifier& notifier,
-        std::chrono::milliseconds timingReportingPeriod)
+        std::chrono::milliseconds timingReportingPeriod,
+        EFeatureLevel featureLevel)
         : m_display(display)
         , m_rendererScenes(m_rendererEventCollector)
         , m_expirationMonitor(m_rendererScenes, m_rendererEventCollector, m_rendererStatistics)
         , m_renderer(display, platform, m_rendererScenes, m_rendererEventCollector, m_frameTimer, m_expirationMonitor, m_rendererStatistics)
         , m_sceneStateExecutor(m_renderer, rendererSceneSender, m_rendererEventCollector)
-        , m_rendererSceneUpdater(display, platform, m_renderer, m_rendererScenes, m_sceneStateExecutor, m_rendererEventCollector, m_frameTimer, m_expirationMonitor, notifier)
+        , m_rendererSceneUpdater(display, platform, m_renderer, m_rendererScenes, m_sceneStateExecutor, m_rendererEventCollector, m_frameTimer, m_expirationMonitor, notifier, featureLevel)
         , m_sceneControlLogic(m_rendererSceneUpdater)
         , m_rendererCommandExecutor(m_renderer, m_pendingCommands, m_rendererSceneUpdater, m_sceneControlLogic, m_rendererEventCollector, m_frameTimer)
         , m_sceneReferenceLogic(m_rendererScenes, m_sceneControlLogic, m_rendererSceneUpdater, rendererSceneSender, m_sceneReferenceOwnership)

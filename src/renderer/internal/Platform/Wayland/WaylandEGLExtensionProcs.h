@@ -16,8 +16,7 @@ WARNING_DISABLE_LINUX(-Wdeprecated-declarations)
 #include "wayland-egl.h"
 WARNINGS_POP
 
-#include "GLES2/gl2.h"
-#include "GLES2/gl2ext.h"
+#include "internal/Platform/OpenGL/Device_GL_platform.h"
 #include "EGL/egl.h"
 #include "EGL/eglext.h"
 #ifdef RAMSES_HAS_EGLMESAEXT
@@ -56,7 +55,6 @@ namespace ramses::internal
 
         PFNEGLCREATEIMAGEKHRPROC m_eglCreateImageKHR;
         PFNEGLDESTROYIMAGEKHRPROC m_eglDestroyImageKHR;
-        PFNGLEGLIMAGETARGETTEXTURE2DOESPROC m_glEGLImageTargetTexture2DOES;
         PFNEGLBINDWAYLANDDISPLAYWL m_eglBindWaylandDisplayWL;
         PFNEGLUNBINDWAYLANDDISPLAYWL m_eglUnbindWaylandDisplayWL;
         PFNEGLQUERYWAYLANDBUFFERWL m_eglQueryWaylandBufferWL;

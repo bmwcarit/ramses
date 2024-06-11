@@ -410,13 +410,13 @@ namespace ramses::internal
                     const RenderBuffer& rbDesc = *rb.second;
                     if (context.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
                     {
-                        const auto deviceHandle = resRegistry.getRenderBufferDeviceHandle(rb.first);
+                        const auto deviceHandle = resRegistry.get(rb.first).deviceHandle;
                         context << rb.first << " (deviceHandle=" << deviceHandle << " GPUhandle=" << device.getGPUHandle(deviceHandle) << ") ";
                         context << "[" << rbDesc.width << "x" << rbDesc.height << "; " << EnumToString(rbDesc.format) << "; " << EnumToString(rbDesc.accessMode) << "; " << rbDesc.sampleCount << " samples] ";
-                        context << resRegistry.getRenderBufferByteSize(rb.first) / 1024 << " KB";
+                        context << resRegistry.get(rb.first).size / 1024 << " KB";
                         context << RendererLogContext::NewLine;
                     }
-                    size += resRegistry.getRenderBufferByteSize(rb.first);
+                    size += resRegistry.get(rb.first).size;
                 }
                 context << "Total KB: " << size / 1024 << RendererLogContext::NewLine;
                 context.unindent();
@@ -430,7 +430,7 @@ namespace ramses::internal
                 context.indent();
                 for (const auto& rt : renderTargets)
                 {
-                    const auto deviceHandle = resRegistry.getRenderTargetDeviceHandle(rt.first);
+                    const auto deviceHandle = resRegistry.get(rt.first);
                     context << rt.first << " (deviceHandle=" << deviceHandle << " GPUhandle=" << device.getGPUHandle(deviceHandle) << ") ";
                     context << "renderBuffer handles: [ ";
                     for (uint32_t i = 0u; i < scene.getRenderTargetRenderBufferCount(rt.first); ++i)
@@ -468,14 +468,14 @@ namespace ramses::internal
                     const TextureBuffer& tbDesc = *tb.second;
                     if (context.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
                     {
-                        context << tb.first << " (deviceHandle " << resRegistry.getTextureBufferDeviceHandle(tb.first) << ") " << EnumToString(tbDesc.textureFormat);
+                        context << tb.first << " (deviceHandle " << resRegistry.get(tb.first).deviceHandle << ") " << EnumToString(tbDesc.textureFormat);
                         context << " mips: ";
                         for (const auto& mip : tbDesc.mipMaps)
                             context << "[" << mip.width << "x" << mip.height << "] ";
-                        context << resRegistry.getTextureBufferByteSize(tb.first) / 1024 << " KB";
+                        context << resRegistry.get(tb.first).size / 1024 << " KB";
                         context << RendererLogContext::NewLine;
                     }
-                    size += resRegistry.getTextureBufferByteSize(tb.first);
+                    size += resRegistry.get(tb.first).size;
                 }
                 context << "Total KB: " << size / 1024 << RendererLogContext::NewLine;
                 context.unindent();
@@ -492,7 +492,7 @@ namespace ramses::internal
                     const GeometryDataBuffer& dbDesc = *db.second;
                     if (context.isLogLevelFlagEnabled(ERendererLogLevelFlag_Details))
                     {
-                        context << db.first << " (deviceHandle " << resRegistry.getDataBufferDeviceHandle(db.first) << ") ";
+                        context << db.first << " (deviceHandle " << resRegistry.get(db.first).deviceHandle << ") ";
                         context << EnumToString(dbDesc.bufferType) << " " << EnumToString(dbDesc.dataType);
                         context << " size used/allocated in B: " << dbDesc.usedSize << "/" << dbDesc.data.size();
                         context << RendererLogContext::NewLine;

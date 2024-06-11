@@ -22,7 +22,7 @@ namespace ramses::internal
     class Window_Windows : public Window_Base
     {
     public:
-        Window_Windows(const DisplayConfig& displayConfig, IWindowEventHandler& eventHandler, uint32_t id);
+        Window_Windows(const DisplayConfigData& displayConfig, IWindowEventHandler& eventHandler, uint32_t id);
         ~Window_Windows() override;
 
         virtual bool init() override;
@@ -40,6 +40,7 @@ namespace ramses::internal
         // Platform specific stuff, used by other platform specific classes
         HDC getNativeDisplayHandle();
         HWND getNativeWindowHandle();
+        HINSTANCE getModuleHandle();
 
         // public as it is used by tests
         static EKeyCode convertVirtualKeyCodeIntoRamsesKeyCode(WPARAM virtualKeyCode, LPARAM lParam);

@@ -17,7 +17,7 @@
 #include "internal/Platform/Wayland/EmbeddedCompositor/LinuxDmabuf.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/WaylandOutputParams.h"
 #include "internal/Platform/EGL/Context_EGL.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "internal/RendererLib/RendererLogContext.h"
 #include "internal/Core/Utils/LogMacros.h"
 #include "internal/Core/Utils/Warnings.h"
@@ -27,7 +27,7 @@
 
 namespace ramses::internal
 {
-    EmbeddedCompositor_Wayland::EmbeddedCompositor_Wayland(const DisplayConfig& displayConfig, Context_EGL &context)
+    EmbeddedCompositor_Wayland::EmbeddedCompositor_Wayland(const DisplayConfigData& displayConfig, Context_EGL &context)
         : m_waylandEmbeddedSocketName(displayConfig.getWaylandSocketEmbedded())
         , m_waylandEmbeddedSocketGroup(displayConfig.getWaylandSocketEmbeddedGroup())
         , m_waylandEmbeddedSocketPermissions(displayConfig.getWaylandSocketEmbeddedPermissions())

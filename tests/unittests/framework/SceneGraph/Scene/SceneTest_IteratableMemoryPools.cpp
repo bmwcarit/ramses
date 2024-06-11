@@ -73,7 +73,7 @@ namespace ramses::internal
 
     TYPED_TEST(AnIteratableScene, CanIterateOverRenderables)
     {
-        auto allocateF = [scene = &this->m_scene] { return scene->allocateRenderable(NodeHandle{}, RenderableHandle{}); };
+        auto allocateF = [scene = &this->m_scene]{ return scene->allocateRenderable(NodeHandle{}, RenderableHandle{}); };
         auto releaseF = [scene = &this->m_scene](RenderableHandle renderable) { scene->releaseRenderable(renderable); };
         this->runTest(allocateF, releaseF, this->m_scene.getRenderables());
     }
@@ -87,7 +87,7 @@ namespace ramses::internal
 
     TYPED_TEST(AnIteratableScene, CanIterateOverCameras)
     {
-        auto allocateF = [scene = &this->m_scene] { return scene->allocateCamera(ECameraProjectionType::Orthographic, NodeHandle{}, DataInstanceHandle{}, CameraHandle{}); };
+        auto allocateF = [scene = &this->m_scene]{ return scene->allocateCamera(ECameraProjectionType::Orthographic, NodeHandle{}, DataInstanceHandle{}, CameraHandle{}); };
         auto releaseF = [scene = &this->m_scene](CameraHandle camera) { scene->releaseCamera(camera); };
         this->runTest(allocateF, releaseF, this->m_scene.getCameras());
     }

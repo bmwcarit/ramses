@@ -59,6 +59,11 @@ namespace ramses
         return m_impl->getWindowType();
     }
 
+    bool DisplayConfig::setWindowTitle(std::string_view title)
+    {
+        return m_impl->setWindowTitle(title);
+    }
+
     bool DisplayConfig::setWindowRectangle(int32_t x, int32_t y, uint32_t width, uint32_t height)
     {
         const auto status = m_impl->setWindowRectangle(x, y, width, height);

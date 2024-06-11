@@ -11,7 +11,7 @@
 namespace ramses::internal
 {
     class IRenderBackend;
-    class DisplayConfig;
+    class DisplayConfigData;
     class IWindowEventHandler;
     class IResourceUploadRenderBackend;
     class ISystemCompositorController;
@@ -19,7 +19,7 @@ namespace ramses::internal
     class IPlatform
     {
     public:
-        virtual IRenderBackend*               createRenderBackend(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) = 0;
+        virtual IRenderBackend*               createRenderBackend(const DisplayConfigData& displayConfig, IWindowEventHandler& windowEventHandler) = 0;
         virtual void                          destroyRenderBackend() = 0;
         virtual IResourceUploadRenderBackend* createResourceUploadRenderBackend() = 0;
         virtual void                          destroyResourceUploadRenderBackend() = 0;

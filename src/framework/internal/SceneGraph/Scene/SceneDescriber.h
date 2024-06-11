@@ -39,6 +39,7 @@ namespace ramses::internal
         static void RecreateBlitPasses(const IScene& source, SceneActionCollectionCreator& collector);
         static void RecreatePickableObjects(const IScene& source, SceneActionCollectionCreator& collector);
         static void RecreateDataBuffers(const IScene& source, SceneActionCollectionCreator& collector);
+        static void RecreateUniformBuffers(const IScene& source, SceneActionCollectionCreator& collector);
         static void RecreateTextureBuffers(const IScene& source, SceneActionCollectionCreator& collector);
         static void RecreateTextureSamplers(const IScene& source, SceneActionCollectionCreator& collector);
         static void RecreateRenderBuffersAndTargets(const IScene& source, SceneActionCollectionCreator& collector);

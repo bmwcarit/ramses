@@ -10,6 +10,7 @@
 
 #include "internal/SceneGraph/Scene/SceneActionCollection.h"
 #include "internal/Components/FlushInformation.h"
+#include "ramses/framework/EFeatureLevel.h"
 #include "absl/types/span.h"
 
 namespace ramses::internal
@@ -20,6 +21,8 @@ namespace ramses::internal
     class SceneUpdateStreamDeserializer
     {
     public:
+        explicit SceneUpdateStreamDeserializer(EFeatureLevel featureLevel);
+
         enum class ResultType
         {
             Failed,
@@ -60,5 +63,7 @@ namespace ramses::internal
         uint32_t m_blockType = 0;
         std::vector<std::byte> m_currentBlock;
         Result m_currentResult;
+
+        EFeatureLevel m_featureLevel = EFeatureLevel_Latest;
     };
 }

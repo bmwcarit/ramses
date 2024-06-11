@@ -16,6 +16,8 @@
 #include "ViewerGui.h"
 #include "SceneViewerGui.h"
 #include "LogicViewerGui.h"
+#include "RendererControl.h"
+#include "StreamViewer.h"
 
 namespace ramses::internal
 {
@@ -30,6 +32,8 @@ namespace ramses::internal
 
         // for integration tests
         [[nodiscard]] ImguiClientHelper* getImguiClientHelper();
+        [[nodiscard]] RendererControl*   getRendererControl();
+        [[nodiscard]] StreamViewer*      getStreamViewer();
         [[nodiscard]] ExitCode setup();
         [[nodiscard]] bool doOneLoop();
 
@@ -57,6 +61,8 @@ namespace ramses::internal
         bool m_headless = false;
 
         std::unique_ptr<ImguiClientHelper> m_imguiHelper;
+        std::unique_ptr<RendererControl>   m_rendererControl;
+        std::unique_ptr<StreamViewer>      m_streamViewer;
         std::unique_ptr<ISceneSetup>       m_sceneSetup;
         std::unique_ptr<ViewerGui>         m_gui;
     };
@@ -64,6 +70,16 @@ namespace ramses::internal
     inline ImguiClientHelper* ViewerGuiApp::getImguiClientHelper()
     {
         return m_imguiHelper.get();
+    }
+
+    inline RendererControl* ViewerGuiApp::getRendererControl()
+    {
+        return m_rendererControl.get();
+    }
+
+    inline StreamViewer* ViewerGuiApp::getStreamViewer()
+    {
+        return m_streamViewer.get();
     }
 
     inline ViewerGuiApp::GuiMode ViewerGuiApp::getGuiMode() const

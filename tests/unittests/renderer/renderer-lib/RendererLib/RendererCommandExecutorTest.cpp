@@ -287,7 +287,7 @@ namespace ramses::internal {
     TEST_F(ARendererCommandExecutor, createsAndDestroysDisplay)
     {
         const DisplayHandle displayHandle(33u);
-        const DisplayConfig displayConfig;
+        const DisplayConfigData displayConfig;
 
         m_commandBuffer.enqueueCommand(RendererCommand::CreateDisplay{ displayHandle, displayConfig, nullptr });
         EXPECT_CALL(m_sceneUpdater, createDisplayContext(displayConfig, nullptr));
@@ -326,7 +326,7 @@ namespace ramses::internal {
         const NodeHandle node(33u);
 
         SceneUpdate actions;
-        SceneActionCollectionCreator creator(actions.actions);
+        SceneActionCollectionCreator creator(actions.actions, EFeatureLevel_Latest);
         creator.allocateNode(0u, node);
         actions.flushInfos.flushCounter = 1u;
         actions.flushInfos.containsValidInformation = true;

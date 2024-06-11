@@ -11,15 +11,16 @@
 
 namespace ramses::internal
 {
-    SceneUpdateSerializer::SceneUpdateSerializer(const SceneUpdate& update, StatisticCollectionScene& sceneStatistics)
+    SceneUpdateSerializer::SceneUpdateSerializer(const SceneUpdate& update, StatisticCollectionScene& sceneStatistics, EFeatureLevel featureLevel)
         : m_update(update)
         , m_sceneStatistics(sceneStatistics)
+        , m_featureLevel{ featureLevel }
     {
     }
 
     bool SceneUpdateSerializer::writeToPackets(absl::Span<std::byte> packetMem, const std::function<bool(size_t)>& writeDoneFunc) const
     {
-        SingleSceneUpdateWriter writer(m_update, packetMem, writeDoneFunc, m_sceneStatistics);
+        SingleSceneUpdateWriter writer(m_update, packetMem, writeDoneFunc, m_sceneStatistics, m_featureLevel);
         return writer.write();
     }
 

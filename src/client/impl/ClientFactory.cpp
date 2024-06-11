@@ -15,8 +15,14 @@ namespace ramses::internal
     ClientUniquePtr ClientFactory::createClient(RamsesFrameworkImpl& framework, std::string_view applicationName) const
     {
         auto impl = std::make_unique<RamsesClientImpl>(framework, applicationName);
-        return ClientUniquePtr{ new RamsesClient{ std::move(impl) },
-            [](RamsesClient* client_) { delete client_; } };
+        return ClientUniquePtr{ new RamsesClient{ std::move(impl) }, ClientFactory::DeleteClient };
+    }
+
+    void ClientFactory::DeleteClient(RamsesClient* client)
+    {
+        assert(client);
+        client->impl().deinitializeFrameworkData();
+        delete client;
     }
 
     bool ClientFactory::RegisterClientFactory()

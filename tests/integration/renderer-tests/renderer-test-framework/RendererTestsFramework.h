@@ -11,6 +11,7 @@
 #include "TestScenesAndRenderer.h"
 #include "RenderingTestCase.h"
 #include "internal/PlatformAbstraction/Collections/Pair.h"
+#include "internal/glslEffectBlock/GlslangInitializer.h"
 #include "RendererTestUtils.h"
 
 #include <string>
@@ -140,6 +141,8 @@ namespace ramses::internal
         void destroyScenes();
         void destroyBuffers();
         bool runTestCase(RenderingTestCase& testCase);
+
+        GlslangInitializer              m_glslangInitializer;
 
         const bool                      m_generateScreenshots;
         ramses::internal::TestScenesAndRenderer m_testScenesAndRenderer;

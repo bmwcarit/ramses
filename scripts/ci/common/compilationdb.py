@@ -41,7 +41,10 @@ class CompilationEntry:
     def relative_file(self):
         if not self._project_root:
             raise RuntimeError('project_root not set')
-        return str(Path(self.file).relative_to(self._project_root))
+        try:
+            return str(Path(self.file).relative_to(self._project_root))
+        except Exception:
+            return self.file
 
     @property
     def includes(self):

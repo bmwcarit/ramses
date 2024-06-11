@@ -44,6 +44,7 @@ namespace ramses::internal
         RenderBufferHandle          allocateRenderBuffer(const RenderBuffer& renderBuffer, RenderBufferHandle handle = RenderBufferHandle::Invalid());
         DataSlotHandle              allocateDataSlot(const DataSlot& dataSlot, DataSlotHandle handle = DataSlotHandle::Invalid());
         DataBufferHandle            allocateDataBuffer(EDataBufferType dataBufferType, EDataType dataType, uint32_t maximumSizeInBytes, DataBufferHandle handle = DataBufferHandle::Invalid());
+        UniformBufferHandle         allocateUniformBuffer(uint32_t size, UniformBufferHandle handle = {});
         TextureBufferHandle         allocateTextureBuffer(EPixelStorageFormat textureFormat, const MipMapDimensions& mipMapDimensions, TextureBufferHandle handle = TextureBufferHandle::Invalid());
         PickableObjectHandle        allocatePickableObject(DataBufferHandle geometryHandle, NodeHandle nodeHandle, PickableObjectId id, PickableObjectHandle pickableHandle = PickableObjectHandle::Invalid());
         SceneReferenceHandle        allocateSceneReference(SceneId sceneId, SceneReferenceHandle handle = {});

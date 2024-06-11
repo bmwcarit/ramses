@@ -10,8 +10,9 @@
 
 #include "internal/SceneGraph/SceneAPI/Handles.h"
 #include "internal/SceneGraph/SceneAPI/EDataType.h"
-#include "internal/PlatformAbstraction/Collections/Vector.h"
+#include "internal/SceneGraph/SceneAPI/DataFieldInfo.h"
 #include "internal/SceneGraph/Resource/EffectInputInformation.h"
+#include "internal/PlatformAbstraction/Collections/Vector.h"
 
 namespace ramses::internal
 {
@@ -22,7 +23,10 @@ namespace ramses::internal
     class DataLayoutCreationHelper
     {
     public:
-        static DataLayoutHandle CreateUniformDataLayoutMatchingEffectInputs(IScene& scene, const EffectInputInformationVector& uniformsInputInfo, InputIndexVector& referencedInputs, const ResourceContentHash& effectHash, DataLayoutHandle handle = DataLayoutHandle::Invalid());
+        static void SetDataFieldMappingForUniformInputs(EffectInputInformationVector& uniformsInputInfo);
+        static void SetDataFieldMappingForAttributeInputs(EffectInputInformationVector& attributeInputInfo);
+        static std::tuple<DataFieldInfoVector, InputIndexVector> GetDataFieldsFromEffectInputs(const EffectInputInformationVector& uniformsInputInfo);
+        static std::tuple<DataLayoutHandle, InputIndexVector> CreateUniformDataLayoutMatchingEffectInputs(IScene& scene, const EffectInputInformationVector& uniformsInputInfo, const ResourceContentHash& effectHash, DataLayoutHandle handle = DataLayoutHandle::Invalid());
         static DataInstanceHandle CreateAndBindDataReference(IScene& scene, DataInstanceHandle dataInstance, DataFieldHandle dataField, EDataType dataType, DataLayoutHandle dataRefLayout = DataLayoutHandle::Invalid(), DataInstanceHandle dataRefInstance = DataInstanceHandle::Invalid());
 
     private:

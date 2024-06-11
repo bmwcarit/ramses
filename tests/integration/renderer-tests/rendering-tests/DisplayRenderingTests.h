@@ -19,7 +19,7 @@ namespace ramses::internal
         bool run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase) final;
 
     private:
-        static bool RunTwoScenesTest(RendererTestsFramework& testFramework);
+        static bool RunTwoScenesTest(RendererTestsFramework& testFramework, bool msaa = false);
         static bool RunUnpublishTest(RendererTestsFramework& testFramework);
         static bool RunHideTest(RendererTestsFramework& testFramework);
         static bool RunSceneRenderOrderTest(RendererTestsFramework& testFramework);
@@ -52,7 +52,8 @@ namespace ramses::internal
             DisplayRenderingTest_ResubscribeScene,
             DisplayRenderingTest_FramebufferWithoutDepthAndStencil,
             DisplayRenderingTest_FramebufferWithoutStencil,
-            DisplayRenderingTest_AsyncEffectUploadDisabled
+            DisplayRenderingTest_AsyncEffectUploadDisabled,
+            DisplayRenderingTest_ReadPixelsMSAA
         };
 
         static constexpr uint32_t DisplayWidth = 128u;

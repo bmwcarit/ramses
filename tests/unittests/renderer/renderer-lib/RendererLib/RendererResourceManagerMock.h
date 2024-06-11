@@ -34,6 +34,8 @@ namespace ramses::internal{
         MOCK_METHOD(DeviceResourceHandle, getExternalBufferDeviceHandle, (ExternalBufferHandle), (const, override));
         MOCK_METHOD(DeviceResourceHandle, getEmptyExternalBufferDeviceHandle, (), (const, override));
         MOCK_METHOD(uint32_t, getExternalBufferGlId, (ExternalBufferHandle), (const, override));
+        MOCK_METHOD(DeviceResourceHandle, getUniformBufferDeviceHandle, (UniformBufferHandle uniformBufferHandle, SceneId sceneId), (const, override));
+        MOCK_METHOD(DeviceResourceHandle, getUniformBufferDeviceHandle, (SemanticUniformBufferHandle handle, SceneId sceneId), (const, override));
         // IRendererResourceManager
         MOCK_METHOD(EResourceStatus, getResourceStatus, (const ResourceContentHash& hash), (const, override));
         MOCK_METHOD(EResourceType, getResourceType, (const ResourceContentHash& hash), (const, override));
@@ -60,6 +62,13 @@ namespace ramses::internal{
         MOCK_METHOD(void, uploadDataBuffer, (DataBufferHandle dataBufferHandle, EDataBufferType dataBufferType, EDataType dataType, uint32_t elementCount, SceneId sceneId), (override));
         MOCK_METHOD(void, unloadDataBuffer, (DataBufferHandle dataBufferHandle, SceneId sceneId), (override));
         MOCK_METHOD(void, updateDataBuffer, (DataBufferHandle handle, uint32_t dataSizeInBytes, const std::byte* data, SceneId sceneId), (override));
+
+        MOCK_METHOD(void, uploadUniformBuffer, (UniformBufferHandle uniformBufferHandle, uint32_t size, SceneId sceneId), (override));
+        MOCK_METHOD(void, unloadUniformBuffer, (UniformBufferHandle uniformBufferHandle, SceneId sceneId), (override));
+        MOCK_METHOD(void, updateUniformBuffer, (UniformBufferHandle uniformBufferHandle, uint32_t size, const std::byte* data, SceneId sceneId), (override));
+        MOCK_METHOD(DeviceResourceHandle, uploadUniformBuffer, (SemanticUniformBufferHandle handle, uint32_t size, SceneId sceneId), (override));
+        MOCK_METHOD(void, unloadUniformBuffer, (SemanticUniformBufferHandle handle, SceneId sceneId), (override));
+        MOCK_METHOD(void, updateUniformBuffer, (SemanticUniformBufferHandle handle, uint32_t size, const std::byte* data, SceneId sceneId), (override));
 
         MOCK_METHOD(void, uploadTextureBuffer, (TextureBufferHandle textureBufferHandle, uint32_t width, uint32_t height, EPixelStorageFormat textureFormat, uint32_t mipLevelCount, SceneId sceneId), (override));
         MOCK_METHOD(void, unloadTextureBuffer, (TextureBufferHandle textureBufferHandle, SceneId sceneId), (override));

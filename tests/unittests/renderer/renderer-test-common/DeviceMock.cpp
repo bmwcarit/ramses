@@ -25,6 +25,7 @@ namespace ramses::internal
     const DeviceResourceHandle DeviceMock::FakeDmaRenderBufferDeviceHandle(7778u);
     const DeviceResourceHandle DeviceMock::FakeTextureSamplerDeviceHandle(8888u);
     const DeviceResourceHandle DeviceMock::FakeBlitPassRenderTargetDeviceHandle(9999u);
+    const DeviceResourceHandle DeviceMock::FakeUniformBufferDeviceHandle(9998u);
 
     DeviceMock::DeviceMock()
     {
@@ -55,6 +56,7 @@ namespace ramses::internal
         ON_CALL(*this, uploadRenderBuffer(_, _, _, _, _)).WillByDefault(Return(FakeRenderBufferDeviceHandle));
         ON_CALL(*this, uploadDmaRenderBuffer(_, _, _, _, _)).WillByDefault(Return(FakeDmaRenderBufferDeviceHandle));
         ON_CALL(*this, uploadRenderTarget(_)).WillByDefault(Return(FakeRenderTargetDeviceHandle));
+        ON_CALL(*this, allocateUniformBuffer(_)).WillByDefault(Return(FakeUniformBufferDeviceHandle));
         ON_CALL(*this, getFramebufferRenderTarget()).WillByDefault(Return(FakeFrameBufferRenderTargetDeviceHandle));
 
         EXPECT_CALL(*this, getSupportedBinaryProgramFormats(_)).Times(AnyNumber());

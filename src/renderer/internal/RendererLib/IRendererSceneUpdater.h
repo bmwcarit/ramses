@@ -20,14 +20,14 @@
 namespace ramses::internal
 {
     struct SceneUpdate;
-    class DisplayConfig;
+    class DisplayConfigData;
     class IBinaryShaderCache;
 
     class IRendererSceneUpdater
     {
     public:
         virtual void handleSceneUpdate(SceneId sceneId, SceneUpdate&& sceneUpdate) = 0;
-        virtual void createDisplayContext(const DisplayConfig& displayConfig, IBinaryShaderCache* binaryShaderCache) = 0;
+        virtual void createDisplayContext(const DisplayConfigData& displayConfig, IBinaryShaderCache* binaryShaderCache) = 0;
         virtual void destroyDisplayContext() = 0;
         virtual void handleScenePublished(SceneId sceneId, EScenePublicationMode mode) = 0;
         virtual void handleSceneUnpublished(SceneId sceneId) = 0;

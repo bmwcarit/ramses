@@ -113,54 +113,13 @@ namespace ramses::internal
         EXPECT_FALSE(report.hasIssue());
     }
 
-    TEST_F(ARenderGroup, validationGivesWarningIfRenderGroupIsEmpty)
-    {
-        ValidationReport report;
-        renderGroup.validate(report);
-        EXPECT_TRUE(report.hasIssue());
-    }
-
-    TEST_F(ARenderGroup, validationGivesWarningIfNestedRenderGroupIsEmpty)
-    {
-        addValidMeshToRenderGroup();
-        ValidationReport report;
-        renderGroup.validate(report);
-        ASSERT_FALSE(report.hasIssue());
-
-        renderGroup.addRenderGroup(renderGroup2);
-
-        report.clear();
-        renderGroup.validate(report);
-        EXPECT_TRUE(report.hasIssue());
-    }
-
-    TEST_F(ARenderGroup, validatesIfEmptyButNestedRenderGroupIsNot)
-    {
-        // empty -> invalid
-        ValidationReport report;
-        renderGroup.validate(report);
-        EXPECT_TRUE(report.hasIssue());
-
-        // nested group also empty -> invalid
-        renderGroup.addRenderGroup(renderGroup2);
-        report.clear();
-        renderGroup.validate(report);
-        EXPECT_TRUE(report.hasIssue());
-
-        // add mesh to nested group -> valid
-        EXPECT_TRUE(renderGroup2.addMeshNode(createValidMeshNode(), 3));
-        report.clear();
-        renderGroup.validate(report);
-        EXPECT_FALSE(report.hasIssue());
-    }
-
     TEST_F(ARenderGroup, validationGivesWarningIfRenderGroupContainsInvalidMesh)
     {
         addBrokenMeshToRenderGroup();
 
         ValidationReport report;
         renderGroup.validate(report);
-        EXPECT_TRUE(report.hasIssue());
+        EXPECT_TRUE(report.hasError());
     }
 
     TEST_F(ARenderGroup, validationGivesWarningIfNestedRenderGroupContainsInvalidMesh)
@@ -179,7 +138,7 @@ namespace ramses::internal
 
         report.clear();
         renderGroup.validate(report);
-        EXPECT_TRUE(report.hasIssue());
+        EXPECT_TRUE(report.hasError());
     }
 
     TEST_F(ARenderGroup, canAddMeshNodes)

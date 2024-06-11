@@ -80,7 +80,8 @@ namespace ramses::internal
         [[nodiscard]] const glm::mat4& getModelViewMatrix() const;
         [[nodiscard]] const glm::mat4& getModelViewProjectionMatrix() const;
 
-        void setCamera(CameraHandle camera);
+        void                           setCamera(CameraHandle camera);
+        [[nodiscard]] CameraHandle     getCamera() const;
 
         void                           setRenderable(RenderableHandle renderable);
         [[nodiscard]] RenderableHandle getRenderable() const;
@@ -128,6 +129,11 @@ namespace ramses::internal
     inline RenderableHandle RenderExecutorInternalState::getRenderable() const
     {
         return m_renderable;
+    }
+
+    inline CameraHandle RenderExecutorInternalState::getCamera() const
+    {
+        return m_camera.getState();
     }
 
     inline IDevice& RenderExecutorInternalState::getDevice() const

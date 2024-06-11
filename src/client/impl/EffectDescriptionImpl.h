@@ -13,7 +13,6 @@
 #include "ramses/client/EffectInputSemantic.h"
 
 // ramses framework
-#include "internal/PlatformAbstraction/Collections/HashMap.h"
 #include "internal/SceneGraph/SceneAPI/EFixedSemantics.h"
 
 #include <string_view>
@@ -25,8 +24,6 @@ namespace ramses::internal
     class EffectDescriptionImpl
     {
     public:
-        using SemanticsMap = HashMap<std::string, EFixedSemantics>;
-
         EffectDescriptionImpl();
         ~EffectDescriptionImpl();
 
@@ -38,6 +35,7 @@ namespace ramses::internal
         [[nodiscard]] bool setGeometryShaderFromFile(std::string_view shaderSourceFileName);
         [[nodiscard]] bool addCompilerDefine(std::string_view define);
         [[nodiscard]] bool setUniformSemantic(std::string_view semanticName, EEffectUniformSemantic semanticType);
+        [[nodiscard]] bool setUniformSemantic(uint32_t uniformBufferBinding, EEffectUniformSemantic semanticType);
         [[nodiscard]] bool setAttributeSemantic(std::string_view semanticName, EEffectAttributeSemantic semanticType);
 
         [[nodiscard]] const char*                          getVertexShader() const;
@@ -52,6 +50,7 @@ namespace ramses::internal
 
     private:
         [[nodiscard]] bool setSemantic(std::string_view semanticName, EFixedSemantics semanticType);
+        [[nodiscard]] bool setSemantic(uint32_t uniformBufferBinding, EFixedSemantics semanticType);
 
         std::string m_vertexShaderSource;
         std::string m_fragmentShaderSource;

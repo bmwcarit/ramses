@@ -37,7 +37,7 @@ namespace ramses::internal
         , m_threadWatchdogConfig(config.m_watchdogConfig)
         // NOTE: ThreadedTaskExecutor must always be constructed after CommunicationSystem
         , m_threadedTaskExecutor(3, config.m_watchdogConfig)
-        , m_resourceComponent(m_statisticCollection, m_frameworkLock)
+        , m_resourceComponent(m_statisticCollection, m_frameworkLock, config.getFeatureLevel())
         , m_scenegraphComponent(
             m_participantAddress.getParticipantId(),
             *m_communicationSystem,
@@ -89,7 +89,7 @@ namespace ramses::internal
         }
 
         LOG_INFO(CONTEXT_FRAMEWORK, "RamsesFramework::createRamsesRenderer");
-        m_ramsesRenderer = FrameworkFactoryRegistry::GetInstance().getRendererFactory()->createRenderer(*this, config);
+        m_ramsesRenderer = FrameworkFactoryRegistry::GetInstance().getRendererFactory()->createRenderer(*this, config, RamsesLogger::GetPrefixInstance());
         return m_ramsesRenderer.get();
     }
 
@@ -325,7 +325,7 @@ namespace ramses::internal
 
     std::unique_ptr<RamsesFrameworkImpl> RamsesFrameworkImpl::CreateImpl(const RamsesFrameworkConfig& config)
     {
-        RamsesLogger::SetPrefixes(config.impl().getLoggingInstanceName(), "main");
+        RamsesLoggerPrefixes::SetRamsesLoggerPrefixes(config.impl().getLoggingInstanceName(), "main");
         GetRamsesLogger().initialize(config.impl().loggerConfig, false, config.impl().getDltApplicationRegistrationEnabled());
 
         Guid myGuid = config.impl().getUserProvidedGuid();

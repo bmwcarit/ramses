@@ -41,22 +41,29 @@ namespace ramses::internal
                 // Examples:
                 // Possible __FUNCSIG__/__PRETTY_FUNCTION__ for a known (valid) enum value:
                 // "bool ramses::internal::EnumTraits::internal::IsValid<enum ramses::EFoo,ramses::EFoo::Value1>(void)"
-                //                                                                       ^-- separatorIndex
+                //                                                                        ^-- separatorIndex
                 // "bool ramses::internal::EnumTraits::internal::IsValid() [E = ramses::EFoo, V = ramses::EFoo::Value1]
-                //                                                                              ^-- separatorIndex
+                //                                                                               ^-- separatorIndex
+                // "bool ramses::internal::EnumTraits::internal::IsValid() [E = ramses::(anonymous namespace)::EFoo, V = ramses::(anonymous namespace)::EFoo::Value1]
+                //                                                                                                      ^-- separatorIndex
                 //
                 // Possible __FUNCSIG__/__PRETTY_FUNCTION__ for an unknown (invalid) enum value:
                 // "bool ramses::internal::EnumTraits::internal::IsValid<enum ramses::EFoo,(enum ramses::EFoo)0xf>(void)"
-                //                                                                       ^-- separatorIndex
+                //                                                                        ^-- separatorIndex
                 // "bool ramses::internal::EnumTraits::internal::IsValid() [E = ramses::EFoo, V = 15]
-                //                                                                              ^-- separatorIndex
+                //                                                                               ^-- separatorIndex
                 // "bool ramses::internal::EnumTraits::internal::IsValid() [E = ramses::EFoo, V = -3]
-                //                                                                              ^-- separatorIndex
+                //                                                                               ^-- separatorIndex
+                // "bool ramses::internal::EnumTraits::internal::IsValid() [E = ramses::(anonymous namespace)::EFoo, V = -3]
+                //                                                                                                      ^-- separatorIndex
                 //
                 // separatorIndex identifies the position of the enum value (template parameter V)
 #if defined(__GNUC__)
                 const std::string_view name = __PRETTY_FUNCTION__;
-                const auto separatorIndex = name.rfind(' ');
+                const auto valueIndex = name.rfind("V = ");
+                if (valueIndex == std::string_view::npos)
+                    return false;
+                const auto separatorIndex = valueIndex + 3;
 #elif defined (_MSC_VER)
                 const std::string_view name = __FUNCSIG__;
                 const auto separatorIndex = name.rfind(',');

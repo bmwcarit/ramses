@@ -7,8 +7,10 @@
 //  -------------------------------------------------------------------------
 
 #include "FileUtils.h"
-#include "StdFilesystemWrapper.h"
+#include <filesystem>
 #include <fstream>
+
+namespace fs = std::filesystem;
 
 namespace ramses::internal
 {

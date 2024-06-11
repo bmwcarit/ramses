@@ -27,8 +27,8 @@
 #include "internal/Platform/Wayland/EmbeddedCompositor/WaylandOutputConnection.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/LinuxDmabufConnection.h"
 
-#include "internal/RendererLib/RendererConfig.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/RendererConfigData.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 
 #include "gtest/gtest.h"
 

@@ -9,9 +9,12 @@
 #pragma once
 
 #include "internal/SceneGraph/SceneAPI/EDataType.h"
+#include "internal/SceneGraph/SceneAPI/SceneTypes.h"
 #include "internal/Core/Utils/LoggingUtils.h"
 
 #include <cstdint>
+#include <unordered_map>
+#include <variant>
 
 namespace ramses::internal
 {
@@ -37,7 +40,15 @@ namespace ramses::internal
         TextPositionsAttribute,
         TextTextureCoordinatesAttribute,
         TimeMs,
+
+        ModelBlock,
+        CameraBlock,
+        ModelCameraBlock,
+        FramebufferBlock,
+        SceneBlock,
     };
+
+    using SemanticsMap = std::unordered_map<std::variant<std::string, UniformBufferBinding>, EFixedSemantics>;
 
     const std::array EFixedSemanticsNames =
     {
@@ -56,12 +67,23 @@ namespace ramses::internal
         "TextPositionsAttribute",
         "TextTextureCoordinatesAttribute",
         "TimeMs",
+        "ModelBlock",
+        "CameraBlock",
+        "ModelCameraBlock",
+        "FramebufferBlock",
+        "SceneBlock",
     };
 
     inline bool IsSemanticCompatibleWithDataType(EFixedSemantics semantics, EDataType dataType)
     {
         switch (semantics)
         {
+        case EFixedSemantics::ModelBlock:
+        case EFixedSemantics::CameraBlock:
+        case EFixedSemantics::ModelCameraBlock:
+        case EFixedSemantics::FramebufferBlock:
+        case EFixedSemantics::SceneBlock:
+            return dataType == EDataType::UniformBuffer;
         case EFixedSemantics::ProjectionMatrix:
         case EFixedSemantics::ViewMatrix:
         case EFixedSemantics::ModelMatrix:
@@ -97,4 +119,4 @@ namespace ramses::internal
 MAKE_ENUM_CLASS_PRINTABLE(ramses::internal::EFixedSemantics,
                                         "EFixedSemantics",
                                         ramses::internal::EFixedSemanticsNames,
-                                        ramses::internal::EFixedSemantics::TimeMs);
+                                        ramses::internal::EFixedSemantics::SceneBlock);

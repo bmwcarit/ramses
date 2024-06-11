@@ -41,7 +41,7 @@ namespace ramses::internal
 
     bool ShaderUploader_GL::UploadShaderProgramFromSource(const EffectResource& effect, ShaderProgramInfo& programShaderInfoOut, std::string& debugErrorLog)
     {
-        LOG_DEBUG(CONTEXT_RENDERER, "ShaderUploader_GL::UploadShaderProgramFromSource:  compiling shaders for effect {}", effect.getName());
+        LOG_INFO(CONTEXT_RENDERER, "ShaderUploader_GL::UploadShaderProgramFromSource:  compiling shaders for effect {}", effect.getName());
 
         const GLHandle vertexShaderHandle = CompileShaderStage(effect.getVertexShader(), GL_VERTEX_SHADER, debugErrorLog);
 

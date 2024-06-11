@@ -21,11 +21,13 @@
 
 namespace ramses::internal
 {
-    class ASceneLoadedFromFile : public LocalTestClientWithScene, public ::testing::Test
+    class SceneLoadedFromFile : public LocalTestClientWithScene
     {
     public:
-        ASceneLoadedFromFile()
-            : m_clientForLoading(*m_frameworkForLoader.createClient("client"))
+        explicit SceneLoadedFromFile(EFeatureLevel featureLevel)
+            : LocalTestClientWithScene{ featureLevel }
+            , m_frameworkForLoader{ RamsesFrameworkConfig{featureLevel} }
+            , m_clientForLoading(*m_frameworkForLoader.createClient("client"))
         {
             m_frameworkForLoader.impl().getScenegraphComponent().setSceneRendererHandler(&sceneActionsCollector);
         }
@@ -48,7 +50,6 @@ namespace ramses::internal
                 }
             }
         }
-
 
         static void FillObjectTypeHistogramFromScene( ObjectTypeHistogram& counter, const ramses::Scene& scene )
         {
@@ -105,10 +106,11 @@ namespace ramses::internal
             return wrongHistogramCount;
         }
 
-        void checkSceneFile(const char* filename)
+        static void CheckSceneFile(const char* filename, ramses::Scene* scene)
         {
+            assert(scene != nullptr);
             std::vector<std::byte> buffer;
-            EXPECT_TRUE(m_scene.impl().serialize(buffer, {}));
+            EXPECT_TRUE(scene->impl().serialize(buffer, {}));
             EXPECT_FALSE(buffer.empty());
 
             ramses::internal::File f(filename);
@@ -121,6 +123,11 @@ namespace ramses::internal
             EXPECT_EQ(ramses::internal::EStatus::Ok, f.read(fileBuffer.data(), numBytes, numBytes));
             EXPECT_TRUE(f.close());
             EXPECT_EQ(buffer, fileBuffer);
+        }
+
+        void checkSceneFile(const char* filename)
+        {
+            CheckSceneFile(filename, &m_scene);
         }
 
         void doWriteReadCycle(bool expectSameSceneSizeInfo = true, bool expectSameTypeHistogram = true, bool withCompression = false)
@@ -180,18 +187,8 @@ namespace ramses::internal
             return specificObject;
         }
 
-        ramses::RamsesFramework m_frameworkForLoader{ RamsesFrameworkConfig{EFeatureLevel_Latest} };
+        ramses::RamsesFramework m_frameworkForLoader;
         ramses::RamsesClient& m_clientForLoading;
         ramses::Scene* m_sceneLoaded{nullptr};
     };
-
-    class ASceneLoadedFromFileWithDefaultRenderPass : public ASceneLoadedFromFile
-    {
-    };
-
-    template <typename T>
-    class ASceneLoadedFromFileTemplated : public ASceneLoadedFromFile
-    {
-    };
-
 }

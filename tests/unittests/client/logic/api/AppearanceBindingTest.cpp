@@ -333,7 +333,7 @@ namespace ramses::internal
     {
     protected:
         const std::string_view m_vertShader_simple = R"(
-            #version 300 es
+            #version 310 es
 
             uniform highp float floatUniform;
 
@@ -343,7 +343,7 @@ namespace ramses::internal
             })";
 
         const std::string_view m_vertShader_twoUniforms = R"(
-            #version 300 es
+            #version 310 es
 
             uniform highp float floatUniform1;
             uniform highp float floatUniform2;
@@ -354,7 +354,7 @@ namespace ramses::internal
             })";
 
         const std::string_view m_vertShader_allTypes = R"(
-            #version 300 es
+            #version 310 es
 
             uniform highp float floatUniform;
             uniform bool        boolUniform;
@@ -373,6 +373,10 @@ namespace ramses::internal
             uniform highp ivec4 ivec4Array[2];
             uniform highp vec4  vec4Array[2];
             uniform highp vec4  vec4Uniform_shouldHaveDefaultValue;
+            layout(std140,binding=0) uniform someUboType{
+                highp vec3  vec3Uniform;
+                highp vec4  vec4Uniform;
+            } someUbo;
 
             void main()
             {
@@ -380,7 +384,7 @@ namespace ramses::internal
             })";
 
         const std::string_view m_fragShader_trivial = R"(
-            #version 300 es
+            #version 310 es
 
             out lowp vec4 color;
             void main(void)
@@ -423,6 +427,7 @@ namespace ramses::internal
     {
         auto& appearanceBinding = *m_logicEngine->createAppearanceBinding(*m_appearance, "AppearanceBinding");
         EXPECT_EQ(m_appearance, &appearanceBinding.getRamsesAppearance());
+        EXPECT_EQ(m_appearance, &appearanceBinding.impl().getBoundObject());
     }
 
     TEST_F(AAppearanceBinding_WithRamses, HasInputsAfterCreation)
@@ -453,7 +458,7 @@ namespace ramses::internal
     {
 
         const std::string_view fragShader_ManyUniformTypes = R"(
-            #version 300 es
+            #version 310 es
 
             // This is the same uniform like in the vertex shader - that's intended!
             uniform highp float floatUniform;
@@ -528,7 +533,7 @@ namespace ramses::internal
         ramses::Appearance& appearance = createTestAppearance(createTestEffect(m_vertShader_allTypes, m_fragShader_trivial));
         auto& appearanceBinding = *m_logicEngine->createAppearanceBinding(appearance, "AppearanceBinding");
         auto inputs = appearanceBinding.getInputs();
-        ASSERT_EQ(17u, inputs->getChildCount());
+        ASSERT_EQ(19u, inputs->getChildCount());
         EXPECT_TRUE(inputs->getChild("floatUniform")->set(42.42f));
         EXPECT_TRUE(inputs->getChild("boolUniform")->set(true));
         EXPECT_TRUE(inputs->getChild("intUniform")->set(42));
@@ -552,6 +557,9 @@ namespace ramses::internal
         EXPECT_TRUE(inputs->getChild("ivec4Array")->getChild(1)->set<vec4i>({ 45, 46, 47, 48 }));
         EXPECT_TRUE(inputs->getChild("vec4Array")->getChild(0)->set<vec4f>({ .41f, .42f, .43f, .44f }));
         EXPECT_TRUE(inputs->getChild("vec4Array")->getChild(1)->set<vec4f>({ .45f, .46f, .47f, .48f }));
+        EXPECT_FALSE(inputs->getChild("someUbo"));
+        EXPECT_TRUE(inputs->getChild("someUbo.vec3Uniform")->set<vec3f>({ .415f, .416f, .417f }));
+        EXPECT_TRUE(inputs->getChild("someUbo.vec4Uniform")->set<vec4f>({ .415f, .416f, .417f, 0.99f }));
 
         EXPECT_EQ(std::nullopt, appearanceBinding.impl().update());
 
@@ -675,6 +683,21 @@ namespace ramses::internal
             appearance.getInputValue(*optUniform, 2, result.data());
             EXPECT_THAT(result, ::testing::ElementsAre(ramses::vec4f{ .41f, .42f, .43f, .44f }, ramses::vec4f{ .45f, .46f, .47f, .48f }));
         }
+        // UBO
+        {
+            ramses::vec3f result{ 0.0f, 0.0f, 0.0f };
+            optUniform = effect.findUniformInput("someUbo.vec3Uniform");
+            ASSERT_TRUE(optUniform.has_value());
+            appearance.getInputValue(*optUniform, result);
+            EXPECT_EQ(result, vec3f(.415f, .416f, .417f));
+        }
+        {
+            ramses::vec4f result{ 0.0f, 0.0f, 0.0f, 0.0f };
+            optUniform = effect.findUniformInput("someUbo.vec4Uniform");
+            ASSERT_TRUE(optUniform.has_value());
+            appearance.getInputValue(*optUniform, result);
+            EXPECT_EQ(result, vec4f(.415f, .416f, .417f, 0.99f));
+        }
     }
 
     TEST_F(AAppearanceBinding_WithRamses, PropagateItsInputsToRamsesAppearanceOnUpdate_OnlyWhenExplicitlySet)
@@ -782,6 +805,8 @@ namespace ramses::internal
             inputs->getChild("ivec2Array")->getChild(1)->set<vec2i>({ 13, 14 });
             inputs->getChild("vec2Array")->getChild(0)->set<vec2f>({ .11f, .12f });
             inputs->getChild("vec2Array")->getChild(1)->set<vec2f>({ .13f, .14f });
+            inputs->getChild("someUbo.vec3Uniform")->set<vec3f>({ .415f, .416f, .417f });
+            inputs->getChild("someUbo.vec4Uniform")->set<vec4f>({ .415f, .416f, .417f, 0.99f });
             m_logicEngine->update();
             ASSERT_TRUE(saveToFile("logic.bin"));
         }
@@ -793,7 +818,7 @@ namespace ramses::internal
             EXPECT_EQ(loadedAppearanceBinding->getRamsesAppearance().getSceneObjectId(), appearanceId);
 
             const auto& inputs = loadedAppearanceBinding->getInputs();
-            ASSERT_EQ(17u, inputs->getChildCount());
+            ASSERT_EQ(19u, inputs->getChildCount());
 
             // check order after deserialization
             for (size_t i = 0; i < inputOrderBeforeSaving.size(); ++i)
@@ -836,6 +861,12 @@ namespace ramses::internal
                 EXPECT_EQ(EPropertySemantics::BindingInput, inputs->getChild("vec2Array")->impl().getPropertySemantics());
                 EXPECT_EQ(*inputs->getChild("vec2Array")->getChild(0)->get<vec2f>(), vec2f(.11f, .12f));
                 EXPECT_EQ(*inputs->getChild("vec2Array")->getChild(1)->get<vec2f>(), vec2f(.13f, .14f));
+
+                // UBO
+                EXPECT_EQ(*inputs->getChild("someUbo.vec3Uniform")->get<vec3f>(), vec3f(.415f, .416f, .417f));
+                EXPECT_EQ(EPropertySemantics::BindingInput, inputs->getChild("someUbo.vec3Uniform")->impl().getPropertySemantics());
+                EXPECT_EQ(*inputs->getChild("someUbo.vec4Uniform")->get<vec4f>(), vec4f(.415f, .416f, .417f, 0.99f));
+                EXPECT_EQ(EPropertySemantics::BindingInput, inputs->getChild("someUbo.vec4Uniform")->impl().getPropertySemantics());
             };
 
             expectValues();

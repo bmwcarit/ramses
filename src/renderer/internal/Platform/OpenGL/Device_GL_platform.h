@@ -8,49 +8,14 @@
 
 #pragma once
 
-#ifdef _WIN32
-#include "internal/PlatformAbstraction/MinimalWindowsH.h"
-#include <GL/gl.h>
-#include <GL/glext.h>
+/*
+ * glad/gles2.h provides the OpenGLES 3.2 API including the extensions that RAMSES uses.
+ * The file is generated - see inline documentation for configuration parameters.
+ * gladLoadGLES2() needs to be called after context creation to initialize the function pointers
+ *
+ * This is also expected to work if the context is a GL context >= 3.2 (instead of a GLES context)
+ * However, this won't make the context GLES3 compatible by itself. It still requires an extension
+ * to support GLES3 shaders (e.g. GL_ARB_ES3_2_compatibility)
+ */
+#include <glad/gles2.h>
 
-#elif defined(__linux__)
-#include <GLES3/gl3.h>
-#include <GLES3/gl31.h>
-// deprecated
-#include <GLES3/gl3ext.h>
-// should always include that file as well, since gl3ext doesn't define ANY extensions, see http://www.khronos.org/registry/gles/#headers
-#include <GLES2/gl2ext.h>
-
-#elif defined(__APPLE__)
-#include <GLES3/gl3.h>
-#include <GLES3/gl31.h>
-// should always include that file as well, since gl3ext doesn't define ANY extensions, see http://www.khronos.org/registry/gles/#headers
-#include <GLES2/gl2ext.h>
-
-#endif
-
-#if defined(__linux__)
-    #include "internal/Platform/OpenGL/Device_GL_platform_linux.h"
-#endif // LINUX
-
-#if defined(__APPLE__)
-    #include "internal/Platform/OpenGL/Device_GL_platform_apple.h"
-#endif // APPLE
-
-#ifdef _WIN32
-    #include "internal/Platform/OpenGL/Device_GL_platform_windows.h"
-#endif // WIN32
-
-namespace ramses::internal
-{
-    // OpenGL API
-    DECLARE_ALL_API_PROCS
-}
-
-// TODO Violin fix OpenGL headers properly...
-// This is so that the external texture sampler (not texture) can be used in scene also on platforms not actually supporting external texture
-// (e.g. desktop windows when creating assets to be used with external texture).
-#if !defined(GL_OES_EGL_image_external)
-#define GL_OES_EGL_image_external
-#define GL_TEXTURE_EXTERNAL_OES 0x8D65
-#endif

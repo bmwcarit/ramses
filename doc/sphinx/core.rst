@@ -613,12 +613,6 @@ this in most cases means to render the scene(s) assigned to an offscreen buffer 
 the consumer scene using the contents of the offscreen buffer.
 
 
-^^^^^^^^^^^^^^^^^^^^^^
-ContentExpiration
-^^^^^^^^^^^^^^^^^^^^^^
-
-.. TODO
-
 ------------------------
 The Daemon component
 ------------------------

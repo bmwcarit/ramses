@@ -33,6 +33,7 @@ namespace ramses::internal
             EffectTest_StructUniform,
             EffectTest_BoolUniform,
             EffectTest_TextureSize,
+            EffectTest_UniformBuffersStd140,
         };
     };
 }

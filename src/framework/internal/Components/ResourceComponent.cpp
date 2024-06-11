@@ -14,9 +14,10 @@
 
 namespace ramses::internal
 {
-    ResourceComponent::ResourceComponent(StatisticCollectionFramework& statistics, PlatformLock& frameworkLock)
-        : m_resourceStorage(frameworkLock, statistics)
-        , m_statistics(statistics)
+    ResourceComponent::ResourceComponent(StatisticCollectionFramework& statistics, PlatformLock& frameworkLock, EFeatureLevel featureLevel)
+        : m_resourceStorage{ frameworkLock, statistics }
+        , m_statistics{ statistics }
+        , m_featureLevel{ featureLevel }
     {
     }
 
@@ -110,7 +111,7 @@ namespace ramses::internal
 
         try
         {
-            lowLevelResource = ResourcePersistation::RetrieveResourceFromStream(*resourceStream, entry);
+            lowLevelResource = ResourcePersistation::RetrieveResourceFromStream(*resourceStream, entry, m_featureLevel);
         }
         catch(std::exception const& e)
         {

@@ -15,6 +15,10 @@ namespace ramses::internal
     class PlatformFactory : public IPlatformFactory
     {
     public:
-        std::unique_ptr<IPlatform> createPlatform(const RendererConfig& rendererConfig, const DisplayConfig& displayConfig) override;
+        std::unique_ptr<IPlatform> createPlatform(const RendererConfigData& rendererConfig, const DisplayConfigData& displayConfig) override;
+
+    private:
+        static std::unique_ptr<IPlatform> CreatePlatformWithOpenGL(const RendererConfigData& rendererConfig, const DisplayConfigData& displayConfig);
+        static std::unique_ptr<IPlatform> CreatePlatformWithVulkan(const RendererConfigData& rendererConfig, const DisplayConfigData& displayConfig);
     };
 }

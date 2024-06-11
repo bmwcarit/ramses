@@ -15,8 +15,8 @@
 
 // framework
 #include "internal/SceneGraph/SceneAPI/ResourceContentHash.h"
-#include "internal/SceneGraph/SceneAPI/EDataType.h"
-#include "internal/SceneGraph/SceneAPI/EFixedSemantics.h"
+#include "internal/SceneGraph/Resource/EffectInputInformation.h"
+#include "internal/SceneGraph/SceneAPI/SceneTypes.h"
 
 #include <string_view>
 #include <string>
@@ -28,13 +28,7 @@ namespace ramses::internal
     public:
         EffectInputImpl() = default;
 
-        void initialize(
-            const ResourceContentHash&  effectHash,
-            std::string_view            name,
-            ramses::internal::EDataType dataType,
-            EFixedSemantics             semantics,
-            size_t                      elementCount,
-            size_t                      index);
+        void initialize(const ResourceContentHash& effectHash, const EffectInputInformation& inputInfo, size_t index);
 
         [[nodiscard]] ResourceContentHash         getEffectHash() const;
         [[nodiscard]] const std::string&          getName() const;
@@ -42,17 +36,19 @@ namespace ramses::internal
         [[nodiscard]] EFixedSemantics             getSemantics() const;
         [[nodiscard]] size_t                      getElementCount() const;
         [[nodiscard]] size_t                      getInputIndex() const;
+        [[nodiscard]] UniformBufferBinding        getUniformBufferBinding() const;
+        [[nodiscard]] UniformBufferFieldOffset    getUniformBufferFieldOffset() const;
+        [[nodiscard]] UniformBufferElementSize    getUniformBufferElementSize() const;
 
         [[nodiscard]] ramses::EDataType           getDataType() const;
         [[nodiscard]] EEffectUniformSemantic      getUniformSemantics() const;
         [[nodiscard]] EEffectAttributeSemantic    getAttributeSemantics() const;
 
+        [[nodiscard]] DataFieldHandle getDataFieldHandle() const { return m_inputInfo.dataFieldHandle; }
+
     private:
         ResourceContentHash         m_effectHash{};
-        std::string                 m_name;
-        ramses::internal::EDataType m_dataType{ramses::internal::EDataType::Invalid};
-        EFixedSemantics             m_semantics{EFixedSemantics::Invalid};
-        size_t                      m_elementCount{0u};
-        size_t                      m_inputIndex{std::numeric_limits<uint32_t>::max()};
+        EffectInputInformation      m_inputInfo;
+        size_t                      m_inputIndex{ std::numeric_limits<uint32_t>::max() };
     };
 }

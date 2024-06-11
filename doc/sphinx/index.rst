@@ -49,6 +49,12 @@ Ramses documentation
 
 .. toctree::
     :maxdepth: 3
+    :caption: Performance and Profiling
+
+    profiling
+
+.. toctree::
+    :maxdepth: 3
     :caption: Class Index
 
     classes/index

@@ -10,6 +10,7 @@
 
 #include "ramses/framework/RamsesFrameworkTypes.h"
 #include "ramses/framework/EScenePublicationMode.h"
+#include "ramses/framework/ERenderBackendCompatibility.h"
 
 namespace ramses::internal
 {
@@ -19,14 +20,17 @@ namespace ramses::internal
         void setPublicationMode(EScenePublicationMode publicationMode);
         void setMemoryVerificationEnabled(bool enabled);
         void setSceneId(sceneId_t sceneId);
+        void setRenderBackendCompatibility(ERenderBackendCompatibility renderBackendCompatibility);
 
         [[nodiscard]] EScenePublicationMode getPublicationMode() const;
         [[nodiscard]] bool getMemoryVerificationEnabled() const;
         [[nodiscard]] sceneId_t getSceneId() const;
+        [[nodiscard]] ERenderBackendCompatibility getRenderBackendCompatibility() const;
 
     private:
         EScenePublicationMode m_publicationMode = EScenePublicationMode::LocalOnly;
         sceneId_t m_sceneId;
         bool m_memoryVerificationEnabled = true;
+        ERenderBackendCompatibility m_renderBackendCompatibility = ERenderBackendCompatibility::OpenGL;
     };
 }

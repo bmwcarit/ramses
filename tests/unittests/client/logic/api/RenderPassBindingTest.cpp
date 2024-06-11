@@ -46,6 +46,7 @@ namespace ramses::internal
         EXPECT_EQ(m_renderPass, &rpConst.getRamsesRenderPass());
         const auto& rpImplConst = renderPassBinding.impl();
         EXPECT_EQ(m_renderPass, &rpImplConst.getRamsesRenderPass());
+        EXPECT_EQ(m_renderPass, &rpImplConst.getBoundObject());
     }
 
     TEST_F(ARenderPassBinding, HasInputsAfterCreation)

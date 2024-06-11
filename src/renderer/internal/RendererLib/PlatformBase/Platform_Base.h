@@ -9,7 +9,7 @@
 #pragma once
 
 #include "internal/RendererLib/PlatformInterface/IPlatform.h"
-#include "internal/RendererLib/RendererConfig.h"
+#include "internal/RendererLib/RendererConfigData.h"
 #include "internal/PlatformAbstraction/Collections/Vector.h"
 #include <vector>
 #include <memory>
@@ -26,7 +26,7 @@ namespace ramses::internal
     class Platform_Base : public IPlatform
     {
     public:
-        IRenderBackend* createRenderBackend(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) final override;
+        IRenderBackend* createRenderBackend(const DisplayConfigData& displayConfig, IWindowEventHandler& windowEventHandler) final override;
         void            destroyRenderBackend()  final override;
 
         IResourceUploadRenderBackend* createResourceUploadRenderBackend() final override;
@@ -35,20 +35,20 @@ namespace ramses::internal
         ISystemCompositorController* getSystemCompositorController() override;
 
     protected:
-        explicit Platform_Base(RendererConfig rendererConfig);
+        explicit Platform_Base(RendererConfigData rendererConfig);
         ~Platform_Base() override;
 
-        virtual bool createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) = 0;
-        virtual bool createContext(const DisplayConfig& displayConfig) = 0;
+        virtual bool createWindow(const DisplayConfigData& displayConfig, IWindowEventHandler& windowEventHandler) = 0;
+        virtual bool createContext(const DisplayConfigData& displayConfig) = 0;
         virtual bool createContextUploading() = 0;
-        virtual bool createDeviceExtension(const DisplayConfig& displayConfig);
+        virtual bool createDeviceExtension(const DisplayConfigData& displayConfig);
         virtual bool createDevice() = 0;
         virtual bool createDeviceUploading() = 0;
-        virtual bool createEmbeddedCompositor(const DisplayConfig& displayConfig);
-        virtual void createTextureUploadingAdapter(const DisplayConfig& displayConfig);
+        virtual bool createEmbeddedCompositor(const DisplayConfigData& displayConfig);
+        virtual void createTextureUploadingAdapter(const DisplayConfigData& displayConfig);
         virtual bool createSystemCompositorController();
 
-        RendererConfig m_rendererConfig;
+        RendererConfigData m_rendererConfig;
 
         std::unique_ptr<IRenderBackend> m_renderBackend;
         std::unique_ptr<IResourceUploadRenderBackend> m_resourceUploadRenderBackend;

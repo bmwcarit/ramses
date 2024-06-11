@@ -9,6 +9,7 @@
 #pragma once
 
 #include "ramses/framework/RamsesFrameworkTypes.h"
+#include "ramses/framework/RamsesObjectTypes.h"
 #include "ramses/framework/Issue.h"
 #include "internal/PlatformAbstraction/VariantWrapper.h"
 
@@ -22,12 +23,22 @@ namespace ramses::internal
     struct SceneCommandFlushSceneVersion
     {
         sceneVersionTag_t sceneVersion = 0u;
+        // work around unsolved gcc bug https://bugzilla.redhat.com/show_bug.cgi?id=1507359
+        uint32_t _dummyValue = 0u;
     };
 
     struct SceneCommandValidationRequest
     {
         EIssueType verbosity = EIssueType::Warning;
         std::string optionalObjectName;
+    };
+
+    struct SceneCommandSetProperty
+    {
+        sceneObjectId_t id;
+        ERamsesObjectType type = ERamsesObjectType::Invalid;
+        std::string prop;
+        std::string value;
     };
 
     struct SceneCommandDumpSceneToFile
@@ -39,7 +50,8 @@ namespace ramses::internal
     struct SceneCommandLogResourceMemoryUsage
     {
         // work around unsolved gcc bug https://bugzilla.redhat.com/show_bug.cgi?id=1507359
-        bool _dummyValue = false;
+        uint64_t _dummyValue = 0u;
+        uint32_t _dummyValue2 = 0u;
     };
 
 
@@ -55,6 +67,7 @@ namespace ramses::internal
 
     private:
         using CommandVariant = std::variant<SceneCommandFlushSceneVersion,
+                                           SceneCommandSetProperty,
                                            SceneCommandValidationRequest,
                                            SceneCommandDumpSceneToFile,
                                            SceneCommandLogResourceMemoryUsage>;

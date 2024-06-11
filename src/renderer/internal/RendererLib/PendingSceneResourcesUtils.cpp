@@ -68,6 +68,18 @@ namespace ramses::internal
                 //add update action iff update action does not already exist
                 wasCanceledOut = ContainsSceneResourceAction(currentActionsInOut, sceneResourceAction.handle, ESceneResourceAction_UpdateTextureBuffer);
                 break;
+            case ESceneResourceAction_UpdateUniformBuffer:
+                //add update action iff update action does not already exist
+                wasCanceledOut = ContainsSceneResourceAction(currentActionsInOut, sceneResourceAction.handle, ESceneResourceAction_UpdateUniformBuffer);
+                break;
+            case ESceneResourceAction_DestroyUniformBuffer:
+                //remove all update actions first
+                while (RemoveSceneResourceActionIfContained(currentActionsInOut, sceneResourceAction.handle, ESceneResourceAction_UpdateUniformBuffer))
+                {
+                }
+                wasCanceledOut = RemoveSceneResourceActionIfContained(currentActionsInOut, sceneResourceAction.handle, ESceneResourceAction_CreateUniformBuffer);
+                break;
+
             default:
                 break;
             }
@@ -138,6 +150,21 @@ namespace ramses::internal
             case ESceneResourceAction_DestroyTextureBuffer:
                 resourceManager.unloadTextureBuffer(TextureBufferHandle(handle), scene.getSceneId());
                 break;
+            case ESceneResourceAction_CreateUniformBuffer:
+            {
+                const auto& uniformBuffer = scene.getUniformBuffer(UniformBufferHandle{ handle });
+                resourceManager.uploadUniformBuffer(UniformBufferHandle{ handle }, uint32_t(uniformBuffer.data.size()), scene.getSceneId());
+                break;
+            }
+            case ESceneResourceAction_DestroyUniformBuffer:
+                resourceManager.unloadUniformBuffer(UniformBufferHandle{ handle }, scene.getSceneId());
+                break;
+            case ESceneResourceAction_UpdateUniformBuffer:
+            {
+                const auto& uniformBuffer = scene.getUniformBuffer(UniformBufferHandle{ handle });
+                resourceManager.updateUniformBuffer(UniformBufferHandle{ handle }, uint32_t(uniformBuffer.data.size()), uniformBuffer.data.data(), scene.getSceneId());
+                break;
+            }
             default:
                 assert(false && "unknown scene resource action");
                 break;

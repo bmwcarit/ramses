@@ -20,11 +20,12 @@ namespace ramses
     {
     }
 
-    SceneConfig::SceneConfig(sceneId_t sceneId, EScenePublicationMode publicationMode)
+    SceneConfig::SceneConfig(sceneId_t sceneId, EScenePublicationMode publicationMode, ERenderBackendCompatibility renderBackendCompatibility)
         : m_impl{ std::make_unique<internal::SceneConfigImpl>() }
     {
         m_impl->setSceneId(sceneId);
         m_impl->setPublicationMode(publicationMode);
+        m_impl->setRenderBackendCompatibility(renderBackendCompatibility);
     }
 
     SceneConfig::~SceneConfig() = default;
@@ -70,5 +71,11 @@ namespace ramses
     {
         m_impl->setMemoryVerificationEnabled(enabled);
         LOG_HL_CLIENT_API1(true, enabled);
+    }
+
+    void SceneConfig::setRenderBackendCompatibility(ERenderBackendCompatibility renderBackendCompatibility)
+    {
+        m_impl->setRenderBackendCompatibility(renderBackendCompatibility);
+        LOG_HL_CLIENT_API1(true, renderBackendCompatibility);
     }
 }

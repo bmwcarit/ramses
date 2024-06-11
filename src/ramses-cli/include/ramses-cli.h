@@ -23,9 +23,18 @@ namespace ramses
     */
     inline void registerOptions(CLI::App& cli, ramses::RendererConfig& config)
     {
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
         auto* grp = cli.add_option_group("Renderer Options");
         grp->add_flag_function(
-            "--ivi-control", [&](auto /*unused*/) { config.enableSystemCompositorControl(); }, "enable system compositor IVI controller");
+            "--ivi-control", [&](auto /*unused*/) { config.enableSystemCompositorControl(); }, "enable system compositor IVI controller [DEPRECATED]");
+
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
     }
 
     /**
@@ -57,6 +66,7 @@ namespace ramses
             {"gles30"   , EDeviceType::GLES_3_0},
             {"gl42"     , EDeviceType::GL_4_2},
             {"gl45"     , EDeviceType::GL_4_5},
+            {"vulkan"   , EDeviceType::Vulkan},
         };
 
         grp->add_option_function<EDeviceType>(

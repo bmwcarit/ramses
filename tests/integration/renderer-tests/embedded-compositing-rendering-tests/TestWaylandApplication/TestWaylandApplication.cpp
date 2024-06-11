@@ -20,7 +20,7 @@
 
 #include "impl/DisplayConfigImpl.h"
 #include "internal/PlatformAbstraction/PlatformSignal.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "internal/Core/Utils/BinaryInputStream.h"
 
 namespace ramses::internal

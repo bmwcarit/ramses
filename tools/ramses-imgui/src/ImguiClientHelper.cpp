@@ -121,8 +121,10 @@ namespace ramses::internal
         ramses::RenderPass* renderPass = m_imguiscene->createRenderPass("imgui render pass");
         renderPass->setClearFlags(ramses::EClearFlag::None);
         renderPass->setCamera(*imguicamera);
+        m_backgroundGroup = m_imguiscene->createRenderGroup("backgroundGroup");
+        renderPass->addRenderGroup(*m_backgroundGroup);
         renderGroup = m_imguiscene->createRenderGroup();
-        renderPass->addRenderGroup(*renderGroup);
+        renderPass->addRenderGroup(*renderGroup, 1);
         ramses::EffectDescription effectDescImgui;
         effectDescImgui.setFragmentShader(ImguiFragShader);
         effectDescImgui.setVertexShader(ImguiVertShader);
@@ -134,6 +136,9 @@ namespace ramses::internal
         inputPosition = effect->findAttributeInput("a_position");
         inputUV = effect->findAttributeInput("a_texcoord");
         inputColor = effect->findAttributeInput("Color");
+
+        static const std::vector<std::byte> placeholderPixels(4, std::byte{ 255 });
+        m_placeholderTexture = m_imguiscene->createTexture2D(ramses::ETextureFormat::RGBA8, 1, 1, {placeholderPixels});
 
         if (!ImGui::GetCurrentContext())
         {
@@ -199,9 +204,14 @@ namespace ramses::internal
             ImGui::DestroyContext(m_context);
     }
 
-    void ImguiClientHelper::setDisplayId(ramses::displayId_t displayId)
+    std::pair<dataConsumerId_t, TextureSampler*> ImguiClientHelper::createTextureConsumer()
     {
-        m_displayId = displayId;
+        auto* textureSampler = m_imguiscene->createTextureSampler(
+            ramses::ETextureAddressMode::Clamp, ramses::ETextureAddressMode::Clamp,
+            ramses::ETextureSamplingMethod::Linear, ramses::ETextureSamplingMethod::Linear, *m_placeholderTexture);
+        auto id = ramses::dataConsumerId_t{m_nextTextureConsumerId++};
+        m_imguiscene->createTextureConsumer(*textureSampler, id);
+        return std::make_pair(id, textureSampler);
     }
 
     void ImguiClientHelper::draw()
@@ -300,56 +310,6 @@ namespace ramses::internal
         m_imguiscene->flush();
     }
 
-    void ImguiClientHelper::sceneStateChanged(ramses::sceneId_t sceneId, ramses::RendererSceneState state)
-    {
-        m_scenes[sceneId].state = state;
-    }
-
-    void ImguiClientHelper::sceneFlushed(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t sceneVersion)
-    {
-        m_scenes[sceneId].version = sceneVersion;
-    }
-
-    void ImguiClientHelper::offscreenBufferCreated(ramses::displayId_t /*displayId_t*/, ramses::displayBufferId_t offscreenBufferId, ramses::ERendererEventResult result)
-    {
-        if (ramses::ERendererEventResult::Failed != result)
-        {
-            m_offscreenBuffers.insert(offscreenBufferId);
-        }
-    }
-
-    void ImguiClientHelper::offscreenBufferLinked(ramses::displayBufferId_t /*offscreenBufferId*/, ramses::sceneId_t consumerScene, ramses::dataConsumerId_t /*consumerId*/, bool success)
-    {
-        if (success)
-        {
-            m_scenesConsumingOffscreenBuffer[consumerScene].state = ramses::RendererSceneState::Unavailable;
-        }
-    }
-
-    void ImguiClientHelper::displayCreated(ramses::displayId_t displayId, ramses::ERendererEventResult result)
-    {
-        if (ramses::ERendererEventResult::Failed != result)
-        {
-            m_displays.insert(displayId);
-        }
-        else
-        {
-            m_isRunning = false;
-        }
-    }
-
-    void ImguiClientHelper::displayDestroyed(ramses::displayId_t displayId, ramses::ERendererEventResult result)
-    {
-        if (ramses::ERendererEventResult::Failed != result)
-        {
-            m_displays.erase(displayId);
-        }
-        else
-        {
-            m_isRunning = false;
-        }
-    }
-
     void ImguiClientHelper::mouseEvent(ramses::displayId_t displayId, ramses::EMouseEvent eventType, int32_t mousePosX, int32_t mousePosY)
     {
         if (!m_displayId.isValid() || displayId == m_displayId)
@@ -360,7 +320,6 @@ namespace ramses::internal
             {
             case ramses::EMouseEvent::LeftButtonUp:
                 io.MouseDown[0] = false;
-                m_clickEvent    = {mousePosX, mousePosY};
                 break;
             case ramses::EMouseEvent::LeftButtonDown:
                 io.MouseDown[0] = true;
@@ -434,112 +393,5 @@ namespace ramses::internal
             io.DisplaySize.y = static_cast<float>(height);
         }
     }
-
-    void ImguiClientHelper::windowClosed(ramses::displayId_t /*displayId*/)
-    {
-        m_isRunning = false;
-    }
-
-    void ImguiClientHelper::framebufferPixelsRead(const uint8_t* pixelData,
-                               const uint32_t pixelDataSize,
-                               ramses::displayId_t displayId,
-                               ramses::displayBufferId_t displayBuffer,
-                               ramses::ERendererEventResult result)
-    {
-        static_cast<void>(displayId);
-        static_cast<void>(displayBuffer);
-        if (!m_screenshot.empty())
-        {
-            m_screenshotSaved = false;
-            if (result == ramses::ERendererEventResult::Ok)
-            {
-                std::vector<uint8_t> buffer;
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-                buffer.insert(buffer.end(), &pixelData[0], &pixelData[pixelDataSize]);
-                m_screenshotSaved = ramses::RamsesUtils::SaveImageBufferToPng(m_screenshot, buffer, m_screenshotWidth, m_screenshotHeight, true);
-            }
-            m_screenshot.clear();
-        }
-    }
-
-    void ImguiClientHelper::dispatchClickEvent(std::pair<uint32_t, uint32_t>& clickEventOut)
-    {
-        clickEventOut = m_clickEvent;
-        m_clickEvent = {std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint32_t>::max()};
-    }
-
-    void ImguiClientHelper::dispatchEvents()
-    {
-        m_renderer->dispatchEvents(*this);
-        m_renderer->getSceneControlAPI()->dispatchEvents(*this);
-    }
-
-    bool ImguiClientHelper::saveScreenshot(const std::string& filename)
-    {
-        return saveScreenshot(filename, ramses::displayBufferId_t(), 0, 0, imguicamera->getViewportWidth(), imguicamera->getViewportHeight());
-    }
-
-    bool ImguiClientHelper::saveScreenshot(const std::string& filename, ramses::displayBufferId_t screenshotBuf, uint32_t x, uint32_t y, uint32_t width, uint32_t height)
-    {
-        if (m_renderer && m_screenshot.empty() && !filename.empty())
-        {
-            m_screenshotSaved = false;
-            m_screenshot = filename;
-            m_screenshotWidth = width - x;
-            m_screenshotHeight = height - x;
-            m_renderer->readPixels(m_displayId, screenshotBuf, x, y, width, height);
-            m_renderer->flush();
-            return true;
-        }
-        return false;
-    }
-
-    bool ImguiClientHelper::waitForDisplay(ramses::displayId_t displayId)
-    {
-        return waitUntil([&] { return m_displays.find(displayId) != m_displays.end(); });
-    }
-
-    bool ImguiClientHelper:: waitForSceneState(ramses::Scene& scene, ramses::RendererSceneState state)
-    {
-        return waitUntil([&] { return m_scenes[scene.getSceneId()].state == state; }, &scene);
-    }
-
-    bool ImguiClientHelper::waitForSceneVersion(ramses::sceneId_t sceneId, ramses::sceneVersionTag_t version)
-    {
-        return waitUntil([&] { return m_scenes[sceneId].version == version; });
-    }
-
-    bool ImguiClientHelper::waitForOffscreenBufferCreated(const ramses::displayBufferId_t offscreenBufferId)
-    {
-        return waitUntil([&] { return m_offscreenBuffers.find(offscreenBufferId) != m_offscreenBuffers.end(); });
-    }
-
-    bool ImguiClientHelper::waitForOffscreenBufferLinked(const ramses::sceneId_t sceneId)
-    {
-        return waitUntil([&] { return m_scenesConsumingOffscreenBuffer.count(sceneId) > 0; });
-    }
-
-    bool ImguiClientHelper::waitForScreenshot()
-    {
-        waitUntil([&] { return m_screenshot.empty(); });
-        return m_screenshotSaved;
-    }
-
-    bool ImguiClientHelper::waitUntil(const std::function<bool()>& conditionFunction, ramses::Scene* scene)
-    {
-        const std::chrono::steady_clock::time_point timeoutTS = std::chrono::steady_clock::now() + std::chrono::seconds{5};
-        while (m_isRunning && !conditionFunction() && std::chrono::steady_clock::now() < timeoutTS)
-        {
-            if (scene)
-                scene->flush(); // make sure scene gets flushed if subscribing
-            std::this_thread::sleep_for(std::chrono::milliseconds{5}); // will give the renderer time to process changes
-            m_renderer->dispatchEvents(*this);
-            auto* sceneControl = m_renderer->getSceneControlAPI();
-            sceneControl->dispatchEvents(*this);
-        }
-
-        return conditionFunction();
-    }
-
 }
 

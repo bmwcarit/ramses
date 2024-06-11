@@ -32,11 +32,9 @@ if(ramses-sdk_TEXT_SUPPORT)
     target_compile_definitions(ramses-api INTERFACE RAMSES_TEXT_ENABLED)
 endif()
 
-if(ramses-sdk_ENABLE_LOGIC)
-    file(GLOB
-        RAMSES_CLIENT_LOGIC_API_FILES_HEADER
-        ramses/client/logic/*.h)
-endif()
+file(GLOB
+    RAMSES_CLIENT_LOGIC_API_FILES_HEADER
+    ramses/client/logic/*.h)
 
 # renderer
 if(ANY_WINDOW_TYPE_ENABLED)
@@ -66,9 +64,7 @@ if(ramses-sdk_ENABLE_INSTALL)
     if(ramses-sdk_TEXT_SUPPORT)
         install(FILES ${RAMSES_CLIENT_TEXT_API_FILES_HEADER} DESTINATION "${RAMSES_INSTALL_HEADERS_PATH}/ramses/client/text" COMPONENT ramses-sdk-devel)
     endif()
-    if(ramses-sdk_ENABLE_LOGIC)
-        install(FILES ${RAMSES_CLIENT_LOGIC_API_FILES_HEADER} DESTINATION "${RAMSES_INSTALL_HEADERS_PATH}/ramses/client/logic" COMPONENT ramses-sdk-devel)
-    endif()
+    install(FILES ${RAMSES_CLIENT_LOGIC_API_FILES_HEADER} DESTINATION "${RAMSES_INSTALL_HEADERS_PATH}/ramses/client/logic" COMPONENT ramses-sdk-devel)
 
     if(ANY_WINDOW_TYPE_ENABLED)
         install(FILES ${RAMSES_RENDERER_API_FILES_HEADER} DESTINATION "${RAMSES_INSTALL_HEADERS_PATH}/ramses/renderer" COMPONENT ramses-sdk-devel)

@@ -12,16 +12,47 @@
 
 namespace ramses::internal
 {
-    DataLayoutHandle DataLayoutCreationHelper::CreateUniformDataLayoutMatchingEffectInputs(IScene& scene, const EffectInputInformationVector& uniformsInputInfo, InputIndexVector& referencedInputs, const ResourceContentHash& effectHash, DataLayoutHandle handle)
+    void DataLayoutCreationHelper::SetDataFieldMappingForUniformInputs(EffectInputInformationVector& uniformsInputInfo)
     {
-        assert(referencedInputs.empty());
+        int lastDataFieldIdx = -1;
+        for (auto& input : uniformsInputInfo)
+        {
+            // Uniform buffer and all its fields are stored/represented in data layout/instance as single data instance field for the whole UBO.
+            // This checks if input is UBO's field and makes sure that it will point to the same data instance field as the UBO (assuming UBO input comes before its fields).
+            if (!EffectInputInformation::IsUniformBufferField(input))
+                lastDataFieldIdx++;
 
+            // UBO's field can never be first input
+            assert(lastDataFieldIdx >= 0);
+            input.dataFieldHandle.asMemoryHandleReference() = lastDataFieldIdx;
+        }
+    }
+
+    void DataLayoutCreationHelper::SetDataFieldMappingForAttributeInputs(EffectInputInformationVector& attributeInputInfo)
+    {
+        // data field Zero is always reserved for index arrays
+        uint32_t lastDataFieldIdx = 0u;
+        for (auto& input : attributeInputInfo)
+            input.dataFieldHandle.asMemoryHandleReference() = ++lastDataFieldIdx;
+    }
+
+    std::tuple<DataFieldInfoVector, InputIndexVector> DataLayoutCreationHelper::GetDataFieldsFromEffectInputs(const EffectInputInformationVector& uniformsInputInfo)
+    {
         const size_t inputCount = uniformsInputInfo.size();
+
+        InputIndexVector referencedInputs;
         DataFieldInfoVector dataFields;
         dataFields.reserve(inputCount);
+
         for (uint32_t i = 0u; i < inputCount; ++i)
         {
             const EffectInputInformation& inputInformation = uniformsInputInfo[i];
+
+            // Uniform buffer and all its fields are stored/represented in data layout/instance as single data instance field for the whole UBO.
+            // This skips inputs for UBO's fields as they do not produce individual data instance fields.
+            if (EffectInputInformation::IsUniformBufferField(inputInformation))
+                continue;
+
             if (IsBindableInput(inputInformation))
             {
                 dataFields.push_back(DataFieldInfo(EDataType::DataReference));
@@ -29,11 +60,22 @@ namespace ramses::internal
             }
             else
             {
-                dataFields.push_back(DataFieldInfo{ inputInformation.dataType, inputInformation.elementCount, inputInformation.semantics });
+                dataFields.push_back(DataFieldInfo{
+                    inputInformation.dataType,
+                    inputInformation.elementCount,
+                    inputInformation.semantics
+                    });
             }
         }
 
-        return scene.allocateDataLayout(dataFields, effectHash, handle);
+        return { dataFields, referencedInputs };
+    }
+
+    std::tuple<DataLayoutHandle, InputIndexVector> DataLayoutCreationHelper::CreateUniformDataLayoutMatchingEffectInputs(IScene& scene, const EffectInputInformationVector& uniformsInputInfo, const ResourceContentHash& effectHash, DataLayoutHandle handle)
+    {
+        auto [dataFields, referencedInputs] = GetDataFieldsFromEffectInputs(uniformsInputInfo);
+
+        return { scene.allocateDataLayout(dataFields, effectHash, handle), referencedInputs };
     }
 
     DataInstanceHandle DataLayoutCreationHelper::CreateAndBindDataReference(IScene& scene, DataInstanceHandle dataInstance, DataFieldHandle dataField, EDataType dataType, DataLayoutHandle dataRefLayout, DataInstanceHandle dataRefInstance)
@@ -53,6 +95,7 @@ namespace ramses::internal
         return (inputInfo.semantics == EFixedSemantics::Invalid)
             && !IsTextureSamplerType(inputInfo.dataType)
             && !IsBufferDataType(inputInfo.dataType)
-            && (inputInfo.elementCount == 1u);
+            && (inputInfo.elementCount == 1u)
+            && inputInfo.dataType != EDataType::UniformBuffer;
     }
 }

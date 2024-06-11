@@ -15,13 +15,15 @@ namespace ramses::internal
 {
     DisplayDispatcher::DisplayDispatcher(
         std::unique_ptr<IPlatformFactory> platformFactory,
-        RendererConfig config,
+        RendererConfigData config,
         IRendererSceneEventSender& rendererSceneSender,
-        IThreadAliveNotifier& notifier)
+        IThreadAliveNotifier& notifier,
+        EFeatureLevel featureLevel)
         : m_platformFactory(std::move(platformFactory))
         , m_rendererConfig{ std::move(config) }
         , m_rendererSceneSender{ rendererSceneSender }
         , m_notifier{ notifier }
+        , m_featureLevel{ featureLevel }
     {
     }
 
@@ -89,7 +91,7 @@ namespace ramses::internal
         for (auto& display : m_displays)
         {
             // in non-threaded mode use additional log prefix for each display update
-            RamsesLogger::SetPrefixAdditional(fmt::format("Display{}", display.first));
+            RamsesLoggerPrefixes::SetRamsesLoggerPrefixAdditional(fmt::format("Display{}", display.first));
 
             // avoid unnecessary context switch if running only single display
             if (m_displays.size() > 1u || m_forceContextEnableNextLoop)
@@ -97,7 +99,7 @@ namespace ramses::internal
 
             display.second.displayBundle->doOneLoop(m_loopMode, sleepTime);
         }
-        RamsesLogger::SetPrefixAdditional({});
+        RamsesLoggerPrefixes::SetRamsesLoggerPrefixAdditional({});
 
         m_forceContextEnableNextLoop = false;
     }
@@ -182,7 +184,7 @@ namespace ramses::internal
         }
     }
 
-    DisplayDispatcher::Display DisplayDispatcher::createDisplayBundle(DisplayHandle displayHandle, const DisplayConfig& dispConfig)
+    DisplayDispatcher::Display DisplayDispatcher::createDisplayBundle(DisplayHandle displayHandle, const DisplayConfigData& dispConfig)
     {
         Display bundle;
         LOG_INFO(CONTEXT_RENDERER, "DisplayDispatcher: creating platform for display {}", displayHandle);
@@ -194,7 +196,8 @@ namespace ramses::internal
             m_rendererSceneSender,
             *bundle.platform,
             m_notifier,
-            m_rendererConfig.getRenderThreadLoopTimingReportingPeriod())
+            m_rendererConfig.getRenderThreadLoopTimingReportingPeriod(),
+            m_featureLevel)
         };
         if (m_threadedDisplays)
         {
@@ -445,7 +448,7 @@ namespace ramses::internal
         return displayBundle.hasSystemCompositorController();
     }
 
-    const RendererConfig& DisplayDispatcher::getRendererConfig() const
+    const RendererConfigData& DisplayDispatcher::getRendererConfig() const
     {
         return m_rendererConfig;
     }

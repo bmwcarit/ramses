@@ -7,6 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "internal/RendererLib/RendererStatistics.h"
+#include "internal/RendererLib/FrameProfilerStatistics.h"
 #include "internal/Core/Utils/LogMacros.h"
 #include "gmock/gmock.h"
 
@@ -32,6 +33,26 @@ namespace ramses::internal
         const DeviceResourceHandle ob2{ 22 };
         const DeviceResourceHandle ob3{ 33 };
     };
+
+    TEST_F(ARendererStatistics, VerifyStringsOfRegionNames)
+    {
+        EXPECT_EQ(RegionNames.size(), 15u);
+        EXPECT_STREQ(EnumToString(FrameProfilerStatistics::ERegion::ExecuteRendererCommands), "RendererCommands");
+        EXPECT_STREQ(EnumToString(FrameProfilerStatistics::ERegion::UpdateClientResources), "UpdateClientResources");
+        EXPECT_STREQ(EnumToString(FrameProfilerStatistics::ERegion::ApplySceneActions), "ApplySceneActions");
+        EXPECT_STREQ(EnumToString(FrameProfilerStatistics::ERegion::UpdateSceneResources), "UpdateSceneResources");
+        EXPECT_STREQ(EnumToString(FrameProfilerStatistics::ERegion::UpdateEmbeddedCompositingResources), "UpdateEmbeddedCompositingResources");
+        EXPECT_STREQ(EnumToString(FrameProfilerStatistics::ERegion::UpdateStreamTextures), "UpdateStreamTextures");
+        EXPECT_STREQ(EnumToString(FrameProfilerStatistics::ERegion::UpdateScenesToBeMapped), "UpdateScenesToBeMapped");
+        EXPECT_STREQ(EnumToString(FrameProfilerStatistics::ERegion::UpdateResourceCache), "UpdateResourceCache");
+        EXPECT_STREQ(EnumToString(FrameProfilerStatistics::ERegion::UpdateTransformations), "UpdateTransformations");
+        EXPECT_STREQ(EnumToString(FrameProfilerStatistics::ERegion::UpdateDataLinks), "UpdateDataLinks");
+        EXPECT_STREQ(EnumToString(FrameProfilerStatistics::ERegion::UpdateSemanticUniformBuffers), "UpdateSemanticUniformBuffers");
+        EXPECT_STREQ(EnumToString(FrameProfilerStatistics::ERegion::HandleDisplayEvents), "HandleDisplayEvents");
+        EXPECT_STREQ(EnumToString(FrameProfilerStatistics::ERegion::DrawScenes), "DrawScenes");
+        EXPECT_STREQ(EnumToString(FrameProfilerStatistics::ERegion::SwapBuffersAndNotifyClients), "SwapBuffersNotifyClients");
+        EXPECT_STREQ(EnumToString(FrameProfilerStatistics::ERegion::MaxFramerateSleep), "MaxFramerateSleep");
+    }
 
     TEST_F(ARendererStatistics, tracksDrawCallsPerFrame)
     {

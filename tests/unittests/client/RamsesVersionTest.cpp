@@ -299,46 +299,6 @@ namespace ramses::internal
         EXPECT_FALSE(RamsesVersion::ReadFromStream(in, info, featureLevel));
     }
 
-    TEST_F(ARamsesVersion, MatchesCurrentMajorMinorMatchesCurrentExactVersion)
-    {
-        RamsesVersion::VersionInfo vi;
-        vi.major = ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_MAJOR_INT;
-        vi.minor = ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_MINOR_INT;
-        EXPECT_TRUE(RamsesVersion::MatchesMajorMinor(::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_MAJOR_INT, ::ramses_sdk::RAMSES_SDK_PROJECT_VERSION_MINOR_INT, vi));
-    }
-
-    TEST_F(ARamsesVersion, AcceptsMasterVersionZeroZeroAlways)
-    {
-        RamsesVersion::VersionInfo vi;
-        vi.major = 0;
-        vi.minor = 0;
-        EXPECT_TRUE(RamsesVersion::MatchesMajorMinor(0, 0, vi));
-    }
-
-    TEST_F(ARamsesVersion, AcceptsAnyFileVersionWithMasterZeroZero)
-    {
-        RamsesVersion::VersionInfo vi;
-        vi.major = 1;
-        vi.minor = 2;
-        EXPECT_TRUE(RamsesVersion::MatchesMajorMinor(0, 0, vi));
-    }
-
-    TEST_F(ARamsesVersion, MatchesCurrentMajorMinorFailsIfMajorDiffers)
-    {
-        RamsesVersion::VersionInfo vi;
-        vi.major = 55 + 1;
-        vi.minor = 66;
-        EXPECT_FALSE(RamsesVersion::MatchesMajorMinor(55, 66, vi));
-    }
-
-    TEST_F(ARamsesVersion, MatchesCurrentMajorMinorFailsIfMinorDiffers)
-    {
-        RamsesVersion::VersionInfo vi;
-        vi.major = 55;
-        vi.minor = 66 + 1;
-        EXPECT_FALSE(RamsesVersion::MatchesMajorMinor(55, 66, vi));
-    }
-
     TEST_F(ARamsesVersion, failsWhenFeatureLevelCompletelyMissing)
     {
         {

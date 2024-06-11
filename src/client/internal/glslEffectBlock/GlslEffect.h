@@ -13,6 +13,8 @@
 #include "internal/SceneGraph/SceneAPI/EFixedSemantics.h"
 #include "internal/SceneGraph/Resource/EffectResource.h"
 
+#include "ramses/framework/ERenderBackendCompatibility.h"
+
 #include <string>
 #include <string_view>
 #include <vector>
@@ -36,12 +38,11 @@ namespace ramses::internal
             std::string_view fragmentShader,
             std::string_view geometryShader,
             std::vector<std::string> compilerDefines,
-            const HashMap<std::string, EFixedSemantics>& semanticInputs,
+            SemanticsMap semanticInputs,
+            ERenderBackendCompatibility compatibility,
             std::string_view name);
 
-        ~GlslEffect();
-
-        [[nodiscard]] EffectResource* createEffectResource();
+        [[nodiscard]] std::unique_ptr<EffectResource> createEffectResource(EFeatureLevel featureLevel);
 
         [[nodiscard]] uint32_t getShadingLanguageVersion() const;
         [[nodiscard]] std::string getEffectErrorMessages() const;
@@ -51,11 +52,11 @@ namespace ramses::internal
         const std::string m_fragmentShader;
         const std::string m_geometryShader;
         const std::vector<std::string> m_compilerDefines;
-        const HashMap<std::string, EFixedSemantics> m_semanticInputs;
+        const SemanticsMap m_semanticInputs;
+        const ERenderBackendCompatibility m_renderBackendCompatibility;
         const std::string m_name;
 
-        mutable StringOutputStream m_errorMessages;
-        EffectResource* m_effectResource{nullptr};
+        StringOutputStream m_errorMessages;
         uint32_t m_shadingLanguageVersion{0};
 
         bool extractAndCheckShaderVersions(const glslang::TProgram* program);

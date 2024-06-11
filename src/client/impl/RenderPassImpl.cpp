@@ -73,7 +73,7 @@ namespace ramses::internal
         if (!SceneObjectImpl::deserialize(inStream, serializationContext))
             return false;
 
-        inStream >> m_renderPassHandle;
+        serializationContext.deserializeAndMap(inStream, m_renderPassHandle);
 
         DeserializationContext::ReadDependentPointerAndStoreAsID(inStream, m_cameraImpl);
         DeserializationContext::ReadDependentPointerAndStoreAsID(inStream, m_renderTargetImpl);

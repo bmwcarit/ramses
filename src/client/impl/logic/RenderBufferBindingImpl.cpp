@@ -20,7 +20,7 @@
 namespace ramses::internal
 {
     RenderBufferBindingImpl::RenderBufferBindingImpl(SceneImpl& scene, ramses::RenderBuffer& renderBuffer, std::string_view name, sceneObjectId_t id)
-        : RamsesBindingImpl{ scene, name, id }
+        : RamsesBindingImpl{ scene, name, id, renderBuffer }
         , m_renderBuffer{ renderBuffer }
     {
     }

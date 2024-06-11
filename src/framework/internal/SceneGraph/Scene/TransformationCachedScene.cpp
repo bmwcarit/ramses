@@ -21,14 +21,14 @@ namespace ramses::internal
 {
     template <template<typename, typename> class MEMORYPOOL>
     TransformationCachedSceneT<MEMORYPOOL>::TransformationCachedSceneT(const SceneInfo& sceneInfo)
-        : SceneT<MEMORYPOOL>(sceneInfo)
+        : BaseT(sceneInfo)
     {
     }
 
     template <template<typename, typename> class MEMORYPOOL>
     void TransformationCachedSceneT<MEMORYPOOL>::preallocateSceneSize(const SceneSizeInformation& sizeInfo)
     {
-        SceneT<MEMORYPOOL>::preallocateSceneSize(sizeInfo);
+        BaseT::preallocateSceneSize(sizeInfo);
 
         m_nodeToTransformMap.reserve(sizeInfo.transformCount);
         m_matrixCachePool.preallocateSize(sizeInfo.nodeCount);
@@ -38,21 +38,21 @@ namespace ramses::internal
     void TransformationCachedSceneT<MEMORYPOOL>::removeChildFromNode(NodeHandle parent, NodeHandle child)
     {
         propagateDirty(child);
-        SceneT<MEMORYPOOL>::removeChildFromNode(parent, child);
+        BaseT::removeChildFromNode(parent, child);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
     void TransformationCachedSceneT<MEMORYPOOL>::addChildToNode(NodeHandle parent, NodeHandle child)
     {
         propagateDirty(child);
-        SceneT<MEMORYPOOL>::addChildToNode(parent, child);
+        BaseT::addChildToNode(parent, child);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
     TransformHandle TransformationCachedSceneT<MEMORYPOOL>::allocateTransform(NodeHandle nodeHandle, TransformHandle handle)
     {
         assert(nodeHandle.isValid());
-        const TransformHandle actualHandle = SceneT<MEMORYPOOL>::allocateTransform(nodeHandle, handle);
+        const TransformHandle actualHandle = BaseT::allocateTransform(nodeHandle, handle);
         m_nodeToTransformMap.put(nodeHandle, actualHandle);
         propagateDirty(nodeHandle);
         return actualHandle;
@@ -63,7 +63,7 @@ namespace ramses::internal
     {
         const NodeHandle nodeHandle = this->getTransformNode(transform);
         assert(nodeHandle.isValid());
-        SceneT<MEMORYPOOL>::releaseTransform(transform);
+        BaseT::releaseTransform(transform);
         propagateDirty(nodeHandle);
     }
 
@@ -74,7 +74,7 @@ namespace ramses::internal
         assert(nodeTransformIsConnectedTo.isValid());
         getMatrixCacheEntry(nodeTransformIsConnectedTo).m_isIdentity = false;
         propagateDirty(nodeTransformIsConnectedTo);
-        SceneT<MEMORYPOOL>::setTranslation(transform, translation);
+        BaseT::setTranslation(transform, translation);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -84,7 +84,7 @@ namespace ramses::internal
         assert(nodeTransformIsConnectedTo.isValid());
         getMatrixCacheEntry(nodeTransformIsConnectedTo).m_isIdentity = false;
         propagateDirty(nodeTransformIsConnectedTo);
-        SceneT<MEMORYPOOL>::setRotation(transform, rotation, rotationType);
+        BaseT::setRotation(transform, rotation, rotationType);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -94,13 +94,13 @@ namespace ramses::internal
         assert(nodeTransformIsConnectedTo.isValid());
         getMatrixCacheEntry(nodeTransformIsConnectedTo).m_isIdentity = false;
         propagateDirty(nodeTransformIsConnectedTo);
-        SceneT<MEMORYPOOL>::setScaling(transform, scaling);
+        BaseT::setScaling(transform, scaling);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
     NodeHandle TransformationCachedSceneT<MEMORYPOOL>::allocateNode(uint32_t childrenCount, NodeHandle node)
     {
-        const NodeHandle _node = SceneT<MEMORYPOOL>::allocateNode(childrenCount, node);
+        const NodeHandle _node = BaseT::allocateNode(childrenCount, node);
         m_matrixCachePool.allocate(_node);
         return _node;
     }
@@ -110,7 +110,7 @@ namespace ramses::internal
     {
         m_matrixCachePool.release(node);
         m_nodeToTransformMap.remove(node);
-        SceneT<MEMORYPOOL>::releaseNode(node);
+        BaseT::releaseNode(node);
     }
 
     template <template<typename, typename> class MEMORYPOOL>
@@ -133,7 +133,7 @@ namespace ramses::internal
                 return cacheEntry.m_matrix[matrixType];
             }
             dirtyNodes.push_back(currentNode);
-            currentNode = SceneT<MEMORYPOOL>::getParent(currentNode);
+            currentNode = BaseT::getParent(currentNode);
         }
 
         return Identity;
@@ -204,7 +204,7 @@ namespace ramses::internal
             // If it was already dirty, no need to propagate further
             if (!wasDirty)
             {
-                const NodeHandleVector& children = SceneT<MEMORYPOOL>::getNode(node).children;
+                const NodeHandleVector& children = BaseT::getNode(node).children;
                 m_dirtyPropagationTraversalBuffer.insert(m_dirtyPropagationTraversalBuffer.end(), children.cbegin(), children.cend());
             }
         }
@@ -229,7 +229,7 @@ namespace ramses::internal
         const TransformHandle* transformHandlePtr = m_nodeToTransformMap.get(node);
         if (transformHandlePtr != nullptr)
         {
-            const auto& transform = SceneT<MEMORYPOOL>::getTransform(*transformHandlePtr);
+            const auto& transform = BaseT::getTransform(*transformHandlePtr);
             const auto matrix =
                 glm::translate(transform.translation) *
                 Math3d::Rotation(transform.rotation, transform.rotationType) *
@@ -245,7 +245,7 @@ namespace ramses::internal
         const TransformHandle* transformHandlePtr = m_nodeToTransformMap.get(node);
         if (transformHandlePtr != nullptr)
         {
-            const auto& transform = SceneT<MEMORYPOOL>::getTransform(*transformHandlePtr);
+            const auto& transform = BaseT::getTransform(*transformHandlePtr);
             const auto matrix =
                 glm::scale(glm::vec3(1.f) / transform.scaling) *
                 glm::transpose(Math3d::Rotation(transform.rotation, transform.rotationType)) *

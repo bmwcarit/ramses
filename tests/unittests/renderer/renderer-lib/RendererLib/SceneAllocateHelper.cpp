@@ -83,6 +83,10 @@ namespace ramses::internal
     {
         return sizeInfo.dataBufferCount;
     }
+    template <> uint32_t& getObjectCount<UniformBufferHandle>(SceneSizeInformation& sizeInfo)
+    {
+        return sizeInfo.uniformBufferCount;
+    }
     template <> uint32_t& getObjectCount<TextureBufferHandle>(SceneSizeInformation& sizeInfo)
     {
         return sizeInfo.textureBufferCount;
@@ -190,6 +194,11 @@ namespace ramses::internal
     DataBufferHandle SceneAllocateHelper::allocateDataBuffer(EDataBufferType dataBufferType, EDataType dataType, uint32_t maximumSizeInBytes, DataBufferHandle handle)
     {
         return m_scene.allocateDataBuffer(dataBufferType, dataType, maximumSizeInBytes, preallocateHandle(handle));
+    }
+
+    UniformBufferHandle SceneAllocateHelper::allocateUniformBuffer(uint32_t size, UniformBufferHandle handle)
+    {
+        return m_scene.allocateUniformBuffer(size, preallocateHandle(handle));
     }
 
     TextureBufferHandle SceneAllocateHelper::allocateTextureBuffer(EPixelStorageFormat textureFormat, const MipMapDimensions& mipMapDimensions, TextureBufferHandle handle /*= TextureBufferHandle::Invalid()*/)

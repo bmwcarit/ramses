@@ -13,8 +13,8 @@
 #include "internal/RendererLib/ResourceCachedScene.h"
 #include "internal/RendererLib/RendererEventCollector.h"
 #include "TestSceneHelper.h"
-#include "SceneAllocateHelper.h"
 #include "MockResourceHash.h"
+#include "DeviceMock.h"
 
 namespace ramses::internal {
     using namespace testing;
@@ -28,8 +28,8 @@ namespace ramses::internal {
             : rendererScenes(rendererEventCollector)
             , sceneLinksManager(rendererScenes.getSceneLinksManager())
             , textureLinkManager(sceneLinksManager.getTextureLinkManager())
-            , providerScene(rendererScenes.createScene(SceneInfo(providerSceneId)))
-            , consumerScene(rendererScenes.createScene(SceneInfo(consumerSceneId)))
+            , providerScene(rendererScenes.createScene(SceneInfo{ providerSceneId }))
+            , consumerScene(rendererScenes.createScene(SceneInfo{ consumerSceneId }))
             , providerSceneAllocator(providerScene)
             , consumerSceneAllocator(consumerScene)
             , sceneHelper(consumerScene)

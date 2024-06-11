@@ -18,10 +18,10 @@ namespace ramses::internal
     class Platform_Android_EGL : public Platform_EGL<Window_Android>
     {
     public:
-        explicit Platform_Android_EGL(const RendererConfig& rendererConfig);
+        explicit Platform_Android_EGL(const RendererConfigData& rendererConfig);
 
     protected:
-        virtual bool createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override;
+        virtual bool createWindow(const DisplayConfigData& displayConfig, IWindowEventHandler& windowEventHandler) override;
         virtual uint32_t getSwapInterval() const override;
     };
 }

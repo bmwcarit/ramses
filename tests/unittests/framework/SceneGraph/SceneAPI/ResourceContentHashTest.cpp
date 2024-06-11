@@ -10,7 +10,6 @@
 #include "internal/Core/Utils/BinaryOutputStream.h"
 #include "internal/Core/Utils/BinaryInputStream.h"
 #include "internal/PlatformAbstraction/Collections/HashSet.h"
-#include "internal/PlatformAbstraction/Collections/StringOutputStream.h"
 #include "gtest/gtest.h"
 #include <unordered_set>
 

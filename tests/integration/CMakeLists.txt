@@ -16,6 +16,6 @@ if(ramses-sdk_BUILD_FULL_SHARED_LIB)
     add_subdirectory(shared-lib-tests)
 endif()
 
-if(ramses-sdk_ENABLE_LOGIC AND ramses-sdk_USE_IMAGEMAGICK)
+if(ramses-sdk_USE_IMAGEMAGICK)
     add_subdirectory(viewer-tests)
 endif()

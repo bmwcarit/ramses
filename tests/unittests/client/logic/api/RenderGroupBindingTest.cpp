@@ -47,6 +47,7 @@ namespace ramses::internal
         EXPECT_EQ(m_renderGroup, &rpConst.getRamsesRenderGroup());
         const auto& rpImplConst = renderGroupBinding.impl();
         EXPECT_EQ(m_renderGroup, &rpImplConst.getRamsesRenderGroup());
+        EXPECT_EQ(m_renderGroup, &rpImplConst.getBoundObject());
     }
 
     TEST_F(ARenderGroupBinding, HasInputsAfterCreationWithCorrectNamesAndValues)

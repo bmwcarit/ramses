@@ -22,11 +22,15 @@
 #include "internal/SceneGraph/SceneAPI/Renderable.h"
 #include "internal/SceneGraph/SceneAPI/RendererSceneState.h"
 #include "internal/SceneGraph/SceneAPI/ERotationType.h"
+#include "internal/SceneGraph/SceneAPI/EVulkanVersion.h"
+#include "internal/SceneGraph/Scene/UniformBuffer.h"
 
 #include "internal/PlatformAbstraction/Collections/HashMap.h"
 #include "internal/PlatformAbstraction/Collections/Vector.h"
 #include "internal/Components/FlushTimeInformation.h"
 #include "impl/DataTypesImpl.h"
+
+#include "ramses/framework/ERenderBackendCompatibility.h"
 
 #include <string>
 
@@ -62,6 +66,9 @@ namespace ramses::internal
 
         [[nodiscard]] virtual const std::string&          getName                         () const = 0;
         [[nodiscard]] virtual SceneId                     getSceneId                      () const = 0;
+        [[nodiscard]] virtual ERenderBackendCompatibility getRenderBackendCompatibility   () const = 0;
+        [[nodiscard]] virtual EVulkanAPIVersion           getVulkanAPIVersion             () const = 0;
+        [[nodiscard]] virtual ESPIRVVersion               getSPIRVVersion                 () const = 0;
 
         virtual void setEffectTimeSync(FlushTime::Clock::time_point t) = 0;
         [[nodiscard]] virtual FlushTime::Clock::time_point getEffectTimeSync() const = 0;
@@ -163,6 +170,7 @@ namespace ramses::internal
         [[nodiscard]] virtual const ResourceField& getDataResource             (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
         [[nodiscard]] virtual TextureSamplerHandle getDataTextureSamplerHandle (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
         [[nodiscard]] virtual DataInstanceHandle   getDataReference            (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
+        [[nodiscard]] virtual UniformBufferHandle     getDataUniformBuffer        (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
 
         virtual void setDataFloatArray           (DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const float* data) = 0;
         virtual void setDataVector2fArray        (DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::vec2* data) = 0;
@@ -179,6 +187,7 @@ namespace ramses::internal
         virtual void setDataResource             (DataInstanceHandle containerHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, uint32_t instancingDivisor, uint16_t offsetWithinElementInBytes, uint16_t stride) = 0;
         virtual void setDataTextureSamplerHandle (DataInstanceHandle containerHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle) = 0;
         virtual void setDataReference            (DataInstanceHandle containerHandle, DataFieldHandle field, DataInstanceHandle dataRef) = 0;
+        virtual void setDataUniformBuffer        (DataInstanceHandle containerHandle, DataFieldHandle field, UniformBufferHandle uniformBufferHandle) = 0;
 
         // get/setData*Array wrappers for elementCount == 1
         [[nodiscard]] virtual float              getDataSingleFloat          (DataInstanceHandle containerHandle, DataFieldHandle field) const = 0;
@@ -206,6 +215,14 @@ namespace ramses::internal
         virtual void setDataSingleMatrix22f      (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::mat2& data) = 0;
         virtual void setDataSingleMatrix33f      (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::mat3& data) = 0;
         virtual void setDataSingleMatrix44f      (DataInstanceHandle containerHandle, DataFieldHandle field, const glm::mat4& data) = 0;
+
+        // Uniform buffers
+        virtual UniformBufferHandle         allocateUniformBuffer(uint32_t size, UniformBufferHandle handle) = 0;
+        virtual void                        releaseUniformBuffer(UniformBufferHandle uniformBufferHandle) = 0;
+        virtual void                        updateUniformBuffer(UniformBufferHandle uniformBufferHandle, uint32_t offset, uint32_t size, const std::byte* data) = 0;
+        [[nodiscard]] virtual bool          isUniformBufferAllocated(UniformBufferHandle uniformBufferHandle) const = 0;
+        [[nodiscard]] virtual uint32_t      getUniformBufferCount() const = 0;
+        [[nodiscard]] virtual const UniformBuffer& getUniformBuffer(UniformBufferHandle uniformBufferHandle) const = 0;
 
         // Texture sampler description
         virtual TextureSamplerHandle                allocateTextureSampler    (const TextureSampler& sampler, TextureSamplerHandle handle) = 0;

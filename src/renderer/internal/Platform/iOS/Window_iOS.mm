@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "internal/Platform/iOS/Window_iOS.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "internal/Core/Utils/LogMacros.h"
 #include "internal/Core/Utils/Warnings.h"
 
@@ -16,7 +16,7 @@
 
 namespace ramses::internal
 {
-    Window_iOS::Window_iOS(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, UInt32 id)
+    Window_iOS::Window_iOS(const DisplayConfigData& displayConfig, IWindowEventHandler& windowEventHandler, UInt32 id)
         : Window_Base(displayConfig, windowEventHandler, id)
         , m_metalLayer(static_cast<CAMetalLayer*>(displayConfig.getIOSNativeWindow().getValue()))
     {

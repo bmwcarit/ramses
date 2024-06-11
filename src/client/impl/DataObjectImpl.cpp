@@ -13,6 +13,7 @@
 #include "internal/SceneGraph/Scene/ClientScene.h"
 #include "internal/SceneGraph/SceneUtils/ISceneDataArrayAccessor.h"
 #include "internal/SceneGraph/SceneAPI/ResourceContentHash.h"
+#include "impl/SerializationContext.h"
 
 namespace ramses::internal
 {
@@ -66,8 +67,8 @@ namespace ramses::internal
         uint32_t enumType = 0u;
         inStream >> enumType;
         m_dataType = static_cast<ramses::EDataType>(enumType);
-        inStream >> m_layoutHandle;
-        inStream >> m_dataReference;
+        serializationContext.deserializeAndMap(inStream, m_layoutHandle);
+        serializationContext.deserializeAndMap(inStream, m_dataReference);
 
         return true;
     }

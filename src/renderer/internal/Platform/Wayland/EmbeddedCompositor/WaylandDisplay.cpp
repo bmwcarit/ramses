@@ -96,7 +96,7 @@ namespace ramses::internal
         }
         LOG_ERROR(CONTEXT_RENDERER,
                   "WaylandDisplay::addSocketToDisplayWithFD(): Failed to add wayland display on embedded compositor socket "
-                  "provided by RendererConfig::setWaylandEmbeddedCompositingSocketFD()");
+                  "provided by RendererConfigData::setWaylandEmbeddedCompositingSocketFD()");
         return false;
     }
 

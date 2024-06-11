@@ -16,35 +16,18 @@
 #include "ramses/client/RenderBuffer.h"
 #include "ramses/client/TextureSamplerExternal.h"
 #include "TestEffectCreator.h"
+#include "FeatureLevelTestValues.h"
 #include "impl/EffectImpl.h"
 #include "impl/DataObjectImpl.h"
 #include "impl/TextureSamplerImpl.h"
 #include "impl/AppearanceImpl.h"
 #include "impl/AppearanceUtils.h"
+#include "impl/EffectInputImpl.h"
 
 namespace ramses::internal
 {
-    class AAppearanceTest : public ::testing::Test
+    class AAppearanceTest : public TestWithSharedEffectPerFeatureLevel
     {
-    public:
-
-        static void SetUpTestSuite()
-        {
-            sharedTestState = std::make_unique<TestEffectCreator>(false);
-        }
-
-        static void TearDownTestSuite()
-        {
-            sharedTestState = nullptr;
-        }
-
-        void SetUp() override
-        {
-            EXPECT_TRUE(sharedTestState != nullptr);
-            sharedTestState->recreateAppearence();
-            appearance = sharedTestState->appearance;
-        }
-
     protected:
         struct TextureInputInfo
         {
@@ -58,110 +41,117 @@ namespace ramses::internal
             TextureCube* textureCube = nullptr;
         };
 
-        static void GetTexture2DInputInfo(TextureInputInfo& info)
+        void GetTexture2DInputInfo(TextureInputInfo& info)
         {
-            info.input = sharedTestState->effect->findUniformInput("texture2dInput");
+            info.input = m_sharedTestState.effect->findUniformInput("texture2dInput");
             EXPECT_TRUE(info.input.has_value());
 
             const std::vector<MipLevelData> mipData{ { std::byte{1}, std::byte{2}, std::byte{3} } };
-            Texture2D* texture = sharedTestState->getScene().createTexture2D(ETextureFormat::RGB8, 1u, 1u, mipData, false);
+            Texture2D* texture = m_sharedTestState.getScene().createTexture2D(ETextureFormat::RGB8, 1u, 1u, mipData, false);
             EXPECT_TRUE(texture != nullptr);
             info.texture2D = texture;
 
-            ramses::TextureSampler* sampler = sharedTestState->getScene().createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Linear, *texture);
+            ramses::TextureSampler* sampler = m_sharedTestState.getScene().createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Linear, *texture);
             EXPECT_TRUE(sampler != nullptr);
             info.sampler = sampler;
         }
 
-        static void GetTexture2DMSInputInfo(TextureInputInfo& info)
+        void GetTexture2DMSInputInfo(TextureInputInfo& info)
         {
-            info.input = sharedTestState->effect->findUniformInput("texture2dMSInput");
+            info.input = m_sharedTestState.effect->findUniformInput("texture2dMSInput");
             EXPECT_TRUE(info.input.has_value());
 
-            ramses::RenderBuffer* renderBuffer = sharedTestState->getScene().createRenderBuffer(2u, 2u, ERenderBufferFormat::RGB8, ERenderBufferAccessMode::ReadWrite, 4u);
+            ramses::RenderBuffer* renderBuffer = m_sharedTestState.getScene().createRenderBuffer(2u, 2u, ERenderBufferFormat::RGB8, ERenderBufferAccessMode::ReadWrite, 4u);
             EXPECT_TRUE(renderBuffer != nullptr);
             info.renderBuffer = renderBuffer;
 
-            TextureSamplerMS* samplerMS = sharedTestState->getScene().createTextureSamplerMS(*renderBuffer, "renderBuffer");
+            TextureSamplerMS* samplerMS = m_sharedTestState.getScene().createTextureSamplerMS(*renderBuffer, "renderBuffer");
             EXPECT_TRUE(samplerMS != nullptr);
             info.samplerMS = samplerMS;
         }
 
-        static void GetTexture3DInputInfo(TextureInputInfo& info)
+        void GetTexture3DInputInfo(TextureInputInfo& info)
         {
-            info.input = sharedTestState->effect->findUniformInput("texture3dInput");
+            info.input = m_sharedTestState.effect->findUniformInput("texture3dInput");
             EXPECT_TRUE(info.input.has_value());
 
             const std::vector<MipLevelData> mipData{ { std::byte{1}, std::byte{2}, std::byte{3} } };
-            Texture3D* texture = sharedTestState->getScene().createTexture3D(ETextureFormat::RGB8, 1u, 1u, 1u, mipData, false);
+            Texture3D* texture = m_sharedTestState.getScene().createTexture3D(ETextureFormat::RGB8, 1u, 1u, 1u, mipData, false);
             EXPECT_TRUE(texture != nullptr);
             info.texture3D = texture;
 
-            ramses::TextureSampler* sampler = sharedTestState->getScene().createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Linear, *texture);
+            ramses::TextureSampler* sampler = m_sharedTestState.getScene().createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Linear, *texture);
             EXPECT_TRUE(sampler != nullptr);
             info.sampler = sampler;
         }
 
-        static void GetTextureCubeInputInfo(TextureInputInfo& info)
+        void GetTextureCubeInputInfo(TextureInputInfo& info)
         {
-            info.input = sharedTestState->effect->findUniformInput("textureCubeInput");
+            info.input = m_sharedTestState.effect->findUniformInput("textureCubeInput");
             EXPECT_TRUE(info.input.has_value());
 
             const std::vector<std::byte> data = { std::byte{1}, std::byte{2}, std::byte{3} };
             std::vector<CubeMipLevelData> mipData{ { data, data, data, data, data, data } };
-            TextureCube* texture = sharedTestState->getScene().createTextureCube(ETextureFormat::RGB8, 1u, mipData, false);
+            TextureCube* texture = m_sharedTestState.getScene().createTextureCube(ETextureFormat::RGB8, 1u, mipData, false);
             EXPECT_TRUE(texture != nullptr);
             info.textureCube = texture;
 
-            ramses::TextureSampler* sampler = sharedTestState->getScene().createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Linear, *texture);
+            ramses::TextureSampler* sampler = m_sharedTestState.getScene().createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Linear, *texture);
             EXPECT_TRUE(sampler != nullptr);
             info.sampler = sampler;
         }
 
-        static void GetTextureExternalInputInfo(TextureInputInfo& info)
+        void GetTextureExternalInputInfo(TextureInputInfo& info)
         {
-            info.input = sharedTestState->effect->findUniformInput("textureExternalInput");
+            info.input = m_sharedTestState.effect->findUniformInput("textureExternalInput");
             EXPECT_TRUE(info.input.has_value());
 
-            TextureSamplerExternal* sampler = sharedTestState->getScene().createTextureSamplerExternal(ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Linear);
+            TextureSamplerExternal* sampler = m_sharedTestState.getScene().createTextureSamplerExternal(ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Linear);
             EXPECT_TRUE(sampler != nullptr);
             info.samplerExternal = sampler;
         }
 
-        static std::unique_ptr<TestEffectCreator> sharedTestState;
-        Appearance*                               appearance{nullptr};
-    };
+        template<typename T>
+        static void BuildUniformBuffer(std::vector<std::byte>& buffer, const T& value) {
+            const auto* expectedRaw = reinterpret_cast<const std::byte*>(&value);
+            buffer.insert(buffer.end(), expectedRaw, expectedRaw + sizeof(T));
+        };
 
-    std::unique_ptr<TestEffectCreator> AAppearanceTest::sharedTestState;
-
-    class AAppearanceTestWithSemanticUniforms : public AAppearanceTest
-    {
-    public:
-        static void SetUpTestSuite()
+        static std::vector<std::byte> GetUniformBufferData(const ramses::Appearance& appearance, const ramses::UniformInput& uniformInput)
         {
-            sharedTestState = std::make_unique<TestEffectCreator>(true);
+            const auto& iscene = appearance.getScene().impl().getIScene();
+            const auto dataInstance = appearance.impl().getUniformDataInstance();
+            const auto dataField = uniformInput.impl().getDataFieldHandle();
+            const auto* uniformBufferData = iscene.getUniformBuffer(iscene.getDataUniformBuffer(dataInstance, dataField)).data.data();
+
+            const auto bufferDataSize = uniformInput.impl().getUniformBufferElementSize().getValue();
+            return { uniformBufferData, uniformBufferData +  bufferDataSize };
         }
+
+        Appearance& m_appearance{ m_sharedTestState.recreateAppearence() };
     };
 
-    TEST_F(AAppearanceTest, getsTheSameEffectUsedToCreateIt)
-    {
-        const Effect& effect = appearance->getEffect();
-        EXPECT_EQ(&effect, sharedTestState->effect);
+    RAMSES_INSTANTIATE_FEATURELEVEL_TEST_SUITE(AAppearanceTest);
 
-        const ramses::internal::DataLayout uniformLayout = sharedTestState->getInternalScene().getDataLayout(appearance->impl().getUniformDataLayout());
+    TEST_P(AAppearanceTest, getsTheSameEffectUsedToCreateIt)
+    {
+        const Effect& effect = m_appearance.getEffect();
+        EXPECT_EQ(&effect, m_sharedTestState.effect);
+
+        const ramses::internal::DataLayout uniformLayout = m_sharedTestState.getInternalScene().getDataLayout(m_appearance.impl().getUniformDataLayout());
         const ramses::internal::ResourceContentHash& effectHashFromUniformLayout = uniformLayout.getEffectHash();
-        EXPECT_EQ(appearance->getEffect().impl().getLowlevelResourceHash(), effectHashFromUniformLayout);
+        EXPECT_EQ(m_appearance.getEffect().impl().getLowlevelResourceHash(), effectHashFromUniformLayout);
     }
 
-    TEST_F(AAppearanceTest, setGetBlendingFactors)
+    TEST_P(AAppearanceTest, setGetBlendingFactors)
     {
-        bool stat = appearance->setBlendingFactors(EBlendFactor::One, EBlendFactor::SrcAlpha, EBlendFactor::OneMinusSrcAlpha, EBlendFactor::DstAlpha);
+        bool stat = m_appearance.setBlendingFactors(EBlendFactor::One, EBlendFactor::SrcAlpha, EBlendFactor::OneMinusSrcAlpha, EBlendFactor::DstAlpha);
         EXPECT_TRUE(stat);
         EBlendFactor srcColor = EBlendFactor::Zero;
         EBlendFactor destColor = EBlendFactor::Zero;
         EBlendFactor srcAlpha = EBlendFactor::Zero;
         EBlendFactor destAlpha = EBlendFactor::Zero;
-        stat = appearance->getBlendingFactors(srcColor, destColor, srcAlpha, destAlpha);
+        stat = m_appearance.getBlendingFactors(srcColor, destColor, srcAlpha, destAlpha);
         EXPECT_TRUE(stat);
         EXPECT_EQ(EBlendFactor::One, srcColor);
         EXPECT_EQ(EBlendFactor::SrcAlpha, destColor);
@@ -169,655 +159,774 @@ namespace ramses::internal
         EXPECT_EQ(EBlendFactor::DstAlpha, destAlpha);
     }
 
-    TEST_F(AAppearanceTest, setGetBlendingColor)
+    TEST_P(AAppearanceTest, setGetBlendingColor)
     {
         vec4f color{ std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max() };
         //default values
-        bool stat = appearance->getBlendingColor(color);
+        bool stat = m_appearance.getBlendingColor(color);
         EXPECT_TRUE(stat);
         EXPECT_EQ(color, vec4f(0.f, 0.f, 0.f, 0.f));
 
         const vec4f colorToSet{ 0.1f, 0.2f, 0.3f, 0.4f };
-        stat = appearance->setBlendingColor(colorToSet);
+        stat = m_appearance.setBlendingColor(colorToSet);
         EXPECT_TRUE(stat);
 
-        stat = appearance->getBlendingColor(color);
+        stat = m_appearance.getBlendingColor(color);
         EXPECT_TRUE(stat);
         EXPECT_EQ(colorToSet, color);
     }
 
-    TEST_F(AAppearanceTest, setGetDepthWrite)
+    TEST_P(AAppearanceTest, setGetDepthWrite)
     {
         EDepthWrite depthWriteMode = EDepthWrite::Disabled;
-        EXPECT_TRUE(appearance->setDepthWrite(EDepthWrite::Enabled));
-        EXPECT_TRUE(appearance->getDepthWriteMode(depthWriteMode));
+        EXPECT_TRUE(m_appearance.setDepthWrite(EDepthWrite::Enabled));
+        EXPECT_TRUE(m_appearance.getDepthWriteMode(depthWriteMode));
         EXPECT_EQ(EDepthWrite::Enabled, depthWriteMode);
 
-        EXPECT_TRUE(appearance->setDepthWrite(EDepthWrite::Disabled));
-        EXPECT_TRUE(appearance->getDepthWriteMode(depthWriteMode));
+        EXPECT_TRUE(m_appearance.setDepthWrite(EDepthWrite::Disabled));
+        EXPECT_TRUE(m_appearance.getDepthWriteMode(depthWriteMode));
         EXPECT_EQ(EDepthWrite::Disabled, depthWriteMode);
 
-        EXPECT_TRUE(appearance->setDepthWrite(EDepthWrite::Enabled));
-        EXPECT_TRUE(appearance->getDepthWriteMode(depthWriteMode));
+        EXPECT_TRUE(m_appearance.setDepthWrite(EDepthWrite::Enabled));
+        EXPECT_TRUE(m_appearance.getDepthWriteMode(depthWriteMode));
         EXPECT_EQ(EDepthWrite::Enabled, depthWriteMode);
     }
 
-    TEST_F(AAppearanceTest, setGetDepthFunction)
+    TEST_P(AAppearanceTest, setGetDepthFunction)
     {
         EDepthFunc depthFunc = EDepthFunc::Disabled;
-        EXPECT_TRUE(appearance->getDepthFunction(depthFunc));
+        EXPECT_TRUE(m_appearance.getDepthFunction(depthFunc));
         EXPECT_EQ(EDepthFunc::LessEqual, depthFunc);
 
-        EXPECT_TRUE(appearance->setDepthFunction(EDepthFunc::GreaterEqual));
-        EXPECT_TRUE(appearance->getDepthFunction(depthFunc));
+        EXPECT_TRUE(m_appearance.setDepthFunction(EDepthFunc::GreaterEqual));
+        EXPECT_TRUE(m_appearance.getDepthFunction(depthFunc));
         EXPECT_EQ(EDepthFunc::GreaterEqual, depthFunc);
     }
 
-    TEST_F(AAppearanceTest, setGetScissorTest)
+    TEST_P(AAppearanceTest, setGetScissorTest)
     {
         EScissorTest mode = EScissorTest::Disabled;
-        EXPECT_TRUE(appearance->setScissorTest(EScissorTest::Enabled, 1, 2, 3u, 4u));
-        EXPECT_TRUE(appearance->getScissorTestState(mode));
+        EXPECT_TRUE(m_appearance.setScissorTest(EScissorTest::Enabled, 1, 2, 3u, 4u));
+        EXPECT_TRUE(m_appearance.getScissorTestState(mode));
         EXPECT_EQ(EScissorTest::Enabled, mode);
 
         int16_t x = 0;
         int16_t y = 0;
         uint16_t width = 0u;
         uint16_t height = 0;
-        EXPECT_TRUE(appearance->getScissorRegion(x, y, width, height));
+        EXPECT_TRUE(m_appearance.getScissorRegion(x, y, width, height));
         EXPECT_EQ(1, x);
         EXPECT_EQ(2, y);
         EXPECT_EQ(3u, width);
         EXPECT_EQ(4u, height);
     }
 
-    TEST_F(AAppearanceTest, setGetStencilFunc)
+    TEST_P(AAppearanceTest, setGetStencilFunc)
     {
-        bool stat = appearance->setStencilFunction(EStencilFunc::Equal, 2u, 0xef);
+        bool stat = m_appearance.setStencilFunction(EStencilFunc::Equal, 2u, 0xef);
         EXPECT_TRUE(stat);
         EStencilFunc func = EStencilFunc::Disabled;
         uint8_t ref = 0;
         uint8_t mask = 0;
-        stat = appearance->getStencilFunction(func, ref, mask);
+        stat = m_appearance.getStencilFunction(func, ref, mask);
         EXPECT_TRUE(stat);
         EXPECT_EQ(EStencilFunc::Equal, func);
         EXPECT_EQ(2u, ref);
         EXPECT_EQ(0xef, mask);
     }
 
-    TEST_F(AAppearanceTest, setGetStencilOperation)
+    TEST_P(AAppearanceTest, setGetStencilOperation)
     {
-        bool stat = appearance->setStencilOperation(EStencilOperation::Decrement, EStencilOperation::Increment, EStencilOperation::DecrementWrap);
+        bool stat = m_appearance.setStencilOperation(EStencilOperation::Decrement, EStencilOperation::Increment, EStencilOperation::DecrementWrap);
         EXPECT_TRUE(stat);
         EStencilOperation sfail = EStencilOperation::Zero;
         EStencilOperation dpfail = EStencilOperation::Zero;
         EStencilOperation dppass = EStencilOperation::Zero;
-        stat = appearance->getStencilOperation(sfail, dpfail, dppass);
+        stat = m_appearance.getStencilOperation(sfail, dpfail, dppass);
         EXPECT_TRUE(stat);
         EXPECT_EQ(EStencilOperation::Decrement, sfail);
         EXPECT_EQ(EStencilOperation::Increment, dpfail);
         EXPECT_EQ(EStencilOperation::DecrementWrap, dppass);
     }
 
-    TEST_F(AAppearanceTest, setGetBlendOperations)
+    TEST_P(AAppearanceTest, setGetBlendOperations)
     {
-        EXPECT_TRUE(appearance->setBlendingOperations(EBlendOperation::Subtract, EBlendOperation::Max));
+        EXPECT_TRUE(m_appearance.setBlendingOperations(EBlendOperation::Subtract, EBlendOperation::Max));
         EBlendOperation opColor = EBlendOperation::Disabled;
         EBlendOperation opAlpha = EBlendOperation::Disabled;
-        EXPECT_TRUE(appearance->getBlendingOperations(opColor, opAlpha));
+        EXPECT_TRUE(m_appearance.getBlendingOperations(opColor, opAlpha));
         EXPECT_EQ(EBlendOperation::Subtract, opColor);
         EXPECT_EQ(EBlendOperation::Max, opAlpha);
     }
 
-    TEST_F(AAppearanceTest, setGetCullMode)
+    TEST_P(AAppearanceTest, setGetCullMode)
     {
         ECullMode mode = ECullMode::Disabled;
-        EXPECT_TRUE(appearance->setCullingMode(ECullMode::FrontFacing));
-        EXPECT_TRUE(appearance->getCullingMode(mode));
+        EXPECT_TRUE(m_appearance.setCullingMode(ECullMode::FrontFacing));
+        EXPECT_TRUE(m_appearance.getCullingMode(mode));
         EXPECT_EQ(ECullMode::FrontFacing, mode);
-        EXPECT_TRUE(appearance->setCullingMode(ECullMode::Disabled));
-        EXPECT_TRUE(appearance->getCullingMode(mode));
+        EXPECT_TRUE(m_appearance.setCullingMode(ECullMode::Disabled));
+        EXPECT_TRUE(m_appearance.getCullingMode(mode));
         EXPECT_EQ(ECullMode::Disabled, mode);
     }
 
-    TEST_F(AAppearanceTest, hasDrawModeTrianglesByDefault)
+    TEST_P(AAppearanceTest, hasDrawModeTrianglesByDefault)
     {
         EDrawMode mode;
-        EXPECT_TRUE(appearance->getDrawMode(mode));
+        EXPECT_TRUE(m_appearance.getDrawMode(mode));
         EXPECT_EQ(EDrawMode::Triangles, mode);
     }
 
-    TEST_F(AAppearanceTest, setGetDrawMode)
+    TEST_P(AAppearanceTest, setGetDrawMode)
     {
         EDrawMode mode = EDrawMode::Lines;
-        EXPECT_TRUE(appearance->setDrawMode(EDrawMode::Points));
-        EXPECT_TRUE(appearance->getDrawMode(mode));
+        EXPECT_TRUE(m_appearance.setDrawMode(EDrawMode::Points));
+        EXPECT_TRUE(m_appearance.getDrawMode(mode));
         EXPECT_EQ(EDrawMode::Points, mode);
     }
 
-    TEST_F(AAppearanceTest, setGetColorWriteMask)
+    TEST_P(AAppearanceTest, setGetColorWriteMask)
     {
         bool writeR = false;
         bool writeG = false;
         bool writeB = false;
         bool writeA = false;
-        EXPECT_TRUE(appearance->setColorWriteMask(true, false, true, false));
-        EXPECT_TRUE(appearance->getColorWriteMask(writeR, writeG, writeB, writeA));
+        EXPECT_TRUE(m_appearance.setColorWriteMask(true, false, true, false));
+        EXPECT_TRUE(m_appearance.getColorWriteMask(writeR, writeG, writeB, writeA));
         EXPECT_TRUE(writeR);
         EXPECT_FALSE(writeG);
         EXPECT_TRUE(writeB);
         EXPECT_FALSE(writeA);
-        EXPECT_TRUE(appearance->setColorWriteMask(false, true, false, true));
-        EXPECT_TRUE(appearance->getColorWriteMask(writeR, writeG, writeB, writeA));
+        EXPECT_TRUE(m_appearance.setColorWriteMask(false, true, false, true));
+        EXPECT_TRUE(m_appearance.getColorWriteMask(writeR, writeG, writeB, writeA));
         EXPECT_FALSE(writeR);
         EXPECT_TRUE(writeG);
         EXPECT_FALSE(writeB);
         EXPECT_TRUE(writeA);
     }
 
-    TEST_F(AAppearanceTest, reportsErrorWhenGetSetMismatchingInputTypeScalar)
+    TEST_P(AAppearanceTest, reportsErrorWhenGetSetMismatchingInputTypeScalar)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("integerInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("integerInput");
         ASSERT_TRUE(optUniform.has_value());
 
         const float value = 42;
         float getValue = 0;
 
-        EXPECT_FALSE(appearance->setInputValue(*optUniform, value));
-        EXPECT_FALSE(appearance->getInputValue(*optUniform, getValue));
+        EXPECT_FALSE(m_appearance.setInputValue(*optUniform, value));
+        EXPECT_FALSE(m_appearance.getInputValue(*optUniform, getValue));
     }
 
-    TEST_F(AAppearanceTest, reportsErrorWhenGetSetMismatchingInputTypeArray)
+    TEST_P(AAppearanceTest, reportsErrorWhenGetSetMismatchingInputTypeArray)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("integerInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("integerInput");
         ASSERT_TRUE(optUniform.has_value());
 
         const float values[] = { 42, 43, 44, 45, 46, 47 };
         float getValues[6];
 
-        EXPECT_FALSE(appearance->setInputValue(*optUniform, 6u, values));
-        EXPECT_FALSE(appearance->getInputValue(*optUniform, 6u, getValues));
+        EXPECT_FALSE(m_appearance.setInputValue(*optUniform, 6u, values));
+        EXPECT_FALSE(m_appearance.getInputValue(*optUniform, 6u, getValues));
     }
 
-    TEST_F(AAppearanceTest, reportsErrorWhenGetSetMismatchingInputTypeTexture)
+    TEST_P(AAppearanceTest, reportsErrorWhenGetSetMismatchingInputTypeTexture)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("integerInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("integerInput");
         ASSERT_TRUE(optUniform.has_value());
 
         const std::vector<MipLevelData> mipData{ { std::byte{1}, std::byte{2}, std::byte{3} } };
 
-        Texture2D* texture = sharedTestState->getScene().createTexture2D(ETextureFormat::RGB8, 1u, 1u, mipData, false);
+        Texture2D* texture = m_sharedTestState.getScene().createTexture2D(ETextureFormat::RGB8, 1u, 1u, mipData, false);
         ASSERT_TRUE(texture != nullptr);
-        ramses::TextureSampler* textureSampler = sharedTestState->getScene().createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Linear, *texture);
+        ramses::TextureSampler* textureSampler = m_sharedTestState.getScene().createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Linear, *texture);
         ASSERT_TRUE(textureSampler != nullptr);
 
-        EXPECT_FALSE(appearance->setInputTexture(*optUniform, *textureSampler));
+        EXPECT_FALSE(m_appearance.setInputTexture(*optUniform, *textureSampler));
 
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*textureSampler));
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*texture));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*textureSampler));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*texture));
     }
 
-    TEST_F(AAppearanceTest, reportsErrorWhenSetInputTextureFromADifferentScene)
+    TEST_P(AAppearanceTest, reportsErrorWhenSetInputTextureFromADifferentScene)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("texture2dInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("texture2dInput");
         ASSERT_TRUE(optUniform.has_value());
 
         const std::vector<MipLevelData> mipData{ { std::byte{1}, std::byte{2}, std::byte{3} } };
 
-        ramses::Scene& anotherScene = *sharedTestState->getClient().createScene(sceneId_t(1u));
+        ramses::Scene& anotherScene = *m_sharedTestState.getClient().createScene(sceneId_t(1u));
         Texture2D* texture = anotherScene.createTexture2D(ETextureFormat::RGB8, 1u, 1u, mipData, false);
         ASSERT_TRUE(texture != nullptr);
         ramses::TextureSampler* textureSampler = anotherScene.createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Linear, *texture);
         ASSERT_TRUE(textureSampler != nullptr);
 
-        EXPECT_FALSE(appearance->setInputTexture(*optUniform, *textureSampler));
+        EXPECT_FALSE(m_appearance.setInputTexture(*optUniform, *textureSampler));
 
         EXPECT_TRUE(anotherScene.destroy(*texture));
-        EXPECT_TRUE(sharedTestState->getClient().destroy(anotherScene));
+        EXPECT_TRUE(m_sharedTestState.getClient().destroy(anotherScene));
     }
 
-    TEST_F(AAppearanceTest, getsSamplerSetToUniformInput)
+    TEST_P(AAppearanceTest, getsSamplerSetToUniformInput)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("texture2dInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("texture2dInput");
         ASSERT_TRUE(optUniform.has_value());
 
         const std::vector<MipLevelData> mipData{ { std::byte{1}, std::byte{2}, std::byte{3} } };
-        Texture2D* texture = sharedTestState->getScene().createTexture2D(ETextureFormat::RGB8, 1u, 1u, mipData, false);
+        Texture2D* texture = m_sharedTestState.getScene().createTexture2D(ETextureFormat::RGB8, 1u, 1u, mipData, false);
         ASSERT_TRUE(texture != nullptr);
-        ramses::TextureSampler* textureSampler = sharedTestState->getScene().createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Linear, *texture);
+        ramses::TextureSampler* textureSampler = m_sharedTestState.getScene().createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Linear, *texture);
         ASSERT_TRUE(textureSampler != nullptr);
 
-        EXPECT_TRUE(appearance->setInputTexture(*optUniform, *textureSampler));
+        EXPECT_TRUE(m_appearance.setInputTexture(*optUniform, *textureSampler));
 
         const ramses::TextureSampler* actualSampler = nullptr;
-        EXPECT_TRUE(appearance->getInputTexture(*optUniform, actualSampler));
+        EXPECT_TRUE(m_appearance.getInputTexture(*optUniform, actualSampler));
         EXPECT_EQ(textureSampler, actualSampler);
 
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*textureSampler));
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*texture));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*textureSampler));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*texture));
     }
 
-    TEST_F(AAppearanceTest, getsNullSamplerIfNoneSetToUniformInput)
+    TEST_P(AAppearanceTest, getsNullSamplerIfNoneSetToUniformInput)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("texture2dInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("texture2dInput");
         ASSERT_TRUE(optUniform.has_value());
 
         const ramses::TextureSampler* actualSampler = nullptr;
-        EXPECT_TRUE(appearance->getInputTexture(*optUniform, actualSampler));
+        EXPECT_TRUE(m_appearance.getInputTexture(*optUniform, actualSampler));
         EXPECT_EQ(nullptr, actualSampler);
     }
 
-    TEST_F(AAppearanceTest, getsNullSamplerMSIfNoneSetToUniformInput)
+    TEST_P(AAppearanceTest, getsNullSamplerMSIfNoneSetToUniformInput)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("texture2dMSInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("texture2dMSInput");
         ASSERT_TRUE(optUniform.has_value());
 
         const TextureSamplerMS* actualSampler = nullptr;
-        EXPECT_TRUE(appearance->getInputTextureMS(*optUniform, actualSampler));
+        EXPECT_TRUE(m_appearance.getInputTextureMS(*optUniform, actualSampler));
         EXPECT_EQ(nullptr, actualSampler);
     }
 
-    TEST_F(AAppearanceTest, getsNullSamplerExternalIfNoneSetToUniformInput)
+    TEST_P(AAppearanceTest, getsNullSamplerExternalIfNoneSetToUniformInput)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("textureExternalInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("textureExternalInput");
         ASSERT_TRUE(optUniform.has_value());
 
         const TextureSamplerExternal* actualSampler = nullptr;
-        EXPECT_TRUE(appearance->getInputTextureExternal(*optUniform, actualSampler));
+        EXPECT_TRUE(m_appearance.getInputTextureExternal(*optUniform, actualSampler));
         EXPECT_EQ(nullptr, actualSampler);
     }
 
-    TEST_F(AAppearanceTest, failsToGetSamplerSetToUniformIfInputHasWrongType)
+    TEST_P(AAppearanceTest, failsToGetSamplerSetToUniformIfInputHasWrongType)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("integerInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("integerInput");
         ASSERT_TRUE(optUniform.has_value());
 
         const ramses::TextureSampler* actualSampler = nullptr;
-        EXPECT_FALSE(appearance->getInputTexture(*optUniform, actualSampler));
+        EXPECT_FALSE(m_appearance.getInputTexture(*optUniform, actualSampler));
         EXPECT_EQ(nullptr, actualSampler);
     }
 
-    TEST_F(AAppearanceTest, failsToGetSamplerMSIfInputHasWrongType)
+    TEST_P(AAppearanceTest, failsToGetSamplerMSIfInputHasWrongType)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("texture2dInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("texture2dInput");
         ASSERT_TRUE(optUniform.has_value());
 
         const TextureSamplerMS* actualSampler = nullptr;
-        EXPECT_FALSE(appearance->getInputTextureMS(*optUniform, actualSampler));
+        EXPECT_FALSE(m_appearance.getInputTextureMS(*optUniform, actualSampler));
         EXPECT_EQ(nullptr, actualSampler);
     }
 
-    TEST_F(AAppearanceTest, failsToGetSamplerExternalIfInputHasWrongType)
+    TEST_P(AAppearanceTest, failsToGetSamplerExternalIfInputHasWrongType)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("texture2dInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("texture2dInput");
         ASSERT_TRUE(optUniform.has_value());
 
         const TextureSamplerExternal* actualSampler = nullptr;
-        EXPECT_FALSE(appearance->getInputTextureExternal(*optUniform, actualSampler));
+        EXPECT_FALSE(m_appearance.getInputTextureExternal(*optUniform, actualSampler));
         EXPECT_EQ(nullptr, actualSampler);
+    }
+
+    /// Uniform buffer
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeUniformBuffer)
+    {
+        if (GetParam() < EFeatureLevel_02)
+            GTEST_SKIP();
+
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("uniformBlock");
+        ASSERT_TRUE(optUniform.has_value());
+
+        const auto optUniformMat44 = m_sharedTestState.effect->findUniformInput("uniformBlock.ubMat44");
+        ASSERT_TRUE(optUniformMat44.has_value());
+
+        const auto optUniformFloatArray = m_sharedTestState.effect->findUniformInput("uniformBlock.ubFloat");
+        ASSERT_TRUE(optUniformFloatArray.has_value());
+
+        const auto optUniformMat33 = m_sharedTestState.effect->findUniformInput("uniformBlock.ubMat33");
+        ASSERT_TRUE(optUniformMat33.has_value());
+
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniformMat44, ramses::matrix44f{ 123.f }));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniformFloatArray, 3u, std::array{ 1.f, 2.f, 3.f }.data()));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniformMat33, ramses::matrix33f{ 456.f }));
+
+        ramses::matrix44f ubMat44Out;
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniformMat44, ubMat44Out));
+        EXPECT_EQ(ramses::matrix44f{ 123.f }, ubMat44Out);
+
+        std::array<float, 3u> ubFloatArrayOut{};
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniformFloatArray, 3u, ubFloatArrayOut.data()));
+        EXPECT_THAT(ubFloatArrayOut, ::testing::ElementsAre( 1.f, 2.f, 3.f));
+
+        ramses::matrix33f ubMat33Out;
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniformMat33, ubMat33Out));
+        EXPECT_EQ(ramses::matrix33f{ 456.f }, ubMat33Out);
+
+        std::vector<std::byte> expectedBufferValues;
+        BuildUniformBuffer(expectedBufferValues, ramses::matrix44f{ 123.f });
+        //float[3] array is represented in memory as 3x vec4f
+        BuildUniformBuffer(expectedBufferValues, ramses::vec4f{ 1.0 });
+        BuildUniformBuffer(expectedBufferValues, ramses::vec4f{ 2.0 });
+        BuildUniformBuffer(expectedBufferValues, ramses::vec4f{ 3.0 });
+        //matrix33 is represented as as 3x vec4f
+        BuildUniformBuffer(expectedBufferValues, ramses::vec4f{ 456.f, 0.f   , 0.f   , 0.f });
+        BuildUniformBuffer(expectedBufferValues, ramses::vec4f{ 0.f  , 456.f , 0.f   , 0.f });
+        BuildUniformBuffer(expectedBufferValues, ramses::vec4f{ 0.f  , 0.f   , 456.f , 0.f });
+
+        const auto actualUniformBufferValues(GetUniformBufferData(m_appearance, *optUniform));
+        EXPECT_EQ(actualUniformBufferValues, expectedBufferValues);
+    }
+
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeUniformBuffer_AnonymousBuffer)
+    {
+        if (GetParam() < EFeatureLevel_02)
+            GTEST_SKIP();
+
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("anon@ubo_binding=2");
+        ASSERT_TRUE(optUniform.has_value());
+
+        const auto optUniformBool = m_sharedTestState.effect->findUniformInput("ubBool");
+        ASSERT_TRUE(optUniformBool.has_value());
+
+        const auto optUniformMat33 = m_sharedTestState.effect->findUniformInput("ubMat33");
+        ASSERT_TRUE(optUniformMat33.has_value());
+
+        const auto optUniformMat22 = m_sharedTestState.effect->findUniformInput("ubMat22");
+        ASSERT_TRUE(optUniformMat22.has_value());
+
+        const auto optUniformIVec4 = m_sharedTestState.effect->findUniformInput("ubIVec4");
+        ASSERT_TRUE(optUniformIVec4.has_value());
+
+        const auto optUniformVec2 = m_sharedTestState.effect->findUniformInput("ubVec2");
+        ASSERT_TRUE(optUniformVec2.has_value());
+
+        const auto optUniformInt = m_sharedTestState.effect->findUniformInput("ubInt");
+        ASSERT_TRUE(optUniformInt.has_value());
+
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniformBool, true));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniformMat33, ramses::matrix33f{ 12.f }));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniformMat22, ramses::matrix22f{ 34.f }));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniformIVec4, ramses::vec4i{ 5, 6, 7, 8 }));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniformVec2, ramses::vec2f{ 9.f, 10.f }));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniformInt, 11));
+
+        bool ubBoolOut{};
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniformBool, ubBoolOut));
+        EXPECT_TRUE(ubBoolOut);
+
+        ramses::matrix33f ubMat33Out;
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniformMat33, ubMat33Out));
+        EXPECT_EQ(ramses::matrix33f{ 12.f }, ubMat33Out);
+
+        ramses::matrix22f ubMat22Out;
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniformMat22, ubMat22Out));
+        EXPECT_EQ(ramses::matrix22f{ 34.f }, ubMat22Out);
+
+        ramses::vec4i ubIVec4Out;
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniformIVec4, ubIVec4Out));
+        EXPECT_EQ(ramses::vec4i(5, 6, 7, 8), ubIVec4Out);
+
+        ramses::vec2f ubVec2Out;
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniformVec2, ubVec2Out));
+        EXPECT_EQ(ramses::vec2f(9.f, 10.f), ubVec2Out);
+
+        int32_t ubIntOut = 0;
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniformInt, ubIntOut));
+        EXPECT_EQ(11, ubIntOut);
+
+        std::vector<std::byte> expectedBufferValues;
+        BuildUniformBuffer(expectedBufferValues, bool(true));
+        BuildUniformBuffer(expectedBufferValues, std::array<std::byte, 15>{}); // padding after bool to reach vec4
+        BuildUniformBuffer(expectedBufferValues, glm::mat3x4{ 12.f });
+        BuildUniformBuffer(expectedBufferValues, glm::mat2x4{ 34.f });
+        BuildUniformBuffer(expectedBufferValues, glm::ivec4{ 5, 6, 7, 8 });
+        BuildUniformBuffer(expectedBufferValues, glm::vec2{ 9.f, 10.f });
+        BuildUniformBuffer(expectedBufferValues, int32_t(11));
+
+        const auto actualUniformBufferValues(GetUniformBufferData(m_appearance, *optUniform));
+        EXPECT_EQ(actualUniformBufferValues, expectedBufferValues);
     }
 
     /// Bool
-    TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeBool)
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeBool)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("boolInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("boolInput");
         ASSERT_TRUE(optUniform.has_value());
 
         bool        value   = true;
         bool&       valueR  = value;
         const bool& valueCR = value;
         auto        valueM  = value;
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, value));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, valueR));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, valueCR));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, std::move(valueM)));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, value));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, valueR));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, valueCR));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, std::move(valueM)));
 
         bool getValue = false;
-        EXPECT_TRUE(appearance->getInputValue(*optUniform, getValue));
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniform, getValue));
         EXPECT_EQ(value, getValue);
     }
 
-    TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeBoolArray)
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeBoolArray)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("boolInputArray");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("boolInputArray");
         ASSERT_TRUE(optUniform.has_value());
 
         bool values[]     = {true, false, true};
         bool getValues[3] = {false};
 
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, 3u, values));
-        EXPECT_TRUE(appearance->getInputValue(*optUniform, 3u, getValues));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, 3u, values));
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniform, 3u, getValues));
         EXPECT_EQ(values, absl::MakeSpan(getValues));
 
-        EXPECT_FALSE(appearance->setInputValue(*optUniform, 0u, values));
-        EXPECT_FALSE(appearance->setInputValue(*optUniform, 11u, values));
-        EXPECT_FALSE(appearance->getInputValue(*optUniform, 0u, values));
-        EXPECT_FALSE(appearance->getInputValue(*optUniform, 11u, values));
+        EXPECT_FALSE(m_appearance.setInputValue(*optUniform, 0u, values));
+        EXPECT_FALSE(m_appearance.setInputValue(*optUniform, 11u, values));
+        EXPECT_FALSE(m_appearance.getInputValue(*optUniform, 0u, values));
+        EXPECT_FALSE(m_appearance.getInputValue(*optUniform, 11u, values));
     }
 
     /// Int32
-    TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeInt32)
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeInt32)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("integerInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("integerInput");
         ASSERT_TRUE(optUniform.has_value());
 
         int32_t value = 42;
         int32_t& valueR = value;
         const int32_t& valueCR = value;
         auto valueM = value;
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, value));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, valueR));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, valueCR));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, std::move(valueM)));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, value));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, valueR));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, valueCR));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, std::move(valueM)));
 
         int32_t getValue = 0;
-        EXPECT_TRUE(appearance->getInputValue(*optUniform, getValue));
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniform, getValue));
         EXPECT_EQ(value, getValue);
     }
 
-    TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeInt32Array)
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeInt32Array)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("integerInputArray");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("integerInputArray");
         ASSERT_TRUE(optUniform.has_value());
 
         const int32_t value = 42;
         int32_t values[] = { value, value * 2, value * 3 };
         int32_t getValues[3] = { 0 };
 
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, 3u, values));
-        EXPECT_TRUE(appearance->getInputValue(*optUniform, 3u, getValues));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, 3u, values));
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniform, 3u, getValues));
         EXPECT_EQ(values, absl::MakeSpan(getValues));
 
-        EXPECT_FALSE(appearance->setInputValue(*optUniform, 0u, values));
-        EXPECT_FALSE(appearance->setInputValue(*optUniform, 11u, values));
-        EXPECT_FALSE(appearance->getInputValue(*optUniform, 0u, values));
-        EXPECT_FALSE(appearance->getInputValue(*optUniform, 11u, values));
+        EXPECT_FALSE(m_appearance.setInputValue(*optUniform, 0u, values));
+        EXPECT_FALSE(m_appearance.setInputValue(*optUniform, 11u, values));
+        EXPECT_FALSE(m_appearance.getInputValue(*optUniform, 0u, values));
+        EXPECT_FALSE(m_appearance.getInputValue(*optUniform, 11u, values));
     }
 
     /// Float
-    TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeFloat)
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeFloat)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("floatInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("floatInput");
         ASSERT_TRUE(optUniform.has_value());
 
         float value = 42;
         float& valueR = value;
         const float& valueCR = value;
         auto valueM = value;
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, value));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, valueR));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, valueCR));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, std::move(valueM)));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, value));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, valueR));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, valueCR));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, std::move(valueM)));
 
         float getValue = 0;
-        EXPECT_TRUE(appearance->getInputValue(*optUniform, getValue));
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniform, getValue));
         EXPECT_EQ(value, getValue);
     }
 
-    TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeFloatArray)
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeFloatArray)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("floatInputArray");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("floatInputArray");
         ASSERT_TRUE(optUniform.has_value());
 
         const float value = 42;
         const float values[] = { value, value * 2, value * 3 };
         float getValues[3] = { 0 };
 
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, 3u, values));
-        EXPECT_TRUE(appearance->getInputValue(*optUniform, 3u, getValues));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, 3u, values));
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniform, 3u, getValues));
         EXPECT_EQ(values, absl::MakeSpan(getValues));
 
-        EXPECT_FALSE(appearance->setInputValue(*optUniform, 0u, values));
-        EXPECT_FALSE(appearance->setInputValue(*optUniform, 11u, values));
-        EXPECT_FALSE(appearance->getInputValue(*optUniform, 0u, getValues));
-        EXPECT_FALSE(appearance->getInputValue(*optUniform, 11u, getValues));
+        EXPECT_FALSE(m_appearance.setInputValue(*optUniform, 0u, values));
+        EXPECT_FALSE(m_appearance.setInputValue(*optUniform, 11u, values));
+        EXPECT_FALSE(m_appearance.getInputValue(*optUniform, 0u, getValues));
+        EXPECT_FALSE(m_appearance.getInputValue(*optUniform, 11u, getValues));
     }
 
-    TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeVector2i)
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeVector2i)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("vec2iInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("vec2iInput");
         ASSERT_TRUE(optUniform.has_value());
 
         vec2i value{ 42, 24 };
         vec2i& valueR = value;
         const vec2i& valueCR = value;
         auto valueM = value;
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, value));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, valueR));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, valueCR));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, std::move(valueM)));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, value));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, valueR));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, valueCR));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, std::move(valueM)));
 
         vec2i getValue;
-        EXPECT_TRUE(appearance->getInputValue(*optUniform, getValue));
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniform, getValue));
         EXPECT_EQ(value, getValue);
     }
 
-    TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeVector2iArray)
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeVector2iArray)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("vec2iInputArray");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("vec2iInputArray");
         ASSERT_TRUE(optUniform.has_value());
 
         const std::vector<vec2i> values = { vec2i{42, 43}, vec2i{44, 45}, vec2i{46, 47} };
         std::vector<vec2i> getValues(values.size());
 
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, 3u, values.data()));
-        EXPECT_TRUE(appearance->getInputValue(*optUniform, 3u, getValues.data()));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, 3u, values.data()));
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniform, 3u, getValues.data()));
         EXPECT_EQ(values, getValues);
 
-        EXPECT_FALSE(appearance->setInputValue(*optUniform, 0u, values.data()));
-        EXPECT_FALSE(appearance->setInputValue(*optUniform, 11u, values.data()));
-        EXPECT_FALSE(appearance->getInputValue(*optUniform, 0u, getValues.data()));
-        EXPECT_FALSE(appearance->getInputValue(*optUniform, 11u, getValues.data()));
+        EXPECT_FALSE(m_appearance.setInputValue(*optUniform, 0u, values.data()));
+        EXPECT_FALSE(m_appearance.setInputValue(*optUniform, 11u, values.data()));
+        EXPECT_FALSE(m_appearance.getInputValue(*optUniform, 0u, getValues.data()));
+        EXPECT_FALSE(m_appearance.getInputValue(*optUniform, 11u, getValues.data()));
     }
 
-    TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeVector3i)
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeVector3i)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("vec3iInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("vec3iInput");
         ASSERT_TRUE(optUniform.has_value());
 
         vec3i value{ 42, 24, 4422 };
         vec3i& valueR = value;
         const vec3i& valueCR = value;
         auto valueM = value;
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, value));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, valueR));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, valueCR));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, std::move(valueM)));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, value));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, valueR));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, valueCR));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, std::move(valueM)));
 
         vec3i getValue;
-        EXPECT_TRUE(appearance->getInputValue(*optUniform, getValue));
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniform, getValue));
         EXPECT_EQ(value, getValue);
     }
 
-    TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeVector3iArray)
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeVector3iArray)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("vec3iInputArray");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("vec3iInputArray");
         ASSERT_TRUE(optUniform.has_value());
 
         const std::vector<vec3i> values = { vec3i{42, 43, 444}, vec3i{44, 45, 555}, vec3i{46, 47, 666} };
         std::vector<vec3i> getValues(values.size());
 
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, 3u, values.data()));
-        EXPECT_TRUE(appearance->getInputValue(*optUniform, 3u, getValues.data()));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, 3u, values.data()));
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniform, 3u, getValues.data()));
         EXPECT_EQ(values, getValues);
 
-        EXPECT_FALSE(appearance->setInputValue(*optUniform, 0u, values.data()));
-        EXPECT_FALSE(appearance->setInputValue(*optUniform, 11u, values.data()));
-        EXPECT_FALSE(appearance->getInputValue(*optUniform, 0u, getValues.data()));
-        EXPECT_FALSE(appearance->getInputValue(*optUniform, 11u, getValues.data()));
+        EXPECT_FALSE(m_appearance.setInputValue(*optUniform, 0u, values.data()));
+        EXPECT_FALSE(m_appearance.setInputValue(*optUniform, 11u, values.data()));
+        EXPECT_FALSE(m_appearance.getInputValue(*optUniform, 0u, getValues.data()));
+        EXPECT_FALSE(m_appearance.getInputValue(*optUniform, 11u, getValues.data()));
     }
 
-    TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeVector4i)
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeVector4i)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("vec4iInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("vec4iInput");
         ASSERT_TRUE(optUniform.has_value());
 
         vec4i value{ 42, 24, 44, 22 };
         vec4i& valueR = value;
         const vec4i& valueCR = value;
         auto valueM = value;
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, value));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, valueR));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, valueCR));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, std::move(valueM)));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, value));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, valueR));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, valueCR));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, std::move(valueM)));
 
         vec4i getValue;
-        EXPECT_TRUE(appearance->getInputValue(*optUniform, getValue));
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniform, getValue));
         EXPECT_EQ(value, getValue);
     }
 
-    TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeVector4iArray)
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeVector4iArray)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("vec4iInputArray");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("vec4iInputArray");
         ASSERT_TRUE(optUniform.has_value());
 
         const std::vector<vec4i> values = { vec4i{42, 43, 444, 555}, vec4i{44, 45, 666, 777}, vec4i{46, 47, 888, 999} };
         std::vector<vec4i> getValues(values.size());
 
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, 3u, values.data()));
-        EXPECT_TRUE(appearance->getInputValue(*optUniform, 3u, getValues.data()));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, 3u, values.data()));
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniform, 3u, getValues.data()));
         EXPECT_EQ(values, getValues);
 
-        EXPECT_FALSE(appearance->setInputValue(*optUniform, 0u, values.data()));
-        EXPECT_FALSE(appearance->setInputValue(*optUniform, 11u, values.data()));
-        EXPECT_FALSE(appearance->getInputValue(*optUniform, 0u, getValues.data()));
-        EXPECT_FALSE(appearance->getInputValue(*optUniform, 11u, getValues.data()));
+        EXPECT_FALSE(m_appearance.setInputValue(*optUniform, 0u, values.data()));
+        EXPECT_FALSE(m_appearance.setInputValue(*optUniform, 11u, values.data()));
+        EXPECT_FALSE(m_appearance.getInputValue(*optUniform, 0u, getValues.data()));
+        EXPECT_FALSE(m_appearance.getInputValue(*optUniform, 11u, getValues.data()));
     }
 
-    TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeVector2f)
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeVector2f)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("vec2fInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("vec2fInput");
         ASSERT_TRUE(optUniform.has_value());
 
         vec2f value{ 42.f, 24.f };
         vec2f& valueR = value;
         const vec2f& valueCR = value;
         auto valueM = value;
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, value));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, valueR));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, valueCR));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, std::move(valueM)));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, value));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, valueR));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, valueCR));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, std::move(valueM)));
 
         vec2f getValue;
-        EXPECT_TRUE(appearance->getInputValue(*optUniform, getValue));
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniform, getValue));
         EXPECT_EQ(value, getValue);
     }
 
-    TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeVector2fArray)
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeVector2fArray)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("vec2fInputArray");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("vec2fInputArray");
         ASSERT_TRUE(optUniform.has_value());
 
         const std::vector<vec2f> values = { vec2f{42.f, 43.f}, vec2f{44.f, 45.f}, vec2f{46.f, 47.f} };
         std::vector<vec2f> getValues(values.size());
 
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, 3u, values.data()));
-        EXPECT_TRUE(appearance->getInputValue(*optUniform, 3u, getValues.data()));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, 3u, values.data()));
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniform, 3u, getValues.data()));
         EXPECT_EQ(values, getValues);
 
-        EXPECT_FALSE(appearance->setInputValue(*optUniform, 0u, values.data()));
-        EXPECT_FALSE(appearance->setInputValue(*optUniform, 11u, values.data()));
-        EXPECT_FALSE(appearance->getInputValue(*optUniform, 0u, getValues.data()));
-        EXPECT_FALSE(appearance->getInputValue(*optUniform, 11u, getValues.data()));
+        EXPECT_FALSE(m_appearance.setInputValue(*optUniform, 0u, values.data()));
+        EXPECT_FALSE(m_appearance.setInputValue(*optUniform, 11u, values.data()));
+        EXPECT_FALSE(m_appearance.getInputValue(*optUniform, 0u, getValues.data()));
+        EXPECT_FALSE(m_appearance.getInputValue(*optUniform, 11u, getValues.data()));
     }
 
-    TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeVector3f)
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeVector3f)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("vec3fInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("vec3fInput");
         ASSERT_TRUE(optUniform.has_value());
 
         vec3f value{ 42.f, 24.f, 44.f };
         vec3f& valueR = value;
         const vec3f& valueCR = value;
         auto valueM = value;
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, value));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, valueR));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, valueCR));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, std::move(valueM)));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, value));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, valueR));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, valueCR));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, std::move(valueM)));
 
         vec3f getValue;
-        EXPECT_TRUE(appearance->getInputValue(*optUniform, getValue));
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniform, getValue));
         EXPECT_EQ(value, getValue);
     }
 
-    TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeVector3fArray)
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeVector3fArray)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("vec3fInputArray");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("vec3fInputArray");
         ASSERT_TRUE(optUniform.has_value());
 
         const std::vector<vec3f> values = { vec3f{42.f, 43.f, 444.f}, vec3f{44.f, 45.f, 666.f}, vec3f{46.f, 47.f, 888.f} };
         std::vector<vec3f> getValues(values.size());
 
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, 3u, values.data()));
-        EXPECT_TRUE(appearance->getInputValue(*optUniform, 3u, getValues.data()));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, 3u, values.data()));
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniform, 3u, getValues.data()));
         EXPECT_EQ(values, getValues);
 
-        EXPECT_FALSE(appearance->setInputValue(*optUniform, 0u, values.data()));
-        EXPECT_FALSE(appearance->setInputValue(*optUniform, 11u, values.data()));
-        EXPECT_FALSE(appearance->getInputValue(*optUniform, 0u, getValues.data()));
-        EXPECT_FALSE(appearance->getInputValue(*optUniform, 11u, getValues.data()));
+        EXPECT_FALSE(m_appearance.setInputValue(*optUniform, 0u, values.data()));
+        EXPECT_FALSE(m_appearance.setInputValue(*optUniform, 11u, values.data()));
+        EXPECT_FALSE(m_appearance.getInputValue(*optUniform, 0u, getValues.data()));
+        EXPECT_FALSE(m_appearance.getInputValue(*optUniform, 11u, getValues.data()));
     }
 
-    TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeVector4f)
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeVector4f)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("vec4fInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("vec4fInput");
         ASSERT_TRUE(optUniform.has_value());
 
         vec4f value{ 42.f, 24.f, 44.f, 55.f };
         vec4f& valueR = value;
         const vec4f& valueCR = value;
         auto valueM = value;
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, value));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, valueR));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, valueCR));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, std::move(valueM)));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, value));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, valueR));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, valueCR));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, std::move(valueM)));
 
         vec4f getValue;
-        EXPECT_TRUE(appearance->getInputValue(*optUniform, getValue));
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniform, getValue));
         EXPECT_EQ(value, getValue);
     }
 
-    TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeVector4fArray)
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeVector4fArray)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("vec4fInputArray");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("vec4fInputArray");
         ASSERT_TRUE(optUniform.has_value());
 
         const std::vector<vec4f> values = { vec4f{42.f, 43.f, 444.f, 555.f}, vec4f{44.f, 45.f, 666.f, 777.f}, vec4f{46.f, 47.f, 888.f, 999.f} };
         std::vector<vec4f> getValues(values.size());
 
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, 3u, values.data()));
-        EXPECT_TRUE(appearance->getInputValue(*optUniform, 3u, getValues.data()));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, 3u, values.data()));
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniform, 3u, getValues.data()));
         EXPECT_EQ(values, getValues);
 
-        EXPECT_FALSE(appearance->setInputValue(*optUniform, 0u, values.data()));
-        EXPECT_FALSE(appearance->setInputValue(*optUniform, 11u, values.data()));
-        EXPECT_FALSE(appearance->getInputValue(*optUniform, 0u, getValues.data()));
-        EXPECT_FALSE(appearance->getInputValue(*optUniform, 11u, getValues.data()));
+        EXPECT_FALSE(m_appearance.setInputValue(*optUniform, 0u, values.data()));
+        EXPECT_FALSE(m_appearance.setInputValue(*optUniform, 11u, values.data()));
+        EXPECT_FALSE(m_appearance.getInputValue(*optUniform, 0u, getValues.data()));
+        EXPECT_FALSE(m_appearance.getInputValue(*optUniform, 11u, getValues.data()));
     }
 
     /// matrix22f
-    TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeMatrix22f)
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeMatrix22f)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("matrix22fInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("matrix22fInput");
         ASSERT_TRUE(optUniform.has_value());
 
         matrix22f value{ 42.f, 43.f, 44.f, 45.f };
         matrix22f& valueR = value;
         const matrix22f& valueCR = value;
         auto valueM = value;
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, value));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, valueR));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, valueCR));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, std::move(valueM)));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, value));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, valueR));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, valueCR));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, std::move(valueM)));
 
         matrix22f getValue;
-        EXPECT_TRUE(appearance->getInputValue(*optUniform, getValue));
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniform, getValue));
         EXPECT_EQ(value, getValue);
     }
 
-    TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeMatrix22fArray)
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeMatrix22fArray)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("matrix22fInputArray");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("matrix22fInputArray");
         ASSERT_TRUE(optUniform.has_value());
 
         const std::vector<matrix22f> values =
@@ -828,39 +937,39 @@ namespace ramses::internal
         };
         std::vector<matrix22f> getValues(values.size());
 
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, 3u, values.data()));
-        EXPECT_TRUE(appearance->getInputValue(*optUniform, 3u, getValues.data()));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, 3u, values.data()));
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniform, 3u, getValues.data()));
         EXPECT_EQ(values, getValues);
 
-        EXPECT_FALSE(appearance->setInputValue(*optUniform, 0u, values.data()));
-        EXPECT_FALSE(appearance->setInputValue(*optUniform, 11u, values.data()));
-        EXPECT_FALSE(appearance->getInputValue(*optUniform, 0u, getValues.data()));
-        EXPECT_FALSE(appearance->getInputValue(*optUniform, 11u, getValues.data()));
+        EXPECT_FALSE(m_appearance.setInputValue(*optUniform, 0u, values.data()));
+        EXPECT_FALSE(m_appearance.setInputValue(*optUniform, 11u, values.data()));
+        EXPECT_FALSE(m_appearance.getInputValue(*optUniform, 0u, getValues.data()));
+        EXPECT_FALSE(m_appearance.getInputValue(*optUniform, 11u, getValues.data()));
     }
 
     /// Matrix33f
-    TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeMatrix33f)
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeMatrix33f)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("matrix33fInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("matrix33fInput");
         ASSERT_TRUE(optUniform.has_value());
 
         matrix33f value{ 42.f, 43.f, 44.f, 45.f, 46.f, 47.f, 48.f, 49.f, 50.f };
         matrix33f& valueR = value;
         const matrix33f& valueCR = value;
         auto valueM = value;
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, value));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, valueR));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, valueCR));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, std::move(valueM)));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, value));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, valueR));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, valueCR));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, std::move(valueM)));
 
         matrix33f getValue;
-        EXPECT_TRUE(appearance->getInputValue(*optUniform, getValue));
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniform, getValue));
         EXPECT_EQ(value, getValue);
     }
 
-    TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeMatrix33fArray)
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeMatrix33fArray)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("matrix33fInputArray");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("matrix33fInputArray");
         ASSERT_TRUE(optUniform.has_value());
 
         const std::vector<matrix33f> values =
@@ -871,39 +980,39 @@ namespace ramses::internal
         };
         std::vector<matrix33f> getValues(values.size());
 
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, 3u, values.data()));
-        EXPECT_TRUE(appearance->getInputValue(*optUniform, 3u, getValues.data()));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, 3u, values.data()));
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniform, 3u, getValues.data()));
         EXPECT_EQ(values, getValues);
 
-        EXPECT_FALSE(appearance->setInputValue(*optUniform, 0u, values.data()));
-        EXPECT_FALSE(appearance->setInputValue(*optUniform, 11u, values.data()));
-        EXPECT_FALSE(appearance->getInputValue(*optUniform, 0u, getValues.data()));
-        EXPECT_FALSE(appearance->getInputValue(*optUniform, 11u, getValues.data()));
+        EXPECT_FALSE(m_appearance.setInputValue(*optUniform, 0u, values.data()));
+        EXPECT_FALSE(m_appearance.setInputValue(*optUniform, 11u, values.data()));
+        EXPECT_FALSE(m_appearance.getInputValue(*optUniform, 0u, getValues.data()));
+        EXPECT_FALSE(m_appearance.getInputValue(*optUniform, 11u, getValues.data()));
     }
 
     /// Matrix44f
-    TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeMatrix44f)
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeMatrix44f)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("matrix44fInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("matrix44fInput");
         ASSERT_TRUE(optUniform.has_value());
 
         matrix44f value{ 42.f, 43.f, 44.f, 45.f, 46.f, 47.f, 48.f, 49.f, 50.f, 51.f, 52.f, 53.f, 54.f, 55.f, 56.f, 57.f };
         matrix44f& valueR = value;
         const matrix44f& valueCR = value;
         auto valueM = value;
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, value));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, valueR));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, valueCR));
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, std::move(valueM)));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, value));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, valueR));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, valueCR));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, std::move(valueM)));
 
         matrix44f getValue;
-        EXPECT_TRUE(appearance->getInputValue(*optUniform, getValue));
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniform, getValue));
         EXPECT_EQ(value, getValue);
     }
 
-    TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeMatrix44fArray)
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeMatrix44fArray)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("matrix44fInputArray");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("matrix44fInputArray");
         ASSERT_TRUE(optUniform.has_value());
 
         const std::vector<matrix44f> values =
@@ -914,231 +1023,258 @@ namespace ramses::internal
         };
         std::vector<matrix44f> getValues(values.size());
 
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, 3u, values.data()));
-        EXPECT_TRUE(appearance->getInputValue(*optUniform, 3u, getValues.data()));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, 3u, values.data()));
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniform, 3u, getValues.data()));
         EXPECT_EQ(values, getValues);
 
-        EXPECT_FALSE(appearance->setInputValue(*optUniform, 0u, values.data()));
-        EXPECT_FALSE(appearance->setInputValue(*optUniform, 11u, values.data()));
-        EXPECT_FALSE(appearance->getInputValue(*optUniform, 0u, getValues.data()));
-        EXPECT_FALSE(appearance->getInputValue(*optUniform, 11u, getValues.data()));
+        EXPECT_FALSE(m_appearance.setInputValue(*optUniform, 0u, values.data()));
+        EXPECT_FALSE(m_appearance.setInputValue(*optUniform, 11u, values.data()));
+        EXPECT_FALSE(m_appearance.getInputValue(*optUniform, 0u, getValues.data()));
+        EXPECT_FALSE(m_appearance.getInputValue(*optUniform, 11u, getValues.data()));
     }
 
     /// Texture2D
-    TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeTexture2D)
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeTexture2D)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("texture2dInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("texture2dInput");
         ASSERT_TRUE(optUniform.has_value());
 
         const std::vector<MipLevelData> mipData{ { std::byte{1}, std::byte{2}, std::byte{3} } };
 
-        Texture2D* texture = sharedTestState->getScene().createTexture2D(ETextureFormat::RGB8, 1u, 1u, mipData, false);
+        Texture2D* texture = m_sharedTestState.getScene().createTexture2D(ETextureFormat::RGB8, 1u, 1u, mipData, false);
         ASSERT_TRUE(texture != nullptr);
-        ramses::TextureSampler* textureSampler = sharedTestState->getScene().createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Linear, *texture);
+        ramses::TextureSampler* textureSampler = m_sharedTestState.getScene().createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Nearest, ETextureSamplingMethod::Linear, *texture);
         ASSERT_TRUE(textureSampler != nullptr);
 
-        EXPECT_TRUE(appearance->setInputTexture(*optUniform, *textureSampler));
+        EXPECT_TRUE(m_appearance.setInputTexture(*optUniform, *textureSampler));
 
         const ramses::TextureSampler* actualSampler = nullptr;
-        EXPECT_TRUE(appearance->getInputTexture(*optUniform, actualSampler));
+        EXPECT_TRUE(m_appearance.getInputTexture(*optUniform, actualSampler));
         EXPECT_EQ(textureSampler, actualSampler);
 
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*textureSampler));
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*texture));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*textureSampler));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*texture));
     }
 
     /// Texture2DMS
-    TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeTexture2DMS)
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeTexture2DMS)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("texture2dMSInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("texture2dMSInput");
         ASSERT_TRUE(optUniform.has_value());
 
-        ramses::RenderBuffer* renderBuffer = sharedTestState->getScene().createRenderBuffer(2u, 2u, ERenderBufferFormat::RGB8, ERenderBufferAccessMode::ReadWrite, 4u);
-        TextureSamplerMS* textureSampler = sharedTestState->getScene().createTextureSamplerMS(*renderBuffer, "renderBuffer");
+        ramses::RenderBuffer* renderBuffer = m_sharedTestState.getScene().createRenderBuffer(2u, 2u, ERenderBufferFormat::RGB8, ERenderBufferAccessMode::ReadWrite, 4u);
+        TextureSamplerMS* textureSampler = m_sharedTestState.getScene().createTextureSamplerMS(*renderBuffer, "renderBuffer");
         ASSERT_TRUE(textureSampler != nullptr);
 
         EXPECT_EQ(textureSampler->impl().getTextureDataType(), ramses::internal::EDataType::TextureSampler2DMS);
-        EXPECT_TRUE(appearance->setInputTexture(*optUniform, *textureSampler));
+        EXPECT_TRUE(m_appearance.setInputTexture(*optUniform, *textureSampler));
 
         const TextureSamplerMS* actualSampler = nullptr;
-        EXPECT_TRUE(appearance->getInputTextureMS(*optUniform, actualSampler));
+        EXPECT_TRUE(m_appearance.getInputTextureMS(*optUniform, actualSampler));
         EXPECT_EQ(textureSampler, actualSampler);
 
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*textureSampler));
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*renderBuffer));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*textureSampler));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*renderBuffer));
     }
 
     /// TextureCube
-    TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeTextureCube)
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeTextureCube)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("textureCubeInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("textureCubeInput");
         ASSERT_TRUE(optUniform.has_value());
 
         const std::vector<std::byte> texData = { std::byte{1}, std::byte{2}, std::byte{3} };
         std::vector<CubeMipLevelData> mipData{ { texData, texData, texData, texData, texData, texData } };
 
-        TextureCube* texture = sharedTestState->getScene().createTextureCube(ETextureFormat::RGB8, 1u, mipData, false);
+        TextureCube* texture = m_sharedTestState.getScene().createTextureCube(ETextureFormat::RGB8, 1u, mipData, false);
         ASSERT_TRUE(texture != nullptr);
-        ramses::TextureSampler* textureSampler = sharedTestState->getScene().createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Linear, ETextureSamplingMethod::Linear, *texture);
+        ramses::TextureSampler* textureSampler = m_sharedTestState.getScene().createTextureSampler(ETextureAddressMode::Clamp, ETextureAddressMode::Clamp, ETextureSamplingMethod::Linear, ETextureSamplingMethod::Linear, *texture);
         ASSERT_TRUE(textureSampler != nullptr);
 
-        EXPECT_TRUE(appearance->setInputTexture(*optUniform, *textureSampler));
+        EXPECT_TRUE(m_appearance.setInputTexture(*optUniform, *textureSampler));
 
         const ramses::TextureSampler* actualSampler = nullptr;
-        EXPECT_TRUE(appearance->getInputTexture(*optUniform, actualSampler));
+        EXPECT_TRUE(m_appearance.getInputTexture(*optUniform, actualSampler));
         EXPECT_EQ(textureSampler, actualSampler);
 
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*textureSampler));
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*texture));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*textureSampler));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*texture));
     }
 
     /// TextureExternal
-    TEST_F(AAppearanceTest, canHandleUniformInputsOfTypeTextureExternal)
+    TEST_P(AAppearanceTest, canHandleUniformInputsOfTypeTextureExternal)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("textureExternalInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("textureExternalInput");
         ASSERT_TRUE(optUniform.has_value());
 
-        TextureSamplerExternal* textureSampler = sharedTestState->getScene().createTextureSamplerExternal(ETextureSamplingMethod::Linear, ETextureSamplingMethod::Linear);
+        TextureSamplerExternal* textureSampler = m_sharedTestState.getScene().createTextureSamplerExternal(ETextureSamplingMethod::Linear, ETextureSamplingMethod::Linear);
         ASSERT_TRUE(textureSampler != nullptr);
 
         EXPECT_EQ(textureSampler->impl().getTextureDataType(), ramses::internal::EDataType::TextureSamplerExternal);
-        EXPECT_TRUE(appearance->setInputTexture(*optUniform, *textureSampler));
+        EXPECT_TRUE(m_appearance.setInputTexture(*optUniform, *textureSampler));
 
         const TextureSamplerExternal* actualSampler = nullptr;
-        EXPECT_TRUE(appearance->getInputTextureExternal(*optUniform, actualSampler));
+        EXPECT_TRUE(m_appearance.getInputTextureExternal(*optUniform, actualSampler));
         EXPECT_EQ(textureSampler, actualSampler);
 
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*textureSampler));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*textureSampler));
     }
 
     /// Binding data objects
-    TEST_F(AAppearanceTest, uniformInputIsNotBoundInitially)
+    TEST_P(AAppearanceTest, uniformInputIsNotBoundInitially)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("floatInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("floatInput");
         ASSERT_TRUE(optUniform.has_value());
-        EXPECT_FALSE(appearance->isInputBound(*optUniform));
+        EXPECT_FALSE(m_appearance.isInputBound(*optUniform));
     }
 
-    TEST_F(AAppearanceTest, canBindDataObjectToUniformInput)
+    TEST_P(AAppearanceTest, canBindDataObjectToUniformInput)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("floatInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("floatInput");
         ASSERT_TRUE(optUniform.has_value());
 
-        auto dataObject = sharedTestState->getScene().createDataObject(ramses::EDataType::Float);
+        auto dataObject = m_sharedTestState.getScene().createDataObject(ramses::EDataType::Float);
         ASSERT_TRUE(dataObject != nullptr);
 
-        EXPECT_TRUE(appearance->bindInput(*optUniform, *dataObject));
-        EXPECT_TRUE(appearance->isInputBound(*optUniform));
-        EXPECT_EQ(dataObject->impl().getDataReference(), appearance->getDataObjectBoundToInput(*optUniform)->impl().getDataReference());
+        EXPECT_TRUE(m_appearance.bindInput(*optUniform, *dataObject));
+        EXPECT_TRUE(m_appearance.isInputBound(*optUniform));
+        EXPECT_EQ(dataObject->impl().getDataReference(), m_appearance.getDataObjectBoundToInput(*optUniform)->impl().getDataReference());
 
-        EXPECT_TRUE(appearance->unbindInput(*optUniform));
-        EXPECT_FALSE(appearance->isInputBound(*optUniform));
-        EXPECT_EQ(nullptr, appearance->getDataObjectBoundToInput(*optUniform));
+        EXPECT_TRUE(m_appearance.unbindInput(*optUniform));
+        EXPECT_FALSE(m_appearance.isInputBound(*optUniform));
+        EXPECT_EQ(nullptr, m_appearance.getDataObjectBoundToInput(*optUniform));
     }
 
-    TEST_F(AAppearanceTest, failsToSetOrGetValueIfInputBound)
+    TEST_P(AAppearanceTest, failsToSetOrGetValueIfInputBound)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("floatInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("floatInput");
         ASSERT_TRUE(optUniform.has_value());
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, 666.f));
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, 666.f));
 
-        auto dataObject = sharedTestState->getScene().createDataObject(ramses::EDataType::Float);
+        auto dataObject = m_sharedTestState.getScene().createDataObject(ramses::EDataType::Float);
         ASSERT_TRUE(dataObject != nullptr);
         dataObject->setValue(333.f);
 
-        EXPECT_TRUE(appearance->bindInput(*optUniform, *dataObject));
+        EXPECT_TRUE(m_appearance.bindInput(*optUniform, *dataObject));
 
         const float setValue = 0.111f;
         float value = 0.f;
-        EXPECT_FALSE(appearance->setInputValue(*optUniform, setValue));
+        EXPECT_FALSE(m_appearance.setInputValue(*optUniform, setValue));
         EXPECT_TRUE(dataObject->getValue(value));
         EXPECT_FLOAT_EQ(333.f, value); // failed setter does not modify data object
         value = 0.f;
-        EXPECT_FALSE(appearance->getInputValue(*optUniform, value));
+        EXPECT_FALSE(m_appearance.getInputValue(*optUniform, value));
         EXPECT_FLOAT_EQ(0.f, value); // failed getter does not modify out parameter
 
-        EXPECT_TRUE(appearance->unbindInput(*optUniform));
+        EXPECT_TRUE(m_appearance.unbindInput(*optUniform));
 
-        EXPECT_TRUE(appearance->getInputValue(*optUniform, value));
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniform, value));
         EXPECT_EQ(666.f, value); // failed setter did not modify previously set value
     }
 
-    TEST_F(AAppearanceTest, failsToBindDataObjectToArrayUniformInput)
+    TEST_P(AAppearanceTest, failsToBindDataObjectToArrayUniformInput)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("floatInputArray");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("floatInputArray");
         ASSERT_TRUE(optUniform.has_value());
 
-        auto dataObject = sharedTestState->getScene().createDataObject(ramses::EDataType::Float);
+        auto dataObject = m_sharedTestState.getScene().createDataObject(ramses::EDataType::Float);
         ASSERT_TRUE(dataObject != nullptr);
 
-        EXPECT_FALSE(appearance->bindInput(*optUniform, *dataObject));
+        EXPECT_FALSE(m_appearance.bindInput(*optUniform, *dataObject));
     }
 
-    TEST_F(AAppearanceTest, failsToBindDataObjectFromADifferentScene)
+    TEST_P(AAppearanceTest, failsToBindDataObjectFromADifferentScene)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("floatInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("floatInput");
         ASSERT_TRUE(optUniform.has_value());
 
-        ramses::Scene& anotherScene = *sharedTestState->getClient().createScene(sceneId_t(1u));
+        ramses::Scene& anotherScene = *m_sharedTestState.getClient().createScene(sceneId_t(1u));
         auto dataObject = anotherScene.createDataObject(ramses::EDataType::Float);
         ASSERT_TRUE(dataObject != nullptr);
 
-        EXPECT_FALSE(appearance->bindInput(*optUniform, *dataObject));
+        EXPECT_FALSE(m_appearance.bindInput(*optUniform, *dataObject));
 
-        EXPECT_TRUE(sharedTestState->getClient().destroy(anotherScene));
+        EXPECT_TRUE(m_sharedTestState.getClient().destroy(anotherScene));
     }
 
-    TEST_F(AAppearanceTest, failsToBindDataObjectOfMismatchingType)
+    TEST_P(AAppearanceTest, failsToBindDataObjectOfMismatchingType)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("vec4fInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("vec4fInput");
         ASSERT_TRUE(optUniform.has_value());
 
-        auto dataObject = sharedTestState->getScene().createDataObject(ramses::EDataType::Float);
+        auto dataObject = m_sharedTestState.getScene().createDataObject(ramses::EDataType::Float);
         ASSERT_TRUE(dataObject != nullptr);
 
-        EXPECT_FALSE(appearance->bindInput(*optUniform, *dataObject));
-        EXPECT_FALSE(appearance->isInputBound(*optUniform));
+        EXPECT_FALSE(m_appearance.bindInput(*optUniform, *dataObject));
+        EXPECT_FALSE(m_appearance.isInputBound(*optUniform));
     }
 
-    TEST_F(AAppearanceTestWithSemanticUniforms, failsToBindDataObjectIfInputHasSemantics)
+    TEST_P(AAppearanceTest, failsToBindDataObjectIfInputHasSemantics)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("matrix44fInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("mvMatrix");
         ASSERT_TRUE(optUniform.has_value());
 
-        auto dataObject = sharedTestState->getScene().createDataObject(ramses::EDataType::Matrix44F);
+        auto dataObject = m_sharedTestState.getScene().createDataObject(ramses::EDataType::Matrix44F);
         ASSERT_TRUE(dataObject != nullptr);
 
-        EXPECT_FALSE(appearance->bindInput(*optUniform, *dataObject));
+        EXPECT_FALSE(m_appearance.bindInput(*optUniform, *dataObject));
     }
 
-    TEST_F(AAppearanceTest, unbindingDataObjectFallsBackToPreviouslySetValue)
+    TEST_P(AAppearanceTest, failsToCreateDataObjectFromUniformBuffer)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("floatInput");
-        ASSERT_TRUE(optUniform.has_value());
-        EXPECT_TRUE(appearance->setInputValue(*optUniform, 666.f));
+        if (GetParam() < EFeatureLevel_02)
+            GTEST_SKIP();
 
-        auto dataObject = sharedTestState->getScene().createDataObject(ramses::EDataType::Float);
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("uniformBlock");
+        ASSERT_TRUE(optUniform.has_value());
+
+        auto dataObject = m_sharedTestState.getScene().createDataObject(ramses::EDataType::UniformBuffer);
+        EXPECT_EQ(dataObject, nullptr);
+    }
+
+    TEST_P(AAppearanceTest, failsToBindDataObjectToUniformBufferField)
+    {
+        if (GetParam() < EFeatureLevel_02)
+            GTEST_SKIP();
+
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("uniformBlock.ubMat44");
+        ASSERT_TRUE(optUniform.has_value());
+
+        auto dataObject = m_sharedTestState.getScene().createDataObject(ramses::EDataType::Matrix44F);
         ASSERT_TRUE(dataObject != nullptr);
 
-        EXPECT_TRUE(appearance->bindInput(*optUniform, *dataObject));
+        EXPECT_FALSE(m_appearance.bindInput(*optUniform, *dataObject));
+        EXPECT_FALSE(m_appearance.isInputBound(*optUniform));
+    }
+
+    TEST_P(AAppearanceTest, unbindingDataObjectFallsBackToPreviouslySetValue)
+    {
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("floatInput");
+        ASSERT_TRUE(optUniform.has_value());
+        EXPECT_TRUE(m_appearance.setInputValue(*optUniform, 666.f));
+
+        auto dataObject = m_sharedTestState.getScene().createDataObject(ramses::EDataType::Float);
+        ASSERT_TRUE(dataObject != nullptr);
+
+        EXPECT_TRUE(m_appearance.bindInput(*optUniform, *dataObject));
         dataObject->setValue(13.f);
 
-        EXPECT_TRUE(appearance->unbindInput(*optUniform));
+        EXPECT_TRUE(m_appearance.unbindInput(*optUniform));
         float value = 0.f;
-        EXPECT_TRUE(appearance->getInputValue(*optUniform, value));
+        EXPECT_TRUE(m_appearance.getInputValue(*optUniform, value));
         EXPECT_FLOAT_EQ(666.f, value);
     }
 
-    TEST_F(AAppearanceTest, failsToUnbindIfInputIsNotBound)
+    TEST_P(AAppearanceTest, failsToUnbindIfInputIsNotBound)
     {
-        const auto optUniform = sharedTestState->effect->findUniformInput("floatInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("floatInput");
         ASSERT_TRUE(optUniform.has_value());
 
-        EXPECT_FALSE(appearance->unbindInput(*optUniform));
+        EXPECT_FALSE(m_appearance.unbindInput(*optUniform));
     }
 
     /// Validation
-    TEST_F(AAppearanceTest, reportsErrorWhenValidatedWithInvalidTextureSampler)
+    TEST_P(AAppearanceTest, reportsErrorWhenValidatedWithInvalidTextureSampler)
     {
         TextureInputInfo texture2DInputInfo;
         GetTexture2DInputInfo(texture2DInputInfo);
@@ -1155,7 +1291,7 @@ namespace ramses::internal
         TextureInputInfo textureExternalInfo;
         GetTextureExternalInputInfo(textureExternalInfo);
 
-        Appearance* newAppearance = sharedTestState->getScene().createAppearance(*sharedTestState->effect, "New Appearance");
+        Appearance* newAppearance = m_sharedTestState.getScene().createAppearance(*m_sharedTestState.effect, "New Appearance");
         ASSERT_TRUE(nullptr != newAppearance);
 
         EXPECT_TRUE(newAppearance->setInputTexture(*texture2DInputInfo.input, *texture2DInputInfo.sampler));
@@ -1167,20 +1303,20 @@ namespace ramses::internal
         newAppearance->validate(report);
         EXPECT_FALSE(report.hasIssue());
 
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*texture2DInputInfo.sampler));
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*texture2DMSInputInfo.samplerMS));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*texture2DInputInfo.sampler));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*texture2DMSInputInfo.samplerMS));
         report.clear();
         newAppearance->validate(report);
         EXPECT_TRUE(report.hasError());
 
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*newAppearance));
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*texture2DInputInfo.texture2D));
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*texture2DMSInputInfo.renderBuffer));
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*textureCubeInputInfo.sampler));
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*textureCubeInputInfo.textureCube));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*newAppearance));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*texture2DInputInfo.texture2D));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*texture2DMSInputInfo.renderBuffer));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*textureCubeInputInfo.sampler));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*textureCubeInputInfo.textureCube));
     }
 
-    TEST_F(AAppearanceTest, reportsErrorWhenValidatedWithInvalidTexture)
+    TEST_P(AAppearanceTest, reportsErrorWhenValidatedWithInvalidTexture)
     {
         TextureInputInfo texture2DInputInfo;
         GetTexture2DInputInfo(texture2DInputInfo);
@@ -1197,7 +1333,7 @@ namespace ramses::internal
         TextureInputInfo textureExternalInfo;
         GetTextureExternalInputInfo(textureExternalInfo);
 
-        Appearance* newAppearance = sharedTestState->getScene().createAppearance(*sharedTestState->effect, "New Appearance");
+        Appearance* newAppearance = m_sharedTestState.getScene().createAppearance(*m_sharedTestState.effect, "New Appearance");
         ASSERT_TRUE(nullptr != newAppearance);
         EXPECT_TRUE(newAppearance->setInputTexture(*texture2DInputInfo.input, *texture2DInputInfo.sampler));
         EXPECT_TRUE(newAppearance->setInputTexture(*texture2DMSInputInfo.input, *texture2DMSInputInfo.samplerMS));
@@ -1208,20 +1344,20 @@ namespace ramses::internal
         newAppearance->validate(report);
         EXPECT_FALSE(report.hasIssue());
 
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*texture2DInputInfo.texture2D));
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*texture2DMSInputInfo.renderBuffer));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*texture2DInputInfo.texture2D));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*texture2DMSInputInfo.renderBuffer));
         report.clear();
         newAppearance->validate(report);
         EXPECT_TRUE(report.hasError());
 
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*newAppearance));
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*texture2DInputInfo.sampler));
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*texture2DMSInputInfo.samplerMS));
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*textureCubeInputInfo.sampler));
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*textureCubeInputInfo.textureCube));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*newAppearance));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*texture2DInputInfo.sampler));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*texture2DMSInputInfo.samplerMS));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*textureCubeInputInfo.sampler));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*textureCubeInputInfo.textureCube));
     }
 
-    TEST_F(AAppearanceTest, reportsErrorWhenValidatedWithBoundDataObjectThatWasDestroyed)
+    TEST_P(AAppearanceTest, reportsErrorWhenValidatedWithBoundDataObjectThatWasDestroyed)
     {
         TextureInputInfo texture2DInputInfo;
         GetTexture2DInputInfo(texture2DInputInfo);
@@ -1238,7 +1374,7 @@ namespace ramses::internal
         TextureInputInfo textureExternalInfo;
         GetTextureExternalInputInfo(textureExternalInfo);
 
-        Appearance* newAppearance = sharedTestState->getScene().createAppearance(*sharedTestState->effect, "New Appearance");
+        Appearance* newAppearance = m_sharedTestState.getScene().createAppearance(*m_sharedTestState.effect, "New Appearance");
         ASSERT_TRUE(nullptr != newAppearance);
         EXPECT_TRUE(newAppearance->setInputTexture(*texture2DInputInfo.input, *texture2DInputInfo.sampler));
         EXPECT_TRUE(newAppearance->setInputTexture(*texture2DMSInputInfo.input, *texture2DMSInputInfo.samplerMS));
@@ -1249,10 +1385,10 @@ namespace ramses::internal
         newAppearance->validate(report);
         EXPECT_FALSE(report.hasIssue());
 
-        const auto optUniform = sharedTestState->effect->findUniformInput("floatInput");
+        const auto optUniform = m_sharedTestState.effect->findUniformInput("floatInput");
         ASSERT_TRUE(optUniform.has_value());
 
-        auto dataObject = sharedTestState->getScene().createDataObject(ramses::EDataType::Float);
+        auto dataObject = m_sharedTestState.getScene().createDataObject(ramses::EDataType::Float);
         ASSERT_TRUE(dataObject != nullptr);
 
         EXPECT_TRUE(newAppearance->bindInput(*optUniform, *dataObject));
@@ -1260,45 +1396,45 @@ namespace ramses::internal
         newAppearance->validate(report);
         EXPECT_FALSE(report.hasIssue());
 
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*dataObject));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*dataObject));
         report.clear();
         newAppearance->validate(report);
         EXPECT_TRUE(report.hasError());
 
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*newAppearance));
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*texture2DInputInfo.sampler));
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*texture2DInputInfo.texture2D));
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*texture2DMSInputInfo.samplerMS));
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*texture2DMSInputInfo.renderBuffer));
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*textureCubeInputInfo.sampler));
-        EXPECT_TRUE(sharedTestState->getScene().destroy(*textureCubeInputInfo.textureCube));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*newAppearance));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*texture2DInputInfo.sampler));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*texture2DInputInfo.texture2D));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*texture2DMSInputInfo.samplerMS));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*texture2DMSInputInfo.renderBuffer));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*textureCubeInputInfo.sampler));
+        EXPECT_TRUE(m_sharedTestState.getScene().destroy(*textureCubeInputInfo.textureCube));
     }
 
-    TEST_F(AAppearanceTest, failsWhenWrongBlendingOperationsSet)
+    TEST_P(AAppearanceTest, failsWhenWrongBlendingOperationsSet)
     {
-        bool stat = appearance->setBlendingOperations(EBlendOperation::Subtract, EBlendOperation::ReverseSubtract);
+        bool stat = m_appearance.setBlendingOperations(EBlendOperation::Subtract, EBlendOperation::ReverseSubtract);
         EXPECT_TRUE(stat);
 
-        stat = appearance->setBlendingOperations(EBlendOperation::Add, EBlendOperation::Disabled);
+        stat = m_appearance.setBlendingOperations(EBlendOperation::Add, EBlendOperation::Disabled);
         EXPECT_FALSE(stat);
 
-        stat = appearance->setBlendingOperations(EBlendOperation::Disabled, EBlendOperation::Add);
+        stat = m_appearance.setBlendingOperations(EBlendOperation::Disabled, EBlendOperation::Add);
         EXPECT_FALSE(stat);
 
         EBlendOperation opColor = EBlendOperation::Disabled;
         EBlendOperation opAlpha = EBlendOperation::Disabled;
-        EXPECT_TRUE(appearance->getBlendingOperations(opColor, opAlpha));
+        EXPECT_TRUE(m_appearance.getBlendingOperations(opColor, opAlpha));
         EXPECT_EQ(EBlendOperation::Subtract, opColor);
         EXPECT_EQ(EBlendOperation::ReverseSubtract, opAlpha);
     }
 
-    TEST_F(AAppearanceTest, defaultBlendingFactors)
+    TEST_P(AAppearanceTest, defaultBlendingFactors)
     {
         EBlendFactor srcColor  = EBlendFactor::Zero;
         EBlendFactor destColor = EBlendFactor::Zero;
         EBlendFactor srcAlpha  = EBlendFactor::Zero;
         EBlendFactor destAlpha = EBlendFactor::Zero;
-        bool stat = appearance->getBlendingFactors(srcColor, destColor, srcAlpha, destAlpha);
+        bool stat = m_appearance.getBlendingFactors(srcColor, destColor, srcAlpha, destAlpha);
         EXPECT_TRUE(stat);
         EXPECT_EQ(EBlendFactor::SrcAlpha, srcColor);
         EXPECT_EQ(EBlendFactor::OneMinusSrcAlpha, destColor);
@@ -1306,255 +1442,259 @@ namespace ramses::internal
         EXPECT_EQ(EBlendFactor::One, destAlpha);
     }
 
-    TEST_F(AAppearanceTest, defaultDepthWriteMode)
+    TEST_P(AAppearanceTest, defaultDepthWriteMode)
     {
         EDepthWrite depthWriteMode = EDepthWrite::Disabled;
-        EXPECT_TRUE(appearance->getDepthWriteMode(depthWriteMode));
+        EXPECT_TRUE(m_appearance.getDepthWriteMode(depthWriteMode));
         EXPECT_EQ(EDepthWrite::Enabled, depthWriteMode);
     }
 
-    TEST_F(AAppearanceTest, defaultScissorRegion)
+    TEST_P(AAppearanceTest, defaultScissorRegion)
     {
         int16_t  x      = std::numeric_limits<int16_t>::max();
         int16_t  y      = std::numeric_limits<int16_t>::max();
         uint16_t width  = std::numeric_limits<uint16_t>::max();
         uint16_t height = std::numeric_limits<uint16_t>::max();
-        EXPECT_TRUE(appearance->getScissorRegion(x, y, width, height));
+        EXPECT_TRUE(m_appearance.getScissorRegion(x, y, width, height));
         EXPECT_EQ(0, x);
         EXPECT_EQ(0, y);
         EXPECT_EQ(0u, width);
         EXPECT_EQ(0u, height);
     }
 
-    TEST_F(AAppearanceTest, defaultStencilFunc)
+    TEST_P(AAppearanceTest, defaultStencilFunc)
     {
         EStencilFunc func = EStencilFunc::Always;
         uint8_t      ref  = std::numeric_limits<uint8_t>::max();
         uint8_t      mask = std::numeric_limits<uint8_t>::max();
-        bool     stat = appearance->getStencilFunction(func, ref, mask);
+        bool     stat = m_appearance.getStencilFunction(func, ref, mask);
         EXPECT_TRUE(stat);
         EXPECT_EQ(EStencilFunc::Disabled, func);
         EXPECT_EQ(0u, ref);
         EXPECT_EQ(0xFF, mask);
     }
 
-    TEST_F(AAppearanceTest, defaultBlendingOperations)
+    TEST_P(AAppearanceTest, defaultBlendingOperations)
     {
         EBlendOperation opColor = EBlendOperation::Add;
         EBlendOperation opAlpha = EBlendOperation::Subtract;
-        EXPECT_TRUE(appearance->getBlendingOperations(opColor, opAlpha));
+        EXPECT_TRUE(m_appearance.getBlendingOperations(opColor, opAlpha));
         EXPECT_EQ(EBlendOperation::Disabled, opColor);
         EXPECT_EQ(EBlendOperation::Disabled, opAlpha);
     }
 
-    TEST_F(AAppearanceTest, defaultCullMode)
+    TEST_P(AAppearanceTest, defaultCullMode)
     {
         ECullMode mode = ECullMode::Disabled;
-        EXPECT_TRUE(appearance->getCullingMode(mode));
+        EXPECT_TRUE(m_appearance.getCullingMode(mode));
         EXPECT_EQ(ECullMode::BackFacing, mode);
     }
 
-    TEST_F(AAppearanceTest, defaultColorWriteMask)
+    TEST_P(AAppearanceTest, defaultColorWriteMask)
     {
         bool writeR = false;
         bool writeG = false;
         bool writeB = false;
         bool writeA = false;
-        EXPECT_TRUE(appearance->getColorWriteMask(writeR, writeG, writeB, writeA));
+        EXPECT_TRUE(m_appearance.getColorWriteMask(writeR, writeG, writeB, writeA));
         EXPECT_TRUE(writeR);
         EXPECT_TRUE(writeG);
         EXPECT_TRUE(writeB);
         EXPECT_TRUE(writeA);
     }
 
-    TEST_F(AAppearanceTest, defaultGetInputValue)
+    TEST_P(AAppearanceTest, defaultGetInputValue)
     {
         {
             auto intOut             = std::numeric_limits<int32_t>::max();
-            auto uniformItegerInput = sharedTestState->effect->findUniformInput("integerInput");
-            EXPECT_TRUE(appearance->getInputValue(*uniformItegerInput, intOut));
+            auto uniformItegerInput = m_sharedTestState.effect->findUniformInput("integerInput");
+            EXPECT_TRUE(m_appearance.getInputValue(*uniformItegerInput, intOut));
             EXPECT_EQ(intOut, 0);
         }
         {
             auto floatOut          = std::numeric_limits<float>::max();
-            auto uniformFloatInput = sharedTestState->effect->findUniformInput("floatInput");
-            EXPECT_TRUE(appearance->getInputValue(*uniformFloatInput, floatOut));
+            auto uniformFloatInput = m_sharedTestState.effect->findUniformInput("floatInput");
+            EXPECT_TRUE(m_appearance.getInputValue(*uniformFloatInput, floatOut));
             EXPECT_FLOAT_EQ(floatOut, 0.0f);
         }
         {
             vec2i vec2iOut(42);
-            auto  uniformVec2iInput = sharedTestState->effect->findUniformInput("vec2iInput");
-            EXPECT_TRUE(appearance->getInputValue(*uniformVec2iInput, vec2iOut));
+            auto  uniformVec2iInput = m_sharedTestState.effect->findUniformInput("vec2iInput");
+            EXPECT_TRUE(m_appearance.getInputValue(*uniformVec2iInput, vec2iOut));
             EXPECT_EQ(vec2iOut.x, 0);
             EXPECT_EQ(vec2iOut.y, 0);
         }
         {
             vec3i vec3iOut(42);
-            auto  uniformVec3iInput = sharedTestState->effect->findUniformInput("vec3iInput");
-            EXPECT_TRUE(appearance->getInputValue(*uniformVec3iInput, vec3iOut));
+            auto  uniformVec3iInput = m_sharedTestState.effect->findUniformInput("vec3iInput");
+            EXPECT_TRUE(m_appearance.getInputValue(*uniformVec3iInput, vec3iOut));
             EXPECT_EQ(vec3iOut, vec3i{0});
         }
         {
             vec4i vec4iOut(42);
-            auto  uniformVec4iInput = sharedTestState->effect->findUniformInput("vec4iInput");
-            EXPECT_TRUE(appearance->getInputValue(*uniformVec4iInput, vec4iOut));
+            auto  uniformVec4iInput = m_sharedTestState.effect->findUniformInput("vec4iInput");
+            EXPECT_TRUE(m_appearance.getInputValue(*uniformVec4iInput, vec4iOut));
             EXPECT_EQ(vec4iOut, vec4i{0});
         }
         {
             vec2f vec2fOut(42.f);
-            auto  uniformVec2fInput = sharedTestState->effect->findUniformInput("vec2fInput");
-            EXPECT_TRUE(appearance->getInputValue(*uniformVec2fInput, vec2fOut));
+            auto  uniformVec2fInput = m_sharedTestState.effect->findUniformInput("vec2fInput");
+            EXPECT_TRUE(m_appearance.getInputValue(*uniformVec2fInput, vec2fOut));
             EXPECT_EQ(vec2fOut, vec2f{0.f});
         }
         {
             vec3f vec3fOut(42.f);
-            auto  uniformVec3fInput = sharedTestState->effect->findUniformInput("vec3fInput");
-            EXPECT_TRUE(appearance->getInputValue(*uniformVec3fInput, vec3fOut));
+            auto  uniformVec3fInput = m_sharedTestState.effect->findUniformInput("vec3fInput");
+            EXPECT_TRUE(m_appearance.getInputValue(*uniformVec3fInput, vec3fOut));
             EXPECT_EQ(vec3fOut, vec3f{0.f});
         }
         {
             vec4f vec4fOut(42.f);
-            auto  uniformVec4fInput = sharedTestState->effect->findUniformInput("vec4fInput");
-            EXPECT_TRUE(appearance->getInputValue(*uniformVec4fInput, vec4fOut));
+            auto  uniformVec4fInput = m_sharedTestState.effect->findUniformInput("vec4fInput");
+            EXPECT_TRUE(m_appearance.getInputValue(*uniformVec4fInput, vec4fOut));
             EXPECT_EQ(vec4fOut, vec4f{0.f});
         }
         {
-            auto      uniformMatrix22fInput = sharedTestState->effect->findUniformInput("matrix22fInput");
+            auto      uniformMatrix22fInput = m_sharedTestState.effect->findUniformInput("matrix22fInput");
             matrix22f matrix22fOut          = {42, 43, 44, 45};
-            EXPECT_TRUE(appearance->getInputValue(*uniformMatrix22fInput, matrix22fOut));
+            EXPECT_TRUE(m_appearance.getInputValue(*uniformMatrix22fInput, matrix22fOut));
             for (const auto& i : matrix22fOut)
                 EXPECT_FLOAT_EQ(i, 0.0f);
         }
         {
-            auto      uniformMatrix33fInput = sharedTestState->effect->findUniformInput("matrix33fInput");
+            auto      uniformMatrix33fInput = m_sharedTestState.effect->findUniformInput("matrix33fInput");
             matrix33f matrix33fOut          = {42, 43, 44, 45, 46, 47, 48, 49, 50};
-            EXPECT_TRUE(appearance->getInputValue(*uniformMatrix33fInput, matrix33fOut));
+            EXPECT_TRUE(m_appearance.getInputValue(*uniformMatrix33fInput, matrix33fOut));
             for (const auto& i : matrix33fOut)
                 EXPECT_FLOAT_EQ(i, 0.0f);
         }
         {
-            auto      uniformMatrix44fInput = sharedTestState->effect->findUniformInput("matrix44fInput");
+            auto      uniformMatrix44fInput = m_sharedTestState.effect->findUniformInput("matrix44fInput");
             matrix44f matrix44fOut          = {42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57};
-            EXPECT_TRUE(appearance->getInputValue(*uniformMatrix44fInput, matrix44fOut));
+            EXPECT_TRUE(m_appearance.getInputValue(*uniformMatrix44fInput, matrix44fOut));
             for (const auto& i : matrix44fOut)
                 EXPECT_FLOAT_EQ(i, 0.0f);
         }
 
         {
-            auto    integerInputArrayInput = sharedTestState->effect->findUniformInput("integerInputArray");
+            auto    integerInputArrayInput = m_sharedTestState.effect->findUniformInput("integerInputArray");
             int32_t integerInputArray[]    = {42, 42, 42};
-            EXPECT_TRUE(appearance->getInputValue(*integerInputArrayInput, 3u, integerInputArray));
+            EXPECT_TRUE(m_appearance.getInputValue(*integerInputArrayInput, 3u, integerInputArray));
             for (const auto& i : integerInputArray)
                 EXPECT_EQ(i, 0);
         }
         {
-            auto  floatInputArrayInput = sharedTestState->effect->findUniformInput("floatInputArray");
+            auto  floatInputArrayInput = m_sharedTestState.effect->findUniformInput("floatInputArray");
             float floatInputArray[]    = {42, 42, 42};
-            EXPECT_TRUE(appearance->getInputValue(*floatInputArrayInput, 3u, floatInputArray));
+            EXPECT_TRUE(m_appearance.getInputValue(*floatInputArrayInput, 3u, floatInputArray));
             for (const auto& i : floatInputArray)
                 EXPECT_FLOAT_EQ(i, 0.0f);
         }
         {
-            auto  vec2iInputArrayInput = sharedTestState->effect->findUniformInput("vec2iInputArray");
+            auto  vec2iInputArrayInput = m_sharedTestState.effect->findUniformInput("vec2iInputArray");
             vec2i vec2iInputArray[]    = {vec2i{42, 43}, vec2i{44, 45}, vec2i{46, 47}};
-            EXPECT_TRUE(appearance->getInputValue(*vec2iInputArrayInput, 3u, vec2iInputArray));
+            EXPECT_TRUE(m_appearance.getInputValue(*vec2iInputArrayInput, 3u, vec2iInputArray));
             for (const auto& i : vec2iInputArray)
                 EXPECT_EQ(i, vec2i{0});
         }
         {
-            auto  vec3iInputArrayInput = sharedTestState->effect->findUniformInput("vec3iInputArray");
+            auto  vec3iInputArrayInput = m_sharedTestState.effect->findUniformInput("vec3iInputArray");
             vec3i vec3iInputArray[]    = {vec3i{42, 43, 44}, vec3i{45, 46, 47}, vec3i{48, 49, 50}};
-            EXPECT_TRUE(appearance->getInputValue(*vec3iInputArrayInput, 3u, vec3iInputArray));
+            EXPECT_TRUE(m_appearance.getInputValue(*vec3iInputArrayInput, 3u, vec3iInputArray));
             for (const auto& i : vec3iInputArray)
                 EXPECT_EQ(i, vec3i{0});
         }
         {
-            auto  vec4iInputArrayInput = sharedTestState->effect->findUniformInput("vec4iInputArray");
+            auto  vec4iInputArrayInput = m_sharedTestState.effect->findUniformInput("vec4iInputArray");
             vec4i vec4iInputArray[]    = {vec4i{42, 43, 44, 45}, vec4i{46, 47, 48, 49}, vec4i{50, 51, 52, 53}};
-            EXPECT_TRUE(appearance->getInputValue(*vec4iInputArrayInput, 3u, vec4iInputArray));
+            EXPECT_TRUE(m_appearance.getInputValue(*vec4iInputArrayInput, 3u, vec4iInputArray));
             for (const auto& i : vec4iInputArray)
                 EXPECT_EQ(i, vec4i{0});
         }
         {
-            auto  vec2fInputArrayInput = sharedTestState->effect->findUniformInput("vec2fInputArray");
+            auto  vec2fInputArrayInput = m_sharedTestState.effect->findUniformInput("vec2fInputArray");
             vec2f vec2fInputArray[]    = {vec2f{42, 43}, vec2f{44, 45}, vec2f{46, 47}};
-            EXPECT_TRUE(appearance->getInputValue(*vec2fInputArrayInput, 3u, vec2fInputArray));
+            EXPECT_TRUE(m_appearance.getInputValue(*vec2fInputArrayInput, 3u, vec2fInputArray));
             for (const auto& i : vec2fInputArray)
                 EXPECT_EQ(i, vec2f{0});
         }
         {
-            auto  vec3fInputArrayInput = sharedTestState->effect->findUniformInput("vec3fInputArray");
+            auto  vec3fInputArrayInput = m_sharedTestState.effect->findUniformInput("vec3fInputArray");
             vec3f vec3fInputArray[]    = {vec3f{42, 43, 44}, vec3f{45, 46, 47}, vec3f{48, 49, 50}};
-            EXPECT_TRUE(appearance->getInputValue(*vec3fInputArrayInput, 3u, vec3fInputArray));
+            EXPECT_TRUE(m_appearance.getInputValue(*vec3fInputArrayInput, 3u, vec3fInputArray));
             for (const auto& i : vec3fInputArray)
                 EXPECT_EQ(i, vec3f{0});
         }
         {
-            auto  vec4fInputArrayInput = sharedTestState->effect->findUniformInput("vec4fInputArray");
+            auto  vec4fInputArrayInput = m_sharedTestState.effect->findUniformInput("vec4fInputArray");
             vec4f vec4fInputArray[]    = {vec4f{42, 43, 44, 45}, vec4f{46, 47, 48, 49}, vec4f{50, 51, 52, 53}};
-            EXPECT_TRUE(appearance->getInputValue(*vec4fInputArrayInput, 3u, vec4fInputArray));
+            EXPECT_TRUE(m_appearance.getInputValue(*vec4fInputArrayInput, 3u, vec4fInputArray));
             for (const auto& i : vec4fInputArray)
                 EXPECT_EQ(i, vec4f{0});
         }
         {
-            auto      matrix22fInputArrayInput = sharedTestState->effect->findUniformInput("matrix22fInputArray");
+            auto      matrix22fInputArrayInput = m_sharedTestState.effect->findUniformInput("matrix22fInputArray");
             matrix22f matrix22fInputArray[3]   = {{42, 43, 44, 45}, {46, 47, 48, 49}, {50, 51, 52, 53}};
-            EXPECT_TRUE(appearance->getInputValue(*matrix22fInputArrayInput, 3u, matrix22fInputArray));
+            EXPECT_TRUE(m_appearance.getInputValue(*matrix22fInputArrayInput, 3u, matrix22fInputArray));
             for (const auto& i : matrix22fInputArray)
                 EXPECT_EQ(i, matrix22f{0.0f});
         }
         {
-            auto      matrix33fInputArrayInput = sharedTestState->effect->findUniformInput("matrix33fInputArray");
+            auto      matrix33fInputArrayInput = m_sharedTestState.effect->findUniformInput("matrix33fInputArray");
             matrix33f matrix33fInputArray[3]   = {{42, 43, 44, 46, 47, 48, 50, 51, 52}, {54, 55, 56, 46, 47, 48, 42, 43, 44}, {54, 55, 56, 46, 47, 48, 50, 51, 52}};
-            EXPECT_TRUE(appearance->getInputValue(*matrix33fInputArrayInput, 3u, matrix33fInputArray));
+            EXPECT_TRUE(m_appearance.getInputValue(*matrix33fInputArrayInput, 3u, matrix33fInputArray));
             for (const auto& i : matrix33fInputArray)
                 EXPECT_EQ(i, matrix33f{0.0f});
         }
         {
-            auto      matrix44fInputArrayInput = sharedTestState->effect->findUniformInput("matrix44fInputArray");
+            auto      matrix44fInputArrayInput = m_sharedTestState.effect->findUniformInput("matrix44fInputArray");
             matrix44f matrix44fInputArray[3]   = {{42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57},
                                                 {46, 47, 48, 49, 42, 43, 44, 45, 54, 55, 56, 57, 46, 47, 48, 49},
                                                 {50, 51, 52, 53, 54, 55, 56, 57, 42, 43, 44, 45, 50, 51, 52, 53}};
-            EXPECT_TRUE(appearance->getInputValue(*matrix44fInputArrayInput, 3u, matrix44fInputArray));
+            EXPECT_TRUE(m_appearance.getInputValue(*matrix44fInputArrayInput, 3u, matrix44fInputArray));
             for (const auto& i : matrix44fInputArray)
                 EXPECT_EQ(i, matrix44f{0.0f});
         }
     }
 
-    class AnAppearanceWithGeometryShader : public AAppearanceTest
+    class AnAppearanceWithGeometryShader : public TestWithSharedEffectPerFeatureLevel
     {
     public:
-
-        static void SetUpTestSuite()
+        AnAppearanceWithGeometryShader()
+            : TestWithSharedEffectPerFeatureLevel{ true }
         {
-            sharedTestState = std::make_unique<TestEffectCreator>(false, true);
         }
+
+    protected:
+        Appearance& m_appearance{ m_sharedTestState.recreateAppearence() };
     };
 
-    TEST_F(AnAppearanceWithGeometryShader, HasInitialDrawModeOfGeometryShadersRequirement)
+    RAMSES_INSTANTIATE_FEATURELEVEL_TEST_SUITE(AnAppearanceWithGeometryShader);
+
+    TEST_P(AnAppearanceWithGeometryShader, HasInitialDrawModeOfGeometryShadersRequirement)
     {
         EDrawMode mode;
-        EXPECT_TRUE(appearance->getDrawMode(mode));
+        EXPECT_TRUE(m_appearance.getDrawMode(mode));
         EXPECT_EQ(EDrawMode::Lines, mode);
     }
 
-    TEST_F(AnAppearanceWithGeometryShader, RefusesToChangeDrawingMode_WhenIncompatibleToGeometryShader)
+    TEST_P(AnAppearanceWithGeometryShader, RefusesToChangeDrawingMode_WhenIncompatibleToGeometryShader)
     {
         // Shader uses lines, can't change to incompatible types
-        EXPECT_FALSE(appearance->setDrawMode(EDrawMode::Points));
-        EXPECT_FALSE(appearance->setDrawMode(EDrawMode::Triangles));
-        EXPECT_FALSE(appearance->setDrawMode(EDrawMode::TriangleFan));
+        EXPECT_FALSE(m_appearance.setDrawMode(EDrawMode::Points));
+        EXPECT_FALSE(m_appearance.setDrawMode(EDrawMode::Triangles));
+        EXPECT_FALSE(m_appearance.setDrawMode(EDrawMode::TriangleFan));
         EDrawMode mode;
-        EXPECT_TRUE(appearance->getDrawMode(mode));
+        EXPECT_TRUE(m_appearance.getDrawMode(mode));
         EXPECT_EQ(EDrawMode::Lines, mode);
     }
 
-    TEST_F(AnAppearanceWithGeometryShader, AllowsChangingDrawMode_IfNewModeIsStillCompatible)
+    TEST_P(AnAppearanceWithGeometryShader, AllowsChangingDrawMode_IfNewModeIsStillCompatible)
     {
         // Shader uses lines, change to line strip is ok - still produces lines for the geometry stage
-        EXPECT_TRUE(appearance->setDrawMode(EDrawMode::LineStrip));
+        EXPECT_TRUE(m_appearance.setDrawMode(EDrawMode::LineStrip));
         EDrawMode mode;
-        EXPECT_TRUE(appearance->getDrawMode(mode));
+        EXPECT_TRUE(m_appearance.getDrawMode(mode));
         EXPECT_EQ(EDrawMode::LineStrip, mode);
     }
 

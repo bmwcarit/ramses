@@ -21,7 +21,7 @@ namespace ramses::internal
     public:
         ADataReferenceLinkCachedScene()
             : rendererScenes(rendererEventCollector)
-            , scene(rendererScenes.createScene(SceneInfo(SceneId(3u))))
+            , scene(rendererScenes.createScene(SceneInfo{ SceneId(3u) }))
             , sceneAllocator(scene)
         {
             const DataLayoutHandle layout = sceneAllocator.allocateDataLayout({ DataFieldInfo(EDataType::Int32) }, ResourceContentHash::Invalid());

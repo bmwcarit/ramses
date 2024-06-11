@@ -22,18 +22,18 @@ namespace ramses::internal
     class Platform_BaseMock : public Platform_Base
     {
     public:
-        explicit Platform_BaseMock(const RendererConfig& config);
+        explicit Platform_BaseMock(const RendererConfigData& config);
         ~Platform_BaseMock() override;
 
-        MOCK_METHOD(bool, createWindow, (const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler), (override));
-        MOCK_METHOD(bool, createContext, (const DisplayConfig& displayConfig), (override));
+        MOCK_METHOD(bool, createWindow, (const DisplayConfigData& displayConfig, IWindowEventHandler& windowEventHandler), (override));
+        MOCK_METHOD(bool, createContext, (const DisplayConfigData& displayConfig), (override));
         MOCK_METHOD(bool, createContextUploading, (), (override));
-        MOCK_METHOD(bool, createDeviceExtension, (const DisplayConfig& displayConfig), (override));
+        MOCK_METHOD(bool, createDeviceExtension, (const DisplayConfigData& displayConfig), (override));
         MOCK_METHOD(bool, createDevice, (), (override));
         MOCK_METHOD(bool, createDeviceUploading, (), (override));
-        MOCK_METHOD(bool, createEmbeddedCompositor, (const DisplayConfig& displayConfig), (override));
+        MOCK_METHOD(bool, createEmbeddedCompositor, (const DisplayConfigData& displayConfig), (override));
         MOCK_METHOD(bool, createSystemCompositorController, (), (override));
-        MOCK_METHOD(void, createTextureUploadingAdapter, (const DisplayConfig& displayConfig), (override));
+        MOCK_METHOD(void, createTextureUploadingAdapter, (const DisplayConfigData& displayConfig), (override));
 
         WindowMock*                     window                     = new ::testing::StrictMock<WindowMock>;
         ContextMock*                    context                    = new ::testing::StrictMock<ContextMock>;

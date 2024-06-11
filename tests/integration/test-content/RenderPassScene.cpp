@@ -17,8 +17,8 @@ namespace ramses::internal
     RenderPassScene::RenderPassScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
         , m_effect(*getTestEffect("ramses-test-client-basic"))
-        , m_blueTriangle(scene, m_effect, TriangleAppearance::EColor_Blue)
-        , m_whiteTriangle(scene, m_effect, TriangleAppearance::EColor_White)
+        , m_blueTriangle(scene, m_effect, TriangleAppearance::EColor::Blue)
+        , m_whiteTriangle(scene, m_effect, TriangleAppearance::EColor::White)
     {
         ramses::MeshNode* meshNode1 = m_scene.createMeshNode();
         ramses::MeshNode* meshNode2 = m_scene.createMeshNode();

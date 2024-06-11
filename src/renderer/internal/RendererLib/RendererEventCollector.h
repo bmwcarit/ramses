@@ -21,7 +21,7 @@ namespace ramses::internal
         [[nodiscard]] RendererEventVector getRendererEvents() const;
         [[nodiscard]] RendererEventVector getSceneControlEvents() const;
 
-        void addDisplayEvent(ERendererEventType eventType, DisplayHandle displayHandle, const DisplayConfig& config = {});
+        void addDisplayEvent(ERendererEventType eventType, DisplayHandle displayHandle, const DisplayConfigData& config = {});
         void addReadPixelsEvent(ERendererEventType eventType, DisplayHandle displayHandle, OffscreenBufferHandle offscreenBufferHandle, std::vector<uint8_t>&& pixelData);
         void addInternalSceneEvent(ERendererEventType eventType, SceneId sceneId);
         void addSceneEvent(ERendererEventType eventType, SceneId sceneId, RendererSceneState state);

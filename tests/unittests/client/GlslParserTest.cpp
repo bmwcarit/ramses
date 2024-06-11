@@ -318,7 +318,7 @@ namespace ramses::internal
         EXPECT_EQ(0u, warnings.size());
     }
 
-    TEST_F(AGlslParser, warnVertexLocationNotFoundButNameMatches)
+    TEST_F(AGlslParser, doesNotWarnVertexLocationNotFoundButNameMatches)
     {
         const auto vertexShader = R"SHADER(
                 #version 320 es
@@ -348,10 +348,7 @@ namespace ramses::internal
         EXPECT_TRUE(parser->valid());
         EXPECT_EQ("", parser->getErrors());
         auto warnings = parser->generateWarnings();
-        EXPECT_EQ(1u, warnings.size());
-        EXPECT_EQ(warnings[0].stage, EShaderStage::Fragment);
-        EXPECT_EQ(warnings[0].category, EShaderWarningCategory::InterfaceMismatch);
-        EXPECT_EQ(warnings[0].msg, "Fragment shader input 'layout(location = 0) foo0' is not output in vertex shader");
+        EXPECT_EQ(0u, warnings.size());
     }
 
     TEST_F(AGlslParser, warnFragmentLocationNotFoundButNameMatches)
@@ -390,7 +387,7 @@ namespace ramses::internal
         EXPECT_EQ(warnings[0].msg, "Vertex shader output 'layout(location = 0) foo0' is not input in fragment shader");
     }
 
-    TEST_F(AGlslParser, warnTypeMismatch)
+    TEST_F(AGlslParser, failsParsingIfTypesMismatch)
     {
         const auto vertexShader = R"SHADER(
                 #version 320 es
@@ -413,14 +410,10 @@ namespace ramses::internal
                 })SHADER";
 
         auto parser = MakeParser(vertexShader, fragmentShader);
-        EXPECT_TRUE(parser->valid());
-        ASSERT_EQ("", parser->getErrors());
+        EXPECT_FALSE(parser->valid());
+        EXPECT_THAT(parser->getErrors(), ::testing::HasSubstr("ERROR: Linking vertex and fragment stages: Types must match"));
         auto warnings = parser->generateWarnings();
-        EXPECT_EQ(1u, warnings.size());
-        ASSERT_LE(1u, warnings.size());
-        EXPECT_EQ(warnings[0].stage, EShaderStage::Vertex);
-        EXPECT_EQ(warnings[0].category, EShaderWarningCategory::InterfaceMismatch);
-        EXPECT_EQ(warnings[0].msg, "Type mismatch: 'foo0'. (Vertex: smooth out highp 2-component vector of float, Fragment: smooth in highp float)");
+        EXPECT_EQ(0u, warnings.size());
     }
 
     TEST_F(AGlslParser, warnPrecisionMismatch)
@@ -483,18 +476,10 @@ namespace ramses::internal
                 })SHADER";
 
         auto parser = MakeParser(vertexShader, fragmentShader);
-        EXPECT_TRUE(parser->getProgram() != nullptr);
-        ASSERT_TRUE(parser->getErrors().empty());
+        EXPECT_FALSE(parser->getProgram());
+        EXPECT_THAT(parser->getErrors(), ::testing::HasSubstr("ERROR: Linking unknown stage and fragment stages: Precision qualifiers must match"));
         auto warnings = parser->generateWarnings();
-        EXPECT_EQ(2u, warnings.size());
-        ASSERT_LE(2u, warnings.size());
-        std::sort(warnings.begin(), warnings.end(), [](const auto& w1, const auto& w2) { return w1.msg < w2.msg; }); // order might be unstable
-        EXPECT_EQ(warnings[0].stage, EShaderStage::Vertex);
-        EXPECT_EQ(warnings[0].category, EShaderWarningCategory::PrecisionMismatch);
-        EXPECT_EQ(warnings[0].msg, "Precision mismatch: 'foo0'. (Vertex: smooth out mediump float, Fragment: smooth in highp float)");
-        EXPECT_EQ(warnings[1].stage, EShaderStage::Vertex);
-        EXPECT_EQ(warnings[1].category, EShaderWarningCategory::PrecisionMismatch);
-        EXPECT_EQ(warnings[1].msg, "Precision mismatch: 'u_bar'. (Vertex: uniform mediump 2-component vector of float, Fragment: uniform highp 2-component vector of float)");
+        EXPECT_EQ(0u, warnings.size());
     }
 
     TEST_F(AGlslParser, shadersFromParts)

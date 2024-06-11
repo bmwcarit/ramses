@@ -9,7 +9,7 @@
 #include "gmock/gmock.h"
 #include "internal/Platform/X11/Window_X11.h"
 #include "WindowEventHandlerMock.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "internal/RendererLib/Enums/EKeyModifier.h"
 
 using namespace testing;
@@ -155,7 +155,7 @@ namespace ramses::internal
             proceseAllEvents();
         }
 
-        DisplayConfig config;
+        DisplayConfigData config;
         NiceMock<WindowEventHandlerMock> eventHandlerMock;
         Window_X11 window;
     };
@@ -273,7 +273,7 @@ namespace ramses::internal
 
     TEST_F(WindowX11, canCreateDisplayWithExternallyOwnedWindow)
     {
-        DisplayConfig otherConfig;
+        DisplayConfigData otherConfig;
         otherConfig.setX11WindowHandle(X11WindowHandle{window.getNativeWindowHandle()});
         Window_X11 externallyOwnedWindow(otherConfig, eventHandlerMock, 123u);
         ASSERT_TRUE(externallyOwnedWindow.init());
@@ -281,7 +281,7 @@ namespace ramses::internal
 
     TEST_F(WindowX11, canReCreateDisplayWithSameExternallyOwnedWindowSeveralTimes)
     {
-        DisplayConfig otherConfig;
+        DisplayConfigData otherConfig;
         otherConfig.setX11WindowHandle(X11WindowHandle{window.getNativeWindowHandle()});
 
         {
@@ -302,7 +302,7 @@ namespace ramses::internal
 
     TEST_F(WindowX11, canSetExternallyOwnedWindowSize)
     {
-        DisplayConfig otherConfig;
+        DisplayConfigData otherConfig;
         otherConfig.setX11WindowHandle(X11WindowHandle{window.getNativeWindowHandle()});
         Window_X11 externallyOwnedWindow(otherConfig, eventHandlerMock, 123u);
         ASSERT_TRUE(externallyOwnedWindow.init());

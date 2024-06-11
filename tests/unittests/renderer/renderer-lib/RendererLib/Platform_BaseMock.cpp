@@ -12,7 +12,7 @@ using namespace testing;
 
 namespace ramses::internal
 {
-    Platform_BaseMock::Platform_BaseMock(const RendererConfig& config)
+    Platform_BaseMock::Platform_BaseMock(const RendererConfigData& config)
         : Platform_Base(config)
     {
         ON_CALL(*this, createWindow(_, _)).WillByDefault(Invoke([this](auto& /*unused*/, auto& /*unused*/) {

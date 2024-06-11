@@ -12,6 +12,9 @@
 #include "internal/SceneGraph/SceneAPI/EShaderStage.h"
 #include "internal/SceneGraph/SceneAPI/EShaderWarningCategory.h"
 #include "internal/PlatformAbstraction/Collections/StringOutputStream.h"
+#include "internal/SceneGraph/Resource/SPIRVShaders.h"
+
+#include "ramses/framework/ERenderBackendCompatibility.h"
 
 #include <string>
 #include <vector>
@@ -31,13 +34,15 @@ namespace ramses::internal
         };
         using Warnings = std::vector<Warning>;
 
-        GlslParser(const std::string& vertexShader, const std::string& fragmentShader, const std::string& geometryShader = {}, const std::vector<std::string>& compilerDefines = {});
+        GlslParser(const std::string& vertexShader, const std::string& fragmentShader, const std::string& geometryShader = {}, const std::vector<std::string>& compilerDefines = {}, ERenderBackendCompatibility compatibility = ERenderBackendCompatibility::OpenGL);
 
         [[nodiscard]] bool valid() const;
 
         [[nodiscard]] const std::string& getVertexShader() const;
         [[nodiscard]] const std::string& getFragmentShader() const;
         [[nodiscard]] const std::string& getGeometryShader() const;
+
+        [[nodiscard]] const SPIRVShaders& getSPIRVShaders() const;
 
         [[nodiscard]] Warnings generateWarnings() const;
 
@@ -54,9 +59,11 @@ namespace ramses::internal
         };
 
         static std::string CreateDefineString(const std::vector<std::string>& compilerDefines);
+        void setShadersCompatibility(ERenderBackendCompatibility compatibility);
         bool createShaderParts(ShaderParts& outParts, const std::string& defineString, const std::string& userShader, const std::string& shaderName) const;
         bool parseShader(glslang::TShader& tShader, const TBuiltInResource& glslCompilationResources, const ShaderParts& shaderParts, const std::string& shaderName);
         inline bool linkProgram();
+        void generateSPIRV(ERenderBackendCompatibility compatibility);
         static std::string MergeShaderParts(const ShaderParts& shaderParts);
 
         mutable StringOutputStream m_errorMessages;
@@ -68,5 +75,7 @@ namespace ramses::internal
         std::string m_vertexShaderFromParts;
         std::string m_fragmentShaderFromParts;
         std::string m_geometryShaderFromParts;
+
+        SPIRVShaders m_spirvShaders;
     };
 }

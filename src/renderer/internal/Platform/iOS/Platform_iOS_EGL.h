@@ -16,10 +16,10 @@ namespace ramses::internal
     class Platform_iOS_EGL : public Platform_EGL<Window_iOS>
     {
     public:
-        explicit Platform_iOS_EGL(const RendererConfig& rendererConfig);
+        explicit Platform_iOS_EGL(const RendererConfigData& rendererConfig);
 
     protected:
-        virtual bool createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override;
+        virtual bool createWindow(const DisplayConfigData& displayConfig, IWindowEventHandler& windowEventHandler) override;
         virtual uint32_t getSwapInterval() const override;
     };
 }

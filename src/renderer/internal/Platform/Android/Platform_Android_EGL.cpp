@@ -7,18 +7,18 @@
 //  -------------------------------------------------------------------------
 
 #include "internal/Platform/Android/Platform_Android_EGL.h"
-#include "internal/RendererLib/RendererConfig.h"
+#include "internal/RendererLib/RendererConfigData.h"
 #include "internal/Platform/EGL/Context_EGL.h"
 #include "internal/RendererLib/PlatformBase/EmbeddedCompositor_Dummy.h"
 
 namespace ramses::internal
 {
-    Platform_Android_EGL::Platform_Android_EGL(const RendererConfig& rendererConfig)
+    Platform_Android_EGL::Platform_Android_EGL(const RendererConfigData& rendererConfig)
         : Platform_EGL<Window_Android>(rendererConfig)
     {
     }
 
-    bool Platform_Android_EGL::createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler)
+    bool Platform_Android_EGL::createWindow(const DisplayConfigData& displayConfig, IWindowEventHandler& windowEventHandler)
     {
         auto window = std::make_unique<Window_Android>(displayConfig, windowEventHandler, 0u);
         if (window->init())

@@ -31,8 +31,8 @@ class BuildConfig(common.CommonConfig):
         super(BuildConfig, self).__init__(compiler, config, build_dir)
 
     def cmake_configure(self,
-                        disable_default_window_type, enable_x11, enable_android, enable_wayland_ivi, enable_wayland_wl_shell,
-                        flatbuf_gen, android_abi, disable_logic, use_imagemagick,
+                        disable_default_window_type, enable_x11, enable_android, enable_wayland_ivi, enable_wayland_wl_shell, enable_vulkan,
+                        flatbuf_gen, android_abi, use_imagemagick,
                         no_full_shared_lib,
                         no_examples, no_demos, no_tests, no_tools, generator,
                         enable_dlt, enable_lto, test_coverage, enable_coverage, sanitizer_name,
@@ -73,9 +73,6 @@ class BuildConfig(common.CommonConfig):
         if no_full_shared_lib:
             optional_args.append('-Dramses-sdk_BUILD_FULL_SHARED_LIB=0')
 
-        if disable_logic:
-            optional_args.append('-Dramses-sdk_ENABLE_LOGIC=OFF')
-
         if disable_default_window_type:
             optional_args.append('-Dramses-sdk_ENABLE_DEFAULT_WINDOW_TYPE=0')
 
@@ -109,6 +106,7 @@ class BuildConfig(common.CommonConfig):
             f'-Dramses-sdk_ENABLE_WINDOW_TYPE_ANDROID={to_cmake(enable_android)}',
             f'-Dramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_IVI={to_cmake(enable_wayland_ivi)}',
             f'-Dramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_WL_SHELL={to_cmake(enable_wayland_wl_shell)}',
+            f'-Dramses-sdk_ENABLE_DEVICE_TYPE_VULKAN={to_cmake(enable_vulkan)}',
             f'-Dramses-sdk_ENABLE_DLT={to_cmake(enable_dlt)}',
             f'-Dramses-sdk_ENABLE_FLATBUFFERS_GENERATION={to_cmake(flatbuf_gen)}',
             f'-Dramses-sdk_BUILD_WITH_LTO={to_cmake(enable_lto)}',
@@ -153,6 +151,7 @@ class BuildConfig(common.CommonConfig):
 @click.option('--enable-android', is_flag=True, default=False, help='Enable building for creating android window')
 @click.option('--enable-wayland-ivi', is_flag=True, default=False, help='Enable building for creating wayland windows that use ivi_shell')
 @click.option('--enable-wayland-wl-shell', is_flag=True, default=False, help='Enable building for creating wayland windows that use wl_shell')
+@click.option('--enable-vulkan', is_flag=True, default=False, help='Enable building for creating vulkan device')
 @click.option('--build-target', default='install', help='What CMake target to build')
 @click.option('--flatbuf-gen', is_flag=True, default=False, help='Generate flatbuffer file headers')
 @click.option('--android-abi', help='Set ABI when building on Android')
@@ -172,7 +171,6 @@ class BuildConfig(common.CommonConfig):
 @click.option('--package-name', default="", help='Use a different package name for CPack than the default')
 @click.option('--package-destination', type=click.Path(exists=True, file_okay=False), help='Specify a folder where the package shall be copied')
 @click.option('--cpp-std', type=click.Choice(CPP_STANDARDS), default=CPP_STANDARDS[0])
-@click.option('--disable-logic', is_flag=True, default=False, help='Disable building ramses logic')
 @click.option('--use-imagemagick', is_flag=True, default=False, help='Build tests that use imagemagick')
 @click.option('--cmake-modules', help='Sets cmake module path')
 def build(compiler, config, build_dir, configure_only, build_target, package_destination, **kwargs):

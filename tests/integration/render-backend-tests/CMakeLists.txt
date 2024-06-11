@@ -12,7 +12,9 @@ createModuleWithRenderer(
     ENABLE_INSTALL  ON
     SRC_FILES       *.h
                     *.cpp
-    DEPENDENCIES    RendererTestUtils ramses-cli
+    DEPENDENCIES    RendererTestUtils
+                    ramses-cli
+                    glslang-init-gtest-env
 )
 
 # Tests which are supposed to be run in the gate build job
@@ -37,4 +39,23 @@ IF (ramses-sdk_BUILD_TESTS)
         EXTRA_ARGS --gtest_filter=${GATE_FILTER} --ivi-layer 3
         WINDOW_TYPE_FILTER ${GATE_WINDOW_PLATFORMS}
     )
+
+    # Vulkan tests
+    if(ramses-sdk_ENABLE_DEVICE_TYPE_VULKAN)
+        set(VULKAN_FILTER "${GATE_FILTER}")
+
+        if(ramses-sdk_ENABLE_WINDOW_TYPE_X11)
+            makeTestFromTarget(TARGET render-backend-tests
+                    SUFFIX x11-vulkan_RNDSANDWICHTEST_SWRAST
+                    EXTRA_ARGS --gtest_filter=${VULKAN_FILTER} --device-type vulkan --window-type x11
+        )
+        endif()
+
+        if(ramses-sdk_ENABLE_WINDOW_TYPE_WINDOWS)
+            makeTestFromTarget(TARGET render-backend-tests
+                    SUFFIX windows-vulkan_RNDSANDWICHTEST
+                    EXTRA_ARGS --gtest_filter=${VULKAN_FILTER} --device-type vulkan --window-type windows
+        )
+        endif()
+    endif()
 ENDIF()

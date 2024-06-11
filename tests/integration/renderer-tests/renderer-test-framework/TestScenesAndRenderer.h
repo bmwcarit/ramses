@@ -49,6 +49,8 @@ namespace ramses::internal
         [[nodiscard]] const TestRenderer& getTestRenderer() const;
         [[nodiscard]] TestRenderer& getTestRenderer();
 
+        [[nodiscard]] EFeatureLevel getFeatureLevel() const;
+
     private:
         ramses::RamsesFramework m_ramsesFramework;
         ramses::RamsesClient& m_client;

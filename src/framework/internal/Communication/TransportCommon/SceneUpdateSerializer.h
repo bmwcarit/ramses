@@ -9,6 +9,7 @@
 #pragma once
 
 #include "internal/Communication/TransportCommon/ISceneUpdateSerializer.h"
+#include "ramses/framework/EFeatureLevel.h"
 
 namespace ramses::internal
 {
@@ -18,13 +19,15 @@ namespace ramses::internal
     class SceneUpdateSerializer : public ISceneUpdateSerializer
     {
     public:
-        explicit SceneUpdateSerializer(const SceneUpdate& update, StatisticCollectionScene& sceneStatistics);
+        SceneUpdateSerializer(const SceneUpdate& update, StatisticCollectionScene& sceneStatistics, EFeatureLevel featureLevel);
         bool writeToPackets(absl::Span<std::byte> packetMem, const std::function<bool(size_t)>& writeDoneFunc) const override;
 
         [[nodiscard]] const SceneUpdate& getUpdate() const;
         [[nodiscard]] const StatisticCollectionScene& getStatisticCollection() const;
+
     private:
         const SceneUpdate& m_update;
         StatisticCollectionScene& m_sceneStatistics;
+        EFeatureLevel m_featureLevel = EFeatureLevel_Latest;
     };
 }

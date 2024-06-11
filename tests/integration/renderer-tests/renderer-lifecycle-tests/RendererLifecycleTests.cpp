@@ -21,6 +21,9 @@
 #include "TestScenes/TransformationLinkScene.h"
 #include "TestScenes/VisibilityScene.h"
 #include "TestScenes/RenderTargetScene.h"
+#include "TestScenes/LogicScene.h"
+#include "internal/Core/Utils/File.h"
+#include "internal/Core/Utils/ThreadBarrier.h"
 
 // These includes are needed because of ramses API usage
 #include "ramses/renderer/IRendererEventHandler.h"
@@ -28,6 +31,9 @@
 #include "ramses/renderer/DisplayConfig.h"
 #include "ramses/client/DataObject.h"
 #include "ramses/client/SceneReference.h"
+#include "ramses/client/logic/LogicEngine.h"
+#include "ramses/client/logic/LuaScript.h"
+#include "ramses/client/logic/Property.h"
 #include "impl/RamsesObjectTypeUtils.h"
 #include "impl/ValidationReportImpl.h"
 
@@ -220,6 +226,40 @@ namespace ramses::internal
     }
 #endif
 
+    TEST_F(ARendererLifecycleTest, MergeScenes)
+    {
+        const sceneId_t sceneId = createScene<MultipleTrianglesScene>(MultipleTrianglesScene::THREE_TRIANGLES, glm::vec3(0.0f, 0.0f, 5.0f));
+        testScenesAndRenderer.initializeRenderer();
+        const displayId_t display = createDisplayForWindow();
+        ASSERT_TRUE(display != displayId_t::Invalid());
+
+        testScenesAndRenderer.publish(sceneId);
+        testScenesAndRenderer.flush(sceneId);
+        testRenderer.setSceneMapping(sceneId, display);
+        ASSERT_TRUE(testScenesAndRenderer.getSceneToState(sceneId, RendererSceneState::Rendered));
+        ASSERT_TRUE(checkScreenshot(display, "ARendererInstance_Three_Triangles"));
+
+        auto& client = testScenesAndRenderer.getClient();
+        // create two more scenes and save to files
+        for (size_t i = 0; i < 2; ++i) {
+            int sign = (i%2 != 0u)? -1 : 1;
+            const sceneId_t sid = createScene<MultipleTrianglesScene>(MultipleTrianglesScene::THREE_TRIANGLES, glm::vec3(3.0f * sign, 1.0f * sign, 3.0f));
+            auto& newScene = testScenesAndRenderer.getScenesRegistry().getScene(sid);
+            ASSERT_TRUE(newScene.saveToFile(fmt::format("newSceneToMerge{}.ramses", i)));
+            EXPECT_TRUE(client.destroy(newScene));
+        }
+
+        auto& renderedScene = testScenesAndRenderer.getScenesRegistry().getScene(sceneId);
+        for (size_t i = 0; i < 2; ++i) {
+            ASSERT_TRUE(client.mergeSceneFromFile(renderedScene, fmt::format("newSceneToMerge{}.ramses", i)));
+        }
+
+        testScenesAndRenderer.flush(sceneId);
+        ASSERT_TRUE(checkScreenshot(display, "ARendererInstance_MergeScenes"));
+        testScenesAndRenderer.unpublish(sceneId);
+        testScenesAndRenderer.destroyRenderer();
+    }
+
     TEST_F(ARendererLifecycleTest, UnsubscribeRenderer_ChangeScene_ThenResubscribeRenderer)
     {
         const sceneId_t sceneId = createScene<MultipleTrianglesScene>(MultipleTrianglesScene::THREE_TRIANGLES, glm::vec3(0.0f, 0.0f, 5.0f));
@@ -314,6 +354,48 @@ namespace ramses::internal
         ASSERT_TRUE(testScenesAndRenderer.getSceneToState(sceneId, RendererSceneState::Rendered));
 
         ASSERT_TRUE(checkScreenshot(display2, "ARendererInstance_Three_Triangles"));
+
+        testScenesAndRenderer.unpublish(sceneId);
+        testScenesAndRenderer.destroyRenderer();
+    }
+
+    TEST_F(ARendererLifecycleTest, DestroyDisplayAndRemapSceneToOtherDisplay_LocalOnly)
+    {
+        ramses::SceneConfig config;
+        config.setPublicationMode(ramses::EScenePublicationMode::LocalOnly);
+        const ramses::sceneId_t sceneId = createScene<MultipleTrianglesScene>(MultipleTrianglesScene::THREE_TRIANGLES, glm::vec3(0.0f, 0.0f, 5.0f), WindowWidth, WindowHeight, config);
+        testScenesAndRenderer.initializeRenderer();
+        testScenesAndRenderer.publish(sceneId);
+        testScenesAndRenderer.flush(sceneId);
+
+        {
+            const ramses::displayId_t display0 = createDisplayForWindow(0u);
+            ASSERT_TRUE(ramses::displayId_t::Invalid() != display0);
+
+            testRenderer.setSceneMapping(sceneId, display0);
+            testRenderer.setSceneState(sceneId, ramses::RendererSceneState::Rendered);
+            testRenderer.doOneLoop(); // calls addSubscriber, but does NOT send the scene
+            // LocalOnly scenes cannot send the initial flush automatically
+            testRenderer.doOneLoop();
+            testRenderer.doOneLoop();
+            testRenderer.setSceneState(sceneId, ramses::RendererSceneState::Available); // unsubscribes the scene
+            testRenderer.doOneLoop();
+            testRenderer.doOneLoop();
+            testRenderer.destroyDisplay(display0);
+        }
+
+        {
+            testScenesAndRenderer.flush(sceneId);
+            const ramses::displayId_t display1 = createDisplayForWindow(1u);
+            ASSERT_TRUE(ramses::displayId_t::Invalid() != display1);
+            testRenderer.setSceneMapping(sceneId, display1);
+            testRenderer.setSceneState(sceneId, ramses::RendererSceneState::Rendered);
+            testRenderer.doOneLoop(); // calls addSubscriber
+            testScenesAndRenderer.flush(sceneId); // sends the scene !
+            ASSERT_TRUE(testScenesAndRenderer.getSceneToState(sceneId, ramses::RendererSceneState::Rendered));
+
+            ASSERT_TRUE(checkScreenshot(display1, "ARendererInstance_Three_Triangles"));
+        }
 
         testScenesAndRenderer.unpublish(sceneId);
         testScenesAndRenderer.destroyRenderer();
@@ -644,6 +726,10 @@ namespace ramses::internal
         TestScenes& m_scenes;
     };
 
+#ifndef _MSC_VER
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
     TEST_F(ARendererLifecycleTest, ReferencedScenesWithDataLinkAndRenderOrder)
     {
         testScenesAndRenderer.initializeRenderer();
@@ -1105,6 +1191,9 @@ namespace ramses::internal
         testScenesAndRenderer.unpublish(sceneRefId2);
         testScenesAndRenderer.destroyRenderer();
     }
+#ifndef _MSC_VER
+#pragma GCC diagnostic pop
+#endif
 
     TEST_F(ARendererLifecycleTest, PollingFrameCallbacks_DoesNotBlockIfNoDisplaysExist)
     {
@@ -1253,6 +1342,11 @@ namespace ramses::internal
         testScenesAndRenderer.destroyRenderer();
     }
 
+// expiration is deprecated feature
+#ifndef _MSC_VER
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
     TEST_F(ARendererLifecycleTest, SceneNotExpiredWhenUpdatedAndSubscribed)
     {
         testScenesAndRenderer.initializeRenderer();
@@ -1666,6 +1760,9 @@ namespace ramses::internal
 
         testScenesAndRenderer.destroyRenderer();
     }
+#ifndef _MSC_VER
+#pragma GCC diagnostic pop
+#endif
 
     TEST_F(ARendererLifecycleTest, HandlesSwitchingTriStateVisibilityFullyOffAndOn)
     {
@@ -1986,5 +2083,178 @@ namespace ramses::internal
 
         testScenesAndRenderer.unpublish(sceneId);
         testScenesAndRenderer.destroyRenderer();
+    }
+
+    static const std::string_view SceneFileName = "multiInstanceTestScene.ramses";
+    enum class RenderingMode { DoOneLoop, Threaded };
+    class ARendererLifecycleTest_MultipleInstances : public ::testing::TestWithParam<RenderingMode>
+    {
+    protected:
+        static void SetUpTestSuite()
+        {
+            // first create some scene and save it to file
+            TestScenesAndRenderer testScenesAndRenderer{ ramses::RamsesFrameworkConfig{ EFeatureLevel_Latest } };
+            const sceneId_t sceneId = testScenesAndRenderer.getScenesRegistry().createScene<LogicScene>(LogicScene::TRIANGLE_LOGIC,
+                glm::vec3(0.0f, 0.0f, 5.0f), ARendererLifecycleTest::WindowWidth, ARendererLifecycleTest::WindowHeight);
+
+            auto& scene = testScenesAndRenderer.getScenesRegistry().getScene(sceneId);
+            ASSERT_TRUE(scene.saveToFile(SceneFileName));
+        }
+
+        static void TearDownTestSuite()
+        {
+            File file{ SceneFileName };
+            if (file.exists())
+                file.remove();
+        }
+    };
+
+    class ARendererLifecycleTest_TestInstance
+    {
+    public:
+        ARendererLifecycleTest_TestInstance(uint32_t instanceIdx, RenderingMode renderMode)
+            : m_instanceIdx{ instanceIdx }
+            , m_renderMode { renderMode }
+        {
+        }
+
+        void createFrameworkAndLoadScene()
+        {
+            ramses::RamsesFrameworkConfig cfg{ EFeatureLevel_Latest };
+            cfg.setLoggingInstanceName(fmt::format("testInstance{}", m_instanceIdx));
+            m_framework = std::make_unique<ramses::RamsesFramework>(cfg);
+            auto client = m_framework->createClient(fmt::format("testClient{}", m_instanceIdx));
+            ASSERT_TRUE(client);
+            m_scene = client->loadSceneFromFile(SceneFileName);
+            ASSERT_TRUE(m_scene);
+            m_scene->publish();
+        }
+
+        void createRendererAndDisplay()
+        {
+            m_renderer = std::make_unique<TestRenderer>();
+            m_renderer->initializeRendererWithFramework(*m_framework, RendererTestUtils::CreateTestRendererConfig());
+            if (m_renderMode == RenderingMode::Threaded)
+                m_renderer->startRendererThread();
+
+            auto displayConfig = RendererTestUtils::CreateTestDisplayConfig(m_instanceIdx, true);
+            displayConfig.setWindowRectangle(ARendererLifecycleTest::WindowX, ARendererLifecycleTest::WindowY, ARendererLifecycleTest::WindowWidth, ARendererLifecycleTest::WindowHeight);
+            m_display = m_renderer->createDisplay(displayConfig);
+            ASSERT_TRUE(m_display != displayId_t::Invalid());
+
+            m_renderer->setSceneMapping(m_scene->getSceneId(), m_display);
+            ASSERT_TRUE(m_renderer->getSceneToState(*m_scene, RendererSceneState::Rendered));
+        }
+
+        void updateAndRenderFewFrames()
+        {
+            auto le = m_scene->findObject<ramses::LogicEngine>("le");
+            ASSERT_TRUE(le);
+            auto script = le->findObject<ramses::LuaScript>("script");
+            ASSERT_TRUE(script);
+
+            // update logic and render few frames with some changing values ending up at the correct one (one)
+            for (int x = -4; x <= 1; ++x)
+            {
+                EXPECT_TRUE(script->getInputs()->getChild("translation_x")->set(float(x)));
+                EXPECT_TRUE(le->update());
+                EXPECT_TRUE(m_scene->flush());
+
+                if (m_renderMode == RenderingMode::Threaded)
+                {
+                    std::this_thread::sleep_for(std::chrono::milliseconds{ 10 });
+                }
+                else
+                {
+                    m_renderer->doOneLoop();
+                }
+            }
+        }
+
+        void checkScreenshot()
+        {
+            EXPECT_TRUE(m_renderer->performScreenshotCheck(m_display, {}, 0u, 0u, ARendererLifecycleTest::WindowWidth, ARendererLifecycleTest::WindowHeight, "AMultipleInstances_TriangleWithLogic"));
+        }
+
+    private:
+        uint32_t m_instanceIdx = 0u;
+        RenderingMode m_renderMode = RenderingMode::DoOneLoop;
+        std::unique_ptr<ramses::RamsesFramework> m_framework;
+        ramses::Scene* m_scene = nullptr;
+        std::unique_ptr<TestRenderer> m_renderer;
+        ramses::displayId_t m_display;
+    };
+
+    INSTANTIATE_TEST_SUITE_P(
+        ARendererLifecycleTest_MultipleInstances_TestInstances,
+        ARendererLifecycleTest_MultipleInstances,
+        ::testing::Values(
+            RenderingMode::DoOneLoop,
+            RenderingMode::Threaded)
+    );
+
+    TEST_P(ARendererLifecycleTest_MultipleInstances, MultipleRamsesInstancesInSequence)
+    {
+        for (uint32_t i = 0u; i < 3u; ++i)
+        {
+            ARendererLifecycleTest_TestInstance testInstance{ i, GetParam() };
+            testInstance.createFrameworkAndLoadScene();
+            testInstance.createRendererAndDisplay();
+            testInstance.updateAndRenderFewFrames();
+            testInstance.checkScreenshot();
+        }
+    }
+
+    TEST_P(ARendererLifecycleTest_MultipleInstances, MultipleRamsesInstancesInParallel)
+    {
+        static constexpr uint32_t NumInstances = 3u;
+        std::vector<std::thread> threads;
+        threads.reserve(NumInstances);
+        for (uint32_t i = 0u; i < NumInstances; ++i)
+        {
+            threads.emplace_back([i] {
+                ARendererLifecycleTest_TestInstance testInstance{ i, GetParam() };
+                testInstance.createFrameworkAndLoadScene();
+                testInstance.createRendererAndDisplay();
+                testInstance.updateAndRenderFewFrames();
+                testInstance.checkScreenshot();
+                });
+        }
+
+        for (auto& t : threads)
+            t.join();
+    }
+
+    TEST_P(ARendererLifecycleTest_MultipleInstances, MultipleRamsesInstancesInParallel_WithBarriers)
+    {
+        static constexpr uint32_t NumInstances = 3u;
+        ThreadBarrier loadBarrier{ NumInstances };
+        ThreadBarrier initRendererBarrier{ NumInstances };
+        ThreadBarrier loopBarrier{ NumInstances };
+        ThreadBarrier checkScreenshortBarrier{ NumInstances };
+
+        std::vector<std::thread> threads;
+        threads.reserve(NumInstances);
+        for (uint32_t i = 0u; i < NumInstances; ++i)
+        {
+            threads.emplace_back([&, i] {
+                ARendererLifecycleTest_TestInstance testInstance{ i, GetParam() };
+
+                loadBarrier.wait();
+                testInstance.createFrameworkAndLoadScene();
+
+                initRendererBarrier.wait();
+                testInstance.createRendererAndDisplay();
+
+                loopBarrier.wait();
+                testInstance.updateAndRenderFewFrames();
+
+                checkScreenshortBarrier.wait();
+                testInstance.checkScreenshot();
+                });
+        }
+
+        for (auto& t : threads)
+            t.join();
     }
 }

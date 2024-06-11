@@ -7,7 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "internal/Platform/X11/Window_X11.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "internal/Core/Utils/LogMacros.h"
 #include "internal/Core/Utils/Warnings.h"
 #include <array>
@@ -166,7 +166,7 @@ namespace ramses::internal
         }
     }
 
-    Window_X11::Window_X11(const DisplayConfig& displayConfig, IWindowEventHandler &windowEventHandler, uint32_t id)
+    Window_X11::Window_X11(const DisplayConfigData& displayConfig, IWindowEventHandler &windowEventHandler, uint32_t id)
         : Window_Base(displayConfig, windowEventHandler, id)
         , m_keyModifiers(0)
         , m_bLButtonDown(false)

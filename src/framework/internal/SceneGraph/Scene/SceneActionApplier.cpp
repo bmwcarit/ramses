@@ -20,7 +20,6 @@
 #include "internal/Components/FlushTimeInformation.h"
 #include "internal/SceneGraph/Resource/IResource.h"
 #include "internal/Core/Utils/BinaryInputStream.h"
-#include "internal/Core/Utils/LogMacros.h"
 #include "glm/gtx/range.hpp"
 
 #include <string>
@@ -32,10 +31,10 @@ namespace ramses::internal
     inline void AssertHandle([[maybe_unused]] const TypedMemoryHandle<T>& actualHandle, [[maybe_unused]] const TypedMemoryHandle<T>& handleToCheck)
     {
         assert(handleToCheck.isValid());
-        assert(handleToCheck == actualHandle);
+        assert(actualHandle.isValid());
     }
 
-    void SceneActionApplier::ApplySingleActionOnScene(IScene& scene, SceneActionCollection::SceneActionReader& action)
+    void SceneActionApplier::ApplySingleActionOnScene(IScene& scene, SceneActionCollection::SceneActionReader& action, EFeatureLevel featureLevel)
     {
         switch (action.type())
         {
@@ -304,6 +303,17 @@ namespace ramses::internal
             action.read(field);
             action.read(dataRef);
             scene.setDataReference(handle, field, dataRef);
+            break;
+        }
+        case ESceneActionId::SetDataUniformBuffer:
+        {
+            DataInstanceHandle handle;
+            DataFieldHandle field;
+            UniformBufferHandle uniformBufferHandle;
+            action.read(handle);
+            action.read(field);
+            action.read(uniformBufferHandle);
+            scene.setDataUniformBuffer(handle, field, uniformBufferHandle);
             break;
         }
         case ESceneActionId::AllocateRenderable:
@@ -1027,6 +1037,34 @@ namespace ramses::internal
             scene.updateDataBuffer(handle, offsetInBytes, dataSizeInBytes, data);
             break;
         }
+        case ESceneActionId::AllocateUniformBuffer:
+        {
+            UniformBufferHandle handle;
+            uint32_t size{};
+            action.read(handle);
+            action.read(size);
+            scene.allocateUniformBuffer(size, handle);
+            break;
+        }
+        case ESceneActionId::ReleaseUniformBuffer:
+        {
+            UniformBufferHandle handle;
+            action.read(handle);
+            scene.releaseUniformBuffer(handle);
+            break;
+        }
+        case ESceneActionId::UpdateUniformBuffer:
+        {
+            UniformBufferHandle handle;
+            uint32_t offset{};
+            uint32_t size{};
+            const std::byte* data = nullptr;
+            action.read(handle);
+            action.read(offset);
+            action.readWithoutCopy(data, size);
+            scene.updateUniformBuffer(handle, offset, size, data);
+            break;
+        }
         case ESceneActionId::AllocateTextureBuffer:
         {
             uint32_t textureFormat = 0;
@@ -1126,7 +1164,7 @@ namespace ramses::internal
         case ESceneActionId::PreallocateSceneSize:
         {
             SceneSizeInformation sizeInfos;
-            GetSceneSizeInformation(action, sizeInfos);
+            GetSceneSizeInformation(action, sizeInfos, featureLevel);
             scene.preallocateSceneSize(sizeInfos);
             break;
         }
@@ -1260,8 +1298,7 @@ namespace ramses::internal
             action.read(stencilOpDepthPass);
             action.read(colorWriteMask);
 
-            [[maybe_unused]] const RenderStateHandle stateHandleNew = scene.allocateRenderState(stateHandle);
-            assert(stateHandle == stateHandleNew);
+            AssertHandle(scene.allocateRenderState(stateHandle), stateHandle);
 
             scene.setRenderStateBlendFactors(   stateHandle, bfSrcColor, bfDstColor, bfSrcAlpha, bfDstAlpha);
             scene.setRenderStateBlendOperations(stateHandle, boColor, boAlpha);
@@ -1288,15 +1325,15 @@ namespace ramses::internal
         assert(action.isFullyRead());
     }
 
-    void SceneActionApplier::ApplyActionsOnScene(IScene& scene, const SceneActionCollection& actions)
+    void SceneActionApplier::ApplyActionsOnScene(IScene& scene, const SceneActionCollection& actions, EFeatureLevel featureLevel)
     {
         for (auto& reader : actions)
         {
-            ApplySingleActionOnScene(scene, reader);
+            ApplySingleActionOnScene(scene, reader, featureLevel);
         }
     }
 
-    void SceneActionApplier::GetSceneSizeInformation(SceneActionCollection::SceneActionReader& action, SceneSizeInformation& sizeInfo)
+    void SceneActionApplier::GetSceneSizeInformation(SceneActionCollection::SceneActionReader& action, SceneSizeInformation& sizeInfo, EFeatureLevel featureLevel)
     {
         action.read(sizeInfo.nodeCount);
         action.read(sizeInfo.cameraCount);
@@ -1305,6 +1342,8 @@ namespace ramses::internal
         action.read(sizeInfo.renderStateCount);
         action.read(sizeInfo.datalayoutCount);
         action.read(sizeInfo.datainstanceCount);
+        if (featureLevel >= EFeatureLevel_02)
+            action.read(sizeInfo.uniformBufferCount);
         action.read(sizeInfo.renderGroupCount);
         action.read(sizeInfo.renderPassCount);
         action.read(sizeInfo.blitPassCount);

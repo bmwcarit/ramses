@@ -51,6 +51,7 @@ namespace ramses::internal
         using TransformMemoryPool       = MEMORYPOOL<TopologyTransform  , TransformHandle>;
         using DataLayoutMemoryPool      = MEMORYPOOL<DataLayout         , DataLayoutHandle>;
         using DataInstanceMemoryPool    = MEMORYPOOL<DataInstance       , DataInstanceHandle>;
+        using UniformBufferMemoryPool   = MEMORYPOOL<UniformBuffer      , UniformBufferHandle>;
         using RenderGroupMemoryPool     = MEMORYPOOL<RenderGroup        , RenderGroupHandle>;
         using RenderPassMemoryPool      = MEMORYPOOL<RenderPass         , RenderPassHandle>;
         using BlitPassMemoryPool        = MEMORYPOOL<BlitPass           , BlitPassHandle>;
@@ -69,6 +70,9 @@ namespace ramses::internal
 
         [[nodiscard]] SceneId            getSceneId                 () const final override;
         [[nodiscard]] const std::string& getName                    () const final override;
+        [[nodiscard]] ERenderBackendCompatibility getRenderBackendCompatibility() const override;
+        [[nodiscard]] EVulkanAPIVersion  getVulkanAPIVersion        () const override;
+        [[nodiscard]] ESPIRVVersion      getSPIRVVersion            () const override;
 
         void setEffectTimeSync(FlushTime::Clock::time_point t) override;
         [[nodiscard]] FlushTime::Clock::time_point getEffectTimeSync() const override;
@@ -171,6 +175,7 @@ namespace ramses::internal
         [[nodiscard]] const ResourceField& getDataResource              (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
         [[nodiscard]] TextureSamplerHandle getDataTextureSamplerHandle  (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
         [[nodiscard]] DataInstanceHandle   getDataReference             (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
+        [[nodiscard]] UniformBufferHandle  getDataUniformBuffer         (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
 
         void setDataFloatArray           (DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const float* data) override;
         void setDataVector2fArray        (DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::vec2* data) override;
@@ -187,6 +192,7 @@ namespace ramses::internal
         void setDataResource             (DataInstanceHandle containerHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, uint32_t instancingDivisor, uint16_t offsetWithinElementInBytes, uint16_t stride) override;
         void setDataTextureSamplerHandle (DataInstanceHandle containerHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle) override;
         void setDataReference            (DataInstanceHandle containerHandle, DataFieldHandle field, DataInstanceHandle dataRef) override;
+        void setDataUniformBuffer        (DataInstanceHandle containerHandle, DataFieldHandle field, UniformBufferHandle uniformBufferHandle) override;
 
         // get/setData*Array wrappers for elementCount == 1
         [[nodiscard]] float             getDataSingleFloat              (DataInstanceHandle containerHandle, DataFieldHandle field) const final override;
@@ -303,6 +309,15 @@ namespace ramses::internal
         [[nodiscard]] const GeometryDataBuffer& getDataBuffer   (DataBufferHandle handle) const final override;
         [[nodiscard]] const DataBufferMemoryPool& getDataBuffers() const;
 
+        // Uniform buffers
+        UniformBufferHandle     allocateUniformBuffer(uint32_t size, UniformBufferHandle handle) override;
+        void                    releaseUniformBuffer(UniformBufferHandle uniformBufferHandle) override;
+        void                    updateUniformBuffer(UniformBufferHandle uniformBufferHandle, uint32_t offset, uint32_t size, const std::byte* data) override;
+        [[nodiscard]] bool      isUniformBufferAllocated(UniformBufferHandle uniformBufferHandle) const override;
+        [[nodiscard]] uint32_t  getUniformBufferCount() const override;
+        [[nodiscard]] const UniformBuffer& getUniformBuffer(UniformBufferHandle uniformBufferHandle) const override;
+        [[nodiscard]] const UniformBufferMemoryPool& getUniformBuffers() const;
+
         //Texture buffers
         TextureBufferHandle     allocateTextureBuffer           (EPixelStorageFormat textureFormat, const MipMapDimensions& mipMapDimensions, TextureBufferHandle handle) override;
         void                    releaseTextureBuffer            (TextureBufferHandle handle) override;
@@ -352,6 +367,7 @@ namespace ramses::internal
         TransformMemoryPool         m_transforms;
         DataLayoutMemoryPool        m_dataLayoutMemory;
         DataInstanceMemoryPool      m_dataInstanceMemory;
+        UniformBufferMemoryPool     m_uniformBuffers;
         RenderGroupMemoryPool       m_renderGroups;
         RenderPassMemoryPool        m_renderPasses;
         BlitPassMemoryPool          m_blitPasses;
@@ -366,6 +382,10 @@ namespace ramses::internal
 
         const std::string           m_name;
         const SceneId               m_sceneId;
+
+        const ERenderBackendCompatibility   m_renderBackendCompatibility;
+        const EVulkanAPIVersion             m_vulkanAPIVersion;
+        const ESPIRVVersion                 m_spirvVersion;
 
         FlushTime::Clock::time_point m_effectTimeSync;
     };
@@ -741,6 +761,12 @@ namespace ramses::internal
     inline DataInstanceHandle SceneT<MEMORYPOOL>::getDataReference(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
     {
         return *getInstanceDataInternal<DataInstanceHandle>(containerHandle, fieldId);
+    }
+
+    template <template<typename, typename> class MEMORYPOOL>
+    inline UniformBufferHandle SceneT<MEMORYPOOL>::getDataUniformBuffer(DataInstanceHandle containerHandle, DataFieldHandle fieldId) const
+    {
+        return *getInstanceDataInternal<UniformBufferHandle>(containerHandle, fieldId);
     }
 
     template <template<typename, typename> class MEMORYPOOL>

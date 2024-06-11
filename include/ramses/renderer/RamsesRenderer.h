@@ -521,7 +521,7 @@ namespace ramses
         * @param visibility visibility to set
         * @return true for success, false otherwise (check log or #ramses::RamsesFramework::getLastError for details).
         **/
-        bool setSurfaceVisibility(uint32_t surfaceId, bool visibility);
+        [[deprecated]] bool setSurfaceVisibility(uint32_t surfaceId, bool visibility);
 
         /**
         * @brief Set opacity of given surface at the system compositor
@@ -529,7 +529,7 @@ namespace ramses
         * @param opacity Opacity in the range 0.0 (fully transparent) to 1.0 (fully opaque)
         * @return true for success, false otherwise (check log or #ramses::RamsesFramework::getLastError for details).
         **/
-        bool setSurfaceOpacity(uint32_t surfaceId, float opacity);
+        [[deprecated]] bool setSurfaceOpacity(uint32_t surfaceId, float opacity);
 
         /**
         * @brief Set output rectangle of given surface at the system compositor
@@ -540,7 +540,7 @@ namespace ramses
         * @param height Output height of surface
         * @return true for success, false otherwise (check log or #ramses::RamsesFramework::getLastError for details).
         */
-        bool setSurfaceRectangle(uint32_t surfaceId, int32_t x, int32_t y, int32_t width, int32_t height);
+        [[deprecated]] bool setSurfaceRectangle(uint32_t surfaceId, int32_t x, int32_t y, int32_t width, int32_t height);
 
         /**
         * @brief Set visibility of given layer at the system compositor
@@ -548,7 +548,7 @@ namespace ramses
         * @param visibility If \c true the layer's visibility will be enabled, otherwise disabled
         * @return true for success, false otherwise (check log or #ramses::RamsesFramework::getLastError for details).
         **/
-        bool setLayerVisibility(uint32_t layerId, bool visibility);
+        [[deprecated]] bool setLayerVisibility(uint32_t layerId, bool visibility);
 
         /**
         * @brief Trigger the System Compositor to take a screenshot and store it in a file.
@@ -557,7 +557,7 @@ namespace ramses
         *             on a single existing screen (fails asynchronously if more than one screen exists)
         * @return true for success, false otherwise (check log or #ramses::RamsesFramework::getLastError for details).
         */
-        bool takeSystemCompositorScreenshot(std::string_view fileName, int32_t screenIviId);
+        [[deprecated]] bool takeSystemCompositorScreenshot(std::string_view fileName, int32_t screenIviId);
 
         /////////////////////////////////////////////////
         //      End of System Compositor API

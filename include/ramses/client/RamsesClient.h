@@ -135,6 +135,59 @@ namespace ramses
         bool loadSceneFromFileAsync(std::string_view fileName, const SceneConfig& config = {});
 
         /**
+        * @brief Loads scene contents and resources from a file and merges them into an existing scene.
+        *
+        * Same rules apply as for loading a scene from file - Ramses SDK major version and #ramses::EFeatureLevel must match.
+        *
+        * @param[in] scene Scene that all new content from file is going to be merged into.
+        * @param[in] fileName File name to load the scene from.
+        * @return True if loading and merging was successful.
+        */
+        bool mergeSceneFromFile(Scene& scene, std::string_view fileName);
+
+        /**
+        * @brief Loads scene contents and resources from a memory buffer and merges them into an existing scene.
+        *
+        * Same rules apply as for loading a scene from file - Ramses SDK major version and #ramses::EFeatureLevel must match.
+        *
+        * Ramses takes ownership of the memory buffer passed in via data and will delete it via the provided deleter from
+        * unique_ptr when not used anymore. The caller may not modify the referenced memory anymore after this call.
+        * The behavior is undefined if data does not contain a complete serialized ramses scene or if size does not
+        * match the size of the scene data in bytes.
+        *
+        * The deleter on data allows safe memory ownership passing on windows when ramses is used as dll. For more
+        * details and a convenience wrapper see #ramses::RamsesUtils::LoadSceneFromMemory.
+        *
+        * @param[in] scene Scene that all new content from file is going to be merged into.
+        * @param[in] data Memory buffer to load the scene from.
+        * @param[in] size The size in bytes of the data memory.
+        * @return True if loading and merging was successful.
+        */
+        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
+        bool mergeSceneFromMemory(Scene& scene, std::unique_ptr<std::byte[], void (*)(const std::byte*)> data, size_t size);
+
+        /**
+        * @brief Loads scene contents and resources from an open file descriptor and merges them info an existing scene.
+        *
+        * Same rules apply as for loading a scene from file - Ramses SDK major version and #ramses::EFeatureLevel must match.
+        *
+        * The ramses scene must be in the already opened filedescriptor at absolute position offset within
+        * the file. The filedescriptor must be opened for read access and may not be modified anymore after
+        * this call. The filedescriptor must support seeking.
+        * Ramses takes ownership of the filedescriptor and will close it when not needed anymore.
+        *
+        * The behavior is undefined if the filedescriptor does not contain a complete serialized ramses scene
+        * at offset.
+        *
+        * @param[in] scene Scene that all new content from file is going to merged into.
+        * @param[in] fd Open and readable filedescriptor.
+        * @param[in] offset Absolute starting position of ramses scene within fd.
+        * @param[in] length Size of the scene data within fd.
+        * @return True if loading and merging was successful.
+        */
+        bool mergeSceneFromFileDescriptor(Scene& scene, int fd, size_t offset, size_t length);
+
+        /**
         * Attempts to parse feature level from a Ramses scene file.
         *
         * @param[in] fileName file path to Ramses scene file

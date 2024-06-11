@@ -14,6 +14,7 @@
 #include "impl/SceneObjectImpl.h"
 #include "impl/SceneImpl.h"
 #include "impl/ErrorReporting.h"
+#include "impl/SerializationContext.h"
 
 namespace ramses::internal
 {
@@ -47,7 +48,7 @@ namespace ramses::internal
         if (!SceneObjectImpl::deserialize(inStream, serializationContext))
             return false;
 
-        inStream >> m_sceneReferenceHandle;
+        serializationContext.deserializeAndMap(inStream, m_sceneReferenceHandle);
 
         return true;
     }

@@ -26,8 +26,8 @@ namespace ramses::internal
             , dataReferenceLinkManager(sceneLinksManager.getDataReferenceLinkManager())
             , providerSceneId(3u)
             , consumerSceneId(4u)
-            , providerScene(rendererScenes.createScene(SceneInfo(providerSceneId)))
-            , consumerScene(rendererScenes.createScene(SceneInfo(consumerSceneId)))
+            , providerScene(rendererScenes.createScene(SceneInfo{ providerSceneId }))
+            , consumerScene(rendererScenes.createScene(SceneInfo{ consumerSceneId }))
             , providerSceneAllocator(providerScene)
             , consumerSceneAllocator(consumerScene)
             , providerSlotHandle(55u)
@@ -193,7 +193,7 @@ namespace ramses::internal
     TEST_F(ADataReferenceLinkManager, confidenceTest_canResolveLinkedWithThreeScenesAndTwoLinks)
     {
         const SceneId middleSceneId(145u);
-        DataReferenceLinkCachedScene& middleScene = rendererScenes.createScene(SceneInfo(middleSceneId));
+        DataReferenceLinkCachedScene& middleScene = rendererScenes.createScene(SceneInfo{ middleSceneId });
         SceneAllocateHelper middleSceneAllocator(middleScene);
 
         DataInstanceHandle middleProviderDataRef;

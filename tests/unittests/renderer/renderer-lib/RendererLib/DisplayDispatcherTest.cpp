@@ -20,7 +20,7 @@ namespace ramses::internal
     {
     public:
         ADisplayDispatcher()
-            : m_displayDispatcher(RendererConfig{}, m_sceneEventSender, m_notifier, false)
+            : m_displayDispatcher(RendererConfigData{}, m_sceneEventSender, m_notifier, false)
         {
             m_displayDispatcher.setLoopMode(ELoopMode::UpdateOnly);
             m_displayDispatcher.m_expectedLoopModeForNewDisplays = ELoopMode::UpdateOnly;
@@ -41,7 +41,7 @@ namespace ramses::internal
 
         void createDisplay(DisplayHandle displayHandle)
         {
-            m_commandBuffer.enqueueCommand(RendererCommand::CreateDisplay{ displayHandle, DisplayConfig{}, nullptr });
+            m_commandBuffer.enqueueCommand(RendererCommand::CreateDisplay{ displayHandle, DisplayConfigData{}, nullptr });
 
             EXPECT_CALL(m_displayDispatcher, createDisplayBundle(displayHandle, _));
             update();

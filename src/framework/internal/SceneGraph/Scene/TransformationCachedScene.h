@@ -26,6 +26,8 @@ namespace ramses::internal
     template <template<typename, typename> class MEMORYPOOL>
     class TransformationCachedSceneT : public SceneT<MEMORYPOOL>
     {
+        using BaseT = SceneT<MEMORYPOOL>;
+
     public:
         explicit TransformationCachedSceneT(const SceneInfo& sceneInfo = SceneInfo());
 

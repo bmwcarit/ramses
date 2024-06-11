@@ -8,6 +8,7 @@
 
 #include <array>
 
+#include "internal/Components/SceneFileHandle.h"
 #include "internal/PlatformAbstraction/PlatformError.h"
 #include "ramses/client/MeshNode.h"
 #include "ramses/client/TextureSampler.h"
@@ -36,7 +37,6 @@
 #include "ramses/client/logic/TimerNode.h"
 #include "ramses/client/ramses-utils.h"
 
-#include "ScenePersistationTest.h"
 #include "impl/CameraNodeImpl.h"
 #include "impl/AppearanceImpl.h"
 #include "impl/DataObjectImpl.h"
@@ -64,26 +64,40 @@
 #include "internal/SceneGraph/Scene/ResourceChanges.h"
 #include "internal/SceneGraph/Scene/SceneActionApplier.h"
 
+#include "ScenePersistationTest.h"
 #include "TestEffects.h"
 #include "FileDescriptorHelper.h"
 #include "UnsafeTestMemoryHelpers.h"
 #include "RamsesObjectTestTypes.h"
+#include "FeatureLevelTestValues.h"
+#include "ramses/framework/EFeatureLevel.h"
 
 #include <fstream>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <vector>
 
 namespace ramses::internal
 {
     using namespace testing;
 
-    TEST_F(ASceneLoadedFromFile, canWriteAndReadSceneFromFile)
+    class ASceneLoadedFromFile : public SceneLoadedFromFile, public ::testing::TestWithParam<ramses::EFeatureLevel>
+    {
+    public:
+        ASceneLoadedFromFile()
+            : SceneLoadedFromFile{ GetParam() }
+        {
+        }
+    };
+    RAMSES_INSTANTIATE_FEATURELEVEL_TEST_SUITE(ASceneLoadedFromFile);
+
+    TEST_P(ASceneLoadedFromFile, canWriteAndReadSceneFromFile)
     {
         EXPECT_TRUE(m_scene.saveToFile("someTemporaryFile.ram", {}));
         EXPECT_NE(nullptr, m_clientForLoading.loadSceneFromFile("someTemporaryFile.ram", {}));
     }
 
-    TEST_F(ASceneLoadedFromFile, logsExporterMetadata)
+    TEST_P(ASceneLoadedFromFile, logsExporterMetadata)
     {
         ramses::SaveFileConfig config;
         config.setMetadataString("foo-bar-baz");
@@ -103,17 +117,17 @@ namespace ramses::internal
         EXPECT_THAT(logs, Contains("R.main: Exporter version: 1.2.3 (file format version 7)"));
     }
 
-    TEST_F(ASceneLoadedFromFile, loadedSceneHasReferenceToClientAndFrameworkAndMatchingFeaturelevel)
+    TEST_P(ASceneLoadedFromFile, loadedSceneHasReferenceToClientAndFrameworkAndMatchingFeaturelevel)
     {
         EXPECT_TRUE(m_scene.saveToFile("someTemporaryFile.ram", {}));
         auto loadedScene = m_clientForLoading.loadSceneFromFile("someTemporaryFile.ram", {});
         ASSERT_NE(nullptr, loadedScene);
         EXPECT_EQ(&m_clientForLoading, &loadedScene->getRamsesClient());
         EXPECT_EQ(&m_frameworkForLoader, &loadedScene->getRamsesClient().getRamsesFramework());
-        EXPECT_EQ(EFeatureLevel_Latest, loadedScene->getRamsesClient().getRamsesFramework().getFeatureLevel());
+        EXPECT_EQ(GetParam(), loadedScene->getRamsesClient().getRamsesFramework().getFeatureLevel());
     }
 
-    TEST_F(ASceneLoadedFromFile, canWriteAndReadSceneFromMemoryWithExplicitDeleter)
+    TEST_P(ASceneLoadedFromFile, canWriteAndReadSceneFromMemoryWithExplicitDeleter)
     {
         EXPECT_TRUE(m_scene.saveToFile("someTemporaryFile.ram", {}));
 
@@ -128,7 +142,7 @@ namespace ramses::internal
         EXPECT_NE(nullptr, m_clientForLoading.loadSceneFromMemory(std::move(data), fileSize, {}));
     }
 
-    TEST_F(ASceneLoadedFromFile, canWriteAndReadSceneFromMemoryWithImplicitDeleter)
+    TEST_P(ASceneLoadedFromFile, canWriteAndReadSceneFromMemoryWithImplicitDeleter)
     {
         EXPECT_TRUE(m_scene.saveToFile("someTemporaryFile.ram", {}));
 
@@ -143,7 +157,7 @@ namespace ramses::internal
         EXPECT_NE(nullptr, RamsesUtils::LoadSceneFromMemory(m_clientForLoading, std::move(data), fileSize, {}));
     }
 
-    TEST_F(ASceneLoadedFromFile, canWriteAndReadSceneFromFileDescriptor)
+    TEST_P(ASceneLoadedFromFile, canWriteAndReadSceneFromFileDescriptor)
     {
         EXPECT_TRUE(m_scene.saveToFile("someTemporaryFile.ram", {}));
 
@@ -172,7 +186,7 @@ namespace ramses::internal
         EXPECT_EQ(123u, scene->getSceneId().getValue());
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadSceneFromFileDescriptorCustomSceneId)
+    TEST_P(ASceneLoadedFromFile, canReadSceneFromFileDescriptorCustomSceneId)
     {
         const char* filename = "someTemporaryFile.ram";
         EXPECT_TRUE(m_scene.saveToFile(filename, {}));
@@ -199,7 +213,7 @@ namespace ramses::internal
         }
     }
 
-    TEST_F(ASceneLoadedFromFile, errorsReadingSceneFromFileDescriptorCustomSceneId)
+    TEST_P(ASceneLoadedFromFile, errorsReadingSceneFromFileDescriptorCustomSceneId)
     {
         const char* filename = "someTemporaryFile.ram";
         EXPECT_TRUE(m_scene.saveToFile(filename, {}));
@@ -224,7 +238,7 @@ namespace ramses::internal
         EXPECT_TRUE(invalidFileSize == nullptr);
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteAScene)
+    TEST_P(ASceneLoadedFromFile, canReadWriteAScene)
     {
         EXPECT_TRUE(m_scene.saveToFile("someTemporaryFile.ram", {}));
 
@@ -242,7 +256,7 @@ namespace ramses::internal
         EXPECT_EQ(origSceneSizeInfo, loadedSceneSizeInfo);
     }
 
-    TEST_F(ASceneLoadedFromFile, validationReportSameBeforeSavingAndAfterLoadingFromFile)
+    TEST_P(ASceneLoadedFromFile, validationReportSameBeforeSavingAndAfterLoadingFromFile)
     {
         TestEffects::CreateTestEffectWithAllStages(this->m_scene, "eff");
         ValidationReport report1;
@@ -257,7 +271,7 @@ namespace ramses::internal
         EXPECT_EQ(report1.impl().toString(), report2.impl().toString());
     }
 
-    TEST_F(ASceneLoadedFromFile, validationReportWithWarningsSameBeforeSavingAndAfterLoadingFromFile)
+    TEST_P(ASceneLoadedFromFile, validationReportWithWarningsSameBeforeSavingAndAfterLoadingFromFile)
     {
         TestEffects::CreateTestEffectWithAllStagesWithWarnings(this->m_scene, "eff");
         ValidationReport report1;
@@ -272,7 +286,7 @@ namespace ramses::internal
         EXPECT_EQ(report1.impl().toString(), report2.impl().toString());
     }
 
-    TEST_F(ASceneLoadedFromFile, validationReportWithWarningsSameBeforeSavingAndAfterLoadingFromFileWithCompression)
+    TEST_P(ASceneLoadedFromFile, validationReportWithWarningsSameBeforeSavingAndAfterLoadingFromFileWithCompression)
     {
         TestEffects::CreateTestEffectWithAllStagesWithWarnings(this->m_scene, "eff");
         ValidationReport report1;
@@ -287,7 +301,7 @@ namespace ramses::internal
         EXPECT_EQ(report1.impl().toString(), report2.impl().toString());
     }
 
-    TEST_F(ASceneLoadedFromFile, loadsLogic)
+    TEST_P(ASceneLoadedFromFile, loadsLogic)
     {
         auto* logic = this->m_scene.createLogicEngine("my logic");
         auto* timer = logic->createTimerNode("dummy");
@@ -303,7 +317,33 @@ namespace ramses::internal
         EXPECT_TRUE(m_sceneLoaded->destroy(*loadedLogic));
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteAPerspectiveCamera)
+    TEST_P(ASceneLoadedFromFile, canReadWriteASceneWithOpenGLCompatibility)
+    {
+        doWriteReadCycle();
+
+        EXPECT_EQ(ERenderBackendCompatibility::OpenGL, m_sceneLoaded->impl().getIScene().getRenderBackendCompatibility());
+        EXPECT_EQ(EVulkanAPIVersion::Invalid, m_sceneLoaded->impl().getIScene().getVulkanAPIVersion());
+        EXPECT_EQ(ESPIRVVersion::Invalid, m_sceneLoaded->impl().getIScene().getSPIRVVersion());
+    }
+
+    TEST_P(ASceneLoadedFromFile, canReadWriteASceneWithVulkanAndOpenGLCompatibility)
+    {
+        if (GetParam() < EFeatureLevel_02)
+            GTEST_SKIP();
+
+        auto* scene = client.createScene(SceneConfig{ sceneId_t{456u}, EScenePublicationMode::LocalOnly, ERenderBackendCompatibility::VulkanAndOpenGL });
+        EXPECT_TRUE(scene->saveToFile("someTemporaryFile.ram", {}));
+
+        CheckSceneFile("someTemporaryFile.ram", scene);
+        m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTemporaryFile.ram");
+        ASSERT_TRUE(nullptr != m_sceneLoaded);
+
+        EXPECT_EQ(ERenderBackendCompatibility::VulkanAndOpenGL, m_sceneLoaded->impl().getIScene().getRenderBackendCompatibility());
+        EXPECT_EQ(TargetVulkanApiVersion, m_sceneLoaded->impl().getIScene().getVulkanAPIVersion());
+        EXPECT_EQ(TargetSPIRVVersion, m_sceneLoaded->impl().getIScene().getSPIRVVersion());
+    }
+
+    TEST_P(ASceneLoadedFromFile, canReadWriteAPerspectiveCamera)
     {
         auto* camera = this->m_scene.createPerspectiveCamera("my cam");
         camera->setFrustum(0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f);
@@ -332,7 +372,7 @@ namespace ramses::internal
         m_sceneLoaded->destroy(*loadedCamera);
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteAnOrthographicCamera)
+    TEST_P(ASceneLoadedFromFile, canReadWriteAnOrthographicCamera)
     {
         OrthographicCamera* camera = this->m_scene.createOrthographicCamera("my cam");
         camera->setFrustum(0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f);
@@ -363,7 +403,7 @@ namespace ramses::internal
         m_sceneLoaded->destroy(*loadedCamera);
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteAnEffect)
+    TEST_P(ASceneLoadedFromFile, canReadWriteAnEffect)
     {
         TestEffects::CreateTestEffectWithAllStages(this->m_scene, "eff");
 
@@ -422,7 +462,79 @@ namespace ramses::internal
         EXPECT_EQ(EDrawMode::Lines, gsInputType);
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteAnAppearance)
+    TEST_P(ASceneLoadedFromFile, canReadWriteAnEffect_withUBO)
+    {
+        if (GetParam() < EFeatureLevel_02)
+            GTEST_SKIP();
+
+        TestEffects::CreateTestEffectWithUBOSemantics(this->m_scene, { EEffectUniformSemantic::ModelBlock, EEffectUniformSemantic::CameraBlock, EEffectUniformSemantic::ModelCameraBlock }, "eff");
+
+        doWriteReadCycle();
+
+        auto loadedEffect = this->getObjectForTesting<Effect>("eff");
+        ASSERT_TRUE(loadedEffect);
+
+        EXPECT_EQ(10u, loadedEffect->getUniformInputCount());
+
+        const auto uniModel = loadedEffect->getUniformInput(0u);
+        ASSERT_TRUE(uniModel);
+        EXPECT_STREQ("modelUBO", uniModel->getName());
+        EXPECT_EQ(ramses::EDataType::UniformBuffer, uniModel->getDataType());
+
+        const auto uniModelField1 = loadedEffect->getUniformInput(1u);
+        ASSERT_TRUE(uniModelField1);
+        EXPECT_STREQ("modelUBO.ubModelMat", uniModelField1->getName());
+        EXPECT_EQ(ramses::EDataType::Matrix44F, uniModelField1->getDataType());
+        EXPECT_EQ(1u, uniModelField1->getElementCount());
+
+        const auto uniCam = loadedEffect->getUniformInput(2u);
+        ASSERT_TRUE(uniCam);
+        EXPECT_STREQ("camUBO", uniCam->getName());
+        EXPECT_EQ(ramses::EDataType::UniformBuffer, uniCam->getDataType());
+
+        const auto uniCamProj = loadedEffect->getUniformInput(3u);
+        ASSERT_TRUE(uniCamProj);
+        EXPECT_STREQ("camUBO.projMat", uniCamProj->getName());
+        EXPECT_EQ(ramses::EDataType::Matrix44F, uniCamProj->getDataType());
+        EXPECT_EQ(1u, uniCamProj->getElementCount());
+
+        const auto uniCamView = loadedEffect->getUniformInput(4u);
+        ASSERT_TRUE(uniCamView);
+        EXPECT_STREQ("camUBO.viewMat", uniCamView->getName());
+        EXPECT_EQ(ramses::EDataType::Matrix44F, uniCamView->getDataType());
+        EXPECT_EQ(1u, uniCamView->getElementCount());
+
+        const auto uniCamPos = loadedEffect->getUniformInput(5u);
+        ASSERT_TRUE(uniCamPos);
+        EXPECT_STREQ("camUBO.cameraPos", uniCamPos->getName());
+        EXPECT_EQ(ramses::EDataType::Vector3F, uniCamPos->getDataType());
+        EXPECT_EQ(1u, uniCamPos->getElementCount());
+
+        const auto uniModelCam = loadedEffect->getUniformInput(6u);
+        ASSERT_TRUE(uniModelCam);
+        EXPECT_STREQ("modelCamUBO", uniModelCam->getName());
+        EXPECT_EQ(ramses::EDataType::UniformBuffer, uniModelCam->getDataType());
+
+        const auto uniModelCamMVP = loadedEffect->getUniformInput(7u);
+        ASSERT_TRUE(uniModelCamMVP);
+        EXPECT_STREQ("modelCamUBO.mvpMat", uniModelCamMVP->getName());
+        EXPECT_EQ(ramses::EDataType::Matrix44F, uniModelCamMVP->getDataType());
+        EXPECT_EQ(1u, uniModelCamMVP->getElementCount());
+
+        const auto uniModelCamMV = loadedEffect->getUniformInput(8u);
+        ASSERT_TRUE(uniModelCamMV);
+        EXPECT_STREQ("modelCamUBO.mvMat", uniModelCamMV->getName());
+        EXPECT_EQ(ramses::EDataType::Matrix44F, uniModelCamMV->getDataType());
+        EXPECT_EQ(1u, uniModelCamMV->getElementCount());
+
+        const auto uniModelCamN = loadedEffect->getUniformInput(9u);
+        ASSERT_TRUE(uniModelCamN);
+        EXPECT_STREQ("modelCamUBO.normalMat", uniModelCamN->getName());
+        EXPECT_EQ(ramses::EDataType::Matrix44F, uniModelCamN->getDataType());
+        EXPECT_EQ(1u, uniModelCamN->getElementCount());
+    }
+
+    TEST_P(ASceneLoadedFromFile, canReadWriteAnAppearance)
     {
         Effect* effect = TestEffects::CreateTestEffect(this->m_scene);
         Appearance* appearance = this->m_scene.createAppearance(*effect, "appearance");
@@ -437,7 +549,7 @@ namespace ramses::internal
         EXPECT_EQ(appearance->impl().getIScene().getSceneId(), loadedAppearance->impl().getIScene().getSceneId());
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteAnAppearanceWithGeometryShaderAndRestrictDrawMode)
+    TEST_P(ASceneLoadedFromFile, canReadWriteAnAppearanceWithGeometryShaderAndRestrictDrawMode)
     {
         const Effect* effect = TestEffects::CreateTestEffectWithAllStages(this->m_scene);
         this->m_scene.createAppearance(*effect, "appearance");
@@ -462,7 +574,7 @@ namespace ramses::internal
         EXPECT_FALSE(loadedAppearance->setDrawMode(EDrawMode::Points));
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteAnAppearanceWithGeometryShaderAndRestrictDrawMode_usingSameEffect)
+    TEST_P(ASceneLoadedFromFile, canReadWriteAnAppearanceWithGeometryShaderAndRestrictDrawMode_usingSameEffect)
     {
         const Effect* effect1 = TestEffects::CreateTestEffectWithAllStages(this->m_scene);
         const Effect* effect2 = TestEffects::CreateTestEffectWithAllStages(this->m_scene);
@@ -499,7 +611,7 @@ namespace ramses::internal
         EXPECT_FALSE(loadedAppearance2->setDrawMode(EDrawMode::Points));
     }
 
-    TEST_F(ASceneLoadedFromFile, keepingTrackOfsceneObjectIdsAndFindObjectByIdWork)
+    TEST_P(ASceneLoadedFromFile, keepingTrackOfsceneObjectIdsAndFindObjectByIdWork)
     {
         Effect* effect = TestEffects::CreateTestEffect(this->m_scene);
 
@@ -523,7 +635,7 @@ namespace ramses::internal
         EXPECT_NE(geometryIdBeforeSaveAndLoad, camera->getSceneObjectId());
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteAnAppearanceWithUniformValuesSetOrBound)
+    TEST_P(ASceneLoadedFromFile, canReadWriteAnAppearanceWithUniformValuesSetOrBound)
     {
         Effect* effect = TestEffects::CreateTestEffect(this->m_scene);
         Appearance* appearance = this->m_scene.createAppearance(*effect, "appearance");
@@ -556,7 +668,7 @@ namespace ramses::internal
         EXPECT_EQ(123.f, resultG);
     }
 
-    TEST_F(ASceneLoadedFromFile, multipleAppearancesSharingSameEffectAreCorrectlyWrittenAndLoaded)
+    TEST_P(ASceneLoadedFromFile, multipleAppearancesSharingSameEffectAreCorrectlyWrittenAndLoaded)
     {
         Effect* effect = TestEffects::CreateTestEffect(this->m_scene);
         const Appearance* appearance1 = m_scene.createAppearance(*effect, "appearance1");
@@ -581,7 +693,7 @@ namespace ramses::internal
         m_sceneLoaded->destroy(*loadedAppearance1);
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteGeometry)
+    TEST_P(ASceneLoadedFromFile, canReadWriteGeometry)
     {
         static const uint16_t inds[3] = { 0, 1, 2 };
         ArrayResource* const indices = this->m_scene.createArrayResource(3u, inds, "indices");
@@ -609,7 +721,7 @@ namespace ramses::internal
         EXPECT_TRUE(attributeInputOut.has_value());
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteAMeshNode)
+    TEST_P(ASceneLoadedFromFile, canReadWriteAMeshNode)
     {
         MeshNode* meshNode = this->m_scene.createMeshNode("a meshnode");
 
@@ -624,7 +736,7 @@ namespace ramses::internal
         EXPECT_EQ(meshNode->impl().getFlattenedVisibility(), loadedMeshNode->impl().getFlattenedVisibility());
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteAMeshNode_withVisibilityParent)
+    TEST_P(ASceneLoadedFromFile, canReadWriteAMeshNode_withVisibilityParent)
     {
         MeshNode* meshNode = this->m_scene.createMeshNode("a meshnode");
 
@@ -643,7 +755,7 @@ namespace ramses::internal
         EXPECT_EQ(loadedMeshNode->impl().getFlattenedVisibility(), EVisibilityMode::Invisible);
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteAMeshNode_withVisibilityParentOff)
+    TEST_P(ASceneLoadedFromFile, canReadWriteAMeshNode_withVisibilityParentOff)
     {
         MeshNode* meshNode = this->m_scene.createMeshNode("a meshnode");
 
@@ -662,7 +774,7 @@ namespace ramses::internal
         EXPECT_EQ(loadedMeshNode->impl().getFlattenedVisibility(), EVisibilityMode::Off);
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteAMeshNode_withValues)
+    TEST_P(ASceneLoadedFromFile, canReadWriteAMeshNode_withValues)
     {
         Effect* effect = TestEffects::CreateTestEffect(this->m_scene);
         Appearance* appearance = this->m_scene.createAppearance(*effect, "appearance");
@@ -694,7 +806,7 @@ namespace ramses::internal
         EXPECT_EQ(loadedMeshNode->impl().getFlattenedVisibility(), EVisibilityMode::Off);
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteANodeWithVisibility)
+    TEST_P(ASceneLoadedFromFile, canReadWriteANodeWithVisibility)
     {
         Node* visibilityNode = this->m_scene.createNode("a visibilitynode");
 
@@ -707,7 +819,7 @@ namespace ramses::internal
         EXPECT_EQ(loadedVisibilityNode->getVisibility(), EVisibilityMode::Invisible);
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteARenderGroup)
+    TEST_P(ASceneLoadedFromFile, canReadWriteARenderGroup)
     {
         ramses::RenderGroup* renderGroup = this->m_scene.createRenderGroup("a rendergroup");
 
@@ -737,7 +849,7 @@ namespace ramses::internal
         EXPECT_EQ(2, ramses::internal::RenderGroupUtils::FindRenderableEntry(meshB->impl().getRenderableHandle(), internalRg)->order);
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteANestedRenderGroup)
+    TEST_P(ASceneLoadedFromFile, canReadWriteANestedRenderGroup)
     {
         ramses::RenderGroup* renderGroup = this->m_scene.createRenderGroup("a rendergroup");
         ramses::RenderGroup* nestedRenderGroup = this->m_scene.createRenderGroup("a nested rendergroup");
@@ -780,7 +892,7 @@ namespace ramses::internal
         EXPECT_EQ(2, ramses::internal::RenderGroupUtils::FindRenderableEntry(meshB->impl().getRenderableHandle(), internalRgNested)->order);
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteABasicRenderPass)
+    TEST_P(ASceneLoadedFromFile, canReadWriteABasicRenderPass)
     {
         const int32_t renderOrder = 1;
 
@@ -800,7 +912,7 @@ namespace ramses::internal
         EXPECT_TRUE(loadedRenderPass->isRenderOnce());
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteARenderPassWithACamera)
+    TEST_P(ASceneLoadedFromFile, canReadWriteARenderPassWithACamera)
     {
         ramses::RenderPass* renderPass = this->m_scene.createRenderPass("a renderpass");
 
@@ -822,7 +934,7 @@ namespace ramses::internal
         EXPECT_FALSE(report.hasIssue());
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteARenderPassWhichHasRenderGroups)
+    TEST_P(ASceneLoadedFromFile, canReadWriteARenderPassWhichHasRenderGroups)
     {
         ramses::RenderPass* renderPass = this->m_scene.createRenderPass("a renderpass");
         ramses::RenderGroup* groupA = this->m_scene.createRenderGroup("groupA");
@@ -851,7 +963,7 @@ namespace ramses::internal
         EXPECT_EQ(2, ramses::internal::RenderGroupUtils::FindRenderGroupEntry(groupB->impl().getRenderGroupHandle(), internalRP)->order);
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteBlitPass)
+    TEST_P(ASceneLoadedFromFile, canReadWriteBlitPass)
     {
         const int32_t renderOrder = 1;
         const ramses::RenderBuffer* srcRenderBuffer = this->m_scene.createRenderBuffer(23, 42, ERenderBufferFormat::Depth32, ERenderBufferAccessMode::WriteOnly, 0u, "src renderBuffer");
@@ -911,7 +1023,7 @@ namespace ramses::internal
         EXPECT_EQ(dstRenderBuffer->impl().getRenderBufferHandle(), loadedBlitPass->getDestinationRenderBuffer().impl().getRenderBufferHandle());
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWritePickableObject)
+    TEST_P(ASceneLoadedFromFile, canReadWritePickableObject)
     {
         const ramses::EDataType geometryBufferDataType = ramses::EDataType::Vector3F;
         const ArrayBuffer* geometryBuffer = this->m_scene.createArrayBuffer(geometryBufferDataType, 3u, "geometryBuffer");
@@ -951,7 +1063,7 @@ namespace ramses::internal
         EXPECT_EQ(pickableCamera->impl().getCameraHandle(), loadedPickableObject->getCamera()->impl().getCameraHandle());
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteRenderBuffer)
+    TEST_P(ASceneLoadedFromFile, canReadWriteRenderBuffer)
     {
         ramses::RenderBuffer* renderBuffer = this->m_scene.createRenderBuffer(23, 42, ERenderBufferFormat::Depth16, ERenderBufferAccessMode::WriteOnly, 4u, "a renderTarget");
 
@@ -970,7 +1082,7 @@ namespace ramses::internal
         EXPECT_EQ(renderBuffer->impl().getRenderBufferHandle(), loadedRenderBuffer->impl().getRenderBufferHandle());
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteARenderPassWithARenderTargetAndCamera)
+    TEST_P(ASceneLoadedFromFile, canReadWriteARenderPassWithARenderTargetAndCamera)
     {
         ramses::RenderPass* renderPass = this->m_scene.createRenderPass("a renderpass");
 
@@ -1000,7 +1112,7 @@ namespace ramses::internal
         EXPECT_FALSE(report.hasIssue()) << report.impl().toString();
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteRenderTarget)
+    TEST_P(ASceneLoadedFromFile, canReadWriteRenderTarget)
     {
         const ramses::RenderBuffer& rb = *m_scene.createRenderBuffer(16u, 8u, ERenderBufferFormat::RGBA8, ERenderBufferAccessMode::ReadWrite);
         RenderTargetDescription rtDesc;
@@ -1020,7 +1132,7 @@ namespace ramses::internal
         EXPECT_EQ(renderTarget->impl().getRenderTargetHandle(), loadedRenderTarget->impl().getRenderTargetHandle());
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteIndexDataBuffer)
+    TEST_P(ASceneLoadedFromFile, canReadWriteIndexDataBuffer)
     {
         ArrayBuffer& buffer = *m_scene.createArrayBuffer(ramses::EDataType::UInt32, 6u, "indexDB");
         buffer.updateData(3u, 2u, std::array<uint32_t, 2>{ {6, 7} }.data());
@@ -1047,7 +1159,7 @@ namespace ramses::internal
         EXPECT_EQ(7u, bufferDataOut[4]);
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteTexture2DBuffer)
+    TEST_P(ASceneLoadedFromFile, canReadWriteTexture2DBuffer)
     {
         Texture2DBuffer& buffer = *m_scene.createTexture2DBuffer(ETextureFormat::RGBA8, 3, 4, 2, "textureBuffer");
         buffer.updateData(0, 0, 0, 2, 2, UnsafeTestMemoryHelpers::ConvertToBytes({12, 23, 34, 56}));
@@ -1102,7 +1214,7 @@ namespace ramses::internal
         EXPECT_EQ(78u, bufferForMip1[0]);
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteANode)
+    TEST_P(ASceneLoadedFromFile, canReadWriteANode)
     {
         //generic node cannot be created, therefore using group node
         Node* grandParent = this->m_scene.createNode("node1");
@@ -1154,7 +1266,7 @@ namespace ramses::internal
         EXPECT_FLOAT_EQ(3, scale.z);
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteANodeWithTranslation)
+    TEST_P(ASceneLoadedFromFile, canReadWriteANodeWithTranslation)
     {
         Node* node = this->m_scene.createNode("translate node 1");
         Node* child = this->m_scene.createNode("groupnode child");
@@ -1179,7 +1291,7 @@ namespace ramses::internal
         EXPECT_FLOAT_EQ(3, translation.z);
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteANodeWithRotation)
+    TEST_P(ASceneLoadedFromFile, canReadWriteANodeWithRotation)
     {
         Node* node = this->m_scene.createNode("rotate node 1");
         Node* child = this->m_scene.createNode("groupnode child");
@@ -1204,7 +1316,7 @@ namespace ramses::internal
         EXPECT_EQ(ERotationType::Euler_ZYX, loadedRotateNode->getRotationType());
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteANodeWithScaling)
+    TEST_P(ASceneLoadedFromFile, canReadWriteANodeWithScaling)
     {
         Node* node = this->m_scene.createNode("scale node");
         Node* child = this->m_scene.createNode("groupnode child");
@@ -1228,7 +1340,7 @@ namespace ramses::internal
         EXPECT_FLOAT_EQ(3, scale.z);
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteATextureSampler)
+    TEST_P(ASceneLoadedFromFile, canReadWriteATextureSampler)
     {
         const ETextureAddressMode wrapUMode = ETextureAddressMode::Mirror;
         const ETextureAddressMode wrapVMode = ETextureAddressMode::Repeat;
@@ -1255,7 +1367,7 @@ namespace ramses::internal
         EXPECT_EQ(ERamsesObjectType::Texture2D, loadedSampler->impl().getTextureType());
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteATextureSamplerMS)
+    TEST_P(ASceneLoadedFromFile, canReadWriteATextureSamplerMS)
     {
         ramses::RenderBuffer* renderBuffer = m_scene.createRenderBuffer(4u, 4u, ERenderBufferFormat::RGB8, ERenderBufferAccessMode::ReadWrite, 4u);
 
@@ -1270,7 +1382,7 @@ namespace ramses::internal
         EXPECT_EQ(ERamsesObjectType::RenderBuffer, loadedSampler->impl().getTextureType());
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteATextureSamplerExternal)
+    TEST_P(ASceneLoadedFromFile, canReadWriteATextureSamplerExternal)
     {
         TextureSamplerExternal* sampler = this->m_scene.createTextureSamplerExternal(ETextureSamplingMethod::Linear, ETextureSamplingMethod::Linear, "sampler");
         ASSERT_TRUE(nullptr != sampler);
@@ -1283,7 +1395,7 @@ namespace ramses::internal
         EXPECT_EQ(ERamsesObjectType::TextureSamplerExternal, loadedSampler->impl().getTextureType());
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteSceneId)
+    TEST_P(ASceneLoadedFromFile, canReadWriteSceneId)
     {
         const sceneId_t sceneId = ramses::sceneId_t(1ULL << 63);
         ramses::Scene& mScene(*client.createScene(SceneConfig(sceneId)));
@@ -1296,7 +1408,7 @@ namespace ramses::internal
         EXPECT_EQ(sceneId, m_sceneLoaded->getSceneId());
     }
 
-    TEST_F(ASceneLoadedFromFile, defaultsToLocalPublicationMode)
+    TEST_P(ASceneLoadedFromFile, defaultsToLocalPublicationMode)
     {
         const sceneId_t sceneId(81);
         EXPECT_TRUE(client.createScene(SceneConfig(sceneId))->saveToFile("someTempararyFile.ram", {}));
@@ -1306,7 +1418,7 @@ namespace ramses::internal
         EXPECT_EQ(EScenePublicationMode::LocalOnly, m_sceneLoaded->impl().getPublicationModeSetFromSceneConfig());
     }
 
-    TEST_F(ASceneLoadedFromFile, canOverridePublicationModeForLoadedFiles_savedAsLocalOnly_loadedAsRemote)
+    TEST_P(ASceneLoadedFromFile, canOverridePublicationModeForLoadedFiles_savedAsLocalOnly_loadedAsRemote)
     {
         const sceneId_t sceneId(80);
         SceneConfig config(sceneId, EScenePublicationMode::LocalOnly);
@@ -1319,7 +1431,7 @@ namespace ramses::internal
         EXPECT_EQ(EScenePublicationMode::LocalAndRemote, m_sceneLoaded->impl().getPublicationModeSetFromSceneConfig());
     }
 
-    TEST_F(ASceneLoadedFromFile, canOverridePublicationModeForLoadedFiles_savedAsRemote_loadedAsLocalOnly)
+    TEST_P(ASceneLoadedFromFile, canOverridePublicationModeForLoadedFiles_savedAsRemote_loadedAsLocalOnly)
     {
         const sceneId_t sceneId(80);
         SceneConfig config(sceneId, EScenePublicationMode::LocalAndRemote);
@@ -1330,17 +1442,17 @@ namespace ramses::internal
         EXPECT_EQ(EScenePublicationMode::LocalOnly, m_sceneLoaded->impl().getPublicationModeSetFromSceneConfig());
     }
 
-    TEST_F(ASceneLoadedFromFile, reportsErrorWhenSavingSceneToFileWithInvalidFileName)
+    TEST_P(ASceneLoadedFromFile, reportsErrorWhenSavingSceneToFileWithInvalidFileName)
     {
         EXPECT_FALSE(m_scene.saveToFile("?Euler_ZYX:/dummyFile", {}));
     }
 
-    TEST_F(ASceneLoadedFromFile, reportsErrorWhenSavingSceneToFileWithNoFileName)
+    TEST_P(ASceneLoadedFromFile, reportsErrorWhenSavingSceneToFileWithNoFileName)
     {
         EXPECT_FALSE(m_scene.saveToFile({}, {}));
     }
 
-    TEST_F(ASceneLoadedFromFile, overwritesExistingFileWhenSavingSceneToIt)
+    TEST_P(ASceneLoadedFromFile, overwritesExistingFileWhenSavingSceneToIt)
     {
         {
             ramses::internal::File existingFile("dummyFile.dat");
@@ -1359,19 +1471,19 @@ namespace ramses::internal
         EXPECT_TRUE(ramses::internal::File("dummyFile.dat").remove());
     }
 
-    TEST_F(ASceneLoadedFromFile, doesNotLoadSceneFromFileWithInvalidFileName)
+    TEST_P(ASceneLoadedFromFile, doesNotLoadSceneFromFileWithInvalidFileName)
     {
         ramses::Scene* scene = client.loadSceneFromFile("?Euler_ZYX:/dummyFile");
         EXPECT_TRUE(nullptr == scene);
     }
 
-    TEST_F(ASceneLoadedFromFile, doesNotLoadSceneFromFileWithoutFileName)
+    TEST_P(ASceneLoadedFromFile, doesNotLoadSceneFromFileWithoutFileName)
     {
         EXPECT_EQ(nullptr, client.loadSceneFromFile({}));
         EXPECT_EQ(nullptr, client.loadSceneFromFile(""));
     }
 
-    TEST_F(ASceneLoadedFromFile, doesNotLoadSceneFromInvalidMemory)
+    TEST_P(ASceneLoadedFromFile, doesNotLoadSceneFromInvalidMemory)
     {
         auto deleter = [](const auto* ptr) { delete[] ptr; };
         EXPECT_EQ(nullptr, client.loadSceneFromMemory(std::unique_ptr<std::byte[], void (*)(const std::byte*)>(nullptr, deleter), 1, {}));
@@ -1381,19 +1493,19 @@ namespace ramses::internal
         EXPECT_EQ(nullptr, RamsesUtils::LoadSceneFromMemory(client, std::unique_ptr<std::byte[]>(new std::byte[1]), 0, {}));
     }
 
-    TEST_F(ASceneLoadedFromFile, doesNotLoadSceneFromInvalidFileDescriptor)
+    TEST_P(ASceneLoadedFromFile, doesNotLoadSceneFromInvalidFileDescriptor)
     {
         EXPECT_EQ(nullptr, client.loadSceneFromFileDescriptor(-1, 0, 1, {}));
         EXPECT_EQ(nullptr, client.loadSceneFromFileDescriptor(1, 0, 0, {}));
     }
 
-    TEST_F(ASceneLoadedFromFile, doesNotLoadSceneFromUnexistingFile)
+    TEST_P(ASceneLoadedFromFile, doesNotLoadSceneFromUnexistingFile)
     {
         ramses::Scene* scene = client.loadSceneFromFile("ZEGETWTWAGTGSDGEg_thisfilename_in_this_directory_should_not_exist_DSAFDSFSTEZHDXHB");
         EXPECT_TRUE(nullptr == scene);
     }
 
-    TEST_F(ASceneLoadedFromFile, canHandleAllZeroFileOnSceneLoad)
+    TEST_P(ASceneLoadedFromFile, canHandleAllZeroFileOnSceneLoad)
     {
         const char* filename = "allzerofile.dat";
         {
@@ -1408,7 +1520,7 @@ namespace ramses::internal
         EXPECT_TRUE(scene == nullptr);
     }
 
-    TEST_F(ASceneLoadedFromFile, cannotLoadSameFileTwice)
+    TEST_P(ASceneLoadedFromFile, cannotLoadSameFileTwice)
     {
         const sceneId_t sceneId = ramses::sceneId_t(1ULL << 63);
         ramses::Scene* scene = client.createScene(SceneConfig(sceneId));
@@ -1420,7 +1532,7 @@ namespace ramses::internal
         EXPECT_EQ(nullptr, m_clientForLoading.loadSceneFromFile("someTempararyFile.ram"));
     }
 
-    TEST_F(ASceneLoadedFromFile, cannotLoadScenesWithSameSceneIdTwice)
+    TEST_P(ASceneLoadedFromFile, cannotLoadScenesWithSameSceneIdTwice)
     {
         const sceneId_t sceneId = ramses::sceneId_t(1ULL << 63);
 
@@ -1441,13 +1553,13 @@ namespace ramses::internal
         EXPECT_EQ(nullptr, m_clientForLoading.loadSceneFromFile("someTempararyFile_2.ram"));
     }
 
-    TEST_F(ASceneLoadedFromFile, cannotLoadSceneWithMismatchingFeatureLevel)
+    TEST_P(ASceneLoadedFromFile, cannotLoadSceneWithMismatchingFeatureLevel)
     {
         SaveSceneWithFeatureLevelToFile(EFeatureLevel(99), "someTemporaryFile.ram");
         EXPECT_EQ(nullptr, m_clientForLoading.loadSceneFromFile("someTemporaryFile.ram"));
     }
 
-    TEST_F(ASceneLoadedFromFile, canGetFeatureLevelFromSceneFile)
+    TEST_P(ASceneLoadedFromFile, canGetFeatureLevelFromSceneFile)
     {
         SaveSceneWithFeatureLevelToFile(EFeatureLevel_Latest, "someTemporaryFile.ram");
 
@@ -1456,7 +1568,7 @@ namespace ramses::internal
         EXPECT_EQ(EFeatureLevel_Latest, featureLevel);
     }
 
-    TEST_F(ASceneLoadedFromFile, failsToGetFeatureLevelFromFileWithUnknownFeatureLevel)
+    TEST_P(ASceneLoadedFromFile, failsToGetFeatureLevelFromFileWithUnknownFeatureLevel)
     {
         SaveSceneWithFeatureLevelToFile(EFeatureLevel(99), "someTemporaryFile.ram");
 
@@ -1464,13 +1576,13 @@ namespace ramses::internal
         EXPECT_FALSE(RamsesClient::GetFeatureLevelFromFile("someTemporaryFile.ram", featureLevel));
     }
 
-    TEST_F(ASceneLoadedFromFile, failsToGetFeatureLevelFromNonexistingFile)
+    TEST_P(ASceneLoadedFromFile, failsToGetFeatureLevelFromNonexistingFile)
     {
         EFeatureLevel featureLevel = EFeatureLevel_01;
         EXPECT_FALSE(RamsesClient::GetFeatureLevelFromFile("doesnt.Exist", featureLevel));
     }
 
-    TEST_F(ASceneLoadedFromFile, canGetFeatureLevelFromSceneFileViaFileDescriptor)
+    TEST_P(ASceneLoadedFromFile, canGetFeatureLevelFromSceneFileViaFileDescriptor)
     {
         SaveSceneWithFeatureLevelToFile(EFeatureLevel_Latest, "someTemporaryFile.ram");
 
@@ -1499,14 +1611,14 @@ namespace ramses::internal
         EXPECT_EQ(EFeatureLevel_Latest, featureLevel);
     }
 
-    TEST_F(ASceneLoadedFromFile, failsToGetFeatureLevelFromInvalidFileDescriptor)
+    TEST_P(ASceneLoadedFromFile, failsToGetFeatureLevelFromInvalidFileDescriptor)
     {
         EFeatureLevel featureLevel = EFeatureLevel_01;
         EXPECT_FALSE(RamsesClient::GetFeatureLevelFromFile(-1, 0u, 10u, featureLevel));
         EXPECT_FALSE(RamsesClient::GetFeatureLevelFromFile(1, 0u, 0u, featureLevel));
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteTransformDataSlot)
+    TEST_P(ASceneLoadedFromFile, canReadWriteTransformDataSlot)
     {
         Node* node = this->m_scene.createNode("node");
 
@@ -1528,7 +1640,7 @@ namespace ramses::internal
         EXPECT_EQ(ramses::internal::EDataSlotType::TransformationConsumer, this->m_sceneLoaded->impl().getIScene().getDataSlot(slotHandle).type);
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteDataObject)
+    TEST_P(ASceneLoadedFromFile, canReadWriteDataObject)
     {
         float setValue = 5.0f;
         auto data = this->m_scene.createDataObject(ramses::EDataType::Float, "floatData");
@@ -1545,7 +1657,11 @@ namespace ramses::internal
         EXPECT_EQ(setValue, loadedValue);
     }
 
-    TEST_F(ASceneLoadedFromFile, canReadWriteSceneReferences)
+#ifndef _MSC_VER
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+    TEST_P(ASceneLoadedFromFile, canReadWriteSceneReferences)
     {
         constexpr ramses::sceneId_t referencedSceneId(444);
         auto sr1 = this->m_scene.createSceneReference(referencedSceneId, "scene ref");
@@ -1567,8 +1683,11 @@ namespace ramses::internal
         EXPECT_EQ(referencedSceneId2, loadedSceneRef2->getReferencedSceneId());
         EXPECT_EQ(ramses::RendererSceneState::Rendered, loadedSceneRef2->getRequestedState());
     }
+#ifndef _MSC_VER
+#pragma GCC diagnostic pop
+#endif
 
-    TEST_F(ASceneLoadedFromFile, savesLLResourceOnlyOnceIfTwoHLResourcesReferToIt)
+    TEST_P(ASceneLoadedFromFile, savesLLResourceOnlyOnceIfTwoHLResourcesReferToIt)
     {
         std::vector<uint16_t> inds(300);
         std::iota(inds.begin(), inds.end(), static_cast<uint16_t>(0u));
@@ -1585,28 +1704,196 @@ namespace ramses::internal
         EXPECT_GT(1600, size) << "scene file size exceeds allowed max size. verify that LL resource is saved only once before adapting this number";
     }
 
-    template <typename T>
-    struct TestHelper
+    TEST_P(ASceneLoadedFromFile, compressedFileIsSmallerThanUncompressedWhenUsingSaveSceneToFile)
     {
-        static T* create(ASceneLoadedFromFileTemplated<T>* fixture, ramses::RamsesClient& /*unused*/, ramses::Scene& /*unused*/)
+        ramses::Scene* scene = client.createScene(SceneConfig(sceneId_t(1)));
+        const std::vector<uint16_t> data(1000u, 0u);
+        EXPECT_TRUE(scene->createArrayResource(static_cast<uint32_t>(data.size()), data.data()));
+
+        SaveFileConfig saveConfig;
+        saveConfig.setCompressionEnabled(false);
+        EXPECT_TRUE(scene->saveToFile("testscene.ramscene", saveConfig));
+
+        ramses::internal::File file("testscene.ramscene");
+        EXPECT_TRUE(file.exists());
+        size_t uncompressedFileSize = 0;
+        EXPECT_TRUE(file.getSizeInBytes(uncompressedFileSize));
+
+        saveConfig.setCompressionEnabled(true);
+        EXPECT_TRUE(scene->saveToFile("testscene.ramscene", saveConfig));
+
+        ramses::internal::File file2("testscene.ramscene");
+        EXPECT_TRUE(file2.exists());
+        size_t compressedFileSize = 0;
+        EXPECT_TRUE(file2.getSizeInBytes(compressedFileSize));
+
+        EXPECT_GT(uncompressedFileSize, compressedFileSize);
+    }
+
+    TEST_P(ASceneLoadedFromFile, savedFilesAreConsistent)
+    {
+        for (const auto& name : { "ts1.ramscene", "ts2.ramscene", "ts3.ramscene", "ts4.ramscene", "ts5.ramscene", "ts6.ramscene" })
         {
-            return &fixture->template createObject<T>("a node");
+            EXPECT_TRUE(this->m_scene.saveToFile(name, {}));
+        }
+
+        for (const auto& name : { "ts2.ramscene", "ts3.ramscene", "ts4.ramscene", "ts5.ramscene", "ts6.ramscene" })
+        {
+            EXPECT_TRUE(ClientTestUtils::CompareBinaryFiles("ts1.ramscene", name));
+        }
+    }
+
+    TEST_P(ASceneLoadedFromFile, closesSceneFileAndLowLevelResourceWhenDestroyed)
+    {
+        EXPECT_TRUE(m_scene.saveToFile("someTemporaryFile.ram", {}));
+
+        m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTemporaryFile.ram", {});
+        ASSERT_TRUE(nullptr != m_sceneLoaded);
+
+        auto handles = m_sceneLoaded->impl().getSceneFileHandles();
+        for (const auto& handle: handles)
+        {
+            EXPECT_TRUE(m_clientForLoading.impl().getClientApplication().hasResourceFile(handle));
+        }
+        m_clientForLoading.destroy(*m_sceneLoaded);
+
+        // scene gets destroyed asynchronously, so we can't just test after the destroy
+        // unfortunately there is no callback, but I don't want to skip the test
+        // => wait for it to happen in finite time, we don't test for performance here
+        uint32_t ticks = 60000u;
+        for (; ticks > 0 && !handles.empty(); --ticks)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            std::vector<ramses::internal::SceneFileHandle> notRemovedHandles;
+            notRemovedHandles.reserve(handles.size());
+            for (const auto& handle: handles)
+            {
+                if (m_clientForLoading.impl().getClientApplication().hasResourceFile(handle))
+                {
+                    notRemovedHandles.push_back(handle);
+                }
+            }
+            handles.swap(notRemovedHandles);
+        }
+        EXPECT_GT(ticks, 0u);
+    }
+
+    TEST_P(ASceneLoadedFromFile, closesSceneFileAndLowLevelResourceOfMergedSceneWhenDestroyed)
+    {
+        EXPECT_TRUE(m_scene.saveToFile("someTemporaryFile.ram", {}));
+        EXPECT_TRUE(m_scene.saveToFile("someTemporaryFile2.ram", {}));
+
+        m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTemporaryFile.ram", {});
+        ASSERT_TRUE(nullptr != m_sceneLoaded);
+
+        bool success = m_clientForLoading.mergeSceneFromFile(*m_sceneLoaded, "someTemporaryFile2.ram");
+        // scene merge is supported starting from feature level 02
+        if (GetParam() < EFeatureLevel::EFeatureLevel_02)
+        {
+            EXPECT_FALSE(success);
+            return;
+        }
+        ASSERT_TRUE(success);
+
+        auto handles = m_sceneLoaded->impl().getSceneFileHandles();
+        EXPECT_EQ(2, handles.size());
+
+        for (const auto& handle: handles)
+        {
+            EXPECT_TRUE(m_clientForLoading.impl().getClientApplication().hasResourceFile(handle));
+        }
+        m_clientForLoading.destroy(*m_sceneLoaded);
+
+        // scene gets destroyed asynchronously, so we can't just test after the destroy
+        // unfortunately there is no callback, but I don't want to skip the test
+        // => wait for it to happen in finite time, we don't test for performance here
+        uint32_t ticks = 60000u;
+        for (; ticks > 0 && !handles.empty(); --ticks)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            std::vector<ramses::internal::SceneFileHandle> notRemovedHandles;
+            notRemovedHandles.reserve(handles.size());
+            for (const auto& handle: handles)
+            {
+                if (m_clientForLoading.impl().getClientApplication().hasResourceFile(handle))
+                {
+                    notRemovedHandles.push_back(handle);
+                }
+            }
+            handles.swap(notRemovedHandles);
+        }
+        EXPECT_GT(ticks, 0u);
+    }
+
+    TEST_P(ASceneLoadedFromFile, closesSceneFileAndLowLevelResourceOfSameMergedSceneWhenDestroyed)
+    {
+        EXPECT_TRUE(m_scene.saveToFile("someTemporaryFile.ram", {}));
+
+        m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTemporaryFile.ram", {});
+        ASSERT_TRUE(nullptr != m_sceneLoaded);
+
+        bool success = m_clientForLoading.mergeSceneFromFile(*m_sceneLoaded, "someTemporaryFile.ram");
+        // scene merge is supported starting from feature level 02
+        if (GetParam() < EFeatureLevel::EFeatureLevel_02)
+        {
+            EXPECT_FALSE(success);
+            return;
+        }
+        ASSERT_TRUE(success);
+
+        auto handles = m_sceneLoaded->impl().getSceneFileHandles();
+        EXPECT_EQ(2, handles.size());
+
+        for (const auto& handle: handles)
+        {
+            EXPECT_TRUE(m_clientForLoading.impl().getClientApplication().hasResourceFile(handle));
+        }
+        m_clientForLoading.destroy(*m_sceneLoaded);
+
+        // scene gets destroyed asynchronously, so we can't just test after the destroy
+        // unfortunately there is no callback, but I don't want to skip the test
+        // => wait for it to happen in finite time, we don't test for performance here
+        uint32_t ticks = 60000u;
+        for (; ticks > 0 && !handles.empty(); --ticks)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            std::vector<ramses::internal::SceneFileHandle> notRemovedHandles;
+            notRemovedHandles.reserve(handles.size());
+            for (const auto& handle: handles)
+            {
+                if (m_clientForLoading.impl().getClientApplication().hasResourceFile(handle))
+                {
+                    notRemovedHandles.push_back(handle);
+                }
+            }
+            handles.swap(notRemovedHandles);
+        }
+        EXPECT_GT(ticks, 0u);
+    }
+
+    template <typename T>
+    class ASceneLoadedFromFileNodesTest : public SceneLoadedFromFile, public ::testing::Test
+    {
+    public:
+        ASceneLoadedFromFileNodesTest()
+            : SceneLoadedFromFile{ EFeatureLevel_Latest }
+        {
         }
     };
 
-    TYPED_TEST_SUITE(ASceneLoadedFromFileTemplated, NodeTypes);
-    TYPED_TEST(ASceneLoadedFromFileTemplated, canReadWriteAllNodes)
+    TYPED_TEST_SUITE(ASceneLoadedFromFileNodesTest, NodeTypes);
+    TYPED_TEST(ASceneLoadedFromFileNodesTest, canReadWriteAllNodes)
     {
-        auto node = TestHelper<TypeParam>::create(this, this->client, this->m_scene);
+        auto node = &this->template createObject<TypeParam>("a node");
 
         node->setVisibility(EVisibilityMode::Invisible);
 
         auto child = &this->template createObject<ramses::Node>("child");
         auto parent = &this->template createObject<ramses::Node>("parent");
 
-        node->setTranslation({1, 2, 3});
-        node->setRotation({4, 5, 6}, ERotationType::Euler_XZX);
-        node->setScaling({7, 8, 9});
+        node->setTranslation({ 1, 2, 3 });
+        node->setRotation({ 4, 5, 6 }, ERotationType::Euler_XZX);
+        node->setScaling({ 7, 8, 9 });
         node->addChild(*child);
         node->setParent(*parent);
 
@@ -1641,68 +1928,5 @@ namespace ramses::internal
         EXPECT_FLOAT_EQ(9, value.z);
 
         EXPECT_EQ(loadedSuperNode->getVisibility(), EVisibilityMode::Invisible);
-    }
-
-    TEST_F(ASceneLoadedFromFile, compressedFileIsSmallerThanUncompressedWhenUsingSaveSceneToFile)
-    {
-        ramses::Scene* scene = client.createScene(SceneConfig(sceneId_t(1)));
-        const std::vector<uint16_t> data(1000u, 0u);
-        EXPECT_TRUE(scene->createArrayResource(static_cast<uint32_t>(data.size()), data.data()));
-
-        SaveFileConfig saveConfig;
-        saveConfig.setCompressionEnabled(false);
-        EXPECT_TRUE(scene->saveToFile("testscene.ramscene", saveConfig));
-
-        ramses::internal::File file("testscene.ramscene");
-        EXPECT_TRUE(file.exists());
-        size_t uncompressedFileSize = 0;
-        EXPECT_TRUE(file.getSizeInBytes(uncompressedFileSize));
-
-        saveConfig.setCompressionEnabled(true);
-        EXPECT_TRUE(scene->saveToFile("testscene.ramscene", saveConfig));
-
-        ramses::internal::File file2("testscene.ramscene");
-        EXPECT_TRUE(file2.exists());
-        size_t compressedFileSize = 0;
-        EXPECT_TRUE(file2.getSizeInBytes(compressedFileSize));
-
-        EXPECT_GT(uncompressedFileSize, compressedFileSize);
-    }
-
-    TEST_F(ASceneLoadedFromFile, savedFilesAreConsistent)
-    {
-        for (const auto& name : { "ts1.ramscene", "ts2.ramscene", "ts3.ramscene", "ts4.ramscene", "ts5.ramscene", "ts6.ramscene" })
-        {
-            EXPECT_TRUE(this->m_scene.saveToFile(name, {}));
-        }
-
-        for (const auto& name : { "ts2.ramscene", "ts3.ramscene", "ts4.ramscene", "ts5.ramscene", "ts6.ramscene" })
-        {
-            EXPECT_TRUE(ClientTestUtils::CompareBinaryFiles("ts1.ramscene", name));
-        }
-    }
-
-    TEST_F(ASceneLoadedFromFile, closesSceneFileAndLowLevelResourceWhenDestroyed)
-    {
-        EXPECT_TRUE(m_scene.saveToFile("someTemporaryFile.ram", {}));
-
-        m_sceneLoaded = m_clientForLoading.loadSceneFromFile("someTemporaryFile.ram", {});
-        ASSERT_TRUE(nullptr != m_sceneLoaded);
-
-        const ramses::internal::SceneFileHandle handle = m_sceneLoaded->impl().getSceneFileHandle();
-        EXPECT_TRUE(m_clientForLoading.impl().getClientApplication().hasResourceFile(handle));
-        m_clientForLoading.destroy(*m_sceneLoaded);
-
-        // scene gets destroyed asynchronously, so we can't just test after the destroy
-        // unfortunately there is no callback, but I don't want to skip the test
-        // => wait for it to happen in finite time, we don't test for performance here
-        uint32_t ticks = 60000u;
-        for (; ticks > 0; --ticks)
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            if (!m_clientForLoading.impl().getClientApplication().hasResourceFile(handle))
-                break;
-        }
-        EXPECT_GT(ticks, 0u);
     }
 }

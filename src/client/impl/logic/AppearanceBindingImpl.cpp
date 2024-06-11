@@ -27,7 +27,7 @@
 namespace ramses::internal
 {
     AppearanceBindingImpl::AppearanceBindingImpl(SceneImpl& scene, ramses::Appearance& ramsesAppearance, std::string_view name, sceneObjectId_t id)
-        : RamsesBindingImpl{ scene, name, id }
+        : RamsesBindingImpl{ scene, name, id, ramsesAppearance }
         , m_ramsesAppearance(ramsesAppearance)
     {
         const auto& effect = m_ramsesAppearance.get().getEffect();

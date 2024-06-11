@@ -27,9 +27,9 @@ namespace ramses::internal
     RendererResourceManager::RendererResourceManager(
         IRenderBackend& renderBackend,
         std::unique_ptr<IResourceUploader> resourceUploader,
-        AsyncEffectUploader& asyncEffectUploader,
+        AsyncEffectUploader* asyncEffectUploader,
         IEmbeddedCompositingManager& embeddedCompositingManager,
-        const DisplayConfig& displayConfig,
+        const DisplayConfigData& displayConfig,
         const FrameTimer& frameTimer,
         RendererStatistics& stats)
         : m_renderBackend(renderBackend)
@@ -113,35 +113,29 @@ namespace ramses::internal
         {
             RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
 
-            RenderTargetHandleVector renderTargets;
-            sceneResources.getAllRenderTargets(renderTargets);
-            for (const auto& rt : renderTargets)
+            for (const auto& rt : sceneResources.getAll<RenderTargetHandle>())
                 unloadRenderTarget(rt, sceneId);
 
-            BlitPassHandleVector blitPasses;
-            sceneResources.getAllBlitPasses(blitPasses);
-            for (const auto& bp : blitPasses)
+            for (const auto& bp : sceneResources.getAll<BlitPassHandle>())
                 unloadBlitPassRenderTargets(bp, sceneId);
 
-            RenderBufferHandleVector renderBuffers;
-            sceneResources.getAllRenderBuffers(renderBuffers);
-            for(const auto& rb : renderBuffers)
+            for(const auto& rb : sceneResources.getAll<RenderBufferHandle>())
                 unloadRenderTargetBuffer(rb, sceneId);
 
-            RenderableVector vertexArrayRenderables;
-            sceneResources.getAllVertexArrayRenderables(vertexArrayRenderables);
-            for (const auto r : vertexArrayRenderables)
+            for (const auto r : sceneResources.getAll<RenderableHandle>())
                 unloadVertexArray(r, sceneId);
 
-            DataBufferHandleVector dataBuffers;
-            sceneResources.getAllDataBuffers(dataBuffers);
-            for (const auto db : dataBuffers)
+            for (const auto db : sceneResources.getAll<DataBufferHandle>())
                 unloadDataBuffer(db, sceneId);
 
-            TextureBufferHandleVector textureBuffers;
-            sceneResources.getAllTextureBuffers(textureBuffers);
-            for (const auto tb : textureBuffers)
+            for (const auto tb : sceneResources.getAll<TextureBufferHandle>())
                 unloadTextureBuffer(tb, sceneId);
+
+            for (const auto ub : sceneResources.getAll<UniformBufferHandle>())
+                unloadUniformBuffer(ub, sceneId);
+
+            for (const auto sub : sceneResources.getAll<SemanticUniformBufferHandle>())
+                unloadUniformBuffer(sub, sceneId);
 
             m_sceneResourceRegistryMap.remove(sceneId);
         }
@@ -204,14 +198,14 @@ namespace ramses::internal
     {
         assert(m_sceneResourceRegistryMap.contains(sceneId));
         const RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
-        return sceneResources.getRenderTargetDeviceHandle(handle);
+        return sceneResources.get(handle);
     }
 
     DeviceResourceHandle RendererResourceManager::getRenderTargetBufferDeviceHandle(RenderBufferHandle bufferHandle, SceneId sceneId) const
     {
         assert(m_sceneResourceRegistryMap.contains(sceneId));
         const RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
-        return sceneResources.getRenderBufferDeviceHandle(bufferHandle);
+        return sceneResources.get(bufferHandle).deviceHandle;
     }
 
     void RendererResourceManager::getBlitPassRenderTargetsDeviceHandle(BlitPassHandle blitPassHandle, SceneId sceneId, DeviceResourceHandle& srcRT, DeviceResourceHandle& dstRT) const
@@ -319,7 +313,7 @@ namespace ramses::internal
             std::ignore = device.isDeviceStatusHealthy();
         }
 
-        sceneResources.addRenderBuffer(renderBufferHandle, deviceHandle, memSize, renderBuffer);
+        sceneResources.add(renderBufferHandle, deviceHandle, memSize, renderBuffer);
         m_stats.sceneResourceUploaded(sceneId, memSize);
     }
 
@@ -331,8 +325,8 @@ namespace ramses::internal
         RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
 
         IDevice& device = m_renderBackend.getDevice();
-        device.deleteRenderBuffer(sceneResources.getRenderBufferDeviceHandle(renderBufferHandle));
-        sceneResources.removeRenderBuffer(renderBufferHandle);
+        device.deleteRenderBuffer(sceneResources.get(renderBufferHandle).deviceHandle);
+        sceneResources.remove(renderBufferHandle);
     }
 
     void RendererResourceManager::updateRenderTargetBufferProperties(RenderBufferHandle renderBufferHandle, SceneId sceneId, const RenderBuffer& renderBuffer)
@@ -343,7 +337,7 @@ namespace ramses::internal
         assert(m_sceneResourceRegistryMap.contains(sceneId));
         RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
 
-        const RenderBuffer& uploadedRenderBufferProperties = sceneResources.getRenderBufferProperties(renderBufferHandle);
+        const RenderBuffer& uploadedRenderBufferProperties = sceneResources.get(renderBufferHandle).renderBufferProperties;
         if (renderBuffer.width != uploadedRenderBufferProperties.width ||
             renderBuffer.height != uploadedRenderBufferProperties.height ||
             renderBuffer.sampleCount != uploadedRenderBufferProperties.sampleCount ||
@@ -370,7 +364,7 @@ namespace ramses::internal
         rtBufferDeviceHandles.reserve(rtBufferHandles.size());
         for(const auto& rb : rtBufferHandles)
         {
-            const DeviceResourceHandle rbDeviceHandle = sceneResources.getRenderBufferDeviceHandle(rb);
+            const DeviceResourceHandle rbDeviceHandle = sceneResources.get(rb).deviceHandle;
             assert(rbDeviceHandle.isValid());
             rtBufferDeviceHandles.push_back(rbDeviceHandle);
         }
@@ -378,7 +372,7 @@ namespace ramses::internal
         IDevice& device = m_renderBackend.getDevice();
         const DeviceResourceHandle rtDeviceHandle = device.uploadRenderTarget(rtBufferDeviceHandles);
 
-        sceneResources.addRenderTarget(renderTarget, rtDeviceHandle);
+        sceneResources.add(renderTarget, rtDeviceHandle);
     }
 
     void RendererResourceManager::unloadRenderTarget(RenderTargetHandle renderTarget, SceneId sceneId)
@@ -387,10 +381,10 @@ namespace ramses::internal
 
         assert(m_sceneResourceRegistryMap.contains(sceneId));
         RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
-        const DeviceResourceHandle rtDeviceHandle = sceneResources.getRenderTargetDeviceHandle(renderTarget);
+        const DeviceResourceHandle rtDeviceHandle = sceneResources.get(renderTarget);
         IDevice& device = m_renderBackend.getDevice();
         device.deleteRenderTarget(rtDeviceHandle);
-        sceneResources.removeRenderTarget(renderTarget);
+        sceneResources.remove(renderTarget);
     }
 
     void RendererResourceManager::uploadDmaOffscreenBuffer(OffscreenBufferHandle bufferHandle, uint32_t width, uint32_t height, DmaBufferFourccFormat dmaBufferFourccFormat, DmaBufferUsageFlags dmaBufferUsageFlags, DmaBufferModifiers dmaBufferModifiers)
@@ -574,8 +568,8 @@ namespace ramses::internal
         assert(destinationRenderBuffer.isValid());
         RendererSceneResourceRegistry& sceneResources = getSceneResourceRegistry(sceneId);
 
-        const DeviceResourceHandle sourceRenderBufferDeviceHandle = sceneResources.getRenderBufferDeviceHandle(sourceRenderBuffer);
-        const DeviceResourceHandle destinationRenderBufferDeviceHandle = sceneResources.getRenderBufferDeviceHandle(destinationRenderBuffer);
+        const DeviceResourceHandle sourceRenderBufferDeviceHandle = sceneResources.get(sourceRenderBuffer).deviceHandle;
+        const DeviceResourceHandle destinationRenderBufferDeviceHandle = sceneResources.get(destinationRenderBuffer).deviceHandle;
         assert(sourceRenderBufferDeviceHandle.isValid() && destinationRenderBufferDeviceHandle.isValid());
 
         IDevice& device = m_renderBackend.getDevice();
@@ -592,7 +586,7 @@ namespace ramses::internal
             std::ignore = device.isDeviceStatusHealthy();
         }
 
-        sceneResources.addBlitPass(blitPass, blitRtSource, blitRtDest);
+        sceneResources.add(blitPass, blitRtSource, blitRtDest);
     }
 
     void RendererResourceManager::unloadBlitPassRenderTargets(BlitPassHandle blitPass, SceneId sceneId)
@@ -605,7 +599,7 @@ namespace ramses::internal
         DeviceResourceHandle srcRTDeviceHandle;
         DeviceResourceHandle dstRTDeviceHandle;
         sceneResources.getBlitPassDeviceHandles(blitPass, srcRTDeviceHandle, dstRTDeviceHandle);
-        sceneResources.removeBlitPass(blitPass);
+        sceneResources.remove(blitPass);
 
         IDevice& device = m_renderBackend.getDevice();
         device.deleteRenderTarget(srcRTDeviceHandle);
@@ -642,7 +636,7 @@ namespace ramses::internal
             std::ignore = device.isDeviceStatusHealthy();
         }
 
-        sceneResources.addDataBuffer(dataBufferHandle, deviceHandle, dataBufferType, dataSizeInBytes);
+        sceneResources.add(dataBufferHandle, deviceHandle, dataBufferType, dataSizeInBytes);
         m_stats.sceneResourceUploaded(sceneId, dataSizeInBytes);
     }
 
@@ -651,9 +645,9 @@ namespace ramses::internal
         assert(m_sceneResourceRegistryMap.contains(sceneId));
         RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
 
-        const DeviceResourceHandle deviceHandle = sceneResources.getDataBufferDeviceHandle(dataBufferHandle);
+        const DeviceResourceHandle deviceHandle = sceneResources.get(dataBufferHandle).deviceHandle;
         assert(deviceHandle.isValid());
-        const EDataBufferType dataBufferType = sceneResources.getDataBufferType(dataBufferHandle);
+        const EDataBufferType dataBufferType = sceneResources.get(dataBufferHandle).dataBufferType;
 
         IDevice& device = m_renderBackend.getDevice();
         switch (dataBufferType)
@@ -669,7 +663,7 @@ namespace ramses::internal
             assert(false);
         }
 
-        sceneResources.removeDataBuffer(dataBufferHandle);
+        sceneResources.remove(dataBufferHandle);
     }
 
     void RendererResourceManager::updateDataBuffer(DataBufferHandle handle, uint32_t dataSizeInBytes, const std::byte* data, SceneId sceneId)
@@ -677,9 +671,9 @@ namespace ramses::internal
         assert(m_sceneResourceRegistryMap.contains(sceneId));
         const RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
 
-        const DeviceResourceHandle deviceHandle = sceneResources.getDataBufferDeviceHandle(handle);
+        const DeviceResourceHandle deviceHandle = sceneResources.get(handle).deviceHandle;
         assert(deviceHandle.isValid());
-        const EDataBufferType dataBufferType = sceneResources.getDataBufferType(handle);
+        const EDataBufferType dataBufferType = sceneResources.get(handle).dataBufferType;
 
         IDevice& device = m_renderBackend.getDevice();
         switch (dataBufferType)
@@ -701,7 +695,7 @@ namespace ramses::internal
     {
         assert(m_sceneResourceRegistryMap.contains(sceneId));
         const RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
-        return sceneResources.getDataBufferDeviceHandle(dataBufferHandle);
+        return sceneResources.get(dataBufferHandle).deviceHandle;
     }
 
     void RendererResourceManager::uploadTextureBuffer(TextureBufferHandle textureBufferHandle, uint32_t width, uint32_t height, EPixelStorageFormat textureFormat, uint32_t mipLevelCount, SceneId sceneId)
@@ -724,7 +718,7 @@ namespace ramses::internal
             std::ignore = device.isDeviceStatusHealthy();
         }
 
-        sceneResources.addTextureBuffer(textureBufferHandle, deviceHandle, textureFormat, totalSizeInBytes);
+        sceneResources.add(textureBufferHandle, deviceHandle, textureFormat, totalSizeInBytes);
         m_stats.sceneResourceUploaded(sceneId, totalSizeInBytes);
     }
 
@@ -733,12 +727,12 @@ namespace ramses::internal
         assert(m_sceneResourceRegistryMap.contains(sceneId));
         RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
 
-        const DeviceResourceHandle deviceHandle = sceneResources.getTextureBufferDeviceHandle(textureBufferHandle);
+        const DeviceResourceHandle deviceHandle = sceneResources.get(textureBufferHandle).deviceHandle;
         assert(deviceHandle.isValid());
         IDevice& device = m_renderBackend.getDevice();
         device.deleteTexture(deviceHandle);
 
-        sceneResources.removeTextureBuffer(textureBufferHandle);
+        sceneResources.remove(textureBufferHandle);
     }
 
     void RendererResourceManager::updateTextureBuffer(TextureBufferHandle textureBufferHandle, uint32_t mipLevel, const Quad& area, uint32_t stride, const std::byte* data, SceneId sceneId)
@@ -746,14 +740,14 @@ namespace ramses::internal
         assert(m_sceneResourceRegistryMap.contains(sceneId));
         const RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
 
-        const DeviceResourceHandle deviceHandle = sceneResources.getTextureBufferDeviceHandle(textureBufferHandle);
+        const DeviceResourceHandle deviceHandle = sceneResources.get(textureBufferHandle).deviceHandle;
         assert(deviceHandle.isValid());
 
         IDevice& device = m_renderBackend.getDevice();
         device.bindTexture(deviceHandle);
         device.uploadTextureData(deviceHandle, mipLevel, area.x, area.y, 0u, area.width, area.height, 1u, data, 0u, stride);
 
-        const uint32_t updateDataSizeInBytes = TextureMathUtils::GetTotalMemoryUsedByMipmappedTexture(GetTexelSizeFromFormat(sceneResources.getTextureBufferFormat(textureBufferHandle)), area.width, area.height, 1u, 1u);
+        const uint32_t updateDataSizeInBytes = TextureMathUtils::GetTotalMemoryUsedByMipmappedTexture(GetTexelSizeFromFormat(sceneResources.get(textureBufferHandle).format), area.width, area.height, 1u, 1u);
         m_stats.sceneResourceUploaded(sceneId, updateDataSizeInBytes);
     }
 
@@ -761,7 +755,7 @@ namespace ramses::internal
     {
         assert(m_sceneResourceRegistryMap.contains(sceneId));
         const RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
-        return sceneResources.getTextureBufferDeviceHandle(textureBufferHandle);
+        return sceneResources.get(textureBufferHandle).deviceHandle;
     }
 
     void RendererResourceManager::uploadVertexArray(RenderableHandle renderableHandle, const VertexArrayInfo& vertexArrayInfo, SceneId sceneId)
@@ -777,22 +771,106 @@ namespace ramses::internal
         }
 
         RendererSceneResourceRegistry& sceneResources = getSceneResourceRegistry(sceneId);
-        sceneResources.addVertexArray(renderableHandle, deviceHandle);
+        sceneResources.add(renderableHandle, deviceHandle);
     }
 
     void RendererResourceManager::unloadVertexArray(RenderableHandle renderableHandle, SceneId sceneId)
     {
         assert(m_sceneResourceRegistryMap.contains(sceneId));
         RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
-        const auto deviceHandle = sceneResources.getVertexArrayDeviceHandle(renderableHandle);
+        const auto deviceHandle = sceneResources.get(renderableHandle);
         m_renderBackend.getDevice().deleteVertexArray(deviceHandle);
-        sceneResources.removeVertexArray(renderableHandle);
+        sceneResources.remove(renderableHandle);
     }
 
     DeviceResourceHandle RendererResourceManager::getVertexArrayDeviceHandle(RenderableHandle renderableHandle, SceneId sceneId) const
     {
         assert(m_sceneResourceRegistryMap.contains(sceneId));
         const RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
-        return sceneResources.getVertexArrayDeviceHandle(renderableHandle);
+        return sceneResources.get(renderableHandle);
+    }
+
+    void RendererResourceManager::uploadUniformBuffer(UniformBufferHandle uniformBufferHandle, uint32_t size, SceneId sceneId)
+    {
+        auto& device = m_renderBackend.getDevice();
+        const auto deviceHandle = device.allocateUniformBuffer(size);
+        if (!deviceHandle.isValid())
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceManager::uploadUniformBuffer sceneId={} uniformBufferHandle={} failed to allocate uniform buffer, this is fatal...",
+                sceneId, uniformBufferHandle);
+            std::ignore = device.isDeviceStatusHealthy();
+        }
+        assert(deviceHandle.isValid());
+
+        RendererSceneResourceRegistry& sceneResources = getSceneResourceRegistry(sceneId);
+        sceneResources.add(uniformBufferHandle, deviceHandle);
+    }
+
+    void RendererResourceManager::unloadUniformBuffer(UniformBufferHandle uniformBufferHandle, SceneId sceneId)
+    {
+        assert(m_sceneResourceRegistryMap.contains(sceneId));
+        RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
+        const auto deviceHandle = sceneResources.get(uniformBufferHandle);
+        m_renderBackend.getDevice().deleteUniformBuffer(deviceHandle);
+        sceneResources.remove(uniformBufferHandle);
+    }
+
+    void RendererResourceManager::updateUniformBuffer(UniformBufferHandle uniformBufferHandle, uint32_t dataSize, const std::byte* data, SceneId sceneId)
+    {
+        assert(m_sceneResourceRegistryMap.contains(sceneId));
+        const RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
+
+        const DeviceResourceHandle deviceHandle = sceneResources.get(uniformBufferHandle);
+        assert(deviceHandle.isValid());
+
+        IDevice& device = m_renderBackend.getDevice();
+        device.uploadUniformBufferData(deviceHandle, data, dataSize);
+    }
+
+    DeviceResourceHandle RendererResourceManager::getUniformBufferDeviceHandle(UniformBufferHandle uniformBufferHandle, SceneId sceneId) const
+    {
+        assert(m_sceneResourceRegistryMap.contains(sceneId));
+        const RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
+        return sceneResources.get(uniformBufferHandle);
+    }
+
+    DeviceResourceHandle RendererResourceManager::uploadUniformBuffer(SemanticUniformBufferHandle handle, uint32_t size, SceneId sceneId)
+    {
+        auto& device = m_renderBackend.getDevice();
+        const auto deviceHandle = device.allocateUniformBuffer(size);
+        if (!deviceHandle.isValid())
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "RendererResourceManager::uploadUniformBuffer sceneId={} handle={} failed to allocate uniform buffer, this is fatal...",
+                sceneId, handle);
+            std::ignore = device.isDeviceStatusHealthy();
+        }
+        assert(deviceHandle.isValid());
+
+        getSceneResourceRegistry(sceneId).add(handle, deviceHandle);
+
+        return deviceHandle;
+    }
+
+    void RendererResourceManager::unloadUniformBuffer(SemanticUniformBufferHandle handle, SceneId sceneId)
+    {
+        assert(m_sceneResourceRegistryMap.contains(sceneId));
+        RendererSceneResourceRegistry& sceneResources = *m_sceneResourceRegistryMap.get(sceneId);
+        const auto deviceHandle = sceneResources.get(handle);
+        m_renderBackend.getDevice().deleteUniformBuffer(deviceHandle);
+        sceneResources.remove(handle);
+    }
+
+    void RendererResourceManager::updateUniformBuffer(SemanticUniformBufferHandle handle, uint32_t dataSize, const std::byte* data, SceneId sceneId)
+    {
+        assert(m_sceneResourceRegistryMap.contains(sceneId));
+        const DeviceResourceHandle deviceHandle = m_sceneResourceRegistryMap.get(sceneId)->get(handle);
+        assert(deviceHandle.isValid());
+        m_renderBackend.getDevice().uploadUniformBufferData(deviceHandle, data, dataSize);
+    }
+
+    DeviceResourceHandle RendererResourceManager::getUniformBufferDeviceHandle(SemanticUniformBufferHandle handle, SceneId sceneId) const
+    {
+        assert(m_sceneResourceRegistryMap.contains(sceneId));
+        return m_sceneResourceRegistryMap.get(sceneId)->get(handle);
     }
 }

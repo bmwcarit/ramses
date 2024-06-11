@@ -15,5 +15,7 @@ createModule(
 )
 
 add_custom_target(RL_REGEN_TEST_ASSETS
-    COMMAND test-asset-producer ${PROJECT_SOURCE_DIR}/tests/unittests/client/res)
+    COMMAND test-asset-producer ${PROJECT_SOURCE_DIR}/tests/unittests/client/res                            # FL02
+    COMMAND test-asset-producer ${PROJECT_SOURCE_DIR}/tests/unittests/client/res "testScene_01.ramses" 1    # FL01
+    )
 set_property(TARGET RL_REGEN_TEST_ASSETS PROPERTY FOLDER "CMakePredefinedTargets")

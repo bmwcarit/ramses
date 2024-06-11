@@ -18,9 +18,11 @@ namespace ramses::internal
     // together with some additional data used in client side logic
     class ClientScene final : public DataLayoutCachedScene
     {
+        using BaseT = DataLayoutCachedScene;
+
     public:
-        explicit ClientScene(const SceneInfo& sceneInfo = {})
-            : DataLayoutCachedScene(sceneInfo)
+        explicit ClientScene(const SceneInfo& sceneInfo = {}, EFeatureLevel featureLevel = EFeatureLevel_Latest)
+            : BaseT(sceneInfo, featureLevel)
         {
         }
 

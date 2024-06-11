@@ -44,8 +44,14 @@ target_sources(ramses-viewer-gui-lib INTERFACE
     LogicEngineGui.cpp
     LogicViewerGui.h
     LogicViewerGui.cpp
+    RemoteScenesGui.h
+    RemoteScenesGui.cpp
+    RendererControl.h
+    RendererControl.cpp
     SceneViewerGui.h
     SceneViewerGui.cpp
+    StreamViewer.h
+    StreamViewer.cpp
     ViewerGui.h
     ViewerGui.cpp
     ViewerGuiApp.h

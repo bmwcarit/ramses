@@ -12,20 +12,20 @@
 namespace ramses::internal
 {
     TransformationLinkCachedScene::TransformationLinkCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo)
-        : SceneLinkScene(sceneLinksManager, sceneInfo)
+        : BaseT(sceneLinksManager, sceneInfo)
     {
     }
 
     void TransformationLinkCachedScene::removeChildFromNode(NodeHandle parent, NodeHandle child)
     {
         propagateDirtyToConsumers(child);
-        SceneLinkScene::removeChildFromNode(parent, child);
+        BaseT::removeChildFromNode(parent, child);
     }
 
     void TransformationLinkCachedScene::addChildToNode(NodeHandle parent, NodeHandle child)
     {
         propagateDirtyToConsumers(child);
-        SceneLinkScene::addChildToNode(parent, child);
+        BaseT::addChildToNode(parent, child);
     }
 
     void TransformationLinkCachedScene::setRotation(TransformHandle transform, const glm::vec4& rotation, ERotationType rotationType)
@@ -33,7 +33,7 @@ namespace ramses::internal
         const NodeHandle nodeTransformIsConnectedTo = getTransformNode(transform);
         assert(nodeTransformIsConnectedTo.isValid());
         propagateDirtyToConsumers(nodeTransformIsConnectedTo);
-        SceneLinkScene::setRotation(transform, rotation, rotationType);
+        BaseT::setRotation(transform, rotation, rotationType);
     }
 
     void TransformationLinkCachedScene::setScaling(TransformHandle transform, const glm::vec3& scaling)
@@ -41,7 +41,7 @@ namespace ramses::internal
         const NodeHandle nodeTransformIsConnectedTo = getTransformNode(transform);
         assert(nodeTransformIsConnectedTo.isValid());
         propagateDirtyToConsumers(nodeTransformIsConnectedTo);
-        SceneLinkScene::setScaling(transform, scaling);
+        BaseT::setScaling(transform, scaling);
     }
 
     void TransformationLinkCachedScene::setTranslation(TransformHandle transform, const glm::vec3& translation)
@@ -49,7 +49,7 @@ namespace ramses::internal
         const NodeHandle nodeTransformIsConnectedTo = getTransformNode(transform);
         assert(nodeTransformIsConnectedTo.isValid());
         propagateDirtyToConsumers(nodeTransformIsConnectedTo);
-        SceneLinkScene::setTranslation(transform, translation);
+        BaseT::setTranslation(transform, translation);
     }
 
     void TransformationLinkCachedScene::releaseDataSlot(DataSlotHandle handle)
@@ -60,7 +60,7 @@ namespace ramses::internal
             propagateDirtyToConsumers(dataSlot.attachedNode);
         }
 
-        SceneLinkScene::releaseDataSlot(handle);
+        BaseT::releaseDataSlot(handle);
     }
 
     void TransformationLinkCachedScene::propagateDirtyToConsumers(NodeHandle startNode) const
@@ -89,10 +89,10 @@ namespace ramses::internal
         if (!m_sceneLinksManager.getTransformationLinkManager().getDependencyChecker().hasDependencyAsConsumer(getSceneId()))
         {
             // early out, if no links need to be resolved fall back to standard transformation scene
-            return SceneLinkScene::updateMatrixCache(matrixType, node);
+            return BaseT::updateMatrixCache(matrixType, node);
         }
 
-        glm::mat4 chainMatrix = SceneLinkScene::findCleanAncestorMatrixAndCollectDirtyNodesOnTheWay(matrixType, node, m_dirtyNodes);
+        glm::mat4 chainMatrix = BaseT::findCleanAncestorMatrixAndCollectDirtyNodesOnTheWay(matrixType, node, m_dirtyNodes);
 
         // update cache for all transforms for the nodes we collected
         for (int32_t i = static_cast<int32_t>(m_dirtyNodes.size()) - 1; i >= 0; --i)

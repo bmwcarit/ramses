@@ -74,7 +74,7 @@ namespace ramses::internal
         if (!SceneObjectImpl::deserialize(inStream, serializationContext))
             return false;
 
-        inStream >> m_renderGroupHandle;
+        serializationContext.deserializeAndMap(inStream, m_renderGroupHandle);
 
         deserializeObjects(inStream, serializationContext, m_meshes);
         deserializeObjects(inStream, serializationContext, m_renderGroups);
@@ -105,9 +105,6 @@ namespace ramses::internal
     void RenderGroupImpl::onValidate(ValidationReportImpl& report) const
     {
         SceneObjectImpl::onValidate(report);
-
-        if (m_meshes.empty() && m_renderGroups.empty())
-            report.add(EIssueType::Warning, "rendergroup does not contain any meshes", &getRamsesObject());
 
         for (const auto& element : m_meshes)
             report.addDependentObject(*this, *element);

@@ -23,7 +23,7 @@ namespace ramses::internal
     ShaderTestScene::ShaderTestScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
         , m_effect(*getTestEffect(GetEffectNameFromState(state)))
-        , m_triangle(scene, m_effect, TriangleAppearance::EColor_Red)
+        , m_triangle(scene, m_effect, TriangleAppearance::EColor::None)
     {
         ramses::MeshNode* meshNode = m_scene.createMeshNode("red triangle mesh node");
         addMeshNodeToDefaultRenderGroup(*meshNode);
@@ -33,6 +33,16 @@ namespace ramses::internal
         ramses::Node* transNode = m_scene.createNode();
         transNode->setTranslation({0.f, 0.f, -12.f});
         meshNode->setParent(*transNode);
+
+        switch (state)
+        {
+        case DISCARD:
+        case OPTIMIZED_INPUT:
+            m_triangle.setColor(TriangleAppearance::EColor::Red);
+            break;
+        default:
+            break;
+        };
 
         initInputs(state);
     }
@@ -53,11 +63,12 @@ namespace ramses::internal
             return "ramses-test-client-textureSize";
         case BOOL_UNIFORM:
             return "ramses-test-client-boolUniform";
+        case UNIFORM_BUFFERS_STD140:
+            return "ramses-test-client-uniform-buffers-std140";
         default:
             assert(false && "Unknown state!");
             return "";
         };
-
     }
 
     void ShaderTestScene::initInputs(uint32_t state)
@@ -148,6 +159,72 @@ namespace ramses::internal
                 [[maybe_unused]] bool status  = appearance.setInputValue(*optInput, 3, colorCh.data());
                 assert(status);
             }
+        }
+        else if (state == UNIFORM_BUFFERS_STD140)
+        {
+            // scalars
+            optInput = m_effect.findUniformInput("scalarsUBO.uBool");
+            appearance.setInputValue(*optInput, true);
+            optInput = m_effect.findUniformInput("scalarsUBO.uInt");
+            appearance.setInputValue(*optInput, -111);
+            optInput = m_effect.findUniformInput("scalarsUBO.uFloat");
+            appearance.setInputValue(*optInput, 333.f);
+
+            // vector and matrix
+            optInput = m_effect.findUniformInput("vecMatUBO.uVec2f");
+            appearance.setInputValue(*optInput, vec2f(123.f, 124.f));
+            optInput = m_effect.findUniformInput("vecMatUBO.uVec3f");
+            appearance.setInputValue(*optInput, vec3f(456.f, 457.f, 458.f));
+            optInput = m_effect.findUniformInput("vecMatUBO.uVec4f");
+            appearance.setInputValue(*optInput, vec4f(678.f));
+            optInput = m_effect.findUniformInput("vecMatUBO.uMat22f");
+            appearance.setInputValue(*optInput, matrix22f(222.f, 223.f, 224.f, 225.f));
+            optInput = m_effect.findUniformInput("vecMatUBO.uMat33f");
+            appearance.setInputValue(*optInput, matrix33f(333.0f, 334.0f, 335.0f, 336.0f, 337.0f, 338.0f, 339.f, 330.f, 331.0f));
+            optInput = m_effect.findUniformInput("vecMatUBO.uMat44f");
+            appearance.setInputValue(*optInput, matrix44f(444.f));
+
+            // scalar arrays
+            optInput = m_effect.findUniformInput("arraysUBO.uBool");
+            appearance.setInputValue(*optInput, 5u, std::array{ true, false, true, false, true }.data());
+            optInput = m_effect.findUniformInput("arraysUBO.uInt");
+            appearance.setInputValue(*optInput, 7u, std::array{ 2, 3, 5, 7, 11, 13, 17 }.data());
+            optInput = m_effect.findUniformInput("arraysUBO.uFloat");
+            appearance.setInputValue(*optInput, 5u, std::array{ 33.0f, 66.0f, 99.0f, 0.33f, 0.66f }.data());
+
+            // vector and matrix arrays
+            optInput = m_effect.findUniformInput("vecMatArraysUBO.uVec2f");
+            appearance.setInputValue(*optInput, 3u, std::array{ vec2f(1.0), vec2f(2.0), vec2f(3.0) }.data());
+            optInput = m_effect.findUniformInput("vecMatArraysUBO.uVec3f");
+            appearance.setInputValue(*optInput, 3u, std::array{ vec3f(1.0), vec3f(2.0), vec3f(3.0) }.data());
+            optInput = m_effect.findUniformInput("vecMatArraysUBO.uVec4f");
+            appearance.setInputValue(*optInput, 3u, std::array{ vec4f(1.0), vec4f(2.0), vec4f(3.0) }.data());
+            optInput = m_effect.findUniformInput("vecMatArraysUBO.uMat22f");
+            appearance.setInputValue(*optInput, 3u, std::array{ matrix22f(4.0), matrix22f(5.0), matrix22f(6.0) }.data());
+            optInput = m_effect.findUniformInput("vecMatArraysUBO.uMat33f");
+            appearance.setInputValue(*optInput, 3u, std::array{ matrix33f(4.0), matrix33f(5.0), matrix33f(6.0) }.data());
+            optInput = m_effect.findUniformInput("vecMatArraysUBO.uMat44f");
+            appearance.setInputValue(*optInput, 3u, std::array{ matrix44f(4.0), matrix44f(5.0), matrix44f(6.0) }.data());
+
+            // struct array
+            optInput = m_effect.findUniformInput("confidenceUBO.uFloat");
+            appearance.setInputValue(*optInput, 777.f);
+            optInput = m_effect.findUniformInput("confidenceUBO.uStruct[0].uVec3f");
+            appearance.setInputValue(*optInput, vec3f(11.f));
+            optInput = m_effect.findUniformInput("confidenceUBO.uStruct[0].uFloat");
+            appearance.setInputValue(*optInput, 12.f);
+            optInput = m_effect.findUniformInput("confidenceUBO.uStruct[0].uMat33f");
+            appearance.setInputValue(*optInput, matrix33f(13.0));
+            optInput = m_effect.findUniformInput("confidenceUBO.uStruct[0].uInt");
+            appearance.setInputValue(*optInput, 14);
+            optInput = m_effect.findUniformInput("confidenceUBO.uStruct[1].uVec3f");
+            appearance.setInputValue(*optInput, vec3f(21.f));
+            optInput = m_effect.findUniformInput("confidenceUBO.uStruct[1].uFloat");
+            appearance.setInputValue(*optInput, 22.f);
+            optInput = m_effect.findUniformInput("confidenceUBO.uStruct[1].uMat33f");
+            appearance.setInputValue(*optInput, matrix33f(23.0));
+            optInput = m_effect.findUniformInput("confidenceUBO.uStruct[1].uInt");
+            appearance.setInputValue(*optInput, 24);
         }
     }
 }

@@ -56,23 +56,28 @@ namespace ramses::internal
             ramses::sceneId_t sceneId,
             const glm::vec3& cameraPosition,
             uint32_t vpWidth,
-            uint32_t vpHeight)
+            uint32_t vpHeight,
+            const ramses::SceneConfig& config = {})
         {
             SceneData data;
-            data.clientScene = m_client.createScene(SceneConfig(sceneId));
+            SceneConfig config2 = config;
+            config2.setSceneId(sceneId);
+            data.clientScene = m_client.createScene(config2);
             data.integrationScene = new INTEGRATION_SCENE(*data.clientScene, state, cameraPosition, vpWidth, vpHeight);
             m_scenes.put(sceneId, data);
         }
+
         template <typename INTEGRATION_SCENE>
         ramses::sceneId_t createScene(
             uint32_t state,
             const glm::vec3& cameraPosition,
             uint32_t vpWidth,
-            uint32_t vpHeight)
+            uint32_t vpHeight,
+            const ramses::SceneConfig& config = {})
         {
             const ramses::sceneId_t sceneId = m_nextSceneId;
             m_nextSceneId.getReference()++;
-            createScene<INTEGRATION_SCENE>(state, sceneId, cameraPosition, vpWidth, vpHeight);
+            createScene<INTEGRATION_SCENE>(state, sceneId, cameraPosition, vpWidth, vpHeight, config);
             return sceneId;
         }
 

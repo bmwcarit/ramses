@@ -37,6 +37,10 @@ namespace ramses::internal
         ESceneResourceAction_CreateTextureBuffer,
         ESceneResourceAction_UpdateTextureBuffer,
         ESceneResourceAction_DestroyTextureBuffer,
+
+        ESceneResourceAction_CreateUniformBuffer,
+        ESceneResourceAction_DestroyUniformBuffer,
+        ESceneResourceAction_UpdateUniformBuffer,
     };
 
     struct SceneResourceAction
@@ -107,9 +111,12 @@ namespace ramses::internal
         "DestroyDataBuffer",
         "CreateTextureBuffer",
         "UpdateTextureBuffer",
-        "DestroyTextureBuffer"
+        "DestroyTextureBuffer",
+        "CreateUniformBuffer",
+        "DestroyUniformBuffer",
+        "UpdateUniformBuffer",
     };
-    ENUM_TO_STRING(ESceneResourceAction, SceneResourceActionNames, ESceneResourceAction_DestroyTextureBuffer);
+    ENUM_TO_STRING(ESceneResourceAction, SceneResourceActionNames, ESceneResourceAction_UpdateUniformBuffer);
 }
 
 template <>

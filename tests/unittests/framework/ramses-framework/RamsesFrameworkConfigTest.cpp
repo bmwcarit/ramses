@@ -209,4 +209,15 @@ namespace ramses::internal
         EXPECT_EQ(std::chrono::milliseconds(250), frameworkConfig.impl().m_tcpConfig.getAliveInterval());
         EXPECT_EQ(std::chrono::milliseconds(9000), frameworkConfig.impl().m_tcpConfig.getAliveTimeout());
     }
+
+    TEST_F(ARamsesFrameworkConfig, CanSetWatchdogInterval)
+    {
+        EXPECT_EQ(1000u, frameworkConfig.impl().m_watchdogConfig.getWatchdogNotificationInterval(ERamsesThreadIdentifier::Workers));
+        EXPECT_FALSE(frameworkConfig.setWatchdogNotificationInterval(ERamsesThreadIdentifier::Workers, 0));
+        EXPECT_EQ(1000u, frameworkConfig.impl().m_watchdogConfig.getWatchdogNotificationInterval(ERamsesThreadIdentifier::Workers));
+        EXPECT_TRUE(frameworkConfig.setWatchdogNotificationInterval(ERamsesThreadIdentifier::Workers, 1));
+        EXPECT_EQ(1u, frameworkConfig.impl().m_watchdogConfig.getWatchdogNotificationInterval(ERamsesThreadIdentifier::Workers));
+        EXPECT_TRUE(frameworkConfig.setWatchdogNotificationInterval(ERamsesThreadIdentifier::Workers, 100));
+        EXPECT_EQ(100u, frameworkConfig.impl().m_watchdogConfig.getWatchdogNotificationInterval(ERamsesThreadIdentifier::Workers));
+    }
 }

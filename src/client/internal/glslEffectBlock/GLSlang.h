@@ -29,7 +29,6 @@ WARNING_DISABLE_GCC9(-Wdeprecated-copy)
 #include "Include/intermediate.h"
 #include "Include/InitializeGlobals.h"
 #include "MachineIndependent/localintermediate.h"
-#include "OGLCompilersDLL/InitializeDll.h"
 
 WARNINGS_POP
 

@@ -8,7 +8,7 @@
 
 #include "EmbeddedCompositingTestsWithFD.h"
 #include "EmbeddedCompositingTestsFramework.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "impl/DisplayConfigImpl.h"
 #include "internal/Platform/Wayland/UnixDomainSocket.h"
 #include "internal/Platform/Wayland/WaylandEnvironmentUtils.h"

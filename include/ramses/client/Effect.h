@@ -96,6 +96,14 @@ namespace ramses
         [[nodiscard]] std::optional<AttributeInput> findAttributeInput(EEffectAttributeSemantic attributeSemantic) const;
 
         /**
+        * @brief Finds uniform input for a uniform buffer using binding.
+        *
+        * @param[in] uniformBufferBinding Binding specified in the layout of the uniform buffer in the shader
+        * @return #ramses::UniformInput if successful, otherwise, std::nullopt
+        */
+        [[nodiscard]] std::optional<UniformInput> findUniformInputAtBinding(uint32_t uniformBufferBinding) const;
+
+        /**
         * @brief Checks if the \p effect has a geometry shader attached to it.
         *
         * @return true if the effect has a geometry shader attached to it, false otherwise

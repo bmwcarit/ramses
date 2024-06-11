@@ -130,6 +130,11 @@ namespace ramses::internal
     std::chrono::milliseconds DisplayThread::SleepToControlFramerate(std::chrono::microseconds loopDuration, std::chrono::microseconds minimumFrameDuration)
     {
         std::chrono::milliseconds sleepTime{ 0 };
+        if (loopDuration < std::chrono::microseconds(0))
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "DisplayThread bad loopDuration: {}us", loopDuration.count());
+            return sleepTime;
+        }
         if (loopDuration < minimumFrameDuration)
         {
             // we use millisecond sleep precision, this will cast microseconds to whole milliseconds (floor)

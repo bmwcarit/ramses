@@ -17,7 +17,7 @@
 #include "internal/RendererLib/RendererSceneUpdater.h"
 #include "internal/RendererLib/SceneStateExecutor.h"
 #include "internal/RendererLib/RendererResourceManager.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "internal/RendererLib/RendererScenes.h"
 #include "internal/RendererLib/DataLinkUtils.h"
 #include "internal/RendererLib/FrameTimer.h"
@@ -49,7 +49,8 @@ namespace ramses::internal
         RendererEventCollector& eventCollector,
         FrameTimer& frameTimer,
         SceneExpirationMonitor& expirationMonitor,
-        IThreadAliveNotifier& notifier
+        IThreadAliveNotifier& notifier,
+        EFeatureLevel featureLevel
         )
         : m_display{ display }
         , m_platform(platform)
@@ -60,6 +61,7 @@ namespace ramses::internal
         , m_frameTimer(frameTimer)
         , m_expirationMonitor(expirationMonitor)
         , m_notifier(notifier)
+        , m_featureLevel{ featureLevel }
     {
     }
 
@@ -104,7 +106,7 @@ namespace ramses::internal
         }
     }
 
-    void RendererSceneUpdater::createDisplayContext(const DisplayConfig& displayConfig, IBinaryShaderCache* binaryShaderCache)
+    void RendererSceneUpdater::createDisplayContext(const DisplayConfigData& displayConfig, IBinaryShaderCache* binaryShaderCache)
     {
         assert(!m_displayResourceManager);
         assert(!m_asyncEffectUploader);
@@ -117,12 +119,15 @@ namespace ramses::internal
             IRenderBackend& renderBackend = displayController.getRenderBackend();
             IEmbeddedCompositingManager& embeddedCompositingManager = displayController.getEmbeddedCompositingManager();
 
-            m_asyncEffectUploader = std::make_unique<AsyncEffectUploader>(m_platform, renderBackend, m_notifier, m_display);
-            if (!m_asyncEffectUploader->createResourceUploadRenderBackendAndStartThread())
+            if (displayConfig.isAsyncEffectUploadEnabled())
             {
-                m_renderer.destroyDisplayContext();
-                m_rendererEventCollector.addDisplayEvent(ERendererEventType::DisplayCreateFailed, m_display);
-                return;
+                m_asyncEffectUploader = std::make_unique<AsyncEffectUploader>(m_platform, renderBackend, m_notifier, m_display);
+                if (!m_asyncEffectUploader->createResourceUploadRenderBackendAndStartThread())
+                {
+                    m_renderer.destroyDisplayContext();
+                    m_rendererEventCollector.addDisplayEvent(ERendererEventType::DisplayCreateFailed, m_display);
+                    return;
+                }
             }
             // ownership of uploadStrategy is transferred into RendererResourceManager
             m_displayResourceManager = createResourceManager(renderBackend,
@@ -143,13 +148,13 @@ namespace ramses::internal
     std::unique_ptr<IRendererResourceManager> RendererSceneUpdater::createResourceManager(
         IRenderBackend& renderBackend,
         IEmbeddedCompositingManager& embeddedCompositingManager,
-        const DisplayConfig& displayConfig,
+        const DisplayConfigData& displayConfig,
         IBinaryShaderCache* binaryShaderCache)
     {
         return std::make_unique<RendererResourceManager>(
             renderBackend,
             std::make_unique<ResourceUploader>(displayConfig.isAsyncEffectUploadEnabled(), binaryShaderCache),
-            *m_asyncEffectUploader,
+            m_asyncEffectUploader.get(),
             embeddedCompositingManager,
             displayConfig,
             m_frameTimer,
@@ -185,8 +190,11 @@ namespace ramses::internal
             return;
         }
 
-        m_asyncEffectUploader->destroyResourceUploadRenderBackendAndStopThread();
-        m_asyncEffectUploader.reset();
+        if (m_asyncEffectUploader)
+        {
+            m_asyncEffectUploader->destroyResourceUploadRenderBackendAndStopThread();
+            m_asyncEffectUploader.reset();
+        }
         m_displayResourceManager.reset();
 
         m_renderer.resetRenderInterruptState();
@@ -264,6 +272,7 @@ namespace ramses::internal
             m_renderer.m_traceId = 10;
             LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::updateScenes update scenes transformation cache and transformation links");
             FRAME_PROFILER_REGION(FrameProfilerStatistics::ERegion::UpdateTransformations);
+            collectDirtySemanticUniformBuffers();
             updateScenesTransformationCache();
         }
 
@@ -272,6 +281,13 @@ namespace ramses::internal
             LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::updateScenes update scenes data links");
             FRAME_PROFILER_REGION(FrameProfilerStatistics::ERegion::UpdateDataLinks);
             updateScenesDataLinks();
+        }
+
+        {
+            m_renderer.m_traceId = 13;
+            LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::updateScenes update and upload semantic uniform buffers");
+            FRAME_PROFILER_REGION(FrameProfilerStatistics::ERegion::UpdateSemanticUniformBuffers);
+            updateAndUploadSemanticUniformBuffers();
         }
 
         m_renderer.m_traceId = 12;
@@ -581,7 +597,7 @@ namespace ramses::internal
                     rendererScene.getSceneId());
                 rendererScene.setEffectTimeSync(pendingFlush.timeInfo.internalTimestamp);
             }
-            ApplySceneActions(rendererScene, pendingFlush);
+            applySceneActions(rendererScene, pendingFlush);
 
             if (pendingFlush.versionTag.isValid())
             {
@@ -612,6 +628,41 @@ namespace ramses::internal
         {
             assert(m_sceneReferenceLogic);
             m_sceneReferenceLogic->addActions(sceneID, pendingData.sceneReferenceActions);
+        }
+    }
+
+    void RendererSceneUpdater::collectDirtySemanticUniformBuffers()
+    {
+        for (const auto& rendererScene : m_rendererScenes)
+        {
+            const SceneId sceneId = rendererScene.key;
+            if (m_sceneStateExecutor.getSceneState(sceneId) == ESceneState::Rendered)
+            {
+                auto& scene = *rendererScene.value.scene;
+                for (const auto& passInfo : scene.getSortedRenderingPasses())
+                {
+                    if (passInfo.getType() == ERenderingPassType::RenderPass)
+                    {
+                        const auto camera = scene.getRenderPass(passInfo.getRenderPassHandle()).camera;
+                        const auto& passRenderables = scene.getOrderedRenderablesForPass(passInfo.getRenderPassHandle());
+                        scene.collectDirtySemanticUniformBuffers(passRenderables, camera);
+                    }
+                }
+            }
+        }
+    }
+
+    void RendererSceneUpdater::updateAndUploadSemanticUniformBuffers()
+    {
+        for (const auto& rendererScene : m_rendererScenes)
+        {
+            const SceneId sceneId = rendererScene.key;
+            if (m_sceneStateExecutor.getSceneState(sceneId) == ESceneState::Rendered)
+            {
+                auto& scene = *rendererScene.value.scene;
+                scene.updateSemanticUniformBuffers();
+                scene.uploadSemanticUniformBuffers(*m_displayResourceManager);
+            }
         }
     }
 
@@ -918,13 +969,13 @@ namespace ramses::internal
         return false;
     }
 
-    void RendererSceneUpdater::ApplySceneActions(RendererCachedScene& scene, PendingFlush& flushInfo)
+    void RendererSceneUpdater::applySceneActions(RendererCachedScene& scene, PendingFlush& flushInfo)
     {
         const SceneActionCollection& actionsForScene = flushInfo.sceneActions;
         const uint32_t numActions = actionsForScene.numberOfActions();
         LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::applySceneActions start applying scene actions [count:{}] for scene with id {}", numActions, scene.getSceneId());
 
-        SceneActionApplier::ApplyActionsOnScene(scene, actionsForScene);
+        SceneActionApplier::ApplyActionsOnScene(scene, actionsForScene, m_featureLevel);
 
         LOG_TRACE(CONTEXT_PROFILING, "    RendererSceneUpdater::applySceneActions finished applying scene actions for scene with id {}", scene.getSceneId());
     }
@@ -1168,7 +1219,7 @@ namespace ramses::internal
                 resourceManager.uploadOffscreenBuffer(buffer, width, height, sampleCount, isDoubleBuffered, depthStencilBufferType);
                 const DeviceResourceHandle deviceHandle = resourceManager.getOffscreenBufferDeviceHandle(buffer);
                 m_renderer.resetRenderInterruptState();
-                m_renderer.registerOffscreenBuffer(deviceHandle, width, height, isDoubleBuffered);
+                m_renderer.registerOffscreenBuffer(deviceHandle, width, height, sampleCount, isDoubleBuffered);
 
                 LOG_INFO(CONTEXT_RENDERER, "Created offscreen buffer {} (device handle {}): {}x{} {}", buffer, deviceHandle, width, height, (isDoubleBuffered ? " interruptible" : ""));
                 success = true;
@@ -1202,7 +1253,7 @@ namespace ramses::internal
                 resourceManager.uploadDmaOffscreenBuffer(buffer, width, height, dmaBufferFourccFormat, dmaBufferUsageFlags, dmaBufferModifiers);
                 const DeviceResourceHandle deviceHandle = resourceManager.getOffscreenBufferDeviceHandle(buffer);
                 m_renderer.resetRenderInterruptState();
-                m_renderer.registerOffscreenBuffer(deviceHandle, width, height, false);
+                m_renderer.registerOffscreenBuffer(deviceHandle, width, height, 0u, false);
 
                 LOG_INFO(CONTEXT_RENDERER, "Created DMA offscreen buffer {} (device handle {}): {}x{}", buffer, deviceHandle, width, height);
                 dmaBufferFD = resourceManager.getDmaOffscreenBufferFD(buffer);
@@ -1441,7 +1492,8 @@ namespace ramses::internal
 
             if (renderTargetHandle.isValid())
             {
-                const auto& bufferViewport = m_renderer.getDisplaySetup().getDisplayBuffer(renderTargetHandle).viewport;
+                const auto& bufferInfo = m_renderer.getDisplaySetup().getDisplayBuffer(renderTargetHandle);
+                const auto& bufferViewport = bufferInfo.viewport;
                 if (screenshotInfo.fullScreen)
                 {
                     screenshotInfo.rectangle = { 0u, 0u, bufferViewport.width, bufferViewport.height };
@@ -1450,6 +1502,12 @@ namespace ramses::internal
                          screenshotInfo.rectangle.y + screenshotInfo.rectangle.height > bufferViewport.height)
                 {
                     LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::readPixels failed, requested area is out of offscreen display/buffer size boundaries!");
+                    readPixelsFailed = true;
+                }
+
+                if (bufferInfo.isOffscreenBuffer && bufferInfo.sampleCount > 1u)
+                {
+                    LOG_ERROR(CONTEXT_RENDERER, "RendererSceneUpdater::readPixels failed, reading pixels from multisampled offscreen buffer is not supported!");
                     readPixelsFailed = true;
                 }
             }

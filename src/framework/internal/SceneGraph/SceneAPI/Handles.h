@@ -69,4 +69,7 @@ namespace ramses::internal
 
     struct SceneReferenceHandleTag {};
     using SceneReferenceHandle = TypedMemoryHandle<SceneReferenceHandleTag>;
+
+    struct UniformBufferHandleTag {};
+    using UniformBufferHandle = TypedMemoryHandle<UniformBufferHandleTag>;
 }

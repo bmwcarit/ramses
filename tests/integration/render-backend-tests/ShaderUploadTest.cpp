@@ -18,7 +18,10 @@
 #include "internal/SceneGraph/Resource/ResourceTypes.h"
 #include "internal/RendererLib/PlatformInterface/IRenderBackend.h"
 #include "internal/RendererLib/PlatformBase/Device_Base.h"
+#include "internal/RendererLib/PlatformInterface/IContext.h"
+#include "internal/RendererLib/PlatformBase/DeviceResourceMapper.h"
 #include "internal/Platform/PlatformFactory.h"
+#include "internal/Platform/OpenGL/ShaderGPUResource_GL.h"
 #include <memory>
 #include <vector>
 
@@ -29,8 +32,11 @@ namespace ramses::internal
     class ADevice : public Test
     {
     public:
-        ADevice()
+        void SetUp() override
         {
+            if (displayConfig.getDeviceType() == EDeviceType::Vulkan)
+                GTEST_SKIP() << "Shader upload tests do not support device type vulkan";
+
             // Need to "read" the error state in Device_GL once, in order to reset the error state to NO_ERROR
             // This is needed because all tests share the same device to save time
             std::ignore = testDevice->isDeviceStatusHealthy();
@@ -72,7 +78,7 @@ namespace ramses::internal
             EffectInputInformationVector attributeInputs;
             attributeInputs.push_back(EffectInputInformation("a_position", 1, EDataType::Vector3F, EFixedSemantics::Invalid));
 
-            return new EffectResource(vertexShader, fragmentShader, "", {}, uniformInputs, attributeInputs, "test effect");
+            return new EffectResource(vertexShader, fragmentShader, "", SPIRVShaders{}, {}, uniformInputs, attributeInputs, "test effect", EFeatureLevel_Latest);
         }
 
         static void SetUpTestSuite()
@@ -80,15 +86,16 @@ namespace ramses::internal
             assert(nullptr == platform);
 
             ramses::RendererConfig rendererConfig = RendererTestUtils::CreateTestRendererConfig();
-            ramses::DisplayConfig dispConfig = RendererTestUtils::CreateTestDisplayConfig(0u);
+            displayConfig = RendererTestUtils::CreateTestDisplayConfig(0u);
+            if (displayConfig.getDeviceType() == EDeviceType::Vulkan)
+                return;
 
             PlatformFactory platformFactory;
-            platform = platformFactory.createPlatform(rendererConfig.impl().getInternalRendererConfig(), dispConfig.impl().getInternalDisplayConfig());
+            platform = platformFactory.createPlatform(rendererConfig.impl().getInternalRendererConfig(), displayConfig.impl().getInternalDisplayConfig());
             assert(nullptr != platform);
 
-            eventHandler = new NiceMock<WindowEventHandlerMock>();
+            eventHandler = std::make_unique<NiceMock<WindowEventHandlerMock>>();
 
-            ramses::DisplayConfig displayConfig = RendererTestUtils::CreateTestDisplayConfig(0);
             displayConfig.setWindowRectangle(0, 0, 16u, 16u);
             renderBackend = platform->createRenderBackend(displayConfig.impl().getInternalDisplayConfig(), *eventHandler);
             assert(nullptr != renderBackend);
@@ -98,30 +105,33 @@ namespace ramses::internal
 
         static void TearDownTestSuite()
         {
-            testDevice = nullptr;
+            if (platform)
+            {
+                testDevice = nullptr;
 
-            platform->destroyRenderBackend();
-            renderBackend = nullptr;
+                platform->destroyRenderBackend();
+                renderBackend = nullptr;
 
-            platform.reset();
-
-            delete eventHandler;
-            eventHandler = nullptr;
+                platform.reset();
+                eventHandler.reset();
+            }
         }
 
     protected:
         static IDevice*                             testDevice;
+        static IRenderBackend*                      renderBackend;
 
     private:
         static std::unique_ptr<IPlatform>           platform;
-        static IRenderBackend*                      renderBackend;
-        static NiceMock<WindowEventHandlerMock>*    eventHandler;
+        static std::unique_ptr<NiceMock<WindowEventHandlerMock>> eventHandler;
+        static ramses::DisplayConfig                displayConfig;
     };
 
     std::unique_ptr<IPlatform>          ADevice::platform                    ;
     IDevice*                            ADevice::testDevice         = nullptr;
     IRenderBackend*                     ADevice::renderBackend      = nullptr;
-    NiceMock<WindowEventHandlerMock>*   ADevice::eventHandler       = nullptr;
+    std::unique_ptr<NiceMock<WindowEventHandlerMock>> ADevice::eventHandler = nullptr;
+    ramses::DisplayConfig               ADevice::displayConfig;
 
 
     // Needed so that these tests can be blacklisted on drivers which don't support binary shaders
@@ -189,7 +199,7 @@ namespace ramses::internal
             EffectInputInformationVector attributeInputs;
             attributeInputs.push_back(EffectInputInformation("a_position", 1, EDataType::Vector3F, EFixedSemantics::Invalid));
 
-            return new EffectResource(vertexShader, fragmentShader, geometryShader, EDrawMode::Points, uniformInputs, attributeInputs, "test effect");
+            return new EffectResource(vertexShader, fragmentShader, geometryShader, SPIRVShaders{}, EDrawMode::Points, uniformInputs, attributeInputs, "test effect", EFeatureLevel_Latest);
         }
     };
 
@@ -211,10 +221,10 @@ namespace ramses::internal
         const EffectResource invalidEffect(
             "--this is some invalid shader source code--",
             templateEffect->getFragmentShader(),
-            "", {},
+            "", {}, {},
             templateEffect->getUniformInputs(),
             templateEffect->getAttributeInputs(),
-            "invalid effect");
+            "invalid effect", EFeatureLevel_Latest);
         const auto shaderGpuResource = testDevice->uploadShader(invalidEffect);
         EXPECT_EQ(nullptr, shaderGpuResource);
     }
@@ -225,10 +235,10 @@ namespace ramses::internal
         const EffectResource invalidEffect(
             templateEffect->getVertexShader(),
             "--this is some invalid shader source code--",
-            "", {},
+            "", SPIRVShaders{}, {},
             templateEffect->getUniformInputs(),
             templateEffect->getAttributeInputs(),
-            "invalid effect");
+            "invalid effect", EFeatureLevel_Latest);
         const auto shaderGpuResource = testDevice->uploadShader(invalidEffect);
         EXPECT_EQ(nullptr, shaderGpuResource);
     }
@@ -252,10 +262,10 @@ namespace ramses::internal
         const EffectResource invalidEffect(
             templateEffect->getVertexShader(),
             fragmentShader,
-            "", {},
+            "", SPIRVShaders{}, {},
             templateEffect->getUniformInputs(),
             templateEffect->getAttributeInputs(),
-            "invalid effect");
+            "invalid effect", EFeatureLevel_Latest);
         const auto shaderGpuResource = testDevice->uploadShader(invalidEffect);
         EXPECT_EQ(nullptr, shaderGpuResource);
     }
@@ -310,10 +320,10 @@ namespace ramses::internal
         const EffectResource testEffect(
             templateEffect->getVertexShader(),
             fragmentShader,
-            "", {},
+            "", SPIRVShaders{}, {},
             uniformInputs,
             templateEffect->getAttributeInputs(),
-            "uniform test effect");
+            "uniform test effect", EFeatureLevel_Latest);
         auto shaderGpuResource = testDevice->uploadShader(testEffect);
         ASSERT_NE(nullptr, shaderGpuResource);
         const DeviceResourceHandle handle = testDevice->registerShader(std::move(shaderGpuResource));
@@ -376,10 +386,10 @@ namespace ramses::internal
         const EffectResource testEffect(
             templateEffect->getVertexShader(),
             templateEffect->getFragmentShader(),
-            "", {},
+            "", SPIRVShaders{}, {},
             uniformInputs,
             templateEffect->getAttributeInputs(),
-            "test effect");
+            "test effect", EFeatureLevel_Latest);
 
         auto shaderGpuResource = testDevice->uploadShader(testEffect);
         ASSERT_NE(nullptr, shaderGpuResource);
@@ -500,10 +510,11 @@ namespace ramses::internal
             templateEffect->getVertexShader(),
             templateEffect->getFragmentShader(),
             "--this is some invalid shader source code--",
+            SPIRVShaders{},
             EDrawMode::Lines,
             templateEffect->getUniformInputs(),
             templateEffect->getAttributeInputs(),
-            "invalid effect");
+            "invalid effect", EFeatureLevel_Latest);
         const auto shaderGpuResource = testDevice->uploadShader(invalidEffect);
         EXPECT_EQ(nullptr, shaderGpuResource);
     }
@@ -532,10 +543,11 @@ namespace ramses::internal
             templateEffect->getVertexShader(),
             templateEffect->getFragmentShader(),
             geometryShader,
+            SPIRVShaders{},
             EDrawMode::Points,
             templateEffect->getUniformInputs(),
             templateEffect->getAttributeInputs(),
-            "invalid effect");
+            "invalid effect", EFeatureLevel_Latest);
         const auto shaderGpuResource = testDevice->uploadShader(invalidEffect);
         EXPECT_EQ(nullptr, shaderGpuResource);
     }
@@ -576,16 +588,17 @@ namespace ramses::internal
             const EffectResource invalidEffect(invalidShader,
                                                templateEffect->getFragmentShader(),
                                                templateEffect->getGeometryShader(),
+                                               SPIRVShaders{},
                                                std::nullopt,
                                                templateEffect->getUniformInputs(),
                                                templateEffect->getAttributeInputs(),
-                                               "invalid effect");
+                                               "invalid effect", EFeatureLevel_Latest);
             (void)testDevice->uploadShader(invalidEffect);
 
-            EXPECT_THAT(collectedErrors, ::testing::Contains(std::string{"1: Device_Base::PrintShaderSourceWithLineNumbers:  L1: "} + invalidShader));
+            EXPECT_THAT(collectedErrors.front(), HasSubstr(invalidShader));
         }
 
-        auto shader = {
+        std::vector<std::string> shader = {
             "#version 320 es",
             "",
             "layout(points) in;",
@@ -612,28 +625,183 @@ namespace ramses::internal
             const EffectResource invalidEffect(templateEffect->getVertexShader(),
                                                templateEffect->getFragmentShader(),
                                                invalidGeometryShader,
+                                               SPIRVShaders{},
                                                EDrawMode::Points,
                                                templateEffect->getUniformInputs(),
                                                templateEffect->getAttributeInputs(),
-                                               "invalid effect");
+                                               "invalid effect", EFeatureLevel_Latest);
             (void)testDevice->uploadShader(invalidEffect);
 
-            std::vector<std::string> expectedResult;
-            std::size_t              l = 1;
-            for (const auto& line : shader)
+            for (size_t i = 0u; i < shader.size(); ++i)
             {
-                expectedResult.push_back(std::string{"1: Device_Base::PrintShaderSourceWithLineNumbers:  L"} + std::to_string(l) + ": " + line);
-                l++;
-            }
-
-            auto it = std::find(collectedErrors.begin(), collectedErrors.end(), expectedResult[0]);
-            for (const auto& line : expectedResult)
-            {
-                ASSERT_NE(it, collectedErrors.end());
-                EXPECT_EQ(*it, line);
-                it++;
+                EXPECT_THAT(collectedErrors[i], HasSubstr(shader[i]));
             }
         }
         ramses::RamsesFramework::SetLogHandler(nullptr);
+    }
+
+    TEST_F(ADevice, GetsAttributeLocationsCorrectly)
+    {
+        ASSERT_TRUE(testDevice != nullptr);
+
+        const std::unique_ptr<EffectResource> templateEffect(CreateTestEffectResource());
+        const std::string customVertexShader(R"SHADER(
+            #version 310 es
+
+            layout(location=1) in vec2 a_texCoords;
+            layout(location=0) in vec3 a_position;
+
+            void main(void)
+            {
+                gl_Position = vec4(a_position.x + a_texCoords.x);
+            }
+            )SHADER");
+        const std::string customFragmentShader(R"SHADER(
+            #version 310 es
+            out highp vec4 fragColor;
+            void main(void)
+            {
+                fragColor = vec4(1.0);
+            }
+            )SHADER");
+        EffectInputInformationVector attributeInputs;
+        attributeInputs.push_back(EffectInputInformation("a_texCoords", 1, EDataType::Vector2F, EFixedSemantics::Invalid));
+        attributeInputs.push_back(EffectInputInformation("a_position", 1, EDataType::Vector3F, EFixedSemantics::Invalid));
+
+        const EffectResource testEffect(
+            customVertexShader,
+            customFragmentShader,
+            "",
+            SPIRVShaders{},
+            {}, {},
+            attributeInputs,
+            "uniform test effect", EFeatureLevel_Latest);
+
+        auto shaderGpuResource = testDevice->uploadShader(testEffect);
+        ASSERT_NE(nullptr, shaderGpuResource);
+        const DeviceResourceHandle handle = testDevice->registerShader(std::move(shaderGpuResource));
+        ASSERT_TRUE(handle.isValid());
+
+        testDevice->activateShader(handle);
+        const auto& shaderResource = renderBackend->getContext().getResources().getResourceAs<ShaderGPUResource_GL>(handle);
+        EXPECT_EQ(1, shaderResource.getAttributeLocation(DataFieldHandle{ 0u }).getValue()); // tex coords
+        EXPECT_EQ(0, shaderResource.getAttributeLocation(DataFieldHandle{ 1u }).getValue()); // position
+
+        testDevice->deleteShader(handle);
+    }
+
+    TEST_F(ADevice, GetsOpaqueUniformLocationsCorrectly)
+    {
+        ASSERT_TRUE(testDevice != nullptr);
+
+        const std::unique_ptr<EffectResource> templateEffect(CreateTestEffectResource());
+        const std::string customVertexShader(R"SHADER(
+            #version 310 es
+
+            layout(location=11) uniform vec2 u_myVec2;
+            layout(location=5) uniform sampler2D u_mySampler1;
+            layout(location=23) uniform vec3 u_myVec3;
+            layout(location=7) uniform sampler2D u_mySampler2;
+
+            void main(void)
+            {
+                gl_Position = vec4(u_myVec2.x + u_myVec3.x) + texture(u_mySampler1, vec2(0.0))+ texture(u_mySampler2, vec2(0.0));
+            }
+            )SHADER");
+        const std::string customFragmentShader(R"SHADER(
+            #version 310 es
+            out highp vec4 fragColor;
+            void main(void)
+            {
+                fragColor = vec4(1.0);
+            }
+            )SHADER");
+        EffectInputInformationVector uniformInputs;
+        uniformInputs.push_back(EffectInputInformation("u_myVec2", 1, EDataType::Vector2F, EFixedSemantics::Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_mySampler1", 1, EDataType::TextureSampler2D, EFixedSemantics::Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_myVec3", 1, EDataType::Vector3F, EFixedSemantics::Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_mySampler2", 1, EDataType::TextureSampler2D, EFixedSemantics::Invalid));
+
+        const EffectResource testEffect(
+            customVertexShader,
+            customFragmentShader,
+            "", SPIRVShaders{}, {},
+            uniformInputs,
+            {},
+            "uniform test effect", EFeatureLevel_Latest);
+
+        auto shaderGpuResource = testDevice->uploadShader(testEffect);
+        ASSERT_NE(nullptr, shaderGpuResource);
+        const DeviceResourceHandle handle = testDevice->registerShader(std::move(shaderGpuResource));
+        ASSERT_TRUE(handle.isValid());
+
+        testDevice->activateShader(handle);
+        const auto& shaderResource = renderBackend->getContext().getResources().getResourceAs<ShaderGPUResource_GL>(handle);
+        EXPECT_EQ(11, shaderResource.getUniformLocation(DataFieldHandle{ 0u }).getValue());
+        EXPECT_EQ(5, shaderResource.getUniformLocation(DataFieldHandle{ 1u }).getValue());
+        EXPECT_EQ(23, shaderResource.getUniformLocation(DataFieldHandle{ 2u }).getValue());
+        EXPECT_EQ(7, shaderResource.getUniformLocation(DataFieldHandle{ 3u }).getValue());
+
+        testDevice->deleteShader(handle);
+    }
+
+    TEST_F(ADevice, GetsOpaqueUniformLocationsCorrectly_IfShaderHasUBO)
+    {
+        ASSERT_TRUE(testDevice != nullptr);
+
+        const std::string customVertexShader(R"SHADER(
+            #version 310 es
+
+            layout(location=11) uniform vec2 u_myVec2;
+            layout(location=5) uniform sampler2D u_mySampler1;
+            layout(std140,binding=1) uniform MyUbo_t
+            {
+                vec2 u_myVec2;
+            } myUbo;
+            layout(location=23) uniform vec3 u_myVec3;
+            layout(location=7) uniform sampler2D u_mySampler2;
+
+            void main(void)
+            {
+                gl_Position = texture(u_mySampler1, u_myVec2)+ texture(u_mySampler2, myUbo.u_myVec2) * u_myVec3.x;
+            }
+            )SHADER");
+        const std::string customFragmentShader(R"SHADER(
+            #version 310 es
+            out highp vec4 fragColor;
+            void main(void)
+            {
+                fragColor = vec4(1.0);
+            }
+            )SHADER");
+        EffectInputInformationVector uniformInputs;
+        uniformInputs.push_back(EffectInputInformation("u_myVec2", 1, EDataType::Vector2F, EFixedSemantics::Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_mySampler1", 1, EDataType::TextureSampler2D, EFixedSemantics::Invalid));
+        uniformInputs.push_back(EffectInputInformation("myUbo", 1, EDataType::UniformBuffer, EFixedSemantics::Invalid, UniformBufferBinding{ 1u }));
+        uniformInputs.push_back(EffectInputInformation("myUbo.u_myVec2", 1, EDataType::Vector2F, EFixedSemantics::Invalid, UniformBufferBinding{ 1u }, UniformBufferElementSize{ 8u }, UniformBufferFieldOffset{ 0u }));
+        uniformInputs.push_back(EffectInputInformation("u_myVec3", 1, EDataType::Vector3F, EFixedSemantics::Invalid));
+        uniformInputs.push_back(EffectInputInformation("u_mySampler2", 1, EDataType::TextureSampler2D, EFixedSemantics::Invalid));
+        const EffectResource testEffect(
+            customVertexShader,
+            customFragmentShader,
+            "", SPIRVShaders{}, {},
+            uniformInputs,
+            {},
+            "uniform test effect", EFeatureLevel_Latest);
+
+        auto shaderGpuResource = testDevice->uploadShader(testEffect);
+        ASSERT_NE(nullptr, shaderGpuResource);
+        const DeviceResourceHandle handle = testDevice->registerShader(std::move(shaderGpuResource));
+        ASSERT_TRUE(handle.isValid());
+
+        testDevice->activateShader(handle);
+        const auto& shaderResource = renderBackend->getContext().getResources().getResourceAs<ShaderGPUResource_GL>(handle);
+        EXPECT_EQ(11, shaderResource.getUniformLocation(DataFieldHandle{ 0u }).getValue());
+        EXPECT_EQ(5, shaderResource.getUniformLocation(DataFieldHandle{ 1u }).getValue());
+        EXPECT_FALSE(shaderResource.getUniformLocation(DataFieldHandle{ 2u }).isValid());
+        EXPECT_EQ(23, shaderResource.getUniformLocation(DataFieldHandle{ 3u }).getValue());
+        EXPECT_EQ(7, shaderResource.getUniformLocation(DataFieldHandle{ 4u }).getValue());
+
+        testDevice->deleteShader(handle);
     }
 }

@@ -57,6 +57,10 @@ namespace ramses::internal
         MOCK_METHOD(void, drawMode, (EDrawMode), (override));
         MOCK_METHOD(void, setViewport, (int32_t, int32_t, uint32_t, uint32_t), (override));
 
+        MOCK_METHOD(DeviceResourceHandle, allocateUniformBuffer, (uint32_t), (override));
+        MOCK_METHOD(void, uploadUniformBufferData, (DeviceResourceHandle, const std::byte*, uint32_t), (override));
+        MOCK_METHOD(void, activateUniformBuffer, (DeviceResourceHandle, DataFieldHandle), (override));
+        MOCK_METHOD(void, deleteUniformBuffer, (DeviceResourceHandle), (override));
         MOCK_METHOD(DeviceResourceHandle, allocateVertexBuffer, (uint32_t), (override));
         MOCK_METHOD(void, uploadVertexBufferData, (DeviceResourceHandle, const std::byte*, uint32_t), (override));
         MOCK_METHOD(void, deleteVertexBuffer, (DeviceResourceHandle), (override));
@@ -131,6 +135,7 @@ namespace ramses::internal
         static const DeviceResourceHandle FakeDmaRenderBufferDeviceHandle        ;
         static const DeviceResourceHandle FakeTextureSamplerDeviceHandle         ;
         static const DeviceResourceHandle FakeBlitPassRenderTargetDeviceHandle   ;
+        static const DeviceResourceHandle FakeUniformBufferDeviceHandle          ;
         static constexpr BinaryShaderFormatID FakeSupportedBinaryShaderFormat{ 63666u };
         static constexpr uint32_t FakeExternalTextureGlId{ 162023u };
 

@@ -42,6 +42,11 @@ namespace ramses
         return m_impl.findUniformInput(uniformSemantic);
     }
 
+    std::optional<ramses::UniformInput> Effect::findUniformInputAtBinding(uint32_t uniformBufferBinding) const
+    {
+        return m_impl.findUniformInputAtBinding(uniformBufferBinding);
+    }
+
     std::optional<AttributeInput> Effect::getAttributeInput(size_t index) const
     {
         return m_impl.getAttributeInput(index);

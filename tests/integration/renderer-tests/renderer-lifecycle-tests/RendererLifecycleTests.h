@@ -9,6 +9,7 @@
 #pragma once
 
 #include "TestScenesAndRenderer.h"
+#include "ramses/client/SceneConfig.h"
 #include "gtest/gtest.h"
 
 namespace ramses::internal
@@ -20,6 +21,11 @@ namespace ramses::internal
             : testScenesAndRenderer(frameworkConfig)
             , testRenderer(testScenesAndRenderer.getTestRenderer())
         {}
+
+        static const uint32_t WindowX = 0u;
+        static const uint32_t WindowY = 0u;
+        static const uint32_t WindowWidth = 128u;
+        static const uint32_t WindowHeight = 64u;
 
     protected:
         displayId_t createDisplayForWindow(uint32_t iviSurfaceIdOffset = 0u, bool iviWindowStartVisible = true)
@@ -38,20 +44,15 @@ namespace ramses::internal
         }
 
         template <typename INTEGRATION_SCENE>
-        sceneId_t createScene(uint32_t state, const glm::vec3& cameraPosition = { 0.f, 0.f, 0.f }, uint32_t vpWidth = WindowWidth, uint32_t vpHeight = WindowHeight)
+        sceneId_t createScene(uint32_t state, const glm::vec3& cameraPosition = { 0.f, 0.f, 0.f }, uint32_t vpWidth = WindowWidth, uint32_t vpHeight = WindowHeight, const ramses::SceneConfig& config = {})
         {
-            return testScenesAndRenderer.getScenesRegistry().createScene<INTEGRATION_SCENE>(state, cameraPosition, vpWidth, vpHeight);
+            return testScenesAndRenderer.getScenesRegistry().createScene<INTEGRATION_SCENE>(state, cameraPosition, vpWidth, vpHeight, config);
         }
         template <typename INTEGRATION_SCENE>
-        void createScene(uint32_t state, sceneId_t sceneId, const glm::vec3& cameraPosition = { 0.f, 0.f, 0.f })
+        void createScene(uint32_t state, sceneId_t sceneId, const glm::vec3& cameraPosition = { 0.f, 0.f, 0.f }, const ramses::SceneConfig& config = {})
         {
-            testScenesAndRenderer.getScenesRegistry().createScene<INTEGRATION_SCENE>(state, sceneId, cameraPosition, WindowWidth, WindowHeight);
+            testScenesAndRenderer.getScenesRegistry().createScene<INTEGRATION_SCENE>(state, sceneId, cameraPosition, WindowWidth, WindowHeight, config);
         }
-
-        static const uint32_t WindowX = 0u;
-        static const uint32_t WindowY = 0u;
-        static const uint32_t WindowWidth = 128u;
-        static const uint32_t WindowHeight = 64u;
 
         RamsesFrameworkConfig frameworkConfig{EFeatureLevel_Latest};
         TestScenesAndRenderer testScenesAndRenderer;

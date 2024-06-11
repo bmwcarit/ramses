@@ -15,6 +15,7 @@ namespace ramses::internal
 {
     class SceneImpl;
 
+    struct SceneCommandSetProperty;
     struct SceneCommandFlushSceneVersion;
     struct SceneCommandValidationRequest;
     struct SceneCommandDumpSceneToFile;
@@ -27,6 +28,7 @@ namespace ramses::internal
             : m_scene(scene)
         {}
 
+        void operator()(const SceneCommandSetProperty& cmd);
         void operator()(const SceneCommandFlushSceneVersion& cmd);
         void operator()(const SceneCommandValidationRequest& cmd);
         void operator()(const SceneCommandDumpSceneToFile& cmd) const;

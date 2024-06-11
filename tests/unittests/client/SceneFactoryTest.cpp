@@ -23,7 +23,7 @@ namespace ramses::internal
 
     TEST_F(ASceneFactory, createsAndDeletesScene)
     {
-        IScene* scene = factory.createScene(SceneInfo());
+        IScene* scene = factory.createScene(SceneInfo(), EFeatureLevel_Latest);
         ASSERT_TRUE(nullptr != scene);
         auto sceneOwnPtr = factory.releaseScene(scene->getSceneId());
         EXPECT_EQ(scene, sceneOwnPtr.get());
@@ -31,17 +31,17 @@ namespace ramses::internal
 
     TEST_F(ASceneFactory, cannotCreateTwoScenesWithTheSameId)
     {
-        IScene* scene = factory.createScene(SceneInfo());
+        IScene* scene = factory.createScene(SceneInfo(), EFeatureLevel_Latest);
         ASSERT_TRUE(nullptr != scene);
-        EXPECT_TRUE(nullptr == factory.createScene(SceneInfo(scene->getSceneId())));
+        EXPECT_TRUE(nullptr == factory.createScene(SceneInfo{ scene->getSceneId() }, EFeatureLevel_Latest));
     }
 
     TEST_F(ASceneFactory, createsSceneWithProvidedOptions)
     {
-        const SceneSizeInformation sizeInfo(1u, 2u, 3u, 4u, 5u, 6u, 7u, 8u, 9u, 10u, 11u, 12u, 13u, 14u, 15u, 16u, 17u, 18u);
+        const SceneSizeInformation sizeInfo(1u, 2u, 3u, 4u, 5u, 6u, 7u, 8u, 9u, 10u, 11u, 12u, 13u, 14u, 15u, 16u, 17u, 18u, 19u);
         const SceneId sceneId(456u);
-        const SceneInfo sceneInfo(sceneId, "sceneName");
-        auto* scene = static_cast<Scene*>(factory.createScene(sceneInfo));
+        const SceneInfo sceneInfo{ sceneId, "sceneName" };
+        auto* scene = static_cast<Scene*>(factory.createScene(sceneInfo, EFeatureLevel_Latest));
         scene->preallocateSceneSize(sizeInfo);
         ASSERT_TRUE(scene != nullptr);
         EXPECT_EQ(std::string("sceneName"), scene->getName());

@@ -23,7 +23,7 @@ namespace ramses::internal
 
         MOCK_METHOD(void, handleSceneUpdate, (SceneId sceneId, SceneUpdate&& update), (override));
         MOCK_METHOD(void, handlePickEvent, (SceneId sceneId, glm::vec2 coords), (override));
-        MOCK_METHOD(std::unique_ptr<IRendererResourceManager>, createResourceManager, (IRenderBackend&, IEmbeddedCompositingManager&, const DisplayConfig&, IBinaryShaderCache*), (override));
+        MOCK_METHOD(std::unique_ptr<IRendererResourceManager>, createResourceManager, (IRenderBackend&, IEmbeddedCompositingManager&, const DisplayConfigData&, IBinaryShaderCache*), (override));
     };
 
     class RendererSceneUpdaterFacade : public RendererSceneUpdaterPartialMock
@@ -49,7 +49,7 @@ namespace ramses::internal
         std::unique_ptr<IRendererResourceManager> createResourceManager(
             IRenderBackend& renderBackend,
             IEmbeddedCompositingManager& embeddedCompositingManager,
-            const DisplayConfig& displayConfig,
+            const DisplayConfigData& displayConfig,
             IBinaryShaderCache* binaryShaderCache) override;
     };
 }

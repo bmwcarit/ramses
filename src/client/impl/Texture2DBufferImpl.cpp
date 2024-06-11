@@ -55,7 +55,7 @@ namespace ramses::internal
         if (!SceneObjectImpl::deserialize(inStream, serializationContext))
             return false;
 
-        inStream >> m_textureBufferHandle;
+        serializationContext.deserializeAndMap(inStream, m_textureBufferHandle);
 
         return true;
     }

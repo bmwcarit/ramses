@@ -242,7 +242,7 @@ TEST_F(ARamsesFrameworkLogging, SetLoggingPrefix)
         LOG_ERROR(CONTEXT_FRAMEWORK, "test");
         EXPECT_EQ("R.main: test", m_logMessage);
 
-        RamsesLogger::SetPrefixes("I", "T", "A");
+        RamsesLoggerPrefixes::SetRamsesLoggerPrefixes("I", "T", "A");
         LOG_INFO(CONTEXT_FRAMEWORK, "test");
         EXPECT_EQ("I.T.A: test", m_logMessage);
         LOG_WARN(CONTEXT_FRAMEWORK, "test");

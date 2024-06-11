@@ -238,7 +238,12 @@ namespace ramses::internal
     {
         auto impl = std::make_unique<SkinBindingImpl>(m_scene, std::move(joints), inverseBindMatrices, appearanceBinding, jointMatInput, name, sceneObjectId_t{});
         impl->createRootProperties();
-        return &createAndRegisterObject<SkinBinding, SkinBindingImpl>(std::move(impl));
+        auto& skin = createAndRegisterObject<SkinBinding, SkinBindingImpl>(std::move(impl));
+
+        for (auto& joint: skin.impl().getJoints())
+            m_logicNodeDependencies.addBindingDependency(const_cast<NodeBindingImpl&>(*joint), skin.m_impl);
+
+        return &skin;
     }
 
     template <typename T>

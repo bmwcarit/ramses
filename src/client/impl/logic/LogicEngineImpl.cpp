@@ -436,7 +436,11 @@ namespace ramses::internal
         // force dirty all timer nodes, anchor points and skinbindings
         setNodeToBeAlwaysUpdatedDirty();
 
-        const bool success = updateNodes(*sortedNodes);
+        bool success = updateNodes(*sortedNodes);
+
+        // update skin bindings only if updating the other nodes succeeded
+        if (success)
+            success = updateSkinBindings();
 
         if (m_statisticsEnabled || m_updateReportEnabled)
         {
@@ -455,7 +459,8 @@ namespace ramses::internal
         {
             LogicNodeImpl& node = *nodeIter;
 
-            if (!node.isDirty())
+            // skip also processing of SkinBindings, since they will be processed after updating everything else
+            if (!node.isDirty() || dynamic_cast<SkinBindingImpl*>(&node))
             {
                 if (m_updateReportEnabled)
                     m_updateReport.nodeSkippedExecution(node);
@@ -464,32 +469,49 @@ namespace ramses::internal
                     continue;
             }
 
-            if (m_updateReportEnabled)
-                m_updateReport.nodeExecutionStarted(node);
-            if (m_statisticsEnabled)
-                m_statistics.nodeExecuted();
+            if (!updateNode(node))
+                return false;
+        }
 
-            const std::optional<LogicNodeRuntimeError> potentialError = node.update();
-            if (potentialError)
-            {
-                getErrorReporting().set(potentialError->message, &node.getLogicObject());
+        return true;
+    }
+
+    bool LogicEngineImpl::updateSkinBindings()
+    {
+        for (SkinBinding* skinBinding : m_apiObjects->getApiObjectContainer<SkinBinding>()) {
+            if (!updateNode(skinBinding->impl())) {
                 return false;
             }
-
-            Property* outputs = node.getOutputs();
-            if (outputs != nullptr)
-            {
-                const size_t activatedLinks = activateLinksRecursive(outputs->impl());
-
-                if (m_statisticsEnabled || m_updateReportEnabled)
-                    m_updateReport.linksActivated(activatedLinks);
-            }
-
-            if (m_updateReportEnabled)
-                m_updateReport.nodeExecutionFinished();
-
-            node.setDirty(false);
         }
+        return true;
+    }
+
+    bool LogicEngineImpl::updateNode(LogicNodeImpl& node)
+    {
+        if (m_updateReportEnabled)
+            m_updateReport.nodeExecutionStarted(node);
+        if (m_statisticsEnabled)
+            m_statistics.nodeExecuted();
+
+        const std::optional<LogicNodeRuntimeError> potentialError = node.update();
+        if (potentialError)
+        {
+            getErrorReporting().set(potentialError->message, &node.getLogicObject());
+            return false;
+        }
+
+        Property* outputs = node.getOutputs();
+        if (outputs != nullptr)
+        {
+            const size_t activatedLinks = activateLinksRecursive(outputs->impl());
+
+            if (m_statisticsEnabled || m_updateReportEnabled)
+                m_updateReport.linksActivated(activatedLinks);
+        }
+
+        if (m_updateReportEnabled)
+            m_updateReport.nodeExecutionFinished();
+        node.setDirty(false);
 
         return true;
     }
@@ -502,9 +524,6 @@ namespace ramses::internal
         // force anchor points dirty because they depend on set of ramses states which cannot be monitored
         for (AnchorPoint* anchorPoint : m_apiObjects->getApiObjectContainer<AnchorPoint>())
             anchorPoint->impl().setDirty(true);
-        // force skinbindings dirty because they depend on set of ramses states which cannot be monitored
-        for (SkinBinding* skinBinding : m_apiObjects->getApiObjectContainer<SkinBinding>())
-            skinBinding->impl().setDirty(true);
     }
 
     void LogicEngineImpl::onValidate(ValidationReportImpl& report) const
@@ -516,7 +535,7 @@ namespace ramses::internal
         m_apiObjects->validateDanglingNodes(report);
     }
 
-    bool LogicEngineImpl::loadFromByteData(const void* byteData, size_t byteSize, bool enableMemoryVerification, const std::string& dataSourceDescription)
+    bool LogicEngineImpl::loadFromByteData(const void* byteData, size_t byteSize, bool enableMemoryVerification, const std::string& dataSourceDescription, const SceneMergeHandleMapping* mapping)
     {
         if (byteSize < 8)
         {
@@ -553,7 +572,7 @@ namespace ramses::internal
             return false;
         }
 
-        RamsesObjectResolver ramsesResolver{ getErrorReporting(), getSceneImpl() };
+        RamsesObjectResolver ramsesResolver{ getErrorReporting(), getSceneImpl(), mapping };
         std::unique_ptr<ApiObjects> deserializedObjects = ApiObjects::Deserialize(getSceneImpl(), *logicEngine->apiObjects(), ramsesResolver, dataSourceDescription, getErrorReporting(), m_featureLevel);
 
         if (!deserializedObjects)
@@ -701,7 +720,7 @@ namespace ramses::internal
     bool LogicEngineImpl::resolveDeserializationDependencies(DeserializationContext& serializationContext)
     {
         const bool enableMemoryVerification = serializationContext.getLoadConfig().getMemoryVerificationEnabled();
-        if (!loadFromByteData(m_byteBuffer.data(), m_byteBuffer.size(), enableMemoryVerification, fmt::format("data buffer '{}' (size: {})", m_byteBuffer.data(), m_byteBuffer.size())))
+        if (!loadFromByteData(m_byteBuffer.data(), m_byteBuffer.size(), enableMemoryVerification, fmt::format("data buffer '{}' (size: {})", m_byteBuffer.data(), m_byteBuffer.size()), serializationContext.getSceneMergeHandleMapping()))
             return false;
 
         std::vector<char>().swap(m_byteBuffer);

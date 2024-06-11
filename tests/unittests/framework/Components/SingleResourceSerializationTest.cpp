@@ -23,7 +23,7 @@ namespace ramses::internal
             SingleResourceSerialization::SerializeResource(outStream, res);
 
             BinaryInputStream inStream(outStream.getData());
-            return std::unique_ptr<IResource>(SingleResourceSerialization::DeserializeResource(inStream, hash));
+            return std::unique_ptr<IResource>(SingleResourceSerialization::DeserializeResource(inStream, hash, EFeatureLevel_Latest));
         }
     }
 

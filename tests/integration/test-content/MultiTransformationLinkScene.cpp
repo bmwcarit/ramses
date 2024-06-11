@@ -17,9 +17,9 @@ namespace ramses::internal
         : IntegrationScene(scene, cameraPosition)
         , m_scaleFactor(10.f / NumRows)
         , m_dummyEffect(*getTestEffect("ramses-test-client-basic"))
-        , m_redTriangle(m_scene, m_dummyEffect, TriangleAppearance::EColor_Red)
-        , m_greenTriangle(m_scene, m_dummyEffect, TriangleAppearance::EColor_Green)
-        , m_blueTriangle(m_scene, m_dummyEffect, TriangleAppearance::EColor_Blue)
+        , m_redTriangle(m_scene, m_dummyEffect, TriangleAppearance::EColor::Red)
+        , m_greenTriangle(m_scene, m_dummyEffect, TriangleAppearance::EColor::Green)
+        , m_blueTriangle(m_scene, m_dummyEffect, TriangleAppearance::EColor::Blue)
     {
         switch (state)
         {

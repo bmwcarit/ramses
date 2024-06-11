@@ -192,6 +192,12 @@ namespace ramses::internal
 
         Incomplete,
 
+        // Uniform Buffer
+        AllocateUniformBuffer,
+        ReleaseUniformBuffer,
+        UpdateUniformBuffer,
+        SetDataUniformBuffer,
+
         NUMBER_OF_TYPES
     };
 
@@ -236,6 +242,7 @@ case ENUMVALUE: return #ENUMVALUE
             CreateNameForEnumID(ESceneActionId::SetRenderableEffect);
             CreateNameForEnumID(ESceneActionId::SetDataTextureSamplerHandle);
             CreateNameForEnumID(ESceneActionId::SetDataReference);
+            CreateNameForEnumID(ESceneActionId::SetDataUniformBuffer);
             CreateNameForEnumID(ESceneActionId::SetDataMatrix22fArray);
             CreateNameForEnumID(ESceneActionId::SetDataMatrix33fArray);
             CreateNameForEnumID(ESceneActionId::SetDataMatrix44fArray);
@@ -244,6 +251,11 @@ case ENUMVALUE: return #ENUMVALUE
             CreateNameForEnumID(ESceneActionId::AllocateDataBuffer);
             CreateNameForEnumID(ESceneActionId::ReleaseDataBuffer);
             CreateNameForEnumID(ESceneActionId::UpdateDataBuffer);
+
+            // Uniform buffer
+            CreateNameForEnumID(ESceneActionId::AllocateUniformBuffer);
+            CreateNameForEnumID(ESceneActionId::ReleaseUniformBuffer);
+            CreateNameForEnumID(ESceneActionId::UpdateUniformBuffer);
 
             // Texture Buffer
             CreateNameForEnumID(ESceneActionId::AllocateTextureBuffer);

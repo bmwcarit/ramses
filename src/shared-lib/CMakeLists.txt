@@ -31,12 +31,9 @@ endif()
 # Collect impl.cpp for framework and client depending on configured cmake options
 list(APPEND HEADLESS_SOURCES        ${PROJECT_SOURCE_DIR}/src/framework/impl/*.cpp)
 list(APPEND HEADLESS_SOURCES        ${PROJECT_SOURCE_DIR}/src/client/impl/*.cpp)
+list(APPEND HEADLESS_SOURCES        ${PROJECT_SOURCE_DIR}/src/client/impl/logic/*.cpp)
 if(ramses-sdk_TEXT_SUPPORT)
     list(APPEND HEADLESS_SOURCES    ${PROJECT_SOURCE_DIR}/src/client/impl/text/*.cpp)
-endif()
-
-if(ramses-sdk_ENABLE_LOGIC)
-    list(APPEND HEADLESS_SOURCES    ${PROJECT_SOURCE_DIR}/src/client/impl/logic/*.cpp)
 endif()
 
 set(RENDERER_SOURCES                ${PROJECT_SOURCE_DIR}/src/renderer/impl/*.cpp)

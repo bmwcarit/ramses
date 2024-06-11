@@ -15,6 +15,8 @@ namespace ramses::internal
 {
     class TextureLinkCachedScene : public DataReferenceLinkCachedScene
     {
+        using BaseT = DataReferenceLinkCachedScene;
+
     public:
         explicit TextureLinkCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo = SceneInfo());
 

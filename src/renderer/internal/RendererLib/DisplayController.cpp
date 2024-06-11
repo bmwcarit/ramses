@@ -11,7 +11,7 @@
 #include "internal/RendererLib/PlatformInterface/IDevice.h"
 #include "internal/RendererLib/PlatformInterface/IWindow.h"
 #include "internal/RendererLib/PlatformInterface/IContext.h"
-#include "internal/RendererLib/RendererConfig.h"
+#include "internal/RendererLib/RendererConfigData.h"
 #include "internal/RendererLib/RendererLogContext.h"
 #include "internal/RendererLib/LoggingDevice.h"
 #include "internal/RendererLib/RendererCachedScene.h"

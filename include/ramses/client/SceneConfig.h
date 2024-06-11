@@ -11,6 +11,7 @@
 #include "ramses/framework/APIExport.h"
 #include "ramses/framework/RamsesFrameworkTypes.h"
 #include "ramses/framework/EScenePublicationMode.h"
+#include "ramses/framework/ERenderBackendCompatibility.h"
 
 #include <memory>
 
@@ -40,8 +41,9 @@ namespace ramses
         * @param sceneId Each scene requires a sceneId for global identification (sceneId is used for scene mapping on renderer side).
         * If no sceneId is provided Ramses will use the sceneId stored in the serialized file or raise an error if the scene is created at runtime.
         * @param publicationMode see #ramses::SceneConfig::setPublicationMode for details
+        * @param renderBackendCompatibility see #ramses::SceneConfig::setRenderBackendCompatibility for details
         */
-        explicit SceneConfig(sceneId_t sceneId, EScenePublicationMode publicationMode = EScenePublicationMode::LocalOnly);
+        explicit SceneConfig(sceneId_t sceneId, EScenePublicationMode publicationMode = EScenePublicationMode::LocalOnly, ERenderBackendCompatibility renderBackendCompatibility = ERenderBackendCompatibility::OpenGL);
 
         /**
         * @brief Destructor of SceneConfig
@@ -73,6 +75,15 @@ namespace ramses
          * @param enabled flag to disable/enable memory verification when loading the scene
          */
         void setMemoryVerificationEnabled(bool enabled);
+
+        /**
+         * Set compatibility of scene and its resources to render backend devices available on the renderer.
+         * If a scene object or a resource is created in the scene and it is not compatible
+         * with the selected render backend device on the renderer side, the scene will be rejected and cannot be rendered.
+         *
+         * @param renderBackendCompatibility Render backend compatibility of scene and its resources.
+         */
+        void setRenderBackendCompatibility(ERenderBackendCompatibility renderBackendCompatibility);
 
         /**
          * @brief Copy constructor

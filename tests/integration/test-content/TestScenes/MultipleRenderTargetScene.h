@@ -39,7 +39,7 @@ namespace ramses::internal
         };
 
     private:
-        const ramses::Effect& getMRTEffect(uint32_t state);
+        const ramses::Effect& getMRTEffect(uint32_t state, TriangleAppearance::EColor& color);
         ramses::RenderTarget& createMRTRenderTarget(uint32_t state);
         static ramses::RenderBuffer& InitRenderBuffer(ramses::Scene& scene, uint32_t state);
         const ramses::MeshNode& createQuadWithTexture(const ramses::RenderBuffer& renderBuffer, const glm::vec3& translation, const glm::vec4& modulateColor = glm::vec4(1.f, 1.f, 1.f, 1.f));

@@ -24,7 +24,7 @@ namespace ramses::internal
     class ClientSceneLogicBase
     {
     public:
-        ClientSceneLogicBase(ISceneGraphSender& sceneGraphSender, ClientScene& scene, IResourceProviderComponent& res, const Guid& clientAddress);
+        ClientSceneLogicBase(ISceneGraphSender& sceneGraphSender, ClientScene& scene, IResourceProviderComponent& res, const Guid& clientAddress, EFeatureLevel featureLevel);
         virtual ~ClientSceneLogicBase();
 
         void publish(EScenePublicationMode publicationMode);
@@ -72,6 +72,8 @@ namespace ramses::internal
 
         ResourceChanges m_resourceChangesSinceLastFlush; // keep container memory allocated
         ResourceContentHashVector m_currentFlushResourcesInUse; // keep container memory allocated
+
+        EFeatureLevel m_featureLevel = EFeatureLevel_Latest;
 
         // resource statistics gathered while flushing the last time
         std::array<uint64_t, EResourceStatisticIndex_NumIndices> m_resourceCount{};

@@ -61,18 +61,35 @@ int main(int argc, const char *argv[])
 #endif
 
     RendererTestUtils::SetDefaultConfigForAllTests(rendererConfig, displayConfig);
-    RenderingTests renderingTests(filterInTestStrings, filterOutTestStrings, generateBitmaps, config);
+    bool renderingTestsSuccess = false;
+    std::array<std::string, EFeatureLevel_Latest> reports;
 
-    for (uint32_t i = 0; i < repeatCount; ++i)
+    for (EFeatureLevel featureLevel = EFeatureLevel_01; featureLevel <= EFeatureLevel_Latest; featureLevel = EFeatureLevel{ featureLevel + 1 })
     {
-        const bool renderingTestsSuccess = renderingTests.runTests();
-        renderingTests.logReport();
-
-        if (!renderingTestsSuccess)
-        {
-            fmt::print("Some rendering tests failed! Look above for more detailed info.\n");
+        fmt::print("\nStarting feature level 0{} rendering tests\n\n", featureLevel);
+        if (!config.setFeatureLevel(featureLevel))
             return 1;
+
+        RenderingTests renderingTests(filterInTestStrings, filterOutTestStrings, generateBitmaps, config);
+        for (uint32_t i = 0; i < repeatCount; ++i)
+        {
+            renderingTestsSuccess = renderingTests.runTests();
+            reports[featureLevel-1] = renderingTests.generateReport();
+            fmt::print("\nFinished feature level 0{} rendering tests\n", featureLevel);
+            fmt::print("{}\n", reports[featureLevel-1]);
+
+            if (!renderingTestsSuccess)
+            {
+                fmt::print("Some rendering tests failed! Look above for more detailed info.\n");
+                return 1;
+            }
         }
+    }
+
+    for (EFeatureLevel featureLevel = EFeatureLevel_01; featureLevel <= EFeatureLevel_Latest; featureLevel = EFeatureLevel{ featureLevel + 1 })
+    {
+        fmt::print("\nFeature level 0{}:", featureLevel);
+        fmt::print("{}\n", reports[featureLevel-1]);
     }
 
     return 0;

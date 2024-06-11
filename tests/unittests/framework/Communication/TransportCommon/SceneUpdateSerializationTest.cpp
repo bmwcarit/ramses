@@ -26,7 +26,7 @@ namespace ramses::internal
     public:
         bool serialize(size_t pktSize)
         {
-            SceneUpdateSerializer sus(update, sceneStatistics);
+            SceneUpdateSerializer sus(update, sceneStatistics, EFeatureLevel_Latest);
             std::vector<std::byte> vec(pktSize);
             return sus.writeToPackets({vec.data(), vec.size()}, [&](size_t s) {
                 data.push_back(vec);
@@ -58,7 +58,7 @@ namespace ramses::internal
             update.flushInfos.resourceChanges.m_sceneResourceActions.push_back(std::move(action));
             SceneReferenceAction refAction;
             update.flushInfos.sceneReferences.push_back(refAction);
-            update.flushInfos.sizeInfo = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18};
+            update.flushInfos.sizeInfo = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18, 19};
             update.flushInfos.versionTag = SceneVersionTag(2);
         }
 
@@ -103,7 +103,7 @@ namespace ramses::internal
             compare(result);
         }
 
-        SceneUpdateStreamDeserializer deser;
+        SceneUpdateStreamDeserializer deser{ EFeatureLevel_Latest };
         ResourceDeleterCallingCallback deleterMock;
         SceneUpdate update;
         StatisticCollectionScene sceneStatistics;
@@ -205,7 +205,7 @@ namespace ramses::internal
 
     TEST_F(ASceneUpdateSerialization, failsSerializeWhenWriteFunctionFailsOnFirstPacket)
     {
-        SceneUpdateSerializer sus(update, sceneStatistics);
+        SceneUpdateSerializer sus(update, sceneStatistics, EFeatureLevel_Latest);
         std::vector<std::byte> vec(60);
         EXPECT_FALSE(sus.writeToPackets({vec.data(), vec.size()}, [&](size_t) {
             return false;
@@ -215,7 +215,7 @@ namespace ramses::internal
     TEST_F(ASceneUpdateSerialization, failsSerializeWhenWriteFunctionFailsOnLaterPacketInResource)
     {
         update.resources.push_back(CreateTestResource(2500));
-        SceneUpdateSerializer sus(update, sceneStatistics);
+        SceneUpdateSerializer sus(update, sceneStatistics, EFeatureLevel_Latest);
         std::vector<std::byte> vec(60);
         int cnt = 0;
         EXPECT_FALSE(sus.writeToPackets({vec.data(), vec.size()}, [&](size_t) {
@@ -229,7 +229,7 @@ namespace ramses::internal
     {
         for (size_t i = 0; i < 100; ++i)
             addTestActions();
-        SceneUpdateSerializer sus(update, sceneStatistics);
+        SceneUpdateSerializer sus(update, sceneStatistics, EFeatureLevel_Latest);
         std::vector<std::byte> vec(60);
         int cnt = 0;
         EXPECT_FALSE(sus.writeToPackets({vec.data(), vec.size()}, [&](size_t) {
@@ -351,7 +351,7 @@ namespace ramses::internal
             SCOPED_TRACE(i);
             std::vector<std::byte> vec = data[0];
             vec.resize(i);
-            SceneUpdateStreamDeserializer localDeser;
+            SceneUpdateStreamDeserializer localDeser{ EFeatureLevel_Latest };
             EXPECT_EQ(SceneUpdateStreamDeserializer::ResultType::Failed, localDeser.processData(vec).result);
         }
     }

@@ -43,7 +43,10 @@ def main():
     if not profdir.is_dir():
         raise Exception(f'profdir does not exist {profdir}')
 
-    prof_files = [e.name for e in profdir.glob(f'{allowed_selections[args.select]}.profraw')]
+    # filter out embedded compositing rendering tests since they break coverage collection
+    execlude_files = [e.name for e in profdir.glob('embedded-compositing-rendering-tests_RNDSANDWICHTEST_SWRAST*.profraw')]
+    prof_files = [e.name for e in profdir.glob(f'{allowed_selections[args.select]}.profraw') if e.name not in execlude_files]
+
     if not prof_files:
         raise Exception('No profraw files match filter')
 
@@ -55,15 +58,10 @@ def main():
 
     merged_data = f'coverage-merged-{args.select}.profdata'
     print(f'Generate {merged_data}')
-    for attempt in range(3):
-        try:
-            subprocess.check_call(['llvm-profdata', 'merge', '-o', merged_data] + prof_files, shell=False, cwd=profdir)
-        except subprocess.CalledProcessError as e:
-            print(f'Attempt {attempt} failed: {e}')
-        else:
-            break
-    else:
-        raise Exception(f'Generate {merged_data} failed')
+    try:
+        subprocess.check_call(['llvm-profdata', 'merge', '-o', merged_data] + prof_files, shell=False, cwd=profdir)
+    except subprocess.CalledProcessError as e:
+        raise Exception(f'Generate {merged_data} failed with exception {e}')
 
     merged_executable = f'merge-executable-{args.select}'
     print(f'Generate {merged_executable}')

@@ -22,9 +22,9 @@ namespace ramses::internal
     {
     public:
         virtual ~ISceneGraphSender() = default;
-        virtual void sendPublishScene        (SceneId sceneId, EScenePublicationMode publicationMode, std::string_view name) = 0;
+        virtual void sendPublishScene        (const SceneInfo& sceneInfo) = 0;
         virtual void sendUnpublishScene      (SceneId sceneId, EScenePublicationMode publicationMode) = 0;
-        virtual void sendCreateScene         (const Guid& to, const SceneId& sceneId, EScenePublicationMode publicationMode) = 0;
+        virtual void sendCreateScene         (const Guid& to, const SceneInfo& sceneInfo) = 0;
         virtual void sendSceneUpdate         (const std::vector<Guid>& to, SceneUpdate&& sceneUpdate, SceneId sceneId, EScenePublicationMode mode, StatisticCollectionScene& sceneStatistics) = 0;
     };
 }

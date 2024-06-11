@@ -32,6 +32,8 @@ namespace ramses::internal
         MOCK_METHOD(DeviceResourceHandle, getExternalBufferDeviceHandle, (ExternalBufferHandle), (const, override));
         MOCK_METHOD(DeviceResourceHandle, getEmptyExternalBufferDeviceHandle, (), (const, override));
         MOCK_METHOD(uint32_t, getExternalBufferGlId, (ExternalBufferHandle), (const, override));
+        MOCK_METHOD(DeviceResourceHandle, getUniformBufferDeviceHandle, (UniformBufferHandle uniformBufferHandle, SceneId sceneId), (const, override));
+        MOCK_METHOD(DeviceResourceHandle, getUniformBufferDeviceHandle, (SemanticUniformBufferHandle handle, SceneId sceneId), (const, override));
     };
 }
 

@@ -16,6 +16,8 @@ namespace ramses::internal
 
     class SceneLinkScene : public TransformationCachedSceneWithExplicitMemory
     {
+        using BaseT = TransformationCachedSceneWithExplicitMemory;
+
     public:
         explicit SceneLinkScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo = SceneInfo());
 

@@ -11,7 +11,7 @@ createModule(
     TYPE                    BINARY
     ENABLE_INSTALL          ON
     INCLUDE_PATHS           ${PROJECT_SOURCE_DIR}/tools/ramses-viewer
-                            ${PROJECT_SOURCE_DIR}/tests/unittests/client/logic/shared
+                            ${PROJECT_SOURCE_DIR}/tests/unittests/client/utils
     SRC_FILES               LogicViewerTestBase.h
                             LogicViewerTestBase.cpp
                             LogicViewerTest.cpp
@@ -22,6 +22,7 @@ createModule(
                             ramses-client
                             ramses-gmock
                             ramses-gmock-main
+                            glslang-init-gtest-env
 )
 
 MakeTestFromTarget(

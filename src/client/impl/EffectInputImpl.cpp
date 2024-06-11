@@ -13,19 +13,10 @@
 
 namespace ramses::internal
 {
-    void EffectInputImpl::initialize(
-        const ResourceContentHash&  effectHash,
-        std::string_view            name,
-        ramses::internal::EDataType dataType,
-        EFixedSemantics             semantics,
-        size_t                      elementCount,
-        size_t                      index)
+    void EffectInputImpl::initialize(const ResourceContentHash& effectHash, const EffectInputInformation& inputInfo, size_t index)
     {
         m_effectHash = effectHash;
-        m_name = name;
-        m_dataType = dataType;
-        m_semantics = semantics;
-        m_elementCount = elementCount;
+        m_inputInfo = inputInfo;
         m_inputIndex = index;
     }
 
@@ -36,27 +27,27 @@ namespace ramses::internal
 
     const std::string& EffectInputImpl::getName() const
     {
-        return m_name;
+        return m_inputInfo.inputName;
     }
 
     ramses::EDataType EffectInputImpl::getDataType() const
     {
-        return DataTypeUtils::ConvertDataTypeFromInternal(m_dataType);
+        return DataTypeUtils::ConvertDataTypeFromInternal(m_inputInfo.dataType);
     }
 
     ramses::internal::EDataType EffectInputImpl::getInternalDataType() const
     {
-        return m_dataType;
+        return m_inputInfo.dataType;
     }
 
     EFixedSemantics EffectInputImpl::getSemantics() const
     {
-        return m_semantics;
+        return m_inputInfo.semantics;
     }
 
     size_t EffectInputImpl::getElementCount() const
     {
-        return m_elementCount;
+        return m_inputInfo.elementCount;
     }
 
     size_t EffectInputImpl::getInputIndex() const
@@ -66,11 +57,26 @@ namespace ramses::internal
 
     EEffectUniformSemantic EffectInputImpl::getUniformSemantics() const
     {
-        return EffectInputSemanticUtils::GetEffectUniformSemanticFromInternal(m_semantics);
+        return EffectInputSemanticUtils::GetEffectUniformSemanticFromInternal(m_inputInfo.semantics);
     }
 
     EEffectAttributeSemantic EffectInputImpl::getAttributeSemantics() const
     {
-        return EffectInputSemanticUtils::GetEffectAttributeSemanticFromInternal(m_semantics);
+        return EffectInputSemanticUtils::GetEffectAttributeSemanticFromInternal(m_inputInfo.semantics);
+    }
+
+    UniformBufferBinding EffectInputImpl::getUniformBufferBinding() const
+    {
+        return m_inputInfo.uniformBufferBinding;
+    }
+
+    UniformBufferElementSize EffectInputImpl::getUniformBufferElementSize() const
+    {
+        return m_inputInfo.uniformBufferElementSize;
+    }
+
+    UniformBufferFieldOffset EffectInputImpl::getUniformBufferFieldOffset() const
+    {
+        return m_inputInfo.uniformBufferFieldOffset;
     }
 }

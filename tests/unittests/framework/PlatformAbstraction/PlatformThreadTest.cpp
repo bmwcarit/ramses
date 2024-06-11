@@ -194,7 +194,7 @@ namespace ramses::internal
         // logging prefix name tests work with static thread_local variables, each test case needs to run in own thread to not affect other test cases
         std::thread t([&] {
 
-            RamsesLogger::SetPrefixes("instName", "");
+            RamsesLoggerPrefixes::SetRamsesLoggerPrefixes("instName", "");
 
             LoggingRunnable runnable;
 

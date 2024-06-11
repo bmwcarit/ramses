@@ -7,6 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "gmock/gmock.h"
+#include "internal/SceneGraph/Scene/SceneActionCollection.h"
 #include "internal/SceneGraph/Scene/SceneDescriber.h"
 #include "internal/SceneGraph/Scene/ClientScene.h"
 #include "SceneActionUtils.h"
@@ -14,6 +15,9 @@
 #include "internal/SceneGraph/Scene/SceneActionApplier.h"
 #include "TestEqualHelper.h"
 #include "internal/Core/Utils/MemoryUtils.h"
+#include "internal/SceneGraph/SceneAPI/Handles.h"
+#include "internal/SceneGraph/SceneAPI/PixelRectangle.h"
+#include "internal/SceneGraph/SceneAPI/RenderBuffer.h"
 
 using namespace testing;
 
@@ -23,7 +27,7 @@ namespace ramses::internal
     {
     protected:
         SceneDescriberTest()
-            : creator(actions)
+            : creator(actions, EFeatureLevel_Latest)
         {}
 
         static void ExpectAllocateNodeAction(SceneActionCollection::SceneActionReader action, NodeHandle handle, uint32_t expectedChildrenCount)
@@ -48,6 +52,113 @@ namespace ramses::internal
             EXPECT_EQ(child, actualChild);
         }
 
+        static void ExpectAllocateRenderBufferAction(SceneActionCollection::SceneActionReader action, RenderBufferHandle handle, const RenderBuffer& renderBuffer)
+        {
+            ASSERT_EQ(ESceneActionId::AllocateRenderBuffer, action.type());
+
+            RenderBufferHandle actualHandle;
+            RenderBuffer actualRenderBuffer;
+            uint32_t enumInt = 0;
+
+            action.read(actualRenderBuffer.width);
+            action.read(actualRenderBuffer.height);
+            action.read(actualHandle);
+            action.read(enumInt);
+            actualRenderBuffer.format = static_cast<EPixelStorageFormat>(enumInt);
+            action.read(enumInt);
+            actualRenderBuffer.accessMode = static_cast<ERenderBufferAccessMode>(enumInt);
+            action.read(actualRenderBuffer.sampleCount);
+
+            EXPECT_EQ(actualHandle, handle);
+            EXPECT_EQ(actualRenderBuffer.width, renderBuffer.width);
+            EXPECT_EQ(actualRenderBuffer.height, renderBuffer.height);
+            EXPECT_EQ(actualRenderBuffer.format, renderBuffer.format);
+            EXPECT_EQ(actualRenderBuffer.accessMode, renderBuffer.accessMode);
+            EXPECT_EQ(actualRenderBuffer.sampleCount, renderBuffer.sampleCount);
+
+            EXPECT_TRUE(action.isFullyRead());
+        }
+
+        static void ExpectAllocateBlitPassAction(SceneActionCollection::SceneActionReader action, BlitPassHandle handle, RenderBufferHandle sourceRenderBufferHandle, RenderBufferHandle destinationRenderbufferHandle)
+        {
+            ASSERT_EQ(ESceneActionId::AllocateBlitPass, action.type());
+
+            BlitPassHandle actualHandle;
+            RenderBufferHandle actualSourceRenderbufferHandle;
+            RenderBufferHandle actualDestinationRenderbufferHandle;
+
+            action.read(actualSourceRenderbufferHandle);
+            action.read(actualDestinationRenderbufferHandle);
+            action.read(actualHandle);
+
+            EXPECT_EQ(actualHandle, handle);
+            EXPECT_EQ(actualSourceRenderbufferHandle, sourceRenderBufferHandle);
+            EXPECT_EQ(actualDestinationRenderbufferHandle, destinationRenderbufferHandle);
+
+            EXPECT_TRUE(action.isFullyRead());
+        }
+
+        static void ExpectSetBlitPassRegionsAction(SceneActionCollection::SceneActionReader action, BlitPassHandle handle, const PixelRectangle& sourceRegion, const PixelRectangle& destinationRegion)
+        {
+            ASSERT_EQ(ESceneActionId::SetBlitPassRegions, action.type());
+
+            BlitPassHandle actualHandle;
+            PixelRectangle actualSourceRegion;
+            PixelRectangle actualDestinationRegion;
+
+            action.read(actualHandle);
+            action.read(actualSourceRegion.x);
+            action.read(actualSourceRegion.y);
+            action.read(actualSourceRegion.width);
+            action.read(actualSourceRegion.height);
+            action.read(actualDestinationRegion.x);
+            action.read(actualDestinationRegion.y);
+            action.read(actualDestinationRegion.width);
+            action.read(actualDestinationRegion.height);
+
+            EXPECT_EQ(handle, actualHandle);
+            EXPECT_EQ(sourceRegion.x, actualSourceRegion.x);
+            EXPECT_EQ(sourceRegion.y, actualSourceRegion.y);
+            EXPECT_EQ(sourceRegion.width, actualSourceRegion.width);
+            EXPECT_EQ(sourceRegion.height, actualSourceRegion.height);
+            EXPECT_EQ(destinationRegion.x, actualDestinationRegion.x);
+            EXPECT_EQ(destinationRegion.y, actualDestinationRegion.y);
+            EXPECT_EQ(destinationRegion.width, actualDestinationRegion.width);
+            EXPECT_EQ(destinationRegion.height, actualDestinationRegion.height);
+
+            EXPECT_TRUE(action.isFullyRead());
+        }
+
+        static void ExpectSetBlitPassRenderOrderAction(SceneActionCollection::SceneActionReader action, BlitPassHandle handle, int32_t renderOrder)
+        {
+            ASSERT_EQ(ESceneActionId::SetBlitPassRenderOrder, action.type());
+
+            BlitPassHandle actualHandle;
+            int32_t actualRenderOrder {};
+            action.read(actualHandle);
+            action.read(actualRenderOrder);
+
+            EXPECT_EQ(handle, actualHandle);
+            EXPECT_EQ(renderOrder, actualRenderOrder);
+
+            EXPECT_TRUE(action.isFullyRead());
+        };
+
+        static void ExpectSetBlitPassEnabledAction(SceneActionCollection::SceneActionReader action, BlitPassHandle handle, bool enabled)
+        {
+            ASSERT_EQ(ESceneActionId::SetBlitPassEnabled, action.type());
+
+            BlitPassHandle actualHandle;
+            bool actualEnabled {};
+            action.read(actualHandle);
+            action.read(actualEnabled);
+
+            EXPECT_EQ(handle, actualHandle);
+            EXPECT_EQ(enabled, actualEnabled);
+
+            EXPECT_TRUE(action.isFullyRead());
+        };
+
         struct RenderableCreationData
         {
             RenderableCreationData() {} // NOLINT(modernize-use-equals-default): build issues with clang-12
@@ -64,8 +175,8 @@ namespace ramses::internal
 
         void createRenderable(const RenderableCreationData& data = RenderableCreationData{})
         {
-            const NodeHandle       node       = m_scene.allocateNode(0, {});
-            const RenderableHandle renderable = m_scene.allocateRenderable(node, {});
+            const NodeHandle        node            = m_scene.allocateNode(0, {});
+            const RenderableHandle  renderable      = m_scene.allocateRenderable(node, {});
             m_scene.setRenderableStartIndex(renderable, data.startIndex);
             m_scene.setRenderableIndexCount(renderable, data.indexCount);
             m_scene.setRenderableRenderState(renderable, data.state);
@@ -179,7 +290,7 @@ namespace ramses::internal
         // no actions for setting the zeroed data types
 
         Scene newScene;
-        SceneActionApplier::ApplyActionsOnScene(newScene, actions);
+        SceneActionApplier::ApplyActionsOnScene(newScene, actions, EFeatureLevel_Latest);
 
         // validate skipped actions still result in nulled data
         EXPECT_TRUE(MemoryUtils::AreAllBytesZero(newScene.getDataIntegerArray(dataInstance, DataFieldHandle(0u)), dataFieldElementCount));
@@ -250,5 +361,47 @@ namespace ramses::internal
 
         ASSERT_EQ(3u, actions.numberOfActions());
         EXPECT_EQ(3u, SceneActionCollectionUtils::CountNumberOfActionsOfType(actions, ESceneActionId::AllocateDataLayout));
+    }
+
+    TEST_F(SceneDescriberTest, checksDescriptionActionsForBlitPassesAndRenderBuffers)
+    {
+        const ramses::internal::RenderBuffer renderBuffer {
+            120u,
+            240u,
+            EPixelStorageFormat::RGBA8,
+            ERenderBufferAccessMode::ReadWrite,
+            1
+        };
+        const PixelRectangle sourceRegion {
+            12, 21, 123, 321
+        };
+        const PixelRectangle destinationRegion {
+            23, 32, 234, 432
+        };
+        const int32_t renderOrder = 7;
+        const bool blitPassEnabled = true;
+
+        const auto renderBufferSourceHandle = m_scene.allocateRenderBuffer(renderBuffer, {});
+        const auto renderBufferDestinationHandle = m_scene.allocateRenderBuffer(renderBuffer, {});
+
+        const auto blitPassHandle = m_scene.allocateBlitPass(renderBufferSourceHandle, renderBufferDestinationHandle, {});
+        m_scene.setBlitPassRegions(blitPassHandle, sourceRegion, destinationRegion);
+        m_scene.setBlitPassRenderOrder(blitPassHandle, renderOrder);
+        m_scene.setBlitPassEnabled(blitPassHandle, blitPassEnabled);
+
+        SceneDescriber::describeScene<IScene>(m_scene, creator);
+
+        ASSERT_EQ(6u, actions.numberOfActions());
+        uint32_t actionIdx = 0u;
+
+        // order of actions is curcial
+        // first we need to allocate render buffers
+        // then allocate blit passes
+        ExpectAllocateRenderBufferAction(actions[actionIdx++], renderBufferSourceHandle, renderBuffer);
+        ExpectAllocateRenderBufferAction(actions[actionIdx++], renderBufferDestinationHandle, renderBuffer);
+        ExpectAllocateBlitPassAction(actions[actionIdx++], blitPassHandle, renderBufferSourceHandle, renderBufferDestinationHandle);
+        ExpectSetBlitPassRegionsAction(actions[actionIdx++], blitPassHandle, sourceRegion, destinationRegion);
+        ExpectSetBlitPassRenderOrderAction(actions[actionIdx++], blitPassHandle, renderOrder);
+        ExpectSetBlitPassEnabledAction(actions[actionIdx++], blitPassHandle, blitPassEnabled);
     }
 }

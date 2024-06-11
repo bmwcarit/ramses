@@ -31,7 +31,7 @@ namespace ramses::internal
         rightProviderNode->setTranslation({2.0f, 0.0f, 0.0f});
         scene.createTransformationDataProvider(*rightProviderNode, transformProviderDataId_Right);
 
-        TriangleAppearance::EColor color = TriangleAppearance::EColor_Red;
+        TriangleAppearance::EColor color = TriangleAppearance::EColor::Red;
         ramses::MeshNode* mesh = nullptr;
         switch (state)
         {
@@ -46,7 +46,7 @@ namespace ramses::internal
 
             if (TRANSFORMATION_CONSUMER_OVERRIDEN == state)
             {
-                color = TriangleAppearance::EColor_Blue;
+                color = TriangleAppearance::EColor::Blue;
                 ramses::Node* parentTransformWhichWillBeOverridden = m_scene.createNode();
                 parentTransformWhichWillBeOverridden->setTranslation({1.2f, 1.2f, 0.0f});
                 consumerGroupNode->setParent(*parentTransformWhichWillBeOverridden);
@@ -59,7 +59,7 @@ namespace ramses::internal
         }
         case TRANSFORMATION_CONSUMER_AND_PROVIDER:
         {
-            color = TriangleAppearance::EColor_White;
+            color = TriangleAppearance::EColor::White;
 
             ramses::Node* consumerGroupNode = m_scene.createNode("transform consumer");
             scene.createTransformationDataConsumer(*consumerGroupNode, transformConsumerDataId);
@@ -80,7 +80,7 @@ namespace ramses::internal
         }
         case TRANSFORMATION_PROVIDER:
         {
-            color = TriangleAppearance::EColor_Green;
+            color = TriangleAppearance::EColor::Green;
             ramses::Node* rotateNode = m_scene.createNode();
             rotateNode->setRotation({0.0f, 0.0f, -60.0f}, ramses::ERotationType::Euler_XYZ);
 

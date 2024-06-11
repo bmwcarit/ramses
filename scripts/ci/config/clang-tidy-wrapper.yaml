@@ -13,6 +13,8 @@ include:
 exclude:
   # exclude all external
   - ^external/
+  # exclude generated file by glslang
+  - .*/external/glslang/.*\.hxx\.cxx
 
   # exclude generated flatbuffers files
   - ^src/client/internal/logic/flatbuffers/
@@ -44,6 +46,11 @@ check-filter:
     exclude:
       - ^examples/ramses-example-local-dma-offscreenbuffer/src/main.cpp$
       - ^tests/integration/renderer-tests/dma-offscreen-buffer-rendering-tests/DmaOffscreenBufferTests.cpp$
+      - ^src/renderer/internal/Platform/Vulkan/Context_Vulkan_Base.cpp$
+  - check: modernize-avoid-bind
+    exclude:
+      - ^src/renderer/internal/Platform/Vulkan/Context_Vulkan_Base.cpp$
+
   - check: modernize-avoid-c-arrays
     exclude:
       - ^tests/.*

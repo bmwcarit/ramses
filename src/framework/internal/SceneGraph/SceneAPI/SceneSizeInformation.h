@@ -24,6 +24,7 @@ namespace ramses::internal
             uint32_t states,
             uint32_t datalayouts,
             uint32_t datainstances,
+            uint32_t uniformBuffers,
             uint32_t renderGroups,
             uint32_t renderPasses,
             uint32_t blitPasses,
@@ -42,6 +43,7 @@ namespace ramses::internal
             , renderStateCount(states)
             , datalayoutCount(datalayouts)
             , datainstanceCount(datainstances)
+            , uniformBufferCount(uniformBuffers)
             , renderGroupCount(renderGroups)
             , renderPassCount(renderPasses)
             , blitPassCount(blitPasses)
@@ -67,6 +69,7 @@ namespace ramses::internal
                 && (renderStateCount == other.renderStateCount)
                 && (datalayoutCount == other.datalayoutCount)
                 && (datainstanceCount == other.datainstanceCount)
+                && (uniformBufferCount == other.uniformBufferCount)
                 && (renderGroupCount == other.renderGroupCount)
                 && (renderPassCount == other.renderPassCount)
                 && (blitPassCount == other.blitPassCount)
@@ -89,6 +92,7 @@ namespace ramses::internal
                 || (renderStateCount > other.renderStateCount)
                 || (datalayoutCount > other.datalayoutCount)
                 || (datainstanceCount > other.datainstanceCount)
+                || (uniformBufferCount > other.uniformBufferCount)
                 || (renderGroupCount > other.renderGroupCount)
                 || (renderPassCount > other.renderPassCount)
                 || (blitPassCount > other.blitPassCount)
@@ -110,6 +114,7 @@ namespace ramses::internal
         uint32_t renderStateCount     = 0u;
         uint32_t datalayoutCount      = 0u;
         uint32_t datainstanceCount    = 0u;
+        uint32_t uniformBufferCount   = 0u;
         uint32_t renderGroupCount     = 0u;
         uint32_t renderPassCount      = 0u;
         uint32_t blitPassCount        = 0u;
@@ -131,7 +136,7 @@ struct fmt::formatter<ramses::internal::SceneSizeInformation> : public ramses::i
     constexpr auto format(const ramses::internal::SceneSizeInformation& si, FormatContext& ctx)
     {
         return fmt::format_to(ctx.out(),
-                              "[node={} camera={} transform={} renderable={} state={} datalayout={} datainstance={} renderGroup={} renderPass={} blitPass={} "
+                              "[node={} camera={} transform={} renderable={} state={} datalayout={} datainstance={} uniformBuffer={} renderGroup={} renderPass={} blitPass={} "
                               "renderTarget={} renderBuffer={} textureSampler={} dataSlot={} dataBuffer={} textureBuffer={} "
                               "pickableObjectCount={} sceneReferenceCount={}]",
                               si.nodeCount,
@@ -141,6 +146,7 @@ struct fmt::formatter<ramses::internal::SceneSizeInformation> : public ramses::i
                               si.renderStateCount,
                               si.datalayoutCount,
                               si.datainstanceCount,
+                              si.uniformBufferCount,
                               si.renderGroupCount,
                               si.renderPassCount,
                               si.blitPassCount,

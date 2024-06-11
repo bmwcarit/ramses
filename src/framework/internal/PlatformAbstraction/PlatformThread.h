@@ -9,7 +9,8 @@
 #pragma once
 
 #include "internal/PlatformAbstraction/Runnable.h"
-#include "impl/RamsesLoggerImpl.h"
+#include "internal/Core/Utils/RamsesLogger.h"
+#include "internal/Core/Utils/RamsesLoggerPrefixes.h"
 
 #include <cassert>
 #include <string>
@@ -98,7 +99,7 @@ namespace ramses::internal
         m_isRunning = true;
         m_thread = internal::Thread(fmt::format("R_{}", m_name), [&]() {
             // set global instance and thread name to logger
-            RamsesLogger::SetPrefixes(m_loggingInstanceName, m_name);
+            RamsesLoggerPrefixes::SetRamsesLoggerPrefixes(m_loggingInstanceName, m_name);
 
             m_runnable->run();
             m_isRunning = false;

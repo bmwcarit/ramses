@@ -18,11 +18,14 @@ WARNING_DISABLE_LINUX(-Wold-style-cast)
 
 WARNINGS_POP
 
-#include "absl/types/span.h"
 #include "internal/SceneGraph/SceneAPI/TextureEnums.h"
 #include "internal/SceneGraph/Resource/TextureMetaInfo.h"
-#include <string>
 #include "internal/SceneGraph/SceneAPI/Handles.h"
+
+#include "absl/types/span.h"
+#include "fmt/format.h"
+
+#include <string>
 
 
 namespace ramses
@@ -69,6 +72,21 @@ namespace ramses::internal
                               const TextureSwizzleArray& swizzle = DefaultTextureSwizzleArray);
 
         std::string SaveTextureToPng(const TextureResource* resource, const std::string& filename);
+
+        template <typename... Args>
+        void HelpMarker(const char* desc, Args&& ... args)
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg) 3rd party interface
+            ImGui::TextDisabled("(?)");
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::BeginTooltip();
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                ImGui::TextUnformatted(fmt::format(desc, args...).c_str());
+                ImGui::PopTextWrapPos();
+                ImGui::EndTooltip();
+            }
+        }
     }
 }
 

@@ -43,25 +43,20 @@ namespace ramses::internal
 
             if (nullptr != resourceObject)
             {
-                StringOutputStream stream;
-                stream << "Resource \"" << resource.getName() << "\"\t";
-                stream << "type " << EnumToString(resourceObject->getTypeID()) << " ";
-                stream << "mem compressed " << resourceObject->getCompressedDataSize() << " ";
-                stream << "uncompressed " << resourceObject->getDecompressedDataSize() << " ";
-
                 MemoryInfo info;
                 info.memoryUsage = resourceObject->getCompressedDataSize() + resourceObject->getDecompressedDataSize();
-                info.logInfoMesage = stream.release();
+                info.logInfoMesage = fmt::format("Resource \"{}\"\ttype {} mem compressed {} uncompressed {} ",
+                                                 resource.getName(),
+                                                 EnumToString(resourceObject->getTypeID()),
+                                                 resourceObject->getCompressedDataSize(),
+                                                 resourceObject->getDecompressedDataSize());
                 memoryInfos.push_back(info);
             }
         }
 
         auto createMemInfo = [](const auto& logMessage, uint32_t numElements, const std::function< size_t(uint32_t) >& sizeOfIndividualElement){
-            StringOutputStream stream;
-            stream << numElements << " " << logMessage << " allocated";
-
             MemoryInfo info;
-            info.logInfoMesage = stream.release();
+            info.logInfoMesage = fmt::format("{} {} allocated", numElements, logMessage);
 
             for(uint32_t i = 0; i < numElements; ++i)
             {

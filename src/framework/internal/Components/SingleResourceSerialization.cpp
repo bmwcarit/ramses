@@ -44,10 +44,10 @@ namespace ramses::internal
         }
     }
 
-    std::unique_ptr<IResource> SingleResourceSerialization::DeserializeResource(IInputStream& input, ResourceContentHash hash)
+    std::unique_ptr<IResource> SingleResourceSerialization::DeserializeResource(IInputStream& input, ResourceContentHash hash, EFeatureLevel featureLevel)
     {
         // header
-        ResourceSerializationHelper::DeserializedResourceHeader header = ResourceSerializationHelper::ResourceFromMetadataStream(input);
+        ResourceSerializationHelper::DeserializedResourceHeader header = ResourceSerializationHelper::ResourceFromMetadataStream(input, featureLevel);
         if (!header.resource)
             return {};
 
