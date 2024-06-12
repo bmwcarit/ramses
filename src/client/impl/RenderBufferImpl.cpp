@@ -10,6 +10,7 @@
 #include "impl/TextureUtils.h"
 #include "impl/TextureEnumsImpl.h"
 #include "impl/ErrorReporting.h"
+#include "impl/SerializationContext.h"
 #include "internal/SceneGraph/Scene/ClientScene.h"
 
 namespace ramses::internal
@@ -80,7 +81,7 @@ namespace ramses::internal
         if (!SceneObjectImpl::deserialize(inStream, serializationContext))
             return false;
 
-        inStream >> m_renderBufferHandle;
+        serializationContext.deserializeAndMap(inStream, m_renderBufferHandle);
 
         return true;
     }
@@ -103,6 +104,7 @@ namespace ramses::internal
         }
 
         bool usedInRenderPass = false;
+        bool renderPassEnabled = false;
         ramses::internal::RenderTargetHandle rtHandle;
         for (ramses::internal::RenderTargetHandle rt(0u); rt < iscene.getRenderTargetCount() && !rtHandle.isValid(); ++rt)
         {
@@ -122,10 +124,18 @@ namespace ramses::internal
         {
             for (ramses::internal::RenderPassHandle rp(0u); rp < iscene.getRenderPassCount(); ++rp)
             {
-                if (iscene.isRenderPassAllocated(rp) && iscene.getRenderPass(rp).renderTarget == rtHandle && iscene.getRenderPass(rp).isEnabled)
+                if (iscene.isRenderPassAllocated(rp))
                 {
-                    usedInRenderPass = true;
-                    break;
+                    auto& renderPass = iscene.getRenderPass(rp);
+                    if (renderPass.renderTarget == rtHandle)
+                    {
+                        usedInRenderPass = true;
+                        if (renderPass.isEnabled)
+                        {
+                            renderPassEnabled = true;
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -153,34 +163,29 @@ namespace ramses::internal
             }
         }
 
-        bool hasIssue = false;
-        // explicitly warn about usage of potentially uninitialized buffer
-        if (usedAsTexture && !(usedInRenderPass || usedAsBlitDestination))
-        {
-            report.add(EIssueType::Warning,
-                                "RenderBuffer is used in a TextureSampler for reading but is not set as destination in any RenderPass or BlitPass, this can lead to usage of "
-                                "uninitialized data.", &getRamsesObject());
-            hasIssue = true;
-        }
-
         if (!usedInRenderPass && !usedAsBlitDestination)
         {
-            hasIssue = true;
-            report.add(EIssueType::Warning, "RenderBuffer is not set as destination in any RenderPass or BlitPass, destroy it if not needed.", &getRamsesObject());
+            if (usedAsBlitSource || usedAsTexture)
+            {
+                // explicitly warn about usage of potentially uninitialized buffer
+                report.add(EIssueType::Warning,
+                                "RenderBuffer is used in a TextureSampler or BlitPass for reading, but is not set as destination in any RenderPass or BlitPass. This can lead to usage of "
+                                "uninitialized data.", &getRamsesObject());
+            }
+            else
+            {
+                report.add(EIssueType::Warning, "RenderBuffer is not set as destination in any RenderPass or BlitPass, destroy it if not needed.", &getRamsesObject());
+            }
+        }
+
+        if ((usedAsBlitSource || usedAsTexture) && usedInRenderPass && !renderPassEnabled && !usedAsBlitDestination)
+        {
+            report.add(EIssueType::Warning, "RenderBuffer is used in a TextureSampler or BlitPass for reading, but assigned RenderPass is not enabled. This can lead to usage of uninitialized data.", &getRamsesObject());
         }
 
         if (!usedAsTexture && !usedAsBlitSource && isColorBuffer) // depth/stencil buffer does not need to be validated for usage as texture
         {
-            hasIssue = true;
             report.add(EIssueType::Warning, "RenderBuffer is neither used in a TextureSampler for reading nor set as source in a BlitPass, destroy it if not needed.", &getRamsesObject());
-        }
-
-        if (hasIssue)
-        {
-            ramses::internal::StringOutputStream rbDesc;
-            const ramses::internal::RenderBuffer& rb = getIScene().getRenderBuffer(m_renderBufferHandle);
-            rbDesc << " [" << rb.width << "x" << rb.height << "; " << ramses::internal::EnumToString(rb.format) << "; " << EnumToString(rb.accessMode) << "; " << rb.sampleCount << " samples]";
-            return report.add(EIssueType::Warning, rbDesc.release(), &getRamsesObject());
         }
     }
 

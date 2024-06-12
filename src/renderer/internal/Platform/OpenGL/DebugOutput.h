@@ -19,20 +19,11 @@ namespace ramses::internal
     class DebugOutput final
     {
     public:
-        bool enable(const IContext& context);
-        bool isAvailable() const;
-        bool checkAndResetError() const;
+        void enable();
+        [[nodiscard]] static bool IsAvailable();
+        [[nodiscard]] bool checkAndResetError() const;
 
     private:
-        bool loadExtensionFunctionPointer(const IContext& context);
-
-#if defined(__linux__) || defined(__APPLE__)
-        PFNGLDEBUGMESSAGECALLBACKKHRPROC glDebugMessageCallback = nullptr;
-        PFNGLDEBUGMESSAGECONTROLKHRPROC  glDebugMessageControl  = nullptr;
-#else
-        PFNGLDEBUGMESSAGECALLBACKPROC glDebugMessageCallback = 0;
-        PFNGLDEBUGMESSAGECONTROLPROC  glDebugMessageControl  = 0;
-#endif
         mutable bool m_errorOccured = false;
     };
 }

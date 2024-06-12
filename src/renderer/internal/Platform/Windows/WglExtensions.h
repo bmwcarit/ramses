@@ -16,6 +16,7 @@
 #include "GL/wgl.h"
 
 #include <string>
+#include <mutex>
 
 namespace ramses::internal
 {
@@ -36,12 +37,14 @@ namespace ramses::internal
         WglExtensions();
 
         bool areLoaded() const;
-        bool isExtensionAvailable(const std::string& extensionName);
+        bool isExtensionAvailable(const std::string& extensionName) const;
 
         Procs procs;
 
     private:
         HashSet<std::string> m_extensionNames;
         bool m_loaded;
+
+        static std::mutex wglMutex;
     };
 }

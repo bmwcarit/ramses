@@ -16,55 +16,26 @@
 
 namespace ramses::internal
 {
-    /*
-      wrapper for glslang process wide initializer and finalizer.
-      constructed once in this file. it is global and lives longer
-      than main. will not work if global static objects start using
-      effects but this should never happen.
-    */
-    class GlslangInitAndFinalizeOnceHelper
-    {
-    public:
-        GlslangInitAndFinalizeOnceHelper()
-        {
-            glslang::InitializeProcess();
-            glslang::InitProcess();
-        }
-
-        ~GlslangInitAndFinalizeOnceHelper()
-        {
-            glslang::DetachProcess();
-            glslang::FinalizeProcess();
-        }
-    };
-    static GlslangInitAndFinalizeOnceHelper glslangInitializer;
-
-
     GlslEffect::GlslEffect(std::string_view vertexShader,
         std::string_view fragmentShader,
         std::string_view geometryShader,
         std::vector<std::string> compilerDefines,
-        const HashMap<std::string, EFixedSemantics>& semanticInputs,
+        SemanticsMap semanticInputs,
+        ERenderBackendCompatibility compatibility,
         std::string_view name)
         : m_vertexShader(vertexShader)
         , m_fragmentShader(fragmentShader)
         , m_geometryShader(geometryShader)
         , m_compilerDefines(std::move(compilerDefines))
-        , m_semanticInputs(semanticInputs)
+        , m_semanticInputs(std::move(semanticInputs))
+        , m_renderBackendCompatibility(compatibility)
         , m_name(name)
     {
     }
 
-    GlslEffect::~GlslEffect() = default;
-
-    EffectResource* GlslEffect::createEffectResource()
+    std::unique_ptr<EffectResource> GlslEffect::createEffectResource(EFeatureLevel featureLevel)
     {
-        if (m_effectResource)
-        {
-            return m_effectResource;
-        }
-
-        GlslParser parser{m_vertexShader, m_fragmentShader, m_geometryShader, m_compilerDefines};
+        GlslParser parser{m_vertexShader, m_fragmentShader, m_geometryShader, m_compilerDefines, m_renderBackendCompatibility};
         if (!parser.valid())
         {
             m_errorMessages << parser.getErrors();
@@ -92,8 +63,25 @@ namespace ramses::internal
         const EffectInputInformationVector& attributeInputs = glslToEffectConverter.getAttributeInputs();
         const auto geomInputType = glslToEffectConverter.getGeometryShaderInputType();
 
-        m_effectResource = new EffectResource(parser.getVertexShader(), parser.getFragmentShader(), parser.getGeometryShader(), geomInputType, uniformInputs, attributeInputs, m_name);
-        return m_effectResource;
+        // forbid effect creation with UBOs below FL02
+        if (featureLevel < EFeatureLevel_02)
+        {
+            if (std::any_of(uniformInputs.cbegin(), uniformInputs.cend(), [](const auto& uniform) { return uniform.uniformBufferBinding.isValid(); }))
+            {
+                m_errorMessages << "Uniform buffer objects are supported only with feature level 02 or higher";
+                return nullptr;
+            }
+        }
+
+        return std::make_unique<EffectResource>(parser.getVertexShader(),
+            parser.getFragmentShader(),
+            parser.getGeometryShader(),
+            parser.getSPIRVShaders(),
+            geomInputType,
+            uniformInputs,
+            attributeInputs,
+            m_name,
+            featureLevel);
     }
 
     bool GlslEffect::extractAndCheckShaderVersions(const glslang::TProgram* program)
@@ -166,7 +154,6 @@ namespace ramses::internal
 
     uint32_t GlslEffect::getShadingLanguageVersion() const
     {
-        assert(m_effectResource);
         return m_shadingLanguageVersion;
     }
 

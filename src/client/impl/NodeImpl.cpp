@@ -44,9 +44,9 @@ namespace ramses::internal
         if (!SceneObjectImpl::deserialize(inStream, serializationContext))
             return false;
 
-        inStream >> m_nodeHandle;
+        serializationContext.deserializeAndMap(inStream, m_nodeHandle);
         inStream >> m_visibilityMode;
-        inStream >> m_transformHandle;
+        serializationContext.deserializeAndMap(inStream, m_transformHandle);
 
         serializationContext.addForDependencyResolve(this);
         serializationContext.addNodeHandleToNodeImplMapping(m_nodeHandle, this);

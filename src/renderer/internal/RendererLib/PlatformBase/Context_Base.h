@@ -17,7 +17,7 @@
 
 namespace ramses::internal
 {
-    class DisplayConfig;
+    class DisplayConfigData;
 
     class Context_Base : public IContext
     {

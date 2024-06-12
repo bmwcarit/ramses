@@ -10,23 +10,25 @@
 
 #include "internal/SceneGraph/SceneAPI/SceneSizeInformation.h"
 #include "internal/SceneGraph/SceneAPI/IScene.h"
+#include "ramses/framework/EFeatureLevel.h"
 
 namespace ramses::internal
 {
     class ClientScene;
     class IOutputStream;
     class IInputStream;
+    class SceneMergeHandleMapping;
     struct SceneCreationInformation;
 
     class ScenePersistation
     {
     public:
-        static void WriteSceneMetadataToStream(IOutputStream& outStream, const IScene& scene);
-        static void WriteSceneToStream(IOutputStream& outStream, const ClientScene& scene);
-        static void WriteSceneToFile(std::string_view filename, const ClientScene& scene);
+        static void WriteSceneMetadataToStream(IOutputStream& outStream, const IScene& scene, EFeatureLevel featureLevel);
+        static void WriteSceneToStream(IOutputStream& outStream, const ClientScene& scene, EFeatureLevel featureLevel);
+        static void WriteSceneToFile(std::string_view filename, const ClientScene& scene, EFeatureLevel featureLevel);
 
-        static void ReadSceneMetadataFromStream(IInputStream& inStream, SceneCreationInformation& createInfo);
-        static void ReadSceneFromStream(IInputStream& inStream, IScene& scene);
-        static void ReadSceneFromFile(std::string_view filename, IScene& scene);
+        static void ReadSceneMetadataFromStream(IInputStream& inStream, SceneCreationInformation& createInfo, EFeatureLevel featureLevel);
+        static void ReadSceneFromStream(IInputStream& inStream, IScene& scene, EFeatureLevel featureLevel, SceneMergeHandleMapping* mapping);
+        static void ReadSceneFromFile(std::string_view filename, IScene& scene, EFeatureLevel featureLevel, SceneMergeHandleMapping* mapping);
     };
 }

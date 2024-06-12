@@ -7,7 +7,9 @@
 //  -------------------------------------------------------------------------
 
 #include <gtest/gtest.h>
+#include "ramses/client/ArrayResource.h"
 #include "ramses/client/EffectDescription.h"
+#include "ramses/client/RamsesClient.h"
 #include "ramses/client/SceneObjectIterator.h"
 #include "ramses/client/RenderGroup.h"
 #include "ramses/client/RenderPass.h"
@@ -31,6 +33,9 @@
 #include "ramses/client/logic/NodeBinding.h"
 #include "ramses/client/ramses-utils.h"
 #include "ramses/framework/EDataType.h"
+#include "ramses/framework/EFeatureLevel.h"
+#include "ramses/framework/RamsesFramework.h"
+#include "ramses/framework/RamsesFrameworkTypes.h"
 
 #include "impl/DataObjectImpl.h"
 #include "impl/RenderGroupImpl.h"
@@ -43,7 +48,9 @@
 #include "impl/SceneConfigImpl.h"
 #include "ClientTestUtils.h"
 #include "SimpleSceneTopology.h"
+#include "FileDescriptorHelper.h"
 #include "internal/Components/FlushTimeInformation.h"
+#include "internal/Components/FileInputStreamContainer.h"
 #include "internal/PlatformAbstraction/PlatformTime.h"
 
 using namespace testing;
@@ -85,12 +92,15 @@ namespace ramses::internal
     {
         SceneConfig config;
         config.setPublicationMode(EScenePublicationMode::LocalAndRemote);
+        config.setRenderBackendCompatibility(ERenderBackendCompatibility::VulkanAndOpenGL);
 
         SceneConfig configCopy{ config };
         EXPECT_EQ(EScenePublicationMode::LocalAndRemote, configCopy.impl().getPublicationMode());
+        EXPECT_EQ(ERenderBackendCompatibility::VulkanAndOpenGL, configCopy.impl().getRenderBackendCompatibility());
 
         SceneConfig configMove{ std::move(config) };
         EXPECT_EQ(EScenePublicationMode::LocalAndRemote, configMove.impl().getPublicationMode());
+        EXPECT_EQ(ERenderBackendCompatibility::VulkanAndOpenGL, configCopy.impl().getRenderBackendCompatibility());
     }
 
     TEST(ASceneConfig, CanBeCopyAndMoveAssigned)
@@ -244,6 +254,33 @@ namespace ramses::internal
         ValidationReport report;
         m_scene.validate(report);
         EXPECT_FALSE(report.hasIssue());
+    }
+
+    TEST_F(AScene, byDefaultSceneHasOpenGLCompatibility)
+    {
+        EXPECT_EQ(ERenderBackendCompatibility::OpenGL, m_internalScene.getRenderBackendCompatibility());
+        EXPECT_EQ(EVulkanAPIVersion::Invalid, m_internalScene.getVulkanAPIVersion());
+        EXPECT_EQ(ESPIRVVersion::Invalid, m_internalScene.getSPIRVVersion());
+    }
+
+    TEST_F(AScene, canCreateSceneWithVulkanAndOpenGLCompatibility)
+    {
+        const SceneConfig sceneConfig{ sceneId_t{456u}, EScenePublicationMode::LocalOnly, ERenderBackendCompatibility::VulkanAndOpenGL };
+        auto* scene = client.createScene(sceneConfig);
+        ASSERT_NE(nullptr, scene);
+        const auto& iscene = scene->impl().getIScene();
+        EXPECT_EQ(ERenderBackendCompatibility::VulkanAndOpenGL, iscene.getRenderBackendCompatibility());
+        EXPECT_EQ(TargetVulkanApiVersion, iscene.getVulkanAPIVersion());
+        EXPECT_EQ(TargetSPIRVVersion, iscene.getSPIRVVersion());
+    }
+
+    TEST_F(AScene, canNotCreateSceneWithVulkanAndOpenGLCompatibilityWithFeatureLevel01)
+    {
+        RamsesFramework fl0Framework(LocalTestClient::GetDefaultFrameworkConfig(EFeatureLevel::EFeatureLevel_01));
+        RamsesClient& fl0Client = *fl0Framework.createClient("localTestClient");
+        const SceneConfig sceneConfig{ sceneId_t{456u}, EScenePublicationMode::LocalOnly, ERenderBackendCompatibility::VulkanAndOpenGL };
+        auto* scene = fl0Client.createScene(sceneConfig);
+        EXPECT_EQ(nullptr, scene);
     }
 
     TEST_F(AScene, failsValidationIfContainsInvalidSceneObject)
@@ -1944,5 +1981,195 @@ namespace ramses::internal
         ramses::Scene*          scene  = client.createScene(ramses::sceneId_t(123u), "example scene");
 
         scene->createNode("{}");
+    }
+
+    TEST_F(ASceneWithContent, canMergeSceneFromFile)
+    {
+        const std::string_view fileName{"tmp.ramses"};
+
+        ASSERT_TRUE(m_scene.saveToFile(fileName));
+        EXPECT_TRUE(client.destroy(m_scene));
+
+        const sceneId_t sceneId{123u};
+        auto* newScene = client.createScene(sceneId);
+        ASSERT_NE(nullptr, newScene);
+        auto* node = newScene->createNode();
+        ASSERT_NE(nullptr, node);
+
+        ASSERT_TRUE(client.mergeSceneFromFile(*newScene, fileName));
+        EXPECT_NE(nullptr, newScene->findObject<MeshNode>("mesh1a"));
+        EXPECT_NE(nullptr, newScene->findObject<MeshNode>("mesh1b"));
+    }
+
+    TEST_F(ASceneWithContent, canMergeSceneFromMemory)
+    {
+        const std::string_view fileName{"tmp.ramses"};
+
+        ASSERT_TRUE(m_scene.saveToFile(fileName));
+        EXPECT_TRUE(client.destroy(m_scene));
+
+        const sceneId_t sceneId{123u};
+        auto* newScene = client.createScene(sceneId);
+        ASSERT_NE(nullptr, newScene);
+        auto* node = newScene->createNode();
+        ASSERT_NE(nullptr, node);
+
+        ramses::internal::File file(fileName);
+        size_t fileSize = 0;
+        EXPECT_TRUE(file.getSizeInBytes(fileSize));
+
+        std::unique_ptr<std::byte[], void(*)(const std::byte*)> data(new std::byte[fileSize], [](const auto* ptr) { delete[] ptr; });
+        size_t numBytesRead = 0;
+        EXPECT_TRUE(file.open(ramses::internal::File::Mode::ReadOnlyBinary));
+        EXPECT_EQ(ramses::internal::EStatus::Ok, file.read(data.get(), fileSize, numBytesRead));
+        EXPECT_TRUE(client.mergeSceneFromMemory(*newScene, std::move(data), fileSize));
+
+        EXPECT_NE(nullptr, newScene->findObject<MeshNode>("mesh1a"));
+        EXPECT_NE(nullptr, newScene->findObject<MeshNode>("mesh1b"));
+    }
+
+    TEST_F(ASceneWithContent, canMergeSceneFromFileDescriptor)
+    {
+        EXPECT_TRUE(m_scene.saveToFile("someTemporaryFile.ram", {}));
+
+        size_t fileSize = 0;
+        {
+            // write to a file with some offset
+            ramses::internal::File inFile("someTemporaryFile.ram");
+            EXPECT_TRUE(inFile.getSizeInBytes(fileSize));
+            std::vector<unsigned char> data(fileSize);
+            size_t numBytesRead = 0;
+            EXPECT_TRUE(inFile.open(ramses::internal::File::Mode::ReadOnlyBinary));
+            EXPECT_EQ(ramses::internal::EStatus::Ok, inFile.read(data.data(), fileSize, numBytesRead));
+
+            ramses::internal::File outFile("someTemporaryFileWithOffset.ram");
+            EXPECT_TRUE(outFile.open(ramses::internal::File::Mode::WriteOverWriteOldBinary));
+
+            uint32_t zeroData = 0;
+            EXPECT_TRUE(outFile.write(&zeroData, sizeof(zeroData)));
+            EXPECT_TRUE(outFile.write(data.data(), data.size()));
+            EXPECT_TRUE(outFile.write(&zeroData, sizeof(zeroData)));
+        }
+
+        EXPECT_TRUE(client.destroy(m_scene));
+
+        const sceneId_t sceneId{123u};
+        auto* newScene = client.createScene(sceneId);
+        ASSERT_NE(nullptr, newScene);
+        auto* node = newScene->createNode();
+        ASSERT_NE(nullptr, node);
+
+        const int fd = ramses::internal::FileDescriptorHelper::OpenFileDescriptorBinary ("someTemporaryFileWithOffset.ram");
+        EXPECT_TRUE(client.mergeSceneFromFileDescriptor(*newScene, fd, 4u, fileSize));
+
+        EXPECT_NE(nullptr, newScene->findObject<MeshNode>("mesh1a"));
+        EXPECT_NE(nullptr, newScene->findObject<MeshNode>("mesh1b"));
+    }
+
+    TEST_F(ASceneWithContent, canMergeSceneFromSceneFileWithDeletedNodeAndRes)
+    {
+        const std::string_view fileName{"sceneWithDeletedNodeAndRes.ramses"};
+
+        // A scene with deleted nodes and resources
+        const vec2f data[2] = { vec2f{1.f,2.f}, vec2f{3.f,4.f} };
+        SceneObjectVector objs;
+        for (int i = 0; i < 10; ++i) {
+            objs.push_back(m_scene.createNode("NodeToDelete"));
+            objs.push_back(m_scene.createArrayResource(2, data, "ResToDelete"));
+        }
+        m_scene.createNode("dummyNode1");
+        m_scene.createArrayResource(2, data, "dummyRes1");
+        for (auto obj : objs) {
+            ASSERT_NE(nullptr, obj);
+            m_scene.destroy(*obj);
+        }
+        ASSERT_TRUE(m_scene.saveToFile(fileName));
+        EXPECT_TRUE(client.destroy(m_scene));
+
+        const sceneId_t sceneId{123u};
+        auto* newScene = client.createScene(sceneId);
+        ASSERT_NE(nullptr, newScene);
+        auto* node = newScene->createNode("dummyNode2");
+        ASSERT_NE(nullptr, node);
+        auto* res = newScene->createArrayResource(2, data, "dummyRes2");
+        ASSERT_NE(nullptr, res);
+
+        ASSERT_TRUE(client.mergeSceneFromFile(*newScene, fileName));
+        EXPECT_NE(nullptr, newScene->findObject<MeshNode>("mesh1a"));
+        EXPECT_NE(nullptr, newScene->findObject<MeshNode>("mesh1b"));
+        EXPECT_EQ(nullptr, newScene->findObject<Node>("NodeToDelete"));
+        EXPECT_EQ(nullptr, newScene->findObject<ArrayResource>("ResToDelete"));
+        EXPECT_NE(nullptr, newScene->findObject<Node>("dummyNode1"));
+        EXPECT_NE(nullptr, newScene->findObject<ArrayResource>("dummyRes1"));
+        EXPECT_NE(nullptr, newScene->findObject<Node>("dummyNode2"));
+        EXPECT_NE(nullptr, newScene->findObject<ArrayResource>("dummyRes2"));
+    }
+
+    class SceneMergeTest : public ::testing::Test
+    {
+    protected:
+        static void RunMergeSceneRenderBackendCompatibilityTest(ERenderBackendCompatibility compatibilityMergeScene, ERenderBackendCompatibility compatibilityMainScene, bool expectSuccess)
+        {
+            RamsesFramework framework(LocalTestClient::GetDefaultFrameworkConfig(EFeatureLevel::EFeatureLevel_Latest));
+            RamsesClient& client = *framework.createClient("localTestClient");
+
+            const std::string_view fileName{ "tmp.ramses" };
+            {
+                const sceneId_t mergeSceneId{ 3121u };
+                auto* mergeScene = client.createScene(SceneConfig{ mergeSceneId, EScenePublicationMode::LocalOnly, compatibilityMergeScene });
+                ASSERT_NE(nullptr, mergeScene);
+                auto* node = mergeScene->createNode();
+                ASSERT_NE(nullptr, node);
+                ASSERT_TRUE(mergeScene->saveToFile(fileName));
+            }
+
+            const sceneId_t sceneId{ 123u };
+            auto* newScene = client.createScene(SceneConfig{ sceneId, EScenePublicationMode::LocalOnly, compatibilityMainScene });
+            ASSERT_NE(nullptr, newScene);
+            auto* node = newScene->createNode();
+            ASSERT_NE(nullptr, node);
+
+            EXPECT_EQ(expectSuccess, client.mergeSceneFromFile(*newScene, fileName));
+        }
+    };
+
+    TEST_F(SceneMergeTest, mergeSceneFromFileFailsWithFL01)
+    {
+        const std::string_view fileName{"tmp.ramses"};
+        {
+            RamsesFramework framework(LocalTestClient::GetDefaultFrameworkConfig(EFeatureLevel::EFeatureLevel_01));
+            RamsesClient& client = *framework.createClient("localTestClient");
+            const sceneId_t mergeSceneId{3121u};
+            auto* mergeScene = client.createScene(mergeSceneId);
+            ASSERT_NE(nullptr, mergeScene);
+            auto* node = mergeScene->createNode();
+            ASSERT_NE(nullptr, node);
+            ASSERT_TRUE(mergeScene->saveToFile(fileName));
+        }
+
+        RamsesFramework framework(LocalTestClient::GetDefaultFrameworkConfig(EFeatureLevel::EFeatureLevel_Latest));
+        RamsesClient& client = *framework.createClient("localTestClient");
+        const sceneId_t sceneId{123u};
+        auto* newScene = client.createScene(sceneId);
+        ASSERT_NE(nullptr, newScene);
+        auto* node = newScene->createNode();
+        ASSERT_NE(nullptr, node);
+
+        EXPECT_FALSE(client.mergeSceneFromFile(*newScene, fileName));
+    }
+
+    TEST_F(SceneMergeTest, mergeSceneFromFileFailsWithIncompatibleRenderBackends)
+    {
+        RunMergeSceneRenderBackendCompatibilityTest(ERenderBackendCompatibility::OpenGL, ERenderBackendCompatibility::VulkanAndOpenGL, false);
+    }
+
+    TEST_F(SceneMergeTest, canMergeScenesFromFileWithOpenGLCompatibility)
+    {
+        RunMergeSceneRenderBackendCompatibilityTest(ERenderBackendCompatibility::OpenGL, ERenderBackendCompatibility::OpenGL, true);
+    }
+
+    TEST_F(SceneMergeTest, canMergeScenesFromFileWithVulkanAndOpenGLCompatibility)
+    {
+        RunMergeSceneRenderBackendCompatibilityTest(ERenderBackendCompatibility::VulkanAndOpenGL, ERenderBackendCompatibility::VulkanAndOpenGL, true);
     }
 }

@@ -17,13 +17,28 @@ namespace ramses::internal
     class ADisplayConfig : public ::testing::Test
     {
     protected:
+        void expectDisplayConfigValid()
+        {
+            ramses::ValidationReport report;
+            config.validate(report);
+            EXPECT_FALSE(report.hasIssue());
+        }
+
+        void expectDisplayConfigInvalid(std::string_view expectedError)
+        {
+            ramses::ValidationReport report;
+            config.validate(report);
+            EXPECT_TRUE(report.hasError());
+            EXPECT_THAT(report.impl().toString(), ::testing::HasSubstr(expectedError));
+        }
+
         ramses::DisplayConfig config;
     };
 
     TEST_F(ADisplayConfig, hasDefaultValuesUponConstruction)
     {
-        const ramses::internal::DisplayConfig defaultDisplayConfig;
-        const ramses::internal::DisplayConfig& displayConfig = config.impl().getInternalDisplayConfig();
+        const ramses::internal::DisplayConfigData defaultDisplayConfig;
+        const auto& displayConfig = config.impl().getInternalDisplayConfig();
 
         EXPECT_EQ(defaultDisplayConfig.getWindowPositionX(), displayConfig.getWindowPositionX());
         EXPECT_EQ(defaultDisplayConfig.getWindowPositionY(), displayConfig.getWindowPositionY());
@@ -62,6 +77,12 @@ namespace ramses::internal
     {
         EXPECT_TRUE(config.setWindowType(ramses::EWindowType::Wayland_IVI));
         EXPECT_EQ(ramses::EWindowType::Wayland_IVI, config.impl().getInternalDisplayConfig().getWindowType());
+    }
+
+    TEST_F(ADisplayConfig, setsWindowTitle)
+    {
+        EXPECT_TRUE(config.setWindowTitle("window title"));
+        EXPECT_EQ("window title", config.impl().getInternalDisplayConfig().getWindowTitle());
     }
 
     TEST_F(ADisplayConfig, setsFullscreenState)
@@ -162,36 +183,47 @@ namespace ramses::internal
 
     TEST_F(ADisplayConfig, IsValidUponConstruction)
     {
-        ramses::ValidationReport report;
-        config.validate(report);
-        EXPECT_FALSE(report.hasIssue());
+        expectDisplayConfigValid();
     }
 
     TEST_F(ADisplayConfig, IsValidIfWindowTypeWindowsAndDeviceTypeNotGLES30)
     {
         config.setWindowType(ramses::EWindowType::Windows);
         config.setDeviceType(ramses::EDeviceType::GL_4_5);
-        ramses::ValidationReport report;
-        config.validate(report);
-        EXPECT_FALSE(report.hasIssue());
+        expectDisplayConfigValid();
+    }
+
+    TEST_F(ADisplayConfig, IsValidIfSupportedWindowTypeUsedWithVulkan)
+    {
+        config.setDeviceType(ramses::EDeviceType::Vulkan);
+        config.setAsyncEffectUploadEnabled(false);
+
+        config.setWindowType(ramses::EWindowType::Windows);
+        expectDisplayConfigValid();
+        config.setWindowType(ramses::EWindowType::X11);
+        expectDisplayConfigValid();
+    }
+
+    TEST_F(ADisplayConfig, IsNotValidIfAsyncUploadEnabledWithVulkanDevice)
+    {
+        config.setDeviceType(ramses::EDeviceType::Vulkan);
+        config.setAsyncEffectUploadEnabled(true);
+
+        expectDisplayConfigInvalid("Vulkan does not support async shader upload");
     }
 
     TEST_F(ADisplayConfig, IsValidIfWindowTypeAndroidAndDeviceTypeGLES30)
     {
         config.setWindowType(ramses::EWindowType::Android);
         config.setDeviceType(ramses::EDeviceType::GLES_3_0);
-        ramses::ValidationReport report;
-        config.validate(report);
-        EXPECT_FALSE(report.hasIssue());
+        expectDisplayConfigValid();
     }
 
     TEST_F(ADisplayConfig, IsValidIfWindowTypeIOSAndDeviceTypeGLES30)
     {
         config.setWindowType(ramses::EWindowType::iOS);
         config.setDeviceType(ramses::EDeviceType::GLES_3_0);
-        ramses::ValidationReport report;
-        config.validate(report);
-        EXPECT_FALSE(report.hasIssue());
+        expectDisplayConfigValid();
     }
 
     TEST_F(ADisplayConfig, IsValidIfWindowTypeAndroidAndExternalAndroidWindowHandleProvided)
@@ -199,9 +231,7 @@ namespace ramses::internal
         std::uintptr_t dummyVoidPointer{ 1u };
         config.setAndroidNativeWindow(reinterpret_cast<void*>(dummyVoidPointer));
         config.setWindowType(ramses::EWindowType::Android);
-        ramses::ValidationReport report;
-        config.validate(report);
-        EXPECT_FALSE(report.hasIssue());
+        expectDisplayConfigValid();
     }
 
     TEST_F(ADisplayConfig, IsValidIfWindowTypeIOSAndExternalIOSWindowHandleProvided)
@@ -209,9 +239,7 @@ namespace ramses::internal
         std::uintptr_t dummyVoidPointer{ 1u };
         config.setIOSNativeWindow(ramses::IOSNativeWindowPtr{ reinterpret_cast<void*>(dummyVoidPointer) });
         config.setWindowType(ramses::EWindowType::iOS);
-        ramses::ValidationReport report;
-        config.validate(report);
-        EXPECT_FALSE(report.hasIssue());
+        expectDisplayConfigValid();
     }
 
     TEST_F(ADisplayConfig, IsValidIfWindowTypeWindowsAndExternalWindowsWindowHandleProvided)
@@ -219,9 +247,7 @@ namespace ramses::internal
         std::uintptr_t dummyVoidPointer{ 1u };
         config.setWindowsWindowHandle(reinterpret_cast<void*>(dummyVoidPointer));
         config.setWindowType(ramses::EWindowType::Windows);
-        ramses::ValidationReport report;
-        config.validate(report);
-        EXPECT_FALSE(report.hasIssue());
+        expectDisplayConfigValid();
     }
 
     TEST_F(ADisplayConfig, IsValidIfWindowTypeX11AndExternalX11WindowHandleProvided)
@@ -229,9 +255,7 @@ namespace ramses::internal
         ramses::X11WindowHandle dummyX11Window{ 1u };
         config.setX11WindowHandle(dummyX11Window);
         config.setWindowType(ramses::EWindowType::X11);
-        ramses::ValidationReport report;
-        config.validate(report);
-        EXPECT_FALSE(report.hasIssue());
+        expectDisplayConfigValid();
     }
 
     TEST_F(ADisplayConfig, ValidationWarningIfCompositorEmbeddedCompositorDisplsayAndSocketFdAreSet)
@@ -249,10 +273,7 @@ namespace ramses::internal
     {
         config.setWindowType(ramses::EWindowType::Android);
         config.setDeviceType(ramses::EDeviceType::GL_4_2);
-        ramses::ValidationReport report;
-        config.validate(report);
-        EXPECT_TRUE(report.hasError());
-        EXPECT_THAT(report.impl().toString(), ::testing::HasSubstr("ERROR: Selected window type supports only GL ES 3.0 device type"));
+        expectDisplayConfigInvalid("ERROR: Selected window type does not support device type");
     }
 
     TEST_F(ADisplayConfig, ValidationErrorIfExternalHandleWindowsSetAndTypeNotWindows)
@@ -260,10 +281,7 @@ namespace ramses::internal
         std::uintptr_t dummyVoidPointer{ 1u };
         config.setWindowsWindowHandle(reinterpret_cast<void*>(dummyVoidPointer));
         config.setWindowType(ramses::EWindowType::X11);
-        ramses::ValidationReport report;
-        config.validate(report);
-        EXPECT_TRUE(report.hasError());
-        EXPECT_THAT(report.impl().toString(), ::testing::HasSubstr("ERROR: External Windows window handle is set and selected window type is not Windows"));
+        expectDisplayConfigInvalid("ERROR: External Windows window handle is set and selected window type is not Windows");
     }
 
     TEST_F(ADisplayConfig, ValidationErrorIfExternalHandleAndroidSetAndTypeNotAndroid)
@@ -271,10 +289,7 @@ namespace ramses::internal
         std::uintptr_t dummyVoidPointer{ 1u };
         config.setAndroidNativeWindow(reinterpret_cast<void*>(dummyVoidPointer));
         config.setWindowType(ramses::EWindowType::X11);
-        ramses::ValidationReport report;
-        config.validate(report);
-        EXPECT_TRUE(report.hasError());
-        EXPECT_THAT(report.impl().toString(), ::testing::HasSubstr("ERROR: External Android window handle is set and selected window type is not Android"));
+        expectDisplayConfigInvalid("ERROR: External Android window handle is set and selected window type is not Android");
     }
 
     TEST_F(ADisplayConfig, ValidationErrorIfExternalHandleIOSSetAndTypeNotIOS)
@@ -282,20 +297,14 @@ namespace ramses::internal
         std::uintptr_t dummyVoidPointer{ 1u };
         config.setIOSNativeWindow(ramses::IOSNativeWindowPtr{ reinterpret_cast<void*>(dummyVoidPointer) });
         config.setWindowType(ramses::EWindowType::X11);
-        ramses::ValidationReport report;
-        config.validate(report);
-        EXPECT_TRUE(report.hasError());
-        EXPECT_THAT(report.impl().toString(), ::testing::HasSubstr("ERROR: External iOS window handle is set and selected window type is not iOS"));
+        expectDisplayConfigInvalid("ERROR: External iOS window handle is set and selected window type is not iOS");
     }
 
     TEST_F(ADisplayConfig, ValidationErrorIfExternalHandleX11SetAndTypeNotX11)
     {
         config.setX11WindowHandle(ramses::X11WindowHandle(123u));
         config.setWindowType(ramses::EWindowType::Android);
-        ramses::ValidationReport report;
-        config.validate(report);
-        EXPECT_TRUE(report.hasError());
-        EXPECT_THAT(report.impl().toString(), ::testing::HasSubstr("ERROR: External X11 window handle is set and selected window type is not X11"));
+        expectDisplayConfigInvalid("ERROR: External X11 window handle is set and selected window type is not X11");
     }
 
     TEST_F(ADisplayConfig, CanBeCopyAndMoveConstructed)

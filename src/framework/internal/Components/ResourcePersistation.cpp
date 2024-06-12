@@ -28,9 +28,9 @@ namespace ramses::internal
         SingleResourceSerialization::SerializeResource(outStream, *resource.get());
     }
 
-    std::unique_ptr<IResource> ResourcePersistation::ReadOneResourceFromStream(IInputStream& inStream, const ResourceContentHash& hash)
+    std::unique_ptr<IResource> ResourcePersistation::ReadOneResourceFromStream(IInputStream& inStream, const ResourceContentHash& hash, EFeatureLevel featureLevel)
     {
-        return SingleResourceSerialization::DeserializeResource(inStream, hash);
+        return SingleResourceSerialization::DeserializeResource(inStream, hash, featureLevel);
     }
 
     void ResourcePersistation::WriteNamedResourcesWithTOCToStream(IOutputStream& outStream, const ManagedResourceVector& resourcesForFile, bool compress)
@@ -91,7 +91,7 @@ namespace ramses::internal
         }
     }
 
-    std::unique_ptr<IResource> ResourcePersistation::RetrieveResourceFromStream(IInputStream& inStream, const ResourceFileEntry& fileEntry)
+    std::unique_ptr<IResource> ResourcePersistation::RetrieveResourceFromStream(IInputStream& inStream, const ResourceFileEntry& fileEntry, EFeatureLevel featureLevel)
     {
         LOG_DEBUG(CONTEXT_FRAMEWORK, "ResourcePersistation::RetrieveResourceFromStream: Hash {}, Size {}, Offset {}",
                     fileEntry.resourceInfo.hash, fileEntry.sizeInBytes, fileEntry.offsetInBytes);
@@ -102,7 +102,7 @@ namespace ramses::internal
             return {};
         }
 
-        std::unique_ptr<IResource> resource = ReadOneResourceFromStream(inStream, fileEntry.resourceInfo.hash);
+        std::unique_ptr<IResource> resource = ReadOneResourceFromStream(inStream, fileEntry.resourceInfo.hash, featureLevel);
         if (!resource)
             return {};
 

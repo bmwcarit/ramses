@@ -31,10 +31,14 @@ namespace ramses::internal
             VISIBILITY_OFF,
             REENABLED_FULL_VISIBILITY,
             ROTATE_AND_SCALE,
+            ROTATE_AND_SCALE_UBO1,
+            ROTATE_AND_SCALE_UBO2,
+            ROTATE_AND_SCALE_UBO3,
             DELETE_MESHNODE
         };
 
     private:
+        Effect* createTestEffect(uint32_t state);
         void destroySubTree(ramses::Node* rootNode);
 
         ramses::Node* m_groupNode;

@@ -71,7 +71,7 @@ namespace ramses::internal
         if (!NodeImpl::deserialize(inStream, serializationContext))
             return false;
 
-        inStream >> m_pickableObjectHandle;
+        serializationContext.deserializeAndMap(inStream, m_pickableObjectHandle);
 
         DeserializationContext::ReadDependentPointerAndStoreAsID(inStream, m_geometryBufferImpl);
         DeserializationContext::ReadDependentPointerAndStoreAsID(inStream, m_cameraImpl);

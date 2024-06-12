@@ -37,10 +37,7 @@ namespace ramses::internal
         }
     };
 
-    INSTANTIATE_TEST_SUITE_P(
-        ALogicEngine_FactoryTests,
-        ALogicEngine_Factory,
-        GetFeatureLevelTestValues());
+    RAMSES_INSTANTIATE_LATEST_FEATURELEVEL_ONLY_TEST_SUITE(ALogicEngine_Factory);
 
     TEST_P(ALogicEngine_Factory, ProducesErrorWhenCreatingEmptyScript)
     {

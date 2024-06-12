@@ -19,7 +19,7 @@
 namespace ramses::internal
 {
     MeshNodeBindingImpl::MeshNodeBindingImpl(SceneImpl& scene, ramses::MeshNode& ramsesMeshNode, std::string_view name, sceneObjectId_t id)
-        : RamsesBindingImpl{ scene, name, id }
+        : RamsesBindingImpl{ scene, name, id, ramsesMeshNode }
         , m_ramsesMeshNode{ ramsesMeshNode }
     {
     }

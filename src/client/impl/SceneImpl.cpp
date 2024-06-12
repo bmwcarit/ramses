@@ -44,6 +44,13 @@
 #include "ramses/client/ramses-utils.h"
 #include "ramses/client/logic/LogicEngine.h"
 #include "ramses/client/logic/LogicObject.h"
+#include "ramses/client/logic/AppearanceBinding.h"
+#include "ramses/client/logic/CameraBinding.h"
+#include "ramses/client/logic/MeshNodeBinding.h"
+#include "ramses/client/logic/NodeBinding.h"
+#include "ramses/client/logic/RenderBufferBinding.h"
+#include "ramses/client/logic/RenderGroupBinding.h"
+#include "ramses/client/logic/RenderPassBinding.h"
 #include "ramses/framework/EScenePublicationMode.h"
 
 #include "impl/CameraNodeImpl.h"
@@ -80,6 +87,13 @@
 #include "impl/SaveFileConfigImpl.h"
 #include "impl/logic/LogicObjectImpl.h"
 #include "impl/SerializationContext.h"
+#include "impl/logic/AppearanceBindingImpl.h"
+#include "impl/logic/CameraBindingImpl.h"
+#include "impl/logic/MeshNodeBindingImpl.h"
+#include "impl/logic/NodeBindingImpl.h"
+#include "impl/logic/RenderBufferBindingImpl.h"
+#include "impl/logic/RenderGroupBindingImpl.h"
+#include "impl/logic/RenderPassBindingImpl.h"
 
 #include "internal/SceneGraph/Scene/Scene.h"
 #include "internal/SceneGraph/Scene/ScenePersistation.h"
@@ -103,8 +117,10 @@
 
 #include "ramses-sdk-build-config.h"
 #include "fmt/format.h"
+#include <algorithm>
 #include <array>
 #include <unordered_set>
+#include <unordered_map>
 
 namespace ramses::internal
 {
@@ -124,7 +140,7 @@ namespace ramses::internal
     SceneImpl::~SceneImpl()
     {
         LOG_INFO(CONTEXT_CLIENT, "SceneImpl::~SceneImpl");
-        closeSceneFile();
+        closeSceneFiles();
         getClientImpl().getFramework().getPeriodicLogger().removeStatisticCollectionScene(m_scene.getSceneId());
     }
 
@@ -214,7 +230,7 @@ namespace ramses::internal
         {
             uint32_t count = 0u;
             const ERamsesObjectType type = SerializationHelper::DeserializeObjectTypeAndCount(inStream, count);
-            assert(m_objectRegistry.getNumberOfObjects(type) == 0u);
+            assert(serializationContext.getSceneMergeHandleMapping() || m_objectRegistry.getNumberOfObjects(type) == 0u);
             m_objectRegistry.reserveAdditionalObjectCapacity(type, count);
             objectCounts[i] = count;
 
@@ -313,7 +329,12 @@ namespace ramses::internal
                 return false;
         }
 
-        inStream >> m_lastSceneObjectId.getReference();
+        sceneObjectId_t lastSceneObjectId;
+        inStream >> lastSceneObjectId.getReference();
+        if (!serializationContext.getSceneMergeHandleMapping())
+        {
+            m_lastSceneObjectId = lastSceneObjectId;
+        }
 
         LOG_DEBUG_F(CONTEXT_PROFILING, ([&](ramses::internal::StringOutputStream& sos) {
                     sos << "SceneImpl::deserialize: HL scene object counts for SceneID " << m_scene.getSceneId() << "\n";
@@ -329,8 +350,68 @@ namespace ramses::internal
         return serializationContext.resolveDependencies();
     }
 
+    bool SceneImpl::ValidateLogicBindingReferencesTo(const SceneObject* obj, const std::vector<const LogicEngine*>& lengines)
+    {
+        auto countBindingsIn = [obj](const auto& collections) {
+            size_t count = 0;
+            for (const auto* binding : collections)
+            {
+                if (binding->impl().getBoundObject().getSceneObjectId() == obj->getSceneObjectId())
+                    count++;
+            }
+            return count;
+        };
+
+        std::unordered_map<ERamsesObjectType, size_t> counts;
+        for (const auto* le : lengines)
+        {
+            switch (obj->getType())
+            {
+            case ERamsesObjectType::Appearance:
+                counts[ERamsesObjectType::Appearance] += countBindingsIn(le->getCollection<AppearanceBinding>());
+                break;
+            case ERamsesObjectType::Camera:
+            case ERamsesObjectType::PerspectiveCamera:
+            case ERamsesObjectType::OrthographicCamera:
+                counts[ERamsesObjectType::Camera] += countBindingsIn(le->getCollection<CameraBinding>());
+                counts[ERamsesObjectType::Node] += countBindingsIn(le->getCollection<NodeBinding>());
+                break;
+            case ERamsesObjectType::MeshNode:
+                counts[ERamsesObjectType::MeshNode] += countBindingsIn(le->getCollection<MeshNodeBinding>());
+                counts[ERamsesObjectType::Node] += countBindingsIn(le->getCollection<NodeBinding>());
+                break;
+            case ERamsesObjectType::Node:
+                counts[ERamsesObjectType::Node] += countBindingsIn(le->getCollection<NodeBinding>());
+                break;
+            case ERamsesObjectType::RenderBuffer:
+                counts[ERamsesObjectType::RenderBuffer] += countBindingsIn(le->getCollection<RenderBufferBinding>());
+                break;
+            case ERamsesObjectType::RenderGroup:
+                counts[ERamsesObjectType::RenderGroup] += countBindingsIn(le->getCollection<RenderGroupBinding>());
+                break;
+            case ERamsesObjectType::RenderPass:
+                counts[ERamsesObjectType::RenderPass] += countBindingsIn(le->getCollection<RenderPassBinding>());
+                break;
+            default:
+                break;
+            }
+        }
+
+        for (const auto& count : counts)
+        {
+            if (count.second > 1)
+                return false;
+        }
+        return true;
+    }
+
     void SceneImpl::onValidate(ValidationReportImpl& report) const
     {
+        std::vector<const LogicEngine*> lengines;
+        SceneObjectRegistryIterator lengineIter(getObjectRegistry(), ERamsesObjectType::LogicEngine);
+        while (const auto* obj = lengineIter.getNext())
+            lengines.push_back(obj->as<LogicEngine>());
+
         for (size_t i = 0u; i < RamsesObjectTypeCount; ++i)
         {
             const auto type = static_cast<ERamsesObjectType>(i);
@@ -341,6 +422,8 @@ namespace ramses::internal
                 while (const auto* obj = iter.getNext())
                 {
                     obj->impl().validate(report);
+                    if (!ValidateLogicBindingReferencesTo(obj, lengines))
+                        report.add(EIssueType::Error, "Multiple logic bindings reference this object, this will lead to one overwriting values from the other", obj);
                 }
             }
         }
@@ -607,12 +690,12 @@ namespace ramses::internal
     {
         if (isPublished())
         {
-            getErrorReporting().set((ramses::internal::StringOutputStream() << "Scene(" << m_scene.getSceneId() << ")::publish: ignored, scene is already published").c_str(), *this);
+            getErrorReporting().set(fmt::format("Scene({})::publish: ignored, scene is already published", m_scene.getSceneId()), *this);
             return false;
         }
         if (requestedPublicationMode == EScenePublicationMode::LocalAndRemote && m_futurePublicationMode == EScenePublicationMode::LocalOnly)
         {
-            getErrorReporting().set((ramses::internal::StringOutputStream() << "Scene(" << m_scene.getSceneId() << ")::publish: Enabled local only optimisations from SceneConfig, cannot remote publish later").c_str(), *this);
+            getErrorReporting().set(fmt::format("Scene({})::publish: Enabled local only optimisations from SceneConfig, cannot remote publish later", m_scene.getSceneId()), *this);
             return false;
         }
         if (requestedPublicationMode != EScenePublicationMode::LocalOnly && !getClientImpl().getFramework().isConnected())
@@ -627,7 +710,7 @@ namespace ramses::internal
     {
         if (!isPublished())
         {
-            getErrorReporting().set((ramses::internal::StringOutputStream() << "Scene(" << m_scene.getSceneId() << ")::unpublish ignored, scene is not published.").c_str(), *this);
+            getErrorReporting().set(fmt::format("Scene({})::unpublish ignored, scene is not published.", m_scene.getSceneId()), *this);
             return false;
         }
 
@@ -1758,7 +1841,8 @@ namespace ramses::internal
 
     Effect* SceneImpl::createEffect(const EffectDescription& effectDesc, std::string_view name)
     {
-        ramses::internal::ManagedResource res = getClientImpl().createManagedEffect(effectDesc, name, m_effectErrorMessages);
+        const auto compatibility = getIScene().getRenderBackendCompatibility();
+        ramses::internal::ManagedResource res = getClientImpl().createManagedEffect(effectDesc, compatibility, name, m_effectErrorMessages);
         if (!res)
         {
             LOG_ERROR(CONTEXT_CLIENT, "Scene::createEffect: failed to create managed effect resource: {}", m_effectErrorMessages);
@@ -1817,8 +1901,8 @@ namespace ramses::internal
 
     bool SceneImpl::writeSceneObjectsToStream(ramses::internal::IOutputStream& outputStream, const SaveFileConfigImpl& saveConfig) const
     {
-        ramses::internal::ScenePersistation::WriteSceneMetadataToStream(outputStream, getIScene());
-        ramses::internal::ScenePersistation::WriteSceneToStream(outputStream, getIScene());
+        ramses::internal::ScenePersistation::WriteSceneMetadataToStream(outputStream, getIScene(), m_hlClient.impl().getFramework().getFeatureLevel());
+        ramses::internal::ScenePersistation::WriteSceneToStream(outputStream, getIScene(), m_hlClient.impl().getFramework().getFeatureLevel());
 
         SerializationContext serializationContext{saveConfig};
         return serialize(outputStream, serializationContext);
@@ -1914,24 +1998,29 @@ namespace ramses::internal
         return true;
     }
 
-    void SceneImpl::setSceneFileHandle(ramses::internal::SceneFileHandle handle)
+    void SceneImpl::addSceneFileHandle(ramses::internal::SceneFileHandle handle)
     {
-        m_sceneFileHandle = handle;
+        assert(handle.isValid());
+        if (std::find(m_sceneFileHandles.begin(), m_sceneFileHandles.end(), handle) == m_sceneFileHandles.end())
+        {
+            m_sceneFileHandles.push_back(handle);
+        }
     }
 
-    void SceneImpl::closeSceneFile()
+    void SceneImpl::closeSceneFiles()
     {
-        if (!m_sceneFileHandle.isValid())
-            return;
-
-        getClientImpl().getClientApplication().removeResourceFile(m_sceneFileHandle);
-        LOG_INFO(CONTEXT_CLIENT, "SceneImpl::closeSceneFile closed: {}", m_sceneFileHandle);
-        m_sceneFileHandle = ramses::internal::SceneFileHandle::Invalid();
+        for (const auto& sceneFileHandle: m_sceneFileHandles)
+        {
+            assert(sceneFileHandle.isValid());
+            getClientImpl().getClientApplication().removeResourceFile(sceneFileHandle);
+            LOG_INFO(CONTEXT_CLIENT, "SceneImpl::closeSceneFiles closed: {}", sceneFileHandle);
+        }
+        m_sceneFileHandles.clear();
     }
 
-    ramses::internal::SceneFileHandle SceneImpl::getSceneFileHandle() const
+    const std::vector<ramses::internal::SceneFileHandle>& SceneImpl::getSceneFileHandles() const
     {
-        return m_sceneFileHandle;
+        return m_sceneFileHandles;
     }
 
     bool SceneImpl::removeResourceWithIdFromResources(resourceId_t const& id, Resource& resource)

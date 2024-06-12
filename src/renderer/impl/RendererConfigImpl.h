@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "internal/RendererLib/RendererConfig.h"
+#include "internal/RendererLib/RendererConfigData.h"
 
 namespace ramses
 {
@@ -36,10 +36,10 @@ namespace ramses::internal
         [[nodiscard]] std::chrono::milliseconds getRenderThreadLoopTimingReportingPeriod() const;
 
         //impl methods
-        [[nodiscard]] const ramses::internal::RendererConfig& getInternalRendererConfig() const;
+        [[nodiscard]] const ramses::internal::RendererConfigData& getInternalRendererConfig() const;
 
     private:
-        ramses::internal::RendererConfig    m_internalConfig;
+        ramses::internal::RendererConfigData  m_internalConfig;
         IBinaryShaderCache*                m_binaryShaderCache{nullptr};
     };
 }

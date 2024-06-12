@@ -32,19 +32,20 @@ namespace ramses::internal
         RecreateNodes(                   source, collector);
         RecreateTransformNodes(          source, collector);
         RecreateTransformations(         source, collector);
-        RecreateRenderables(             source, collector);
-        RecreateStates(                  source, collector);
         RecreateDataLayouts(             source, collector);
         RecreateDataInstances(           source, collector);
+        RecreateRenderables(             source, collector);
+        RecreateStates(                  source, collector);
         RecreateCameras(                 source, collector);
         RecreateRenderGroups(            source, collector);
+        RecreateRenderBuffersAndTargets( source, collector);
         RecreateRenderPasses(            source, collector);
         RecreateBlitPasses(              source, collector);
         RecreatePickableObjects(         source, collector);
         RecreateDataBuffers(             source, collector);
+        RecreateUniformBuffers(          source, collector);
         RecreateTextureBuffers(          source, collector);
         RecreateTextureSamplers(         source, collector);
-        RecreateRenderBuffersAndTargets( source, collector);
         RecreateDataSlots(               source, collector);
         RecreateSceneReferences(         source, collector);
     }
@@ -339,6 +340,11 @@ namespace ramses::internal
                         }
                         break;
                     }
+                    case EDataType::UniformBuffer:
+                    {
+                        collector.setDataUniformBuffer(i, f, source.getDataUniformBuffer(i, f));
+                        break;
+                    }
                     default:
                         assert(false);
                         break;
@@ -431,6 +437,21 @@ namespace ramses::internal
                 const GeometryDataBuffer& dataBuffer = source.getDataBuffer(handle);
                 collector.allocateDataBuffer(dataBuffer.bufferType, dataBuffer.dataType, static_cast<uint32_t>(dataBuffer.data.size()), handle);
                 collector.updateDataBuffer(handle, 0u, dataBuffer.usedSize, dataBuffer.data.data());
+            }
+        }
+    }
+
+    void SceneDescriber::RecreateUniformBuffers(const IScene& source, SceneActionCollectionCreator& collector)
+    {
+        const auto uniformBufferTotalCount = source.getUniformBufferCount();
+        for (UniformBufferHandle handle(0u); handle < uniformBufferTotalCount; ++handle)
+        {
+            if (source.isUniformBufferAllocated(handle))
+            {
+                const auto& uniformBuffer = source.getUniformBuffer(handle);
+                const auto size = uint32_t(uniformBuffer.data.size());
+                collector.allocateUniformBuffer(size, handle);
+                collector.updateUniformBuffer(handle, 0u, size, uniformBuffer.data.data());
             }
         }
     }

@@ -24,7 +24,7 @@
 namespace ramses::internal
 {
     NodeBindingImpl::NodeBindingImpl(SceneImpl& scene, ramses::Node& ramsesNode, ramses::ERotationType rotationType, std::string_view name, sceneObjectId_t id)
-        : RamsesBindingImpl{ scene, name, id }
+        : RamsesBindingImpl{ scene, name, id, ramsesNode }
         , m_ramsesNode{ ramsesNode }
         , m_rotationType{ rotationType }
     {

@@ -12,7 +12,7 @@
 #include "internal/RendererLib/PlatformInterface/IDisplayController.h"
 #include "internal/RendererLib/PlatformInterface/ISystemCompositorController.h"
 #include "internal/RendererLib/RendererStatistics.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 
 namespace ramses::internal {
     using namespace testing;
@@ -44,7 +44,7 @@ namespace ramses::internal {
     RendererMockWithMockDisplay<MOCK_TYPE>::~RendererMockWithMockDisplay() = default;
 
     template <template<typename> class MOCK_TYPE>
-    IDisplayController* RendererMockWithMockDisplay<MOCK_TYPE>::createDisplayControllerFromConfig(const DisplayConfig& displayConfig)
+    IDisplayController* RendererMockWithMockDisplay<MOCK_TYPE>::createDisplayControllerFromConfig(const DisplayConfigData& displayConfig)
     {
         assert(m_displayController == nullptr);
         m_displayController = new MOCK_TYPE < DisplayControllerMock >;

@@ -6,7 +6,7 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "gtest/gtest.h"
 
 namespace ramses::internal
@@ -14,7 +14,7 @@ namespace ramses::internal
     class AInternalDisplayConfig : public ::testing::Test
     {
     public:
-        ramses::internal::DisplayConfig m_config;
+        ramses::internal::DisplayConfigData m_config;
     };
 
     TEST_F(AInternalDisplayConfig, hasDefaultValues)
@@ -125,8 +125,8 @@ namespace ramses::internal
 
     TEST_F(AInternalDisplayConfig, canBeCompared)
     {
-        ramses::internal::DisplayConfig config1;
-        ramses::internal::DisplayConfig config2;
+        ramses::internal::DisplayConfigData config1;
+        ramses::internal::DisplayConfigData config2;
         EXPECT_EQ(config1, config2);
 
         config1.setAntialiasingSampleCount(4u);

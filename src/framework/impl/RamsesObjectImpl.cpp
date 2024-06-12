@@ -11,7 +11,6 @@
 #include "impl/SerializationContext.h"
 #include "internal/PlatformAbstraction/Collections/IOutputStream.h"
 #include "internal/PlatformAbstraction/Collections/IInputStream.h"
-#include "internal/PlatformAbstraction/Collections/StringOutputStream.h"
 
 namespace ramses::internal
 {

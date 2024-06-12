@@ -41,7 +41,7 @@ namespace ramses
     public:
         virtual ~IRendererFactory() = default;
 
-        virtual RendererUniquePtr createRenderer(internal::RamsesFrameworkImpl& framework, const RendererConfig& config) const = 0;
+        virtual RendererUniquePtr createRenderer(internal::RamsesFrameworkImpl& framework, const RendererConfig& config, std::string_view loggingInstanceName) const = 0;
     };
 }
 

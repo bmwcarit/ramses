@@ -10,6 +10,7 @@
 #include "impl/EffectInputImpl.h"
 #include "impl/SerializationContext.h"
 #include "impl/RamsesClientImpl.h"
+#include "impl/RamsesFrameworkImpl.h"
 #include "impl/EffectInputSemanticUtils.h"
 #include "impl/ErrorReporting.h"
 
@@ -17,7 +18,6 @@
 #include "internal/SceneGraph/Resource/IResource.h"
 #include "internal/Components/ResourceHashUsage.h"
 #include "internal/SceneGraph/Resource/EffectResource.h"
-#include "internal/PlatformAbstraction/Collections/StringOutputStream.h"
 
 #include "fmt/format.h"
 
@@ -52,6 +52,8 @@ namespace ramses::internal
         if (!ResourceImpl::serialize(outStream, serializationContext))
             return false;
 
+        const bool serializeUBO = (getClientImpl().getFramework().getFeatureLevel() >= EFeatureLevel_02);
+
         outStream << static_cast<uint32_t>(m_effectUniformInputs.size());
         for(const auto& input : m_effectUniformInputs)
         {
@@ -59,6 +61,13 @@ namespace ramses::internal
             outStream << static_cast<uint32_t>(input.dataType);
             outStream << static_cast<uint32_t>(input.elementCount);
             outStream << static_cast<uint32_t>(input.semantics);
+
+            if (serializeUBO)
+            {
+                outStream << input.uniformBufferBinding.getValue();
+                outStream << input.uniformBufferFieldOffset.getValue();
+                outStream << input.uniformBufferFieldOffset.getValue();
+            }
         }
 
         outStream << static_cast<uint32_t>(m_effectAttributeInputs.size());
@@ -80,6 +89,8 @@ namespace ramses::internal
         if (!ResourceImpl::deserialize(inStream, serializationContext))
             return false;
 
+        const bool deserializeUBO = (getClientImpl().getFramework().getFeatureLevel() >= EFeatureLevel_02);
+
         uint32_t count = 0u;
         inStream >> count;
         m_effectUniformInputs.resize(count);
@@ -97,6 +108,19 @@ namespace ramses::internal
             m_effectUniformInputs[i].dataType = static_cast<ramses::internal::EDataType>(dataTypeAsUInt);
             m_effectUniformInputs[i].elementCount = elementCount;
             m_effectUniformInputs[i].semantics = static_cast<EFixedSemantics>(semanticAsUInt);
+
+            if (deserializeUBO)
+            {
+                uint32_t uniformBufferBindingAsUInt = 0;
+                inStream >> uniformBufferBindingAsUInt;
+                uint32_t uniformBufferElementSizeAsUInt = 0;
+                inStream >> uniformBufferElementSizeAsUInt;
+                uint32_t uniformBufferFieldOffsetAsUInt = 0;
+                inStream >> uniformBufferFieldOffsetAsUInt;
+                m_effectUniformInputs[i].uniformBufferBinding.getReference() = uniformBufferBindingAsUInt;
+                m_effectUniformInputs[i].uniformBufferElementSize.getReference() = uniformBufferElementSizeAsUInt;
+                m_effectUniformInputs[i].uniformBufferFieldOffset.getReference() = uniformBufferFieldOffsetAsUInt;
+            }
         }
 
         inStream >> count;
@@ -121,6 +145,9 @@ namespace ramses::internal
             m_geometryShaderInputType = static_cast<EDrawMode>(gsInputType);
 
         m_shaderWarnings.reset();
+
+        DataLayoutCreationHelper::SetDataFieldMappingForUniformInputs(m_effectUniformInputs);
+        DataLayoutCreationHelper::SetDataFieldMappingForAttributeInputs(m_effectAttributeInputs);
 
         return true;
     }
@@ -268,6 +295,21 @@ namespace ramses::internal
         return input;
     }
 
+    std::optional<ramses::UniformInput> EffectImpl::findUniformInputAtBinding(uint32_t uniformBufferBinding) const
+    {
+        const size_t index = GetUniformBufferInputIndex(m_effectUniformInputs, UniformBufferBinding{ uniformBufferBinding });
+        if (index == InvalidInputIndex)
+        {
+            LOG_ERROR(CONTEXT_CLIENT, "Effect: findUniformInputAtBinding failed, uniform buffer with specified binding is not defined in effect!");
+            return std::nullopt;
+        }
+
+        UniformInput input;
+        initializeEffectInputData(*input.m_impl, m_effectUniformInputs[index], index);
+
+        return input;
+    }
+
     const EffectInputInformationVector& EffectImpl::getUniformInputInformation() const
     {
         return m_effectUniformInputs;
@@ -285,6 +327,22 @@ namespace ramses::internal
         {
             const EffectInputInformation& effectInputInfo = effectInputVector[i];
             if (effectInputInfo.inputName == inputName)
+            {
+                return i;
+            }
+        }
+
+        return InvalidInputIndex;
+    }
+
+    size_t EffectImpl::GetUniformBufferInputIndex(const EffectInputInformationVector& effectInputVector, UniformBufferBinding uniformBufferBinding)
+    {
+        const size_t numInputs = effectInputVector.size();
+        for (size_t i = 0u; i < numInputs; ++i)
+        {
+            const EffectInputInformation& effectInputInfo = effectInputVector[i];
+            if (effectInputInfo.dataType == EDataType::UniformBuffer &&
+                effectInputInfo.uniformBufferBinding == uniformBufferBinding)
             {
                 return i;
             }
@@ -313,14 +371,7 @@ namespace ramses::internal
 
     void EffectImpl::initializeEffectInputData(EffectInputImpl& effectInputImpl, const EffectInputInformation& effectInputInfo, size_t index) const
     {
-        effectInputImpl.initialize(
-            getLowlevelResourceHash(),
-            effectInputInfo.inputName,
-            effectInputInfo.dataType,
-            effectInputInfo.semantics,
-            effectInputInfo.elementCount,
-            index
-            );
+        effectInputImpl.initialize(getLowlevelResourceHash(), effectInputInfo, index);
     }
 
     bool EffectImpl::hasGeometryShader() const
@@ -332,7 +383,7 @@ namespace ramses::internal
     {
         if (!hasGeometryShader())
         {
-            getErrorReporting().set((StringOutputStream() << "Effect::getGeometryShaderInputType: failed, effect '" << getName() << "' has no geometry shader attached to it!").c_str(), *this);
+            getErrorReporting().set(fmt::format("Effect::getGeometryShaderInputType: failed, effect '{}' has no geometry shader attached to it!", getName()), *this);
             return false;
         }
 

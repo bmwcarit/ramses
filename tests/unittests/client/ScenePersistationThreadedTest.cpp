@@ -143,8 +143,7 @@ namespace ramses::internal
         EXPECT_EQ(sceneId_t(123u), loadedScene->getSceneId());
     }
 
-    // TODO needs to reenabled when the issue is fixed: ABPI-401386
-    TEST_F(ARamsesFileLoadedInSeveralThread, DISABLED_asyncLoadSceneFileWithoutEverCallingDispatchDoesNotLeakMemory)
+    TEST_F(ARamsesFileLoadedInSeveralThread, asyncLoadSceneFileWithoutEverCallingDispatchDoesNotLeakMemory)
     {
         EXPECT_TRUE(client.loadSceneFromFileAsync(sceneFile));
         // do nothing, scene load will finish before RamsesClient is destructed

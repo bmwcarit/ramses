@@ -45,3 +45,7 @@ endif()
 if(ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_WL_SHELL)
     target_compile_definitions(ramses-renderer-internal PUBLIC ramses_sdk_ENABLE_WINDOW_TYPE_WAYLAND_WL_SHELL)
 endif()
+
+if(ramses-sdk_ENABLE_DEVICE_TYPE_VULKAN)
+    target_compile_definitions(ramses-renderer-internal PUBLIC ramses_sdk_ENABLE_DEVICE_TYPE_VULKAN)
+endif()

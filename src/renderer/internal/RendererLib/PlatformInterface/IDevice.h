@@ -11,8 +11,8 @@
 #include "internal/RendererLib/Types.h"
 #include "internal/SceneGraph/SceneAPI/TextureEnums.h"
 #include "internal/SceneGraph/SceneAPI/RenderState.h"
-#include "internal/SceneGraph/SceneAPI/EDataType.h"
 #include "internal/SceneGraph/Resource/TextureMetaInfo.h"
+#include "internal/SceneGraph/SceneAPI/SceneTypes.h"
 #include "internal/RendererLib/PlatformBase/GpuResource.h"
 #include <memory>
 #include <array>
@@ -67,6 +67,11 @@ namespace ramses::internal
         virtual void setViewport         (int32_t x, int32_t y, uint32_t width, uint32_t height) = 0;
 
         // resources
+        virtual DeviceResourceHandle    allocateUniformBuffer       (uint32_t totalSizeInBytes) = 0;
+        virtual void                    uploadUniformBufferData     (DeviceResourceHandle handle, const std::byte* data, uint32_t dataSize) = 0;
+        virtual void                    activateUniformBuffer       (DeviceResourceHandle handle, DataFieldHandle field) = 0;
+        virtual void                    deleteUniformBuffer         (DeviceResourceHandle handle) = 0;
+
         virtual DeviceResourceHandle    allocateVertexBuffer        (uint32_t totalSizeInBytes) = 0;
         virtual void                    uploadVertexBufferData      (DeviceResourceHandle handle, const std::byte* data, uint32_t dataSize) = 0;
         virtual void                    deleteVertexBuffer          (DeviceResourceHandle handle) = 0;

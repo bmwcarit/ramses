@@ -41,6 +41,7 @@ namespace ramses::internal
         EXPECT_EQ(m_renderBuffer, &rbConst.getRenderBuffer());
         const auto& rbImplConst = m_rbBinding->impl();
         EXPECT_EQ(m_renderBuffer, &rbImplConst.getRenderBuffer());
+        EXPECT_EQ(m_renderBuffer, &rbImplConst.getBoundObject());
     }
 
     TEST_F(ARenderBufferBinding, HasInputPropertiesAndNoOutputs)

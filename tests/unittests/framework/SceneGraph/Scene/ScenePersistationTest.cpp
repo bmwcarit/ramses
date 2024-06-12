@@ -10,33 +10,41 @@
 #include "internal/SceneGraph/Scene/ScenePersistation.h"
 #include "internal/SceneGraph/Scene/ClientScene.h"
 #include "TestingScene.h"
+#include "FeatureLevelTestValues.h"
 
 using namespace testing;
 
 namespace ramses::internal
 {
-    TEST(AScenePersistation, canReadWrite)
+    class AScenePersistation : public ::testing::TestWithParam<EFeatureLevel>
+    {
+    };
+
+    RAMSES_INSTANTIATE_FEATURELEVEL_TEST_SUITE(AScenePersistation);
+
+    TEST_P(AScenePersistation, canReadWrite)
     {
         ClientScene scene;
         NodeHandle parentNodeHandle = scene.allocateNode(0, {});
         NodeHandle childNodeHandle = scene.allocateNode(0, {});
         scene.addChildToNode(parentNodeHandle, childNodeHandle);
-        ScenePersistation::WriteSceneToFile("testfile", scene);
+        ScenePersistation::WriteSceneToFile("testfile", scene, GetParam());
 
         Scene loadedScene;
-        ScenePersistation::ReadSceneFromFile("testfile", loadedScene);
+        ScenePersistation::ReadSceneFromFile("testfile", loadedScene, GetParam(), nullptr);
         ASSERT_EQ(2u, loadedScene.getNodeCount());
         ASSERT_EQ(parentNodeHandle, loadedScene.getParent(childNodeHandle));
     }
 
-    TEST(AScenePersistation, canReadWriteMockScene)
+    TEST_P(AScenePersistation, canReadWriteTestingScene)
     {
-        TestingScene<ClientScene> scene;
-        ScenePersistation::WriteSceneToFile("testfile", scene.getScene());
+        ClientScene scene;
+        TestingScene testingScene{ scene, GetParam() };
+        ScenePersistation::WriteSceneToFile("testfile", scene, GetParam());
 
         Scene loadedScene;
         SceneActionCollection dummyCollection;
-        ScenePersistation::ReadSceneFromFile("testfile", loadedScene);
-        scene.CheckEquivalentTo<IScene>(loadedScene);
+        ScenePersistation::ReadSceneFromFile("testfile", loadedScene, GetParam(), nullptr);
+        testingScene.VerifyContent(loadedScene);
     }
 }

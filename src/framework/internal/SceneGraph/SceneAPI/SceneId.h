@@ -12,6 +12,9 @@
 #include "internal/Core/Common/StronglyTypedValue.h"
 #include "internal/PlatformAbstraction/Collections/Vector.h"
 #include "internal/SceneGraph/Scene/EScenePublicationMode.h"
+#include "EVulkanVersion.h"
+
+#include "ramses/framework/ERenderBackendCompatibility.h"
 
 #include <cstdint>
 #include <string>
@@ -26,27 +29,12 @@ namespace ramses::internal
 
     struct SceneInfo
     {
-        SceneInfo() = default;
-
-        explicit SceneInfo(const SceneId& sceneID_, std::string_view friendlyName_ = {}, EScenePublicationMode mode = EScenePublicationMode::LocalAndRemote)
-            : sceneID(sceneID_)
-            , friendlyName(friendlyName_)
-            , publicationMode(mode)
-        {}
-
-        friend bool operator==(const SceneInfo& a, const SceneInfo& b)
-        {
-            return a.sceneID == b.sceneID && a.friendlyName == b.friendlyName;
-        }
-
-        friend bool operator!=(const SceneInfo& a, const SceneInfo& b)
-        {
-            return !(a == b);
-        }
-
-        SceneId sceneID;
-        std::string friendlyName;
-        EScenePublicationMode publicationMode = EScenePublicationMode::LocalAndRemote;
+        SceneId                     sceneID;
+        std::string                 friendlyName                {};
+        EScenePublicationMode       publicationMode             = EScenePublicationMode::LocalAndRemote;
+        ERenderBackendCompatibility renderBackendCompatibility  = ERenderBackendCompatibility::OpenGL;
+        EVulkanAPIVersion           vulkanAPIVersion            = EVulkanAPIVersion::Invalid;
+        ESPIRVVersion               spirvVersion                = ESPIRVVersion::Invalid;
     };
     using SceneInfoVector = std::vector<SceneInfo>;
 }

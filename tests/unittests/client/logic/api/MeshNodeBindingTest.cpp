@@ -94,6 +94,7 @@ namespace ramses::internal
         EXPECT_EQ(m_meshNodeWithGeometry, &mbConst.getRamsesMeshNode());
         const auto& mbImplConst = m_meshBinding->impl();
         EXPECT_EQ(m_meshNodeWithGeometry, &mbImplConst.getRamsesMeshNode());
+        EXPECT_EQ(m_meshNodeWithGeometry, &mbImplConst.getBoundObject());
     }
 
     TEST_F(AMeshNodeBinding, HasInputPropertiesAndNoOutputs)

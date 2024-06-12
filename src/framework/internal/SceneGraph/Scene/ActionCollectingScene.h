@@ -16,8 +16,10 @@ namespace ramses::internal
 {
     class ActionCollectingScene : public ResourceChangeCollectingScene
     {
+        using BaseT = ResourceChangeCollectingScene;
+
     public:
-        explicit ActionCollectingScene(const SceneInfo& sceneInfo = SceneInfo());
+        explicit ActionCollectingScene(const SceneInfo& sceneInfo = {}, EFeatureLevel featureLevel = EFeatureLevel_Latest);
 
         void                        preallocateSceneSize            (const SceneSizeInformation& sizeInfo) override;
 
@@ -92,6 +94,7 @@ namespace ramses::internal
         void                        setDataResource                 (DataInstanceHandle containerHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, uint32_t instancingDivisor, uint16_t offsetWithinElementInBytes, uint16_t stride) override;
         void                        setDataTextureSamplerHandle     (DataInstanceHandle containerHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle) override;
         void                        setDataReference                (DataInstanceHandle containerHandle, DataFieldHandle field, DataInstanceHandle dataRef) override;
+        void                        setDataUniformBuffer            (DataInstanceHandle containerHandle, DataFieldHandle field, UniformBufferHandle uniformBufferHandle) override;
 
         // Texture sampler description
         TextureSamplerHandle        allocateTextureSampler          (const TextureSampler& sampler, TextureSamplerHandle handle) override;
@@ -148,6 +151,10 @@ namespace ramses::internal
         DataBufferHandle            allocateDataBuffer              (EDataBufferType dataBufferType, EDataType dataType, uint32_t maximumSizeInBytes, DataBufferHandle handle) override;
         void                        releaseDataBuffer               (DataBufferHandle handle) override;
         void                        updateDataBuffer                (DataBufferHandle handle, uint32_t offsetInBytes, uint32_t dataSizeInBytes, const std::byte* data) override;
+
+        UniformBufferHandle         allocateUniformBuffer           (uint32_t size, UniformBufferHandle handle) override;
+        void                        releaseUniformBuffer            (UniformBufferHandle uniformBufferHandle) override;
+        void                        updateUniformBuffer             (UniformBufferHandle uniformBufferHandle, uint32_t offset, uint32_t size, const std::byte* data) override;
 
         TextureBufferHandle         allocateTextureBuffer           (EPixelStorageFormat textureFormat, const MipMapDimensions& mipMapDimensions, TextureBufferHandle handle) override;
         void                        releaseTextureBuffer            (TextureBufferHandle handle) override;

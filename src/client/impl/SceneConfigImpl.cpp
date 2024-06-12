@@ -39,4 +39,14 @@ namespace ramses::internal
     {
         return m_memoryVerificationEnabled;
     }
+
+    void SceneConfigImpl::setRenderBackendCompatibility(ERenderBackendCompatibility renderBackendCompatibility)
+    {
+        m_renderBackendCompatibility = renderBackendCompatibility;
+    }
+
+    ERenderBackendCompatibility SceneConfigImpl::getRenderBackendCompatibility() const
+    {
+        return m_renderBackendCompatibility;
+    }
 }

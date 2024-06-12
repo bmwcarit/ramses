@@ -21,6 +21,9 @@ namespace ramses::internal
         static bool RegisterClientFactory();
 
         ClientUniquePtr createClient(RamsesFrameworkImpl& framework, std::string_view applicationName) const override;
+
+    private:
+        static void DeleteClient(RamsesClient* client);
     };
 }
 

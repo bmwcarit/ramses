@@ -15,15 +15,16 @@ namespace ramses::internal
 {
     void EffectRenderingTests::setUpTestCases(RendererTestsFramework& testFramework)
     {
-        testFramework.createTestCaseWithDefaultDisplay(EffectTest_Shaders, *this, "EffectTest_Shaders");
-        testFramework.createTestCaseWithDefaultDisplay(EffectTest_Discard_Shaders, *this, "EffectTest_Discard_Shaders");
-        testFramework.createTestCaseWithDefaultDisplay(EffectTest_UniformWithSameNameInBothStages, *this, "EffectTest_UniformWithSameNameInBothStages");
-        testFramework.createTestCaseWithDefaultDisplay(EffectTest_ExplicitAttributeLocation, *this, "EffectTest_ExplicitAttributeLocation");
-        testFramework.createTestCaseWithDefaultDisplay(EffectTest_ExplicitAttributeLocationSwapped, *this, "EffectTest_ExplicitAttributeLocationSwapped");
-        testFramework.createTestCaseWithDefaultDisplay(EffectTest_StructUniform, *this, "EffectTest_StructUniform");
-        testFramework.createTestCaseWithDefaultDisplay(EffectTest_BoolUniform, *this, "EffectTest_BoolUniform");
-        testFramework.createTestCaseWithDefaultDisplay(EffectTest_TextureSize, *this, "EffectTest_TextureSize");
-        testFramework.createTestCaseWithDefaultDisplay(EffectTest_OptimizedInput, *this, "EffectTest_OptimizedInput");
+        testFramework.createTestCaseWithDefaultDisplay(EffectTest_Shaders, *this, "EffectTest_Shaders").enableForAllFeatureLevels();
+        testFramework.createTestCaseWithDefaultDisplay(EffectTest_Discard_Shaders, *this, "EffectTest_Discard_Shaders").enableForAllFeatureLevels();
+        testFramework.createTestCaseWithDefaultDisplay(EffectTest_UniformWithSameNameInBothStages, *this, "EffectTest_UniformWithSameNameInBothStages").enableForAllFeatureLevels();
+        testFramework.createTestCaseWithDefaultDisplay(EffectTest_ExplicitAttributeLocation, *this, "EffectTest_ExplicitAttributeLocation").enableForAllFeatureLevels();
+        testFramework.createTestCaseWithDefaultDisplay(EffectTest_ExplicitAttributeLocationSwapped, *this, "EffectTest_ExplicitAttributeLocationSwapped").enableForAllFeatureLevels();
+        testFramework.createTestCaseWithDefaultDisplay(EffectTest_StructUniform, *this, "EffectTest_StructUniform").enableForAllFeatureLevels();
+        testFramework.createTestCaseWithDefaultDisplay(EffectTest_BoolUniform, *this, "EffectTest_BoolUniform").enableForAllFeatureLevels();
+        testFramework.createTestCaseWithDefaultDisplay(EffectTest_TextureSize, *this, "EffectTest_TextureSize").enableForAllFeatureLevels();
+        testFramework.createTestCaseWithDefaultDisplay(EffectTest_OptimizedInput, *this, "EffectTest_OptimizedInput").enableForAllFeatureLevels();
+        testFramework.createTestCaseWithDefaultDisplay(EffectTest_UniformBuffersStd140, *this, "EffectTest_UniformBuffersStd140").enableForAllFeatureLevels(EFeatureLevel_02);
     }
 
     bool EffectRenderingTests::run(RendererTestsFramework& testFramework, const RenderingTestCase& testCase)
@@ -48,6 +49,8 @@ namespace ramses::internal
             return runBasicTest<ShaderTestScene>(testFramework, ShaderTestScene::BOOL_UNIFORM, "ShaderTestScene_BoolUniform");
         case EffectTest_TextureSize:
             return runBasicTest<ShaderTestScene>(testFramework, ShaderTestScene::TEXTURE_SIZE, "ShaderTestScene_TextureSize");
+        case EffectTest_UniformBuffersStd140:
+            return runBasicTest<ShaderTestScene>(testFramework, ShaderTestScene::UNIFORM_BUFFERS_STD140, "ShaderTestScene_UniformBuffersStd140");
         default:
             assert(!"Invalid renderer test ID!");
             return false;

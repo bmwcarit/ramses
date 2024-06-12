@@ -12,7 +12,6 @@
 #include "ViewerSettings.h"
 #include "ramses/client/Scene.h"
 #include "ramses/client/logic/LogicEngine.h"
-#include "internal/logic/StdFilesystemWrapper.h"
 #include "internal/PlatformAbstraction/FmtBase.h"
 #include "glm/gtc/type_ptr.hpp"
 

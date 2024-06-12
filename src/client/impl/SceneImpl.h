@@ -39,6 +39,7 @@
 #include "impl/RamsesFrameworkTypesImpl.h"
 
 #include <chrono>
+#include <vector>
 #include <unordered_map>
 #include <string_view>
 
@@ -252,9 +253,9 @@ namespace ramses::internal
         template <typename ObjectType, typename ObjectImplType>
         bool createAndDeserializeObjectImpls(ramses::internal::IInputStream& inStream, DeserializationContext& serializationContext, uint32_t count);
 
-        void setSceneFileHandle(ramses::internal::SceneFileHandle handle);
-        void closeSceneFile();
-        ramses::internal::SceneFileHandle getSceneFileHandle() const;
+        void addSceneFileHandle(ramses::internal::SceneFileHandle handle);
+        void closeSceneFiles();
+        const std::vector<ramses::internal::SceneFileHandle>& getSceneFileHandles() const;
 
         void updateResourceId(resourceId_t const& oldId, Resource& resourceWithNewId);
 
@@ -313,6 +314,9 @@ namespace ramses::internal
 
         bool removeResourceWithIdFromResources(resourceId_t const& id, Resource& resource);
 
+        // Validate logic bindings only. Return true for objects that are not logic bindings
+        static bool ValidateLogicBindingReferencesTo(const SceneObject* obj, const std::vector<const LogicEngine*>& lengines);
+
         ramses::internal::ClientScene&          m_scene;
         ramses::internal::SceneCommandBuffer    m_commandBuffer;
         sceneVersionTag_t                       m_nextSceneVersion;
@@ -334,7 +338,7 @@ namespace ramses::internal
 
         std::string m_effectErrorMessages;
 
-        ramses::internal::SceneFileHandle m_sceneFileHandle;
+        std::vector<ramses::internal::SceneFileHandle> m_sceneFileHandles;
 
         bool m_sendEffectTimeSync = false;
     };

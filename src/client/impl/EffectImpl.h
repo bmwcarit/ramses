@@ -55,6 +55,7 @@ namespace ramses::internal
         std::optional<AttributeInput> findAttributeInput(std::string_view inputName) const;
         std::optional<UniformInput> findUniformInput(EEffectUniformSemantic uniformSemantic) const;
         std::optional<AttributeInput> findAttributeInput(EEffectAttributeSemantic attributeSemantic) const;
+        std::optional<UniformInput> findUniformInputAtBinding(uint32_t uniformBufferBinding) const;
 
         const EffectInputInformationVector& getUniformInputInformation() const;
         const EffectInputInformationVector& getAttributeInputInformation() const;
@@ -64,6 +65,7 @@ namespace ramses::internal
 
         static size_t GetEffectInputIndex(const EffectInputInformationVector& effectInputVector, std::string_view inputName);
         static size_t FindEffectInputIndex(const EffectInputInformationVector& effectInputVector, EFixedSemantics inputSemantics);
+        static size_t GetUniformBufferInputIndex(const EffectInputInformationVector& effectInputVector, UniformBufferBinding uniformBufferBinding);
         void initializeEffectInputData(EffectInputImpl& effectInputImpl, const EffectInputInformation& effectInputInfo, size_t index) const;
 
         EffectInputInformationVector m_effectUniformInputs;

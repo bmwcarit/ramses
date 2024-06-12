@@ -17,7 +17,7 @@ namespace ramses::internal
 {
     LogicNodeUpdateStatistics::LogicNodeUpdateStatistics()
     {
-        m_slowestNodes.fill({ nullptr, std::chrono::microseconds(-1) });
+        m_slowestNodes.fill({sceneObjectId_t{}, {}, std::chrono::microseconds(-1)});
     }
 
     void LogicNodeUpdateStatistics::clear()
@@ -29,7 +29,7 @@ namespace ramses::internal
         m_currentStatisticsFrame = 0u;
         m_totalNodesCount = 0u;
         m_lastTimeUpdateDataAdded = std::nullopt;
-        m_slowestNodes.fill({nullptr, std::chrono::microseconds(-1)});
+        m_slowestNodes.fill({sceneObjectId_t{}, {}, std::chrono::microseconds(-1)});
     }
 
     void LogicNodeUpdateStatistics::collect(const UpdateReport& report, size_t totalNodesCount)
@@ -42,19 +42,20 @@ namespace ramses::internal
         m_nodesExecutedCurrentUpdate = 0u;
         m_activatedLinks.add(static_cast<int64_t>(report.getLinkActivations()));
 
-        auto isLongerTime = [](const LogicNodeTimed& a, const LogicNodeTimed& b) { return a.second > b.second; };
+        auto isLongerTime = [](const NodeTime& a, const NodeTime& b) { return a.time > b.time; };
         for (auto& newNode : report.getNodesExecuted())
         {
-            if (isLongerTime(newNode, m_slowestNodes.back()))
+            if (newNode.second > m_slowestNodes.back().time)
             {
-                auto it = std::find_if(m_slowestNodes.begin(), m_slowestNodes.end(), [&newNode](const auto& slowNode) { return newNode.first == slowNode.first; });
+                auto newNodeId = newNode.first->getSceneObjectId();
+                auto it = std::find_if(m_slowestNodes.begin(), m_slowestNodes.end(), [&newNodeId](const auto& slowNode) { return newNodeId == slowNode.id; });
                 if (it == m_slowestNodes.end())
                 {
-                    m_slowestNodes.back() = newNode;
+                    m_slowestNodes.back() = NodeTime{newNodeId, newNode.first->getName(), newNode.second};
                 }
                 else
                 {
-                    it->second = std::max(newNode.second, it->second);
+                    it->time = std::max(newNode.second, it->time);
                 }
 
                 std::sort(m_slowestNodes.begin(), m_slowestNodes.end(), isLongerTime);
@@ -151,14 +152,14 @@ namespace ramses::internal
 
     void LogicNodeUpdateStatistics::logSlowestNodes()
     {
-        if (m_slowestNodes[0].first == nullptr)
+        if (!m_slowestNodes[0].id.isValid())
             return;
 
         std::string nodes;
         for (auto& node : m_slowestNodes)
         {
-            if (node.first != nullptr)
-                nodes += fmt::format(" [{}:{}]", node.first->getName(), node.second.count());
+            if (node.id.isValid())
+                nodes += fmt::format(" [{}:{}]", node.name, node.time.count());
         }
         LOG_INFO(CONTEXT_PERIODIC, "Slowest nodes [name:time_us]:{}", nodes);
     }

@@ -20,7 +20,7 @@ namespace ramses::internal
     class Window_Wayland : public Window_Base
     {
     public:
-        Window_Wayland(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, uint32_t id, std::chrono::microseconds frameCallbackMaxPollTime);
+        Window_Wayland(const DisplayConfigData& displayConfig, IWindowEventHandler& windowEventHandler, uint32_t id, std::chrono::microseconds frameCallbackMaxPollTime);
         ~Window_Wayland() override;
 
         bool init() override;

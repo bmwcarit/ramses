@@ -74,7 +74,7 @@ endif()
 # gcc specific
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     # optimize for debuggability
-    addFlags(RAMSES_DEBUG_FLAGS "-Og")
+    addFlags(RAMSES_DEBUG_FLAGS "-O0")
 
     # remap GOT readonly after resolving
     addFlags(RAMSES_C_CXX_FLAGS "-Wl,-z,relro,-z,now")

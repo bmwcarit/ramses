@@ -6,13 +6,20 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#version 100
+#version 310 es
 
-uniform highp mat4 mvpMatrix;
+precision highp float;
 
-attribute vec3 a_position;
+layout(std140,binding=1) uniform modelCameraBlock_t
+{
+    mat4 mvpMatrix;
+    mat4 mvMatrix;
+    mat4 normalMatrix;
+} modelCameraBlock;
+
+in vec3 a_position;
 
 void main()
 {
-    gl_Position = mvpMatrix * vec4(a_position, 1.0);
+    gl_Position = modelCameraBlock.mvpMatrix * vec4(a_position, 1.0);
 }

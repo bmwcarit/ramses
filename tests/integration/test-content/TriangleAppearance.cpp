@@ -23,8 +23,9 @@ namespace ramses::internal
     TriangleAppearance::TriangleAppearance(ramses::Scene& scene, const Effect& effect, enum TriangleAppearance::EColor color, float alpha)
         : m_appearance(createAppearance(effect, scene))
     {
-        m_colorInput = effect.findUniformInput("color");
-        if (m_colorInput.has_value()) {
+        if (color != EColor::None)
+        {
+            m_colorInput = effect.findUniformInput("color");
             setColor(color, alpha);
         }
     }
@@ -36,31 +37,29 @@ namespace ramses::internal
 
     void TriangleAppearance::setColor(enum EColor color, float alpha)
     {
+        if (!m_colorInput)
+            m_colorInput = m_appearance.getEffect().findUniformInput("color");
+        assert(m_colorInput.has_value());
+
         [[maybe_unused]] bool status = false;
         switch (color)
         {
-        case EColor_Red:
-            assert(m_colorInput.has_value());
+        case EColor::Red:
             status = m_appearance.setInputValue(*m_colorInput, vec4f{ 1.f, 0.f, 0.f, alpha });
             break;
-        case EColor_Blue:
-            assert(m_colorInput.has_value());
+        case EColor::Blue:
             status = m_appearance.setInputValue(*m_colorInput, vec4f{ 0.f, 0.f, 1.f, alpha });
             break;
-        case EColor_Green:
-            assert(m_colorInput.has_value());
+        case EColor::Green:
             status = m_appearance.setInputValue(*m_colorInput, vec4f{ 0.f, 1.f, 0.f, alpha });
             break;
-        case EColor_White:
-            assert(m_colorInput.has_value());
+        case EColor::White:
             status = m_appearance.setInputValue(*m_colorInput, vec4f{ 1.f, 1.f, 1.f, alpha });
             break;
-        case EColor_Grey:
-            assert(m_colorInput.has_value());
+        case EColor::Grey:
             status = m_appearance.setInputValue(*m_colorInput, vec4f{ 0.5f, 0.5f, 0.5f, alpha });
             break;
-        default:
-            assert(false && "Chosen color for triangle is not available!");
+        case EColor::None:
             break;
         }
 

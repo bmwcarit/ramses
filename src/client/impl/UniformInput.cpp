@@ -35,4 +35,13 @@ namespace ramses
     {
         return m_impl->getElementCount();
     }
+
+    std::optional<uint32_t> UniformInput::getUniformBufferBinding() const
+    {
+        const auto uboBinding = m_impl->getUniformBufferBinding();
+        if (uboBinding.isValid())
+            return uboBinding.getValue();
+
+        return std::nullopt;
+    }
 }

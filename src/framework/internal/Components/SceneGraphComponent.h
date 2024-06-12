@@ -58,9 +58,9 @@ namespace ramses::internal
         void setSceneRendererHandler(ISceneRendererHandler* sceneRendererHandler) override;
 
         // ISceneGraphSender
-        void sendCreateScene(const Guid& to, const SceneId& sceneId, EScenePublicationMode mode) override;
+        void sendCreateScene(const Guid& to, const SceneInfo& sceneInfo) override;
         void sendSceneUpdate(const std::vector<Guid>& toVec, SceneUpdate&& sceneUpdate, SceneId sceneId, EScenePublicationMode mode, StatisticCollectionScene& sceneStatistics) override;
-        void sendPublishScene(SceneId sceneId, EScenePublicationMode mode, std::string_view name) override;
+        void sendPublishScene(const SceneInfo& sceneInfo) override;
         void sendUnpublishScene(SceneId sceneId, EScenePublicationMode mode) override;
 
         // ISceneGraphConsumerComponent
@@ -122,7 +122,7 @@ namespace ramses::internal
 
         IResourceProviderComponent& m_resourceComponent;
 
-        EFeatureLevel m_featureLevel = EFeatureLevel_01;
+        EFeatureLevel m_featureLevel = EFeatureLevel_Latest;
 
         struct ReceivedScene
         {

@@ -21,6 +21,16 @@ namespace ramses
         {
             switch (semanticType)
             {
+            case EEffectUniformSemantic::ModelBlock:
+                return ramses::internal::EFixedSemantics::ModelBlock;
+            case EEffectUniformSemantic::CameraBlock:
+                return ramses::internal::EFixedSemantics::CameraBlock;
+            case EEffectUniformSemantic::ModelCameraBlock:
+                return ramses::internal::EFixedSemantics::ModelCameraBlock;
+            case EEffectUniformSemantic::FramebufferBlock:
+                return ramses::internal::EFixedSemantics::FramebufferBlock;
+            case EEffectUniformSemantic::SceneBlock:
+                return ramses::internal::EFixedSemantics::SceneBlock;
             case EEffectUniformSemantic::ProjectionMatrix:
                 return ramses::internal::EFixedSemantics::ProjectionMatrix;
             case EEffectUniformSemantic::ModelMatrix:
@@ -55,6 +65,16 @@ namespace ramses
         {
             switch (semanticType)
             {
+            case ramses::internal::EFixedSemantics::ModelBlock:
+                return EEffectUniformSemantic::ModelBlock;
+            case ramses::internal::EFixedSemantics::CameraBlock:
+                return EEffectUniformSemantic::CameraBlock;
+            case ramses::internal::EFixedSemantics::ModelCameraBlock:
+                return EEffectUniformSemantic::ModelCameraBlock;
+            case ramses::internal::EFixedSemantics::FramebufferBlock:
+                return EEffectUniformSemantic::FramebufferBlock;
+            case ramses::internal::EFixedSemantics::SceneBlock:
+                return EEffectUniformSemantic::SceneBlock;
             case ramses::internal::EFixedSemantics::ProjectionMatrix:
                 return EEffectUniformSemantic::ProjectionMatrix;
             case ramses::internal::EFixedSemantics::ModelMatrix:

@@ -30,7 +30,7 @@
 #include "internal/SceneGraph/Resource/TextureMetaInfo.h"
 #include "internal/Components/FlushTimeInformation.h"
 #include "internal/SceneReferencing/SceneReferenceAction.h"
-
+#include "ramses/framework/EFeatureLevel.h"
 
 namespace ramses::internal
 {
@@ -46,7 +46,7 @@ namespace ramses::internal
     class SceneActionCollectionCreator
     {
     public:
-        explicit SceneActionCollectionCreator(SceneActionCollection& collection_);
+        SceneActionCollectionCreator(SceneActionCollection& collection_, EFeatureLevel featureLevel);
 
         void preallocateSceneSize(const SceneSizeInformation& sizeInfo);
 
@@ -121,6 +121,7 @@ namespace ramses::internal
         void setDataResource(DataInstanceHandle containerHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, uint32_t instancingDivisor, uint16_t offsetWithinElementInBytes, uint16_t stride);
         void setDataTextureSamplerHandle(DataInstanceHandle containerHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle);
         void setDataReference(DataInstanceHandle containerHandle, DataFieldHandle field, DataInstanceHandle dataRef);
+        void setDataUniformBuffer(DataInstanceHandle containerHandle, DataFieldHandle field, UniformBufferHandle uniformBufferHandle);
 
         // Texture sampler description
         void allocateTextureSampler(const TextureSampler& sampler, TextureSamplerHandle handle);
@@ -177,6 +178,11 @@ namespace ramses::internal
         void releaseDataBuffer(DataBufferHandle handle);
         void updateDataBuffer(DataBufferHandle handle, uint32_t offsetInBytes, uint32_t dataSizeInBytes, const std::byte* data);
 
+        // Uniform buffers
+        void allocateUniformBuffer(uint32_t size, UniformBufferHandle handle);
+        void releaseUniformBuffer(UniformBufferHandle uniformBufferHandle);
+        void updateUniformBuffer(UniformBufferHandle uniformBufferHandle, uint32_t offset, uint32_t size, const std::byte* data);
+
         // Texture buffers
         void allocateTextureBuffer(EPixelStorageFormat textureFormat, const MipMapDimensions& mipMapDimensions, TextureBufferHandle handle);
         void releaseTextureBuffer(TextureBufferHandle handle);
@@ -205,5 +211,7 @@ namespace ramses::internal
 
     private:
         void putSceneSizeInformation(const SceneSizeInformation& sizeInfo);
+
+        EFeatureLevel m_featureLevel = EFeatureLevel_Latest;
     };
 }

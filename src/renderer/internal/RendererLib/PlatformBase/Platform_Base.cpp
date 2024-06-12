@@ -15,15 +15,15 @@
 #include "internal/RendererLib/PlatformInterface/ISystemCompositorController.h"
 #include "internal/RendererLib/RenderBackend.h"
 #include "internal/RendererLib/ResourceUploadRenderBackend.h"
-#include "internal/RendererLib/RendererConfig.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/RendererConfigData.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "internal/RendererLib/PlatformBase/TextureUploadingAdapter_Base.h"
 #include "internal/RendererLib/PlatformBase/EmbeddedCompositor_Dummy.h"
 #include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {
-    Platform_Base::Platform_Base(RendererConfig rendererConfig)
+    Platform_Base::Platform_Base(RendererConfigData rendererConfig)
         : m_rendererConfig(std::move(rendererConfig))
     {
     }
@@ -38,7 +38,7 @@ namespace ramses::internal
         assert(!m_textureUploadingAdapter);
     }
 
-    bool Platform_Base::createDeviceExtension(const DisplayConfig& displayConfig)
+    bool Platform_Base::createDeviceExtension(const DisplayConfigData& displayConfig)
     {
         if(displayConfig.getPlatformRenderNode() != "")
         {
@@ -48,7 +48,7 @@ namespace ramses::internal
         return true;
     }
 
-    IRenderBackend* Platform_Base::createRenderBackend(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler)
+    IRenderBackend* Platform_Base::createRenderBackend(const DisplayConfigData& displayConfig, IWindowEventHandler& windowEventHandler)
     {
         if (m_rendererConfig.getSystemCompositorControlEnabled() && !createSystemCompositorController())
         {
@@ -177,13 +177,13 @@ namespace ramses::internal
         return m_systemCompositorController.get();
     }
 
-    void Platform_Base::createTextureUploadingAdapter(const DisplayConfig& /*unused*/)
+    void Platform_Base::createTextureUploadingAdapter(const DisplayConfigData& /*unused*/)
     {
         assert(!m_textureUploadingAdapter);
         m_textureUploadingAdapter = std::make_unique<TextureUploadingAdapter_Base>(*m_device);
     }
 
-    bool Platform_Base::createEmbeddedCompositor(const DisplayConfig& /*unused*/)
+    bool Platform_Base::createEmbeddedCompositor(const DisplayConfigData& /*unused*/)
     {
         m_embeddedCompositor = std::make_unique<EmbeddedCompositor_Dummy>();
         return m_embeddedCompositor != nullptr;

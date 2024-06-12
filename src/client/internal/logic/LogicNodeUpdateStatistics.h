@@ -28,7 +28,12 @@ namespace ramses::internal
             [[nodiscard]] bool checkUpdateFrameFinished() const;
 
         private:
-            using LogicNodeTimed = UpdateReport::LogicNodeTimed;
+            struct NodeTime
+            {
+                sceneObjectId_t               id;
+                std::string                   name;
+                UpdateReport::ReportTimeUnits time;
+            };
 
             struct StatisticProperty
             {
@@ -73,6 +78,6 @@ namespace ramses::internal
             StatisticProperty m_nodesExecuted;
             StatisticProperty m_activatedLinks;
 
-            std::array<LogicNodeTimed, 5> m_slowestNodes;
+            std::array<NodeTime, 5> m_slowestNodes;
     };
 }

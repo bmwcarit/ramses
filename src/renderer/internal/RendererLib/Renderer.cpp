@@ -17,7 +17,7 @@
 #include "internal/RendererLib/RendererCachedScene.h"
 #include "internal/RendererLib/DisplayController.h"
 #include "internal/RendererLib/RendererLogContext.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "internal/RendererLib/RendererScenes.h"
 #include "internal/RendererLib/DisplayEventHandler.h"
 #include "internal/RendererLib/SceneExpirationMonitor.h"
@@ -52,11 +52,11 @@ namespace ramses::internal
         assert(!hasDisplayController());
     }
 
-    void Renderer::registerOffscreenBuffer(DeviceResourceHandle bufferDeviceHandle, uint32_t width, uint32_t height, bool isInterruptible)
+    void Renderer::registerOffscreenBuffer(DeviceResourceHandle bufferDeviceHandle, uint32_t width, uint32_t height, uint32_t sampleCount, bool isInterruptible)
     {
         assert(hasDisplayController());
         assert(!hasAnyBufferWithInterruptedRendering());
-        m_displayBuffersSetup.registerDisplayBuffer(bufferDeviceHandle, { 0, 0, width, height }, DefaultClearColor, true, isInterruptible);
+        m_displayBuffersSetup.registerDisplayBuffer(bufferDeviceHandle, { 0, 0, width, height }, DefaultClearColor, true, sampleCount, isInterruptible);
         // no need to re-render OB as long as no scene is assigned to it, OB is cleared at creation time
         m_displayBuffersSetup.setDisplayBufferToBeRerendered(bufferDeviceHandle, false);
     }
@@ -92,7 +92,7 @@ namespace ramses::internal
         return m_displayEventHandler;
     }
 
-    void Renderer::createDisplayContext(const DisplayConfig& displayConfig)
+    void Renderer::createDisplayContext(const DisplayConfigData& displayConfig)
     {
         LOG_TRACE(CONTEXT_PROFILING, "Renderer::createDisplayContext start creating display");
 
@@ -105,7 +105,8 @@ namespace ramses::internal
         }
 
         m_frameBufferDeviceHandle = m_displayController->getDisplayBuffer();
-        m_displayBuffersSetup.registerDisplayBuffer(m_frameBufferDeviceHandle, { 0, 0, m_displayController->getDisplayWidth(), m_displayController->getDisplayHeight() }, DefaultClearColor, false, false);
+        m_displayBuffersSetup.registerDisplayBuffer(m_frameBufferDeviceHandle, { 0, 0, m_displayController->getDisplayWidth(), m_displayController->getDisplayHeight() },
+            DefaultClearColor, false, displayConfig.getAntialiasingSampleCount(), false);
         setClearColor(m_frameBufferDeviceHandle, displayConfig.getClearColor());
 
         LOG_TRACE(CONTEXT_PROFILING, "RamsesRenderer::createDisplayContext finished creating display");
@@ -552,7 +553,7 @@ namespace ramses::internal
         return m_platform.getSystemCompositorController() != nullptr;
     }
 
-    IDisplayController* Renderer::createDisplayControllerFromConfig(const DisplayConfig& config)
+    IDisplayController* Renderer::createDisplayControllerFromConfig(const DisplayConfigData& config)
     {
         IRenderBackend* renderBackend = m_platform.createRenderBackend(config, m_displayEventHandler);
         if (nullptr == renderBackend)

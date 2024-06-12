@@ -13,7 +13,17 @@
 
 namespace ramses::internal
 {
-    Context_WGL::Context_WGL(EDepthBufferType depthStencilBufferType, HDC displayHandle, WglExtensions wglExtensions, const Config& config, uint32_t msaaSampleCount)
+    static IContext::ApiProc getGLProcAddress(const char* name)
+    {
+        // wglGetProcAddress only loads extensions - not the OpenGL 1 functions
+        auto proc = wglGetProcAddress(name);
+        if (proc)
+            return reinterpret_cast<IContext::ApiProc>(proc);
+
+        return reinterpret_cast<IContext::ApiProc>(GetProcAddress(GetModuleHandle(TEXT("opengl32.dll")), name));
+    }
+
+    Context_WGL::Context_WGL(EDepthBufferType depthStencilBufferType, HDC displayHandle, WglExtensions& wglExtensions, const Config& config, uint32_t msaaSampleCount)
         : m_displayHandle(displayHandle)
         , m_ext(wglExtensions)
         , m_contextAttributes(createContextAttributes(config))
@@ -22,7 +32,7 @@ namespace ramses::internal
     {
     }
 
-    Context_WGL::Context_WGL(Context_WGL& sharedContext, HDC displayHandle, WglExtensions wglExtensions, uint32_t msaaSampleCount)
+    Context_WGL::Context_WGL(Context_WGL& sharedContext, HDC displayHandle, WglExtensions& wglExtensions, uint32_t msaaSampleCount)
         : m_displayHandle(displayHandle)
         , m_ext(wglExtensions)
         , m_contextAttributes(sharedContext.m_contextAttributes)
@@ -186,7 +196,7 @@ namespace ramses::internal
             return false;
         }
 
-        LOG_INFO(CONTEXT_RENDERER, "Context_WGL::initCustomPixelFormat:  OpenGL pixel format: COLOR_BITS:{}, ALPHA_BITS :{}, DEPTH_BITS : {}, STENCIL_BITS :{}, SAMPLE_COUNT : ",
+        LOG_INFO(CONTEXT_RENDERER, "Context_WGL::initCustomPixelFormat:  OpenGL pixel format: COLOR_BITS:{}, ALPHA_BITS:{}, DEPTH_BITS:{}, STENCIL_BITS:{}, SAMPLE_COUNT:{}",
             resultAttribs[0], resultAttribs[1], resultAttribs[2], resultAttribs[3], resultAttribs[4]);
 
         if (resultAttribs[0] != colorBits)
@@ -267,9 +277,9 @@ namespace ramses::internal
         return {};
     }
 
-    void* Context_WGL::getProcAddress(const char* name) const
+    IContext::GlProcLoadFunc Context_WGL::getGlProcLoadFunc() const
     {
-        return reinterpret_cast<void*>(wglGetProcAddress(name));
+        return getGLProcAddress;
     }
 
     HGLRC Context_WGL::getNativeContextHandle() const

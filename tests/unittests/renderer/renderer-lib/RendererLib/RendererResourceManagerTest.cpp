@@ -18,7 +18,7 @@
 #include "MockResourceHash.h"
 #include "ResourceUploaderMock.h"
 #include "internal/Watchdog/ThreadAliveNotifierMock.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 
 namespace ramses::internal {
     using namespace testing;
@@ -29,7 +29,7 @@ namespace ramses::internal {
         explicit ARendererResourceManager()
             : fakeSceneId(66u)
             , asyncEffectUploader(platform, platform.renderBackendMock, notifier, DisplayHandle{ 1 })
-            , resourceManager(platform.renderBackendMock, std::unique_ptr<IResourceUploader>{ resUploader }, asyncEffectUploader, embeddedCompositingManager, {}, frameTimer, stats)
+            , resourceManager(platform.renderBackendMock, std::unique_ptr<IResourceUploader>{ resUploader }, &asyncEffectUploader, embeddedCompositingManager, {}, frameTimer, stats)
         {
             InSequence s;
             EXPECT_CALL(platform.renderBackendMock.contextMock, disable()).WillOnce(Return(true));
@@ -1013,7 +1013,7 @@ namespace ramses::internal {
 
     TEST_F(ARendererResourceManager, UploadAndDeleteValidShader)
     {
-        auto effectRes = std::make_unique<const EffectResource>("", "", "", std::optional<EDrawMode>{}, EffectInputInformationVector{}, EffectInputInformationVector{}, "");
+        auto effectRes = std::make_unique<const EffectResource>("", "", "", SPIRVShaders{}, std::optional<EDrawMode>{}, EffectInputInformationVector{}, EffectInputInformationVector{}, "", EFeatureLevel_Latest);
         const ResourceContentHash resHash = effectRes->getHash();
 
         // request some resources
@@ -1027,6 +1027,66 @@ namespace ramses::internal {
         unreferenceResource(resHash, fakeSceneId);
         expectResourceUnloaded(resHash, EResourceType::Effect, DeviceMock::FakeShaderDeviceHandle);
         resourceManager.uploadAndUnloadPendingResources();
+    }
+
+    TEST_F(ARendererResourceManager, UploadsAndUpdatesAndUnloadsUniformBuffer)
+    {
+        constexpr UniformBufferHandle ubHandle{ 1u };
+        constexpr DeviceResourceHandle deviceHandle{ 11111u };
+        constexpr uint32_t uniformBufferSize{ 123u };
+        EXPECT_CALL(platform.renderBackendMock.deviceMock, allocateUniformBuffer(uniformBufferSize)).WillOnce(Return(deviceHandle));
+        resourceManager.uploadUniformBuffer(ubHandle, uniformBufferSize, fakeSceneId);
+
+        std::vector<std::byte> dummyData{ uniformBufferSize, std::byte{ 1 } };
+        EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadUniformBufferData(deviceHandle, dummyData.data(), uniformBufferSize));
+        resourceManager.updateUniformBuffer(ubHandle, uniformBufferSize, dummyData.data(), fakeSceneId);
+
+        EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteUniformBuffer(deviceHandle));
+        resourceManager.unloadUniformBuffer(ubHandle, fakeSceneId);
+    }
+
+    TEST_F(ARendererResourceManager, CanGetDeviceHandleForUniformBuffer)
+    {
+        constexpr UniformBufferHandle ubHandle{ 1u };
+        constexpr DeviceResourceHandle deviceHandle{ 11111u };
+        constexpr uint32_t uniformBufferSize{ 123u };
+        EXPECT_CALL(platform.renderBackendMock.deviceMock, allocateUniformBuffer(uniformBufferSize)).WillOnce(Return(deviceHandle));
+        resourceManager.uploadUniformBuffer(ubHandle, uniformBufferSize, fakeSceneId);
+
+        EXPECT_EQ(deviceHandle, resourceManager.getUniformBufferDeviceHandle(ubHandle, fakeSceneId));
+
+        EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteUniformBuffer(deviceHandle));
+        resourceManager.unloadUniformBuffer(ubHandle, fakeSceneId);
+    }
+
+    TEST_F(ARendererResourceManager, UploadsAndUpdatesAndUnloadsSemanticUniformBuffer)
+    {
+        constexpr SemanticUniformBufferHandle ubHandle{ RenderableHandle{ 1u } };
+        constexpr DeviceResourceHandle deviceHandle{ 11111u };
+        constexpr uint32_t uniformBufferSize{ 123u };
+        EXPECT_CALL(platform.renderBackendMock.deviceMock, allocateUniformBuffer(uniformBufferSize)).WillOnce(Return(deviceHandle));
+        EXPECT_EQ(deviceHandle, resourceManager.uploadUniformBuffer(ubHandle, uniformBufferSize, fakeSceneId));
+
+        std::vector<std::byte> dummyData{ uniformBufferSize, std::byte{ 1 } };
+        EXPECT_CALL(platform.renderBackendMock.deviceMock, uploadUniformBufferData(deviceHandle, dummyData.data(), uniformBufferSize));
+        resourceManager.updateUniformBuffer(ubHandle, uniformBufferSize, dummyData.data(), fakeSceneId);
+
+        EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteUniformBuffer(deviceHandle));
+        resourceManager.unloadUniformBuffer(ubHandle, fakeSceneId);
+    }
+
+    TEST_F(ARendererResourceManager, CanGetDeviceHandleForSemanticUniformBuffer)
+    {
+        constexpr SemanticUniformBufferHandle ubHandle{ RenderableHandle{ 1u } };
+        constexpr DeviceResourceHandle deviceHandle{ 11111u };
+        constexpr uint32_t uniformBufferSize{ 123u };
+        EXPECT_CALL(platform.renderBackendMock.deviceMock, allocateUniformBuffer(uniformBufferSize)).WillOnce(Return(deviceHandle));
+        EXPECT_EQ(deviceHandle, resourceManager.uploadUniformBuffer(ubHandle, uniformBufferSize, fakeSceneId));
+
+        EXPECT_EQ(deviceHandle, resourceManager.getUniformBufferDeviceHandle(ubHandle, fakeSceneId));
+
+        EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteUniformBuffer(deviceHandle));
+        resourceManager.unloadUniformBuffer(ubHandle, fakeSceneId);
     }
 
     TEST_F(ARendererResourceManager, DoesNotUnregisterResourceThatWasUploaded)
@@ -1050,7 +1110,7 @@ namespace ramses::internal {
 
     TEST_F(ARendererResourceManager, DoesNotUnregisterResourceThatWasScheduledForUpload)
     {
-        auto effectRes = std::make_unique<const EffectResource>("", "", "", std::optional<EDrawMode>{}, EffectInputInformationVector{}, EffectInputInformationVector{}, "");
+        auto effectRes = std::make_unique<const EffectResource>("", "", "", SPIRVShaders{}, std::optional<EDrawMode>{}, EffectInputInformationVector{}, EffectInputInformationVector{}, "", EFeatureLevel_Latest);
         const ResourceContentHash resHash = effectRes->getHash();
 
         // request some resources
@@ -1090,7 +1150,7 @@ namespace ramses::internal {
 
     TEST_F(ARendererResourceManager, DoesNotUnloadEffectThatGetsUnreferencedAndReReferencedWhileCompiling)
     {
-        auto effectRes = std::make_unique<const EffectResource>("", "", "", std::optional<EDrawMode>{}, EffectInputInformationVector{}, EffectInputInformationVector{}, "");
+        auto effectRes = std::make_unique<const EffectResource>("", "", "", SPIRVShaders{}, std::optional<EDrawMode>{}, EffectInputInformationVector{}, EffectInputInformationVector{}, "", EFeatureLevel_Latest);
         const ResourceContentHash resHash = effectRes->getHash();
 
         // request some resources
@@ -1148,7 +1208,7 @@ namespace ramses::internal {
 
     TEST_F(ARendererResourceManager, UploadInvalidShaderResultsInBrokenResource)
     {
-        auto effectRes = std::make_unique<const EffectResource>("", "", "", std::optional<EDrawMode>{}, EffectInputInformationVector{}, EffectInputInformationVector{}, "");
+        auto effectRes = std::make_unique<const EffectResource>("", "", "", SPIRVShaders{}, std::optional<EDrawMode>{}, EffectInputInformationVector{}, EffectInputInformationVector{}, "", EFeatureLevel_Latest);
         const ResourceContentHash resHash = effectRes->getHash();
 
         // request some resources
@@ -1236,6 +1296,16 @@ namespace ramses::internal {
         EXPECT_CALL(platform.renderBackendMock.deviceMock, allocateVertexArray(Ref(vaInfo)));
         resourceManager.uploadVertexArray(renderable, vaInfo, fakeSceneId);
 
+        //upload uniform buffer
+        constexpr UniformBufferHandle ubHandle{ 777u };
+        EXPECT_CALL(platform.renderBackendMock.deviceMock, allocateUniformBuffer(_));
+        resourceManager.uploadUniformBuffer(ubHandle, 123u, fakeSceneId);
+
+        //upload semantic uniform buffer
+        constexpr SemanticUniformBufferHandle subHandle{ RenderableHandle{ 777u } };
+        EXPECT_CALL(platform.renderBackendMock.deviceMock, allocateUniformBuffer(_));
+        resourceManager.uploadUniformBuffer(subHandle, 123u, fakeSceneId);
+
         // unload all scene resources
         EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteRenderBuffer(_)).Times(2);
         EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteRenderTarget(_)).Times(3);
@@ -1243,6 +1313,7 @@ namespace ramses::internal {
         EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteVertexBuffer(_));
         EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteTexture(_));
         EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteVertexArray(_));
+        EXPECT_CALL(platform.renderBackendMock.deviceMock, deleteUniformBuffer(_)).Times(2);
         resourceManager.unloadAllSceneResourcesForScene(fakeSceneId);
 
         // Make sure the resource was deleted before the resourceManager gets out of scope

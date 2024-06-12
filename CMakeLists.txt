@@ -9,7 +9,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.13)
 
 set(RAMSES_VERSION_MAJOR 28)
-set(RAMSES_VERSION_MINOR 0)
+set(RAMSES_VERSION_MINOR 2)
 set(RAMSES_VERSION_PATCH 0)
 set(RAMSES_VERSION_POSTFIX "")
 set(RAMSES_VERSION "${RAMSES_VERSION_MAJOR}.${RAMSES_VERSION_MINOR}.${RAMSES_VERSION_PATCH}${RAMSES_VERSION_POSTFIX}")
@@ -43,12 +43,12 @@ option(ramses-sdk_ENABLE_WINDOW_TYPE_ANDROID            "Enable building for And
 option(ramses-sdk_ENABLE_WINDOW_TYPE_IOS                "Enable building for iOS window" OFF)
 option(ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_IVI        "Enable building for Wayland ivi window" OFF)
 option(ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_WL_SHELL   "Enable building for Wayland wl_shell window" OFF)
+option(ramses-sdk_ENABLE_DEVICE_TYPE_VULKAN             "Enable building for an EXPERIMENTAL vulkan device" OFF)
 
 # shared lib options
 option(ramses-sdk_BUILD_FULL_SHARED_LIB                 "Build full shared libraries (with renderer)." ON)
 
 # optional components
-option(ramses-sdk_ENABLE_LOGIC                          "Enable ramses logic - a component for scripting and animation." ON)
 option(ramses-sdk_TEXT_SUPPORT                          "Enable/disable the ramses text API." ON)
 option(ramses-sdk_ENABLE_TCP_SUPPORT                    "Enable use of TCP communication." ON)
 option(ramses-sdk_ENABLE_DLT                            "Enable DLT logging support." ON)
@@ -66,11 +66,10 @@ option(ramses-sdk_ENABLE_FLATBUFFERS_GENERATION         "Enable generation of fl
 option(ramses-sdk_USE_IMAGEMAGICK                       "Enable tests depending on image magick compare" OFF)
 
 # find options
-option(ramses-sdk_ALLOW_PLATFORM_GLM                    "Enable to search for platform provided OpenGL Math library (glm)." ON)
-option(ramses-sdk_ALLOW_PLATFORM_FREETYPE               "Enable to search for platform provided freetype and harfbuzz." ON)
-option(ramses-sdk_ALLOW_CUSTOM_FREETYPE                 "Allow usage of custom freetype and harfbuzz if platform provided one was not found." ON)
-option(ramses-sdk_ALLOW_PLATFORM_LZ4                    "Enable to search for platform provided lz4" ON)
-option(ramses-sdk_USE_PLATFORM_LUAJIT                   "Uses platform provided luajit instead of internal lua" OFF)
+option(ramses-sdk_ALLOW_PLATFORM_GLM                    "Enable to search for platform-provided OpenGL Math library (glm)." ON)
+option(ramses-sdk_ALLOW_PLATFORM_LZ4                    "Enable to search for platform-provided lz4" ON)
+option(ramses-sdk_USE_PLATFORM_FREETYPE                 "Use platform-provided freetype and harfbuzz package instead of bundled package." OFF)
+option(ramses-sdk_USE_PLATFORM_LUAJIT                   "Use platform-provided luajit instead of internal lua" OFF)
 
 # other options
 set(ramses-sdk_FOLDER_PREFIX "" CACHE STRING            "Optional folder prefix for targets in visual studio.")

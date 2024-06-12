@@ -9,8 +9,8 @@
 #pragma once
 
 #include "internal/RendererLib/PlatformBase/Platform_Base.h"
-#include "internal/RendererLib/RendererConfig.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/RendererConfigData.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "internal/Platform/EGL/Context_EGL.h"
 #include "internal/Platform/OpenGL/Device_GL.h"
 #include "internal/Core/Utils/LogMacros.h"
@@ -28,12 +28,12 @@ namespace ramses::internal
     class Platform_EGL : public Platform_Base
     {
     protected:
-        explicit Platform_EGL(const RendererConfig& rendererConfig)
+        explicit Platform_EGL(const RendererConfigData& rendererConfig)
             : Platform_Base(rendererConfig)
         {
         }
 
-        bool createContext(const DisplayConfig& displayConfig) override
+        bool createContext(const DisplayConfigData& displayConfig) override
         {
             if (m_glesMinorVersion.has_value())
             {
@@ -62,7 +62,7 @@ namespace ramses::internal
         {
             assert(m_context);
             assert(m_glesMinorVersion.has_value());
-            m_contextUploading = createContextInternal(DisplayConfig{}, static_cast<Context_EGL*>(m_context.get()), *m_glesMinorVersion);
+            m_contextUploading = createContextInternal(DisplayConfigData{}, static_cast<Context_EGL*>(m_context.get()), *m_glesMinorVersion);
             return m_contextUploading != nullptr;
         }
 
@@ -80,7 +80,7 @@ namespace ramses::internal
             return m_deviceUploading != nullptr;
         }
 
-        bool createDeviceExtension(const DisplayConfig& displayConfig) override
+        bool createDeviceExtension(const DisplayConfigData& displayConfig) override
         {
             const auto platformRenderNode = displayConfig.getPlatformRenderNode();
             if (platformRenderNode.empty())
@@ -102,7 +102,7 @@ namespace ramses::internal
         [[nodiscard]] virtual uint32_t getSwapInterval() const = 0;
 
     private:
-        std::unique_ptr<IContext> createContextInternal(const DisplayConfig& displayConfig, Context_EGL* sharedContext, EGLint minorVersion)
+        std::unique_ptr<IContext> createContextInternal(const DisplayConfigData& displayConfig, Context_EGL* sharedContext, EGLint minorVersion)
         {
             if(displayConfig.getDeviceType() != EDeviceType::GLES_3_0)
             {

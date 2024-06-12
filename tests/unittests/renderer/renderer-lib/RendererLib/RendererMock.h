@@ -17,7 +17,7 @@
 
 namespace ramses::internal
 {
-    class DisplayConfig;
+    class DisplayConfigData;
     class RendererScenes;
     class SceneExpirationMonitor;
 
@@ -43,7 +43,7 @@ public:
         const RendererEventCollector& eventCollector, const SceneExpirationMonitor& expirationMonitor, const RendererStatistics& statistics);
     ~RendererMockWithMockDisplay() override;
 
-    IDisplayController* createDisplayControllerFromConfig(const ramses::internal::DisplayConfig& displayConfig) override;
+    IDisplayController* createDisplayControllerFromConfig(const ramses::internal::DisplayConfigData& displayConfig) override;
 
     void markBufferWithSceneForRerender(SceneId sceneId) override;
     void setClearFlags(DeviceResourceHandle bufferDeviceHandle, ClearFlags clearFlags) override;

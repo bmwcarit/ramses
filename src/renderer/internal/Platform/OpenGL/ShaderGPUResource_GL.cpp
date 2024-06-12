@@ -17,7 +17,7 @@ namespace ramses::internal
         : ShaderGPUResource(shaderProgramInfo.shaderProgramHandle)
         , m_shaderProgramInfo(std::move(shaderProgramInfo))
     {
-        preloadVariableLocations(effect);
+        init(effect);
     }
 
     ShaderGPUResource_GL::~ShaderGPUResource_GL()
@@ -62,37 +62,51 @@ namespace ramses::internal
         return slot;
     }
 
-    void ShaderGPUResource_GL::preloadVariableLocations(const EffectResource& effect)
+    UniformBufferBinding ShaderGPUResource_GL::getUniformBufferBinding(DataFieldHandle field) const
+    {
+        assert(field.asMemoryHandle() < m_uniformBufferBindings.size());
+        const auto uboBinding = m_uniformBufferBindings[field.asMemoryHandle()];
+        assert(uboBinding.isValid());
+
+        return uboBinding;
+    }
+
+    void ShaderGPUResource_GL::init(const EffectResource& effect)
     {
         const EffectInputInformationVector& uniformInputs = effect.getUniformInputs();
         const EffectInputInformationVector& attributeInputs = effect.getAttributeInputs();
 
         const size_t vertexInputCount = attributeInputs.size();
-        const size_t globalInputCount = uniformInputs.size();
+        const size_t uniformInputWithoutUBOFieldsCount = std::count_if(uniformInputs.begin(), uniformInputs.end(), [](const auto& i) { return !EffectInputInformation::IsUniformBufferField(i); });
 
-        m_attributeLocationMap.resize(vertexInputCount);
-        m_uniformLocationMap.resize(globalInputCount);
+        m_attributeLocationMap.reserve(vertexInputCount);
+        m_uniformLocationMap.reserve(uniformInputWithoutUBOFieldsCount);
+        m_uniformBufferBindings.reserve(uniformInputWithoutUBOFieldsCount);
 
         for (uint32_t i = 0u; i < vertexInputCount; ++i)
-        {
-            const GLInputLocation location = loadAttributeLocation(effect, attributeInputs[i]);
-            m_attributeLocationMap[i] = location;
-        }
+            m_attributeLocationMap.push_back(loadAttributeLocation(effect, attributeInputs[i]));
 
         TextureSlot slotCounter = 0; // texture unit 0
-        for (uint32_t i = 0; i < globalInputCount; ++i)
+        for (const auto& input : uniformInputs)
         {
-            const EffectInputInformation& input = uniformInputs[i];
             if (IsTextureSamplerType(input.dataType))
             {
                 TextureSlotInfo bufferSlot;
                 bufferSlot.slot = slotCounter++;
                 bufferSlot.textureType = GetTextureTypeFromDataType(input.dataType);
-                m_bufferSlots.put(DataFieldHandle(i), bufferSlot);
+                m_bufferSlots.put(input.dataFieldHandle, bufferSlot);
             }
 
-            const GLInputLocation location = loadUniformLocation(effect, input);
-            m_uniformLocationMap[i] = location;
+            if (EffectInputInformation::IsUniformBuffer(input))
+            {
+                m_uniformLocationMap.emplace_back(GLInputLocation{});
+                m_uniformBufferBindings.push_back(input.uniformBufferBinding);
+            }
+            else if (!EffectInputInformation::IsUniformBufferField(input))
+            {
+                m_uniformLocationMap.push_back(loadUniformLocation(effect, input));
+                m_uniformBufferBindings.emplace_back(UniformBufferBinding{});
+            }
         }
     }
 

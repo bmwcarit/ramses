@@ -10,13 +10,17 @@
 
 #include "internal/SceneGraph/SceneAPI/EDataType.h"
 #include "internal/SceneGraph/SceneAPI/EFixedSemantics.h"
+#include "internal/SceneGraph/SceneAPI/SceneTypes.h"
 #include "internal/PlatformAbstraction/Collections/Vector.h"
+#include "SceneTypes.h"
 
 namespace ramses::internal
 {
     struct DataFieldInfo
     {
-        explicit DataFieldInfo(EDataType dataType_ = EDataType::Invalid, uint32_t elementCount_ = 1u, EFixedSemantics semantics_ = EFixedSemantics::Invalid)
+        explicit DataFieldInfo(EDataType dataType_ = EDataType::Invalid,
+            uint32_t elementCount_ = 1u,
+            EFixedSemantics semantics_ = EFixedSemantics::Invalid)
             : dataType(dataType_)
             , elementCount(elementCount_)
             , semantics(semantics_)

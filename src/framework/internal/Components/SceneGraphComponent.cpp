@@ -89,15 +89,14 @@ namespace ramses::internal
         }
     }
 
-    // TODO(tobias) remove mode, already given with publish
-    void SceneGraphComponent::sendCreateScene(const Guid& to, const SceneId& sceneId, [[maybe_unused]] EScenePublicationMode mode)
+    void SceneGraphComponent::sendCreateScene(const Guid& to, const SceneInfo& sceneInfo)
     {
-        LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::sendCreateScene: sceneId {}, to {}", sceneId, to);
+        LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::sendCreateScene: sceneId {}, to {}", sceneInfo.sceneID, to);
 
-        const SceneInfo* info = m_locallyPublishedScenes.get(sceneId);
+        const SceneInfo* info = m_locallyPublishedScenes.get(sceneInfo.sceneID);
         if (!info)
         {
-            LOG_ERROR(CONTEXT_FRAMEWORK, "SceneGraphComponent::sendCreateScene: scene not published, sceneId {}", sceneId);
+            LOG_ERROR(CONTEXT_FRAMEWORK, "SceneGraphComponent::sendCreateScene: scene not published, sceneId {}", sceneInfo.sceneID);
             // return;   // TODO: lots of tests must be fixed for this check
         }
 
@@ -111,14 +110,14 @@ namespace ramses::internal
                 }
                 else
                 {
-                    m_sceneRendererHandler->handleInitializeScene(SceneInfo(sceneId, "", mode), m_myID);
+                    m_sceneRendererHandler->handleInitializeScene(sceneInfo, m_myID);
                 }
             }
         }
         else
         {
-            assert(mode != EScenePublicationMode::LocalOnly);
-            m_communicationSystem.sendInitializeScene(to, sceneId);
+            assert(sceneInfo.publicationMode != EScenePublicationMode::LocalOnly);
+            m_communicationSystem.sendInitializeScene(to, sceneInfo.sceneID);
         }
     }
 
@@ -143,7 +142,7 @@ namespace ramses::internal
                     }
                     alreadyCompressed = true;
                 }
-                m_communicationSystem.sendSceneUpdate(to, sceneId, SceneUpdateSerializer(sceneUpdate, sceneStatistics));
+                m_communicationSystem.sendSceneUpdate(to, sceneId, SceneUpdateSerializer(sceneUpdate, sceneStatistics, m_featureLevel));
             }
         }
 
@@ -152,19 +151,17 @@ namespace ramses::internal
             m_sceneRendererHandler->handleSceneUpdate(sceneId, std::move(sceneUpdate), m_myID);
     }
 
-    void SceneGraphComponent::sendPublishScene(SceneId sceneId, EScenePublicationMode mode, std::string_view name)
+    void SceneGraphComponent::sendPublishScene(const SceneInfo& sceneInfo)
     {
-        LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::publishScene: publishing scene: {} mode: {}", sceneId, EnumToString(mode));
-
-        SceneInfo info(sceneId, name, mode);
+        LOG_INFO(CONTEXT_FRAMEWORK, "SceneGraphComponent::publishScene: publishing scene: {} mode: {}", sceneInfo.sceneID, EnumToString(sceneInfo.publicationMode));
 
         if (m_sceneRendererHandler)
-            m_sceneRendererHandler->handleNewSceneAvailable(info, m_myID);
+            m_sceneRendererHandler->handleNewSceneAvailable(sceneInfo, m_myID);
 
-        if (mode != EScenePublicationMode::LocalOnly && m_connected)
-            m_communicationSystem.broadcastNewScenesAvailable({info}, m_featureLevel);
+        if (sceneInfo.publicationMode != EScenePublicationMode::LocalOnly && m_connected)
+            m_communicationSystem.broadcastNewScenesAvailable({ sceneInfo }, m_featureLevel);
 
-        m_locallyPublishedScenes.put(sceneId, info);
+        m_locallyPublishedScenes.put(sceneInfo.sceneID, sceneInfo);
     }
 
     void SceneGraphComponent::sendUnpublishScene(SceneId sceneId, EScenePublicationMode mode)
@@ -301,12 +298,12 @@ namespace ramses::internal
         if (enableLocalOnlyOptimization)
         {
             LOG_INFO(CONTEXT_CLIENT, "SceneGraphComponent::handleCreateScene: creating scene {} (direct)", scene.getSceneId());
-            sceneLogic = new ClientSceneLogicDirect(*this, scene, m_resourceComponent, m_myID);
+            sceneLogic = new ClientSceneLogicDirect(*this, scene, m_resourceComponent, m_myID, m_featureLevel);
         }
         else
         {
             LOG_INFO(CONTEXT_CLIENT, "SceneGraphComponent::handleCreateScene: creating scene {} (shadow copy)", scene.getSceneId());
-            sceneLogic = new ClientSceneLogicShadowCopy(*this, scene, m_resourceComponent, m_myID);
+            sceneLogic = new ClientSceneLogicShadowCopy(*this, scene, m_resourceComponent, m_myID, m_featureLevel);
         }
         m_sceneEventConsumers.put(sceneId, &eventConsumer);
         m_clientSceneLogicMap.put(sceneId, sceneLogic);
@@ -515,7 +512,7 @@ namespace ramses::internal
 
         // start with fresh deinitializer
         // TODO(tobias) should already be cleared when unsub was sent ou for this scene
-        it->second.sceneUpdateDeserializer = std::make_unique<SceneUpdateStreamDeserializer>();
+        it->second.sceneUpdateDeserializer = std::make_unique<SceneUpdateStreamDeserializer>(m_featureLevel);
 
         m_sceneRendererHandler->handleInitializeScene(it->second.info, providerID);
     }
@@ -598,8 +595,9 @@ namespace ramses::internal
 
                     m_remoteScenes[newScene.sceneID] = ReceivedScene{ newScene, providerID, nullptr };
 
+                    assert(newScene.publicationMode == EScenePublicationMode::LocalAndRemote);
                     if (m_sceneRendererHandler)
-                        m_sceneRendererHandler->handleNewSceneAvailable(SceneInfo(newScene.sceneID, newScene.friendlyName, EScenePublicationMode::LocalAndRemote), providerID);
+                        m_sceneRendererHandler->handleNewSceneAvailable(newScene, providerID);
                 }
                 else
                 {

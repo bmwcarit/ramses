@@ -29,7 +29,7 @@ namespace ramses::internal
         const ramses::UniformInput& jointMatInput,
         std::string_view name,
         sceneObjectId_t id)
-        : RamsesBindingImpl{ scene, name, id }
+        : RamsesBindingImpl{ scene, name, id, appearanceBinding.getRamsesAppearance() }
         , m_joints{ std::move(joints) }
         , m_inverseBindMatrices(inverseBindMatrices)
         , m_appearanceBinding{ appearanceBinding }
@@ -67,7 +67,7 @@ namespace ramses::internal
         inverseBindMatData.reserve(skinBinding.m_inverseBindMatrices.size() * 16u);
         for (const auto& mat : skinBinding.m_inverseBindMatrices)
         {
-            inverseBindMatData.insert(inverseBindMatData.begin(), begin(mat), end(mat));
+            inverseBindMatData.insert(inverseBindMatData.end(), begin(mat), end(mat));
         }
         const auto fbInverseBindMatData = builder.CreateVector(inverseBindMatData);
 

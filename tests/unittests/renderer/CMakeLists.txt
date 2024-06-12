@@ -8,6 +8,7 @@
 
 add_subdirectory(renderer-test-common)
 add_subdirectory(renderer-lib)
+add_subdirectory(PlatformFactoryFake)
 add_subdirectory(ramses-renderer)
 
 if(ramses-sdk_ENABLE_WINDOW_TYPE_WINDOWS)

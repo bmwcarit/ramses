@@ -13,7 +13,7 @@
 #include "internal/RendererLib/Types.h"
 #include "internal/SceneGraph/Scene/EScenePublicationMode.h"
 #include "internal/Components/SceneUpdate.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "internal/PlatformAbstraction/VariantWrapper.h"
 #include "impl/DataTypesImpl.h"
 
@@ -30,6 +30,9 @@ namespace ramses::internal
         {
             SceneId scene;
             EScenePublicationMode publicationMode = EScenePublicationMode::LocalAndRemote;
+            ERenderBackendCompatibility renderBackendCompatibility = ERenderBackendCompatibility::OpenGL;
+            EVulkanAPIVersion vulkanAPIVersion = EVulkanAPIVersion::Invalid;
+            ESPIRVVersion spirvVersion = ESPIRVVersion::Invalid;
         };
 
         struct SceneUnpublished
@@ -111,7 +114,7 @@ namespace ramses::internal
         struct CreateDisplay
         {
             DisplayHandle display;
-            DisplayConfig config;
+            DisplayConfigData config;
             IBinaryShaderCache* binaryShaderCache{nullptr};
         };
 

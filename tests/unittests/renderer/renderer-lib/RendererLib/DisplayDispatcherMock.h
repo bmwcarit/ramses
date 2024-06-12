@@ -19,19 +19,19 @@ namespace ramses::internal
     class DisplayDispatcherMock : public DisplayDispatcher
     {
     public:
-        DisplayDispatcherMock(const RendererConfig& config, IRendererSceneEventSender& rendererSceneSender, IThreadAliveNotifier& notifier);
+        DisplayDispatcherMock(const RendererConfigData& config, IRendererSceneEventSender& rendererSceneSender, IThreadAliveNotifier& notifier);
         ~DisplayDispatcherMock() override;
 
-        MOCK_METHOD(Display, createDisplayBundle, (DisplayHandle, const DisplayConfig&), (override));
+        MOCK_METHOD(Display, createDisplayBundle, (DisplayHandle, const DisplayConfigData&), (override));
     };
 
     class DisplayDispatcherFacade : public DisplayDispatcherMock
     {
     public:
-        DisplayDispatcherFacade(const RendererConfig& config, IRendererSceneEventSender& rendererSceneSender, IThreadAliveNotifier& notifier ,bool threaded);
+        DisplayDispatcherFacade(const RendererConfigData& config, IRendererSceneEventSender& rendererSceneSender, IThreadAliveNotifier& notifier ,bool threaded);
         ~DisplayDispatcherFacade() override;
 
-        Display createDisplayBundle(DisplayHandle displayHandle, const DisplayConfig& dispConfig) override;
+        Display createDisplayBundle(DisplayHandle displayHandle, const DisplayConfigData& dispConfig) override;
 
         template <template<typename> class MOCK_TYPE = ::testing::StrictMock>
         MOCK_TYPE<DisplayBundleMock>* getDisplayBundleMock(DisplayHandle display);

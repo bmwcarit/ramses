@@ -21,12 +21,13 @@
 
 namespace ramses::internal
 {
-    ClientSceneLogicBase::ClientSceneLogicBase(ISceneGraphSender& sceneGraphSender, ClientScene& scene, IResourceProviderComponent& res, const Guid& clientAddress)
+    ClientSceneLogicBase::ClientSceneLogicBase(ISceneGraphSender& sceneGraphSender, ClientScene& scene, IResourceProviderComponent& res, const Guid& clientAddress, EFeatureLevel featureLevel)
         : m_scenegraphSender(sceneGraphSender)
         , m_resourceComponent(res)
         , m_myID(clientAddress)
         , m_sceneId(scene.getSceneId())
         , m_scene(scene)
+        , m_featureLevel{ featureLevel }
     {
         std::fill(m_resourceCount.begin(), m_resourceCount.end(), 0);
         std::fill(m_resourceMaxSize.begin(), m_resourceMaxSize.end(), 0);
@@ -43,7 +44,8 @@ namespace ramses::internal
         if (!m_scenePublicationMode.has_value())
         {
             m_scenePublicationMode = publicationMode;
-            m_scenegraphSender.sendPublishScene(m_sceneId, publicationMode, m_scene.getName());
+            SceneInfo sceneInfo{ m_sceneId, m_scene.getName(), publicationMode, m_scene.getRenderBackendCompatibility(), m_scene.getVulkanAPIVersion(), m_scene.getSPIRVVersion() };
+            m_scenegraphSender.sendPublishScene(sceneInfo);
         }
     }
 
@@ -114,7 +116,7 @@ namespace ramses::internal
         }
 
         SceneUpdate sceneUpdate;
-        SceneActionCollectionCreator creator(sceneUpdate.actions);
+        SceneActionCollectionCreator creator(sceneUpdate.actions, m_featureLevel);
         SceneDescriber::describeScene<IScene>(scene, creator);
 
         m_resourceChangesSinceLastFlush.clear();
@@ -136,7 +138,8 @@ namespace ramses::internal
         assert(m_scenePublicationMode.has_value());
         for(const auto& subscriber : m_subscribersWaitingForScene)
         {
-            m_scenegraphSender.sendCreateScene(subscriber, m_sceneId, *m_scenePublicationMode);
+            SceneInfo sceneInfo{ m_sceneId, scene.getName(), *m_scenePublicationMode, scene.getRenderBackendCompatibility(), scene.getVulkanAPIVersion(), scene.getSPIRVVersion() };
+            m_scenegraphSender.sendCreateScene(subscriber, sceneInfo);
         }
         m_scene.getStatisticCollection().statSceneActionsSent.incCounter(sceneUpdate.actions.numberOfActions()*static_cast<uint32_t>(m_subscribersWaitingForScene.size()));
         m_scenegraphSender.sendSceneUpdate(m_subscribersWaitingForScene, std::move(sceneUpdate), m_sceneId, *m_scenePublicationMode, m_scene.getStatisticCollection());

@@ -15,7 +15,7 @@
 
 namespace ramses::internal
 {
-    class RendererConfig;
+    class RendererConfigData;
 
     template <template<typename> class MOCK_TYPE>
     class PlatformMock : public IPlatform
@@ -24,7 +24,7 @@ namespace ramses::internal
         explicit PlatformMock();
         ~PlatformMock() override;
 
-        MOCK_METHOD(IRenderBackend*, createRenderBackend, (const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler), (override));
+        MOCK_METHOD(IRenderBackend*, createRenderBackend, (const DisplayConfigData& displayConfig, IWindowEventHandler& windowEventHandler), (override));
         MOCK_METHOD(void, destroyRenderBackend, (), (override));
         MOCK_METHOD(IResourceUploadRenderBackend*, createResourceUploadRenderBackend, (), (override));
         MOCK_METHOD(void, destroyResourceUploadRenderBackend, (), (override));

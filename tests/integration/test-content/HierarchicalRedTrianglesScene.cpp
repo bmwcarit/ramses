@@ -11,6 +11,8 @@
 #include "ramses/client/ramses-utils.h"
 #include "ramses/client/Scene.h"
 #include "ramses/client/MeshNode.h"
+#include "ramses/client/Appearance.h"
+#include "ramses/client/Effect.h"
 
 namespace ramses::internal
 {
@@ -25,8 +27,8 @@ namespace ramses::internal
         , m_scaleNode1(*m_scene.createNode())
         , m_scaleNode2(*m_scene.createNode())
     {
-        ramses::Effect* effect = getTestEffect("ramses-test-client-basic");
-        Triangle redTriangle(m_scene, *effect, TriangleAppearance::EColor_Red);
+        ramses::Effect* effect = createTestEffect(state);
+        Triangle redTriangle(m_scene, *effect, TriangleAppearance::EColor::Red);
 
         m_groupNode = m_scene.createNode();
         std::array<ramses::Node*, 3> subGroups{};
@@ -95,16 +97,38 @@ namespace ramses::internal
             m_groupNode->setVisibility(ramses::EVisibilityMode::Off);
             break;
         case ROTATE_AND_SCALE:
-            m_scaleNode1.setScaling({0.3f, 1.f, 1.f});
-            m_rotateNode1.setRotation({0.f, 0.f, -90.f}, ramses::ERotationType::Euler_XYZ);
-            m_scaleNode2.setScaling({0.3f, 1.f, 1.f});
-            m_rotateNode2.setRotation({0.f, 0.f, -90.f}, ramses::ERotationType::Euler_XYZ);
+        case ROTATE_AND_SCALE_UBO1:
+        case ROTATE_AND_SCALE_UBO2:
+        case ROTATE_AND_SCALE_UBO3:
+            m_scaleNode1.setScaling({ 0.3f, 1.f, 1.f });
+            m_rotateNode1.setRotation({ 0.f, 0.f, -90.f }, ramses::ERotationType::Euler_XYZ);
+            m_scaleNode2.setScaling({ 0.3f, 1.f, 1.f });
+            m_rotateNode2.setRotation({ 0.f, 0.f, -90.f }, ramses::ERotationType::Euler_XYZ);
+            if (state != ROTATE_AND_SCALE)
+            {
+                const auto uniform = redTriangle.GetAppearance().getEffect().findUniformInput("generalUbo.variant");
+                assert(uniform);
+                redTriangle.GetAppearance().setInputValue(*uniform, static_cast<int32_t>(state - ROTATE_AND_SCALE_UBO1 + 1));
+            }
             break;
         case DELETE_MESHNODE:
             destroySubTree(m_subGroup2Node);
             break;
         default:
             break;
+        }
+    }
+
+    Effect* HierarchicalRedTrianglesScene::createTestEffect(uint32_t state)
+    {
+        switch (state)
+        {
+        case ROTATE_AND_SCALE_UBO1:
+        case ROTATE_AND_SCALE_UBO2:
+        case ROTATE_AND_SCALE_UBO3:
+            return getTestEffect("ramses-test-client-basic-ubo");
+        default:
+            return getTestEffect("ramses-test-client-basic");
         }
     }
 

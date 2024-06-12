@@ -45,10 +45,10 @@ namespace ramses::internal
     {
         const std::string sceneName("bla");
         const SceneId sceneID(12u);
-        SceneInfo sceneInfo(sceneID, sceneName);
+        SceneInfo sceneInfo{ sceneID, sceneName };
         IScene& createdScene = rendererScenes.createScene(sceneInfo);
 
-        SceneSizeInformation sceneSizeInfo(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18);
+        SceneSizeInformation sceneSizeInfo(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19);
         createdScene.preallocateSceneSize(sceneSizeInfo);
 
         EXPECT_EQ(1u, rendererScenes.size());
@@ -64,7 +64,7 @@ namespace ramses::internal
     TEST_F(ARendererScenes, destroysSceneAndStagingInfo)
     {
         const SceneId sceneID(12u);
-        rendererScenes.createScene(SceneInfo(sceneID));
+        rendererScenes.createScene(SceneInfo{ sceneID });
 
         rendererScenes.destroyScene(sceneID);
 
@@ -76,13 +76,13 @@ namespace ramses::internal
     TEST_F(ARendererScenes, canIterateOverScenes)
     {
         const SceneId sceneID1(12u);
-        rendererScenes.createScene(SceneInfo(sceneID1));
+        rendererScenes.createScene(SceneInfo{ sceneID1 });
 
         const SceneId sceneID2(13u);
-        rendererScenes.createScene(SceneInfo(sceneID2));
+        rendererScenes.createScene(SceneInfo{ sceneID2 });
 
         const SceneId sceneID3(14u);
-        rendererScenes.createScene(SceneInfo(sceneID3));
+        rendererScenes.createScene(SceneInfo{ sceneID3 });
 
         EXPECT_EQ(3u, rendererScenes.size());
         EXPECT_NE(rendererScenes.begin(), rendererScenes.end());

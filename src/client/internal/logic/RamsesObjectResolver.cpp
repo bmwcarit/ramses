@@ -10,6 +10,7 @@
 
 #include "impl/ErrorReporting.h"
 
+#include "internal/SceneGraph/Scene/SceneMergeHandleMapping.h"
 #include "ramses/client/Node.h"
 #include "ramses/client/Camera.h"
 #include "ramses/client/Appearance.h"
@@ -24,9 +25,10 @@
 
 namespace ramses::internal
 {
-    RamsesObjectResolver::RamsesObjectResolver(ErrorReporting& errorReporting, SceneImpl& scene)
+    RamsesObjectResolver::RamsesObjectResolver(ErrorReporting& errorReporting, SceneImpl& scene, const SceneMergeHandleMapping* mapping)
         : m_errors(errorReporting)
         , m_scene(scene)
+        , m_mapping(mapping)
     {
     }
 
@@ -63,21 +65,22 @@ namespace ramses::internal
     template <typename T>
     T* RamsesObjectResolver::findRamsesObjectInScene(std::string_view logicNodeName, ramses::sceneObjectId_t objectId) const
     {
-        ramses::SceneObject* sceneObject = m_scene.findObjectById(objectId);
+        const auto newObjectId = m_mapping ? m_mapping->getMapping(objectId) : objectId;
+        auto* sceneObject = m_scene.findObjectById(newObjectId);
 
         if (sceneObject == nullptr)
         {
             m_errors.set(
-                fmt::format("Fatal error during loading from file! Serialized Ramses Logic object '{}' points to a Ramses object (id: {}) which couldn't be found in the provided scene!",
-                    logicNodeName, objectId.getValue()), nullptr);
+                fmt::format("Fatal error during loading from file! Serialized Ramses Logic object '{}' points to a Ramses object (id: {}|{}) which couldn't be found in the provided scene!",
+                    logicNodeName, objectId.getValue(), newObjectId.getValue()), nullptr);
             return nullptr;
         }
 
         T* concreteObject = sceneObject->as<T>();
         if (concreteObject == nullptr)
         {
-            m_errors.set(fmt::format("Fatal error during loading from file! Ramses binding '{}' points to a Ramses scene object (id: {}) which is not of the same type!",
-                logicNodeName, objectId.getValue()), nullptr);
+            m_errors.set(fmt::format("Fatal error during loading from file! Ramses binding '{}' points to a Ramses scene object (id: {}|{}) which is not of the same type!",
+                logicNodeName, objectId.getValue(), newObjectId.getValue()), nullptr);
             return nullptr;
         }
 

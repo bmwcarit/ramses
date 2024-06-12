@@ -15,11 +15,11 @@ namespace ramses::internal
 {
     TEST(ARendererConfig, hasDefaultValuesUponConstruction)
     {
-        const ramses::internal::RendererConfig defaultConfig;
+        const RendererConfigData defaultConfig;
         ramses::RendererConfig config;
         EXPECT_EQ(nullptr, config.impl().getBinaryShaderCache());
 
-        const ramses::internal::RendererConfig& internalConfig = config.impl().getInternalRendererConfig();
+        const auto& internalConfig = config.impl().getInternalRendererConfig();
 
         EXPECT_EQ(defaultConfig.getFrameCallbackMaxPollTime(), internalConfig.getFrameCallbackMaxPollTime());
         EXPECT_EQ(defaultConfig.getRenderThreadLoopTimingReportingPeriod(), internalConfig.getRenderThreadLoopTimingReportingPeriod());
@@ -29,8 +29,11 @@ namespace ramses::internal
     TEST(ARendererConfig, canEnableSystemCompositor)
     {
         ramses::RendererConfig config;
+WARNINGS_PUSH
+WARNING_DISABLE_LINUX(-Wdeprecated-declarations)
         EXPECT_TRUE(config.enableSystemCompositorControl());
         EXPECT_TRUE(config.impl().getInternalRendererConfig().getSystemCompositorControlEnabled());
+WARNINGS_POP
     }
 
     TEST(ARendererConfig, CanBeCopyAndMoveConstructed)
@@ -91,9 +94,12 @@ namespace ramses::internal
     TEST(ARendererConfig, setsAndGetsWaylandDisplay)
     {
         ramses::RendererConfig config;
+WARNINGS_PUSH
+WARNING_DISABLE_LINUX(-Wdeprecated-declarations)
         EXPECT_TRUE(config.setSystemCompositorWaylandDisplay("xxx"));
         EXPECT_EQ("xxx", config.getSystemCompositorWaylandDisplay());
         EXPECT_EQ("xxx", config.impl().getInternalRendererConfig().getWaylandDisplayForSystemCompositorController());
+WARNINGS_POP
     }
 
     TEST(ARendererConfig, setsAndGetsLoopCountPeriod)

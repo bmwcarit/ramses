@@ -92,7 +92,13 @@ namespace ramses::internal
             return false;
         }
 
-        m_inputSemantics.put(std::string{semanticName}, semanticType);
+        m_inputSemantics[std::string{semanticName}] = semanticType;
+        return true;
+    }
+
+    bool EffectDescriptionImpl::setSemantic(uint32_t uniformBufferBinding, EFixedSemantics semanticType)
+    {
+        m_inputSemantics[UniformBufferBinding{ uniformBufferBinding }] = semanticType;
         return true;
     }
 
@@ -100,6 +106,12 @@ namespace ramses::internal
     {
         const EFixedSemantics semanticTypeInternal = EffectInputSemanticUtils::GetEffectInputSemanticInternal(semanticType);
         return setSemantic(semanticName, semanticTypeInternal);
+    }
+
+    bool EffectDescriptionImpl::setUniformSemantic(uint32_t uniformBufferBinding, EEffectUniformSemantic semanticType)
+    {
+        const EFixedSemantics semanticTypeInternal = EffectInputSemanticUtils::GetEffectInputSemanticInternal(semanticType);
+        return setSemantic(uniformBufferBinding, semanticTypeInternal);
     }
 
     bool EffectDescriptionImpl::setAttributeSemantic(std::string_view semanticName, EEffectAttributeSemantic semanticType)
@@ -143,7 +155,7 @@ namespace ramses::internal
         return nullptr;
     }
 
-    const EffectDescriptionImpl::SemanticsMap& EffectDescriptionImpl::getSemanticsMap() const
+    const SemanticsMap& EffectDescriptionImpl::getSemanticsMap() const
     {
         return m_inputSemantics;
     }

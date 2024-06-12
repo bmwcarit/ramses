@@ -9,13 +9,8 @@
 add_subdirectory(internal)
 
 if(ramses-sdk_TEXT_SUPPORT)
-    list(APPEND CLIENT_IMPL_SOURCES     impl/text/*.h
+    list(APPEND TEXT_IMPL_SOURCES       impl/text/*.h
                                         impl/text/*.cpp)
-endif()
-
-if(ramses-sdk_ENABLE_LOGIC)
-    list(APPEND CLIENT_IMPL_SOURCES     impl/logic/*.h
-                                        impl/logic/*.cpp)
 endif()
 
 createModule(
@@ -24,7 +19,9 @@ createModule(
     ENABLE_INSTALL          OFF
     SRC_FILES               impl/*.h
                             impl/*.cpp
-                            ${CLIENT_IMPL_SOURCES}
+                            impl/logic/*.h
+                            impl/logic/*.cpp
+                            ${TEXT_IMPL_SOURCES}
     DEPENDENCIES            ramses-client-internal
                             ramses-framework
 )

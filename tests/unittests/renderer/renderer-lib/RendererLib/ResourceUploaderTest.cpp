@@ -250,7 +250,7 @@ namespace ramses::internal
 
     TEST_F(AResourceUploader, canStoreBinaryShader)
     {
-        EffectResource res("", "", "", {}, EffectInputInformationVector(), EffectInputInformationVector(), "");
+        EffectResource res("", "", "", {}, {}, EffectInputInformationVector(), EffectInputInformationVector(), "", EFeatureLevel_Latest);
         const SceneId sceneUsingResource(14);
 
         BinaryShaderProviderFake binaryShaderProvider;
@@ -264,7 +264,7 @@ namespace ramses::internal
 
     TEST_F(AResourceUploader, doesNoStoreBinaryShaderIfFailedToGetBinaryShaderFromDevice)
     {
-        EffectResource res("", "", "", {}, EffectInputInformationVector(), EffectInputInformationVector(), "");
+        EffectResource res("", "", "", {}, {}, EffectInputInformationVector(), EffectInputInformationVector(), "", EFeatureLevel_Latest);
         const SceneId sceneUsingResource(14);
 
         BinaryShaderProviderFake binaryShaderProvider;
@@ -279,7 +279,7 @@ namespace ramses::internal
 
     TEST_F(AResourceUploader, ifShaderShouldNotBeCachedNoDownloadWillHappen)
     {
-        EffectResource res("", "", "", {}, EffectInputInformationVector(), EffectInputInformationVector(), "");
+        EffectResource res("", "", "", {}, {}, EffectInputInformationVector(), EffectInputInformationVector(), "", EFeatureLevel_Latest);
         const SceneId sceneUsingResource(14);
 
         BinaryShaderProviderFake binaryShaderProvider;
@@ -293,7 +293,7 @@ namespace ramses::internal
 
     TEST_F(AResourceUploader, doesNotTryToStoreBinaryShaderIfNoBinaryShaderCacheAvailable)
     {
-        EffectResource res("", "", "", {}, EffectInputInformationVector(), EffectInputInformationVector(), "");
+        EffectResource res("", "", "", {}, {}, EffectInputInformationVector(), EffectInputInformationVector(), "", EFeatureLevel_Latest);
         const SceneId sceneUsingResource(14);
 
         EXPECT_CALL(renderer.deviceMock, getBinaryShader(_, _, _)).Times(0);
@@ -302,7 +302,7 @@ namespace ramses::internal
 
     TEST_F(AResourceUploader, doesNotReturnDeviceHandleForEffectResourceWithoutBinaryShaderCache)
     {
-        EffectResource res("", "", "", {}, EffectInputInformationVector(), EffectInputInformationVector(), "");
+        EffectResource res("", "", "", {}, {}, EffectInputInformationVector(), EffectInputInformationVector(), "", EFeatureLevel_Latest);
         ManagedResource managedRes{ &res, dummyManagedResourceCallback };
         ResourceDescriptor resourceObject;
         resourceObject.resource = managedRes;
@@ -314,7 +314,7 @@ namespace ramses::internal
     {
         ResourceUploader uploaderWithoutCacheOrAsyncUpload(false);
 
-        EffectResource res("", "", "", {}, EffectInputInformationVector(), EffectInputInformationVector(), "");
+        EffectResource res("", "", "", {}, {}, EffectInputInformationVector(), EffectInputInformationVector(), "", EFeatureLevel_Latest);
         ManagedResource managedRes{ &res, dummyManagedResourceCallback };
         ResourceDescriptor resourceObject;
         resourceObject.resource = managedRes;
@@ -329,7 +329,7 @@ namespace ramses::internal
         BinaryShaderProviderFake binaryShaderProvider;
         ResourceUploader uploaderWithBinaryProvider(true, &binaryShaderProvider);
 
-        EffectResource res("", "", "", {}, EffectInputInformationVector(), EffectInputInformationVector(), "");
+        EffectResource res("", "", "", {}, {}, EffectInputInformationVector(), EffectInputInformationVector(), "", EFeatureLevel_Latest);
         EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(Ref(res))).Times(1);
 
         EXPECT_CALL(binaryShaderProvider, binaryShaderFormatsReported());
@@ -347,7 +347,7 @@ namespace ramses::internal
         BinaryShaderProviderFake binaryShaderProvider;
         ResourceUploader uploaderWithCacheButNoAsyncUpload(false, &binaryShaderProvider);
 
-        EffectResource res("", "", "", {}, EffectInputInformationVector(), EffectInputInformationVector(), "");
+        EffectResource res("", "", "", {}, {}, EffectInputInformationVector(), EffectInputInformationVector(), "", EFeatureLevel_Latest);
         EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(Ref(res))).Times(1);
 
         EXPECT_CALL(binaryShaderProvider, binaryShaderFormatsReported());
@@ -364,7 +364,7 @@ namespace ramses::internal
 
     TEST_F(AResourceUploader, uploadsEffectResourceFromBinaryShaderCacheWhenCacheHit)
     {
-        EffectResource res("", "", "", {}, EffectInputInformationVector(), EffectInputInformationVector(), "");
+        EffectResource res("", "", "", {}, {}, EffectInputInformationVector(), EffectInputInformationVector(), "", EFeatureLevel_Latest);
         ManagedResource managedRes{ &res, dummyManagedResourceCallback };
 
         uint8_t binaryShaderData[] = { 1u, 2u, 3u, 4u };
@@ -395,7 +395,7 @@ namespace ramses::internal
 
     TEST_F(AResourceUploader, doesNotReturnDeviceHandleForEffectResourceWithBrokenBinaryShaderCache)
     {
-        EffectResource res("", "", "", {}, EffectInputInformationVector(), EffectInputInformationVector(), "");
+        EffectResource res("", "", "", {}, {}, EffectInputInformationVector(), EffectInputInformationVector(), "", EFeatureLevel_Latest);
         ManagedResource managedRes{ &res, dummyManagedResourceCallback };
         SceneId sceneUsingResource(14);
 
@@ -433,7 +433,7 @@ namespace ramses::internal
         BinaryShaderProviderFake binaryShaderProvider;
         ResourceUploader uploaderWithBinaryProvider(true, &binaryShaderProvider);
 
-        EffectResource res("", "", "", {}, EffectInputInformationVector(), EffectInputInformationVector(), "");
+        EffectResource res("", "", "", {}, {}, EffectInputInformationVector(), EffectInputInformationVector(), "", EFeatureLevel_Latest);
         EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(Ref(res))).Times(3);
 
         EXPECT_CALL(binaryShaderProvider, binaryShaderFormatsReported()).Times(3);
@@ -462,9 +462,9 @@ namespace ramses::internal
         ResourceUploader uploaderWithBinaryProvider2(true, &binaryShaderProvider);
         ResourceUploader uploaderWithBinaryProvider3(true, &binaryShaderProvider);
 
-        EffectResource res1("1", "", "", {}, EffectInputInformationVector(), EffectInputInformationVector(), "");
-        EffectResource res2("2", "", "", {}, EffectInputInformationVector(), EffectInputInformationVector(), "");
-        EffectResource res3("3", "", "", {}, EffectInputInformationVector(), EffectInputInformationVector(), "");
+        EffectResource res1("1", "", "", {}, {}, EffectInputInformationVector(), EffectInputInformationVector(), "", EFeatureLevel_Latest);
+        EffectResource res2("2", "", "", {}, {}, EffectInputInformationVector(), EffectInputInformationVector(), "", EFeatureLevel_Latest);
+        EffectResource res3("3", "", "", {}, {}, EffectInputInformationVector(), EffectInputInformationVector(), "", EFeatureLevel_Latest);
         EXPECT_CALL(managedResourceDeleter, managedResourceDeleted(_)).Times(3);
         EXPECT_CALL(binaryShaderProvider, binaryShaderFormatsReported()).Times(3);
 

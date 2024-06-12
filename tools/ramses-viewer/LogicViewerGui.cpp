@@ -29,7 +29,6 @@
 #include "ramses/client/logic/AnchorPoint.h"
 #include "ramses/client/logic/SkinBinding.h"
 #include "ramses/client/logic/RenderBufferBinding.h"
-#include "internal/logic/StdFilesystemWrapper.h"
 #include "internal/PlatformAbstraction/FmtBase.h"
 #include "glm/gtc/type_ptr.hpp"
 
@@ -41,6 +40,10 @@
 #ifndef _MSC_VER
 #pragma GCC diagnostic pop
 #endif
+
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 template <> struct fmt::formatter<std::chrono::microseconds>
 {
@@ -125,21 +128,6 @@ namespace ramses::internal
                 name = "RenderBufferBinding";
             }
             return name;
-        }
-
-        template <typename... Args>
-        void HelpMarker(const char* desc, Args&& ... args)
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg) 3rd party interface
-            ImGui::TextDisabled("(?)");
-            if (ImGui::IsItemHovered())
-            {
-                ImGui::BeginTooltip();
-                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                ImGui::TextUnformatted(fmt::format(desc, args...).c_str());
-                ImGui::PopTextWrapPos();
-                ImGui::EndTooltip();
-            }
         }
     }
 
@@ -306,7 +294,7 @@ namespace ramses::internal
     {
         ImGui::TextUnformatted(fmt::format("Average Update Time: {} ms", m_viewer.getUpdateReport(engine).getTotalTime().average).c_str());
         ImGui::SameLine();
-        HelpMarker("Time it took to update the whole logic nodes network (LogicEngine::update()).");
+        imgui::HelpMarker("Time it took to update the whole logic nodes network (LogicEngine::update()).");
         ImGui::SameLine();
         std::string detailsText = "Show Details";
         if (m_viewer.getLogicEngines().size() > 1)
@@ -334,24 +322,24 @@ namespace ramses::internal
             ImGui::Separator();
             ImGui::TextUnformatted("Summary:");
             ImGui::SameLine();
-            HelpMarker("Timing data is collected and summarized for {} frames.\n'min', 'max', 'avg' show the minimum, maximum, and average value for the measured interval.",
+            imgui::HelpMarker("Timing data is collected and summarized for {} frames.\n'min', 'max', 'avg' show the minimum, maximum, and average value for the measured interval.",
                 m_settings.updateReportInterval);
             ImGui::Indent();
 
             const auto& updateTime = report.getTotalTime();
             ImGui::TextUnformatted(fmt::format("Total Update Time  (ms): max:{} min:{} avg:{}", updateTime.maxValue, updateTime.minValue, updateTime.average).c_str());
             ImGui::SameLine();
-            HelpMarker("Time it took to update the whole logic nodes network (LogicEngine::update()).");
+            imgui::HelpMarker("Time it took to update the whole logic nodes network (LogicEngine::update()).");
 
             const auto& sortTime = report.getSortTime();
             ImGui::TextUnformatted(fmt::format("Topology Sort Time (ms): max:{} min:{} avg:{}", sortTime.maxValue, sortTime.minValue, sortTime.average).c_str());
             ImGui::SameLine();
-            HelpMarker("Time it took to sort logic nodes by their topology during update (see ramses::LogicEngineReport::getTopologySortExecutionTime()");
+            imgui::HelpMarker("Time it took to sort logic nodes by their topology during update (see ramses::LogicEngineReport::getTopologySortExecutionTime()");
 
             const auto& links = report.getLinkActivations();
             ImGui::TextUnformatted(fmt::format("Activated Links: max:{} min:{} avg:{}", links.maxValue, links.minValue, links.average).c_str());
             ImGui::SameLine();
-            HelpMarker("Number of input properties that had been updated by an output property (see ramses::LogicEngineReport::getTotalLinkActivations()).");
+            imgui::HelpMarker("Number of input properties that had been updated by an output property (see ramses::LogicEngineReport::getTotalLinkActivations()).");
             ImGui::Unindent();
 
             ImGui::TextUnformatted(fmt::format("Details for the longest update ({} ms):", longest).c_str());

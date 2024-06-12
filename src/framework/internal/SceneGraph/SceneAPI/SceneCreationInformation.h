@@ -19,17 +19,14 @@ namespace ramses::internal
     struct SceneCreationInformation
     {
         explicit SceneCreationInformation(
-            SceneId id = SceneId(),
-            std::string_view name = {},
-            const SceneSizeInformation& sizeInfo = SceneSizeInformation())
-            : m_id(id)
-            , m_name(name)
-            , m_sizeInfo(sizeInfo)
+            SceneInfo sceneInfo = SceneInfo{},
+            SceneSizeInformation sizeInfo = SceneSizeInformation())
+            : m_sceneInfo(std::move(sceneInfo))
+            , m_sizeInfo(std::move(sizeInfo))
         {
         }
 
-        SceneId              m_id;
-        std::string          m_name;
-        SceneSizeInformation m_sizeInfo;
+        SceneInfo               m_sceneInfo;
+        SceneSizeInformation    m_sizeInfo;
     };
 }

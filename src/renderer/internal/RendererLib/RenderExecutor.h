@@ -18,6 +18,7 @@ namespace ramses::internal
     struct RenderingContext;
     class FrameTimer;
     class IScene;
+    struct DataFieldInfo;
 
     class RenderExecutor
     {
@@ -37,7 +38,7 @@ namespace ramses::internal
         void executeRenderTarget    (RenderTargetHandle renderTarget) const;
         void executeRenderStates    () const;
         void executeEffectAndInputs () const;
-        void executeConstant        (EDataType dataType, uint32_t elementCount, DataInstanceHandle dataInstance, DataFieldHandle dataInstancefield, DataFieldHandle uniformInputField) const;
+        void executeConstant        (const DataFieldInfo& field, DataInstanceHandle dataInstance, DataFieldHandle dataInstancefield, DataFieldHandle uniformInputField) const;
         void executeDrawCall        () const;
 
         void setGlobalInternalStates    (const RendererCachedScene& scene) const;

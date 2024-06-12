@@ -6,10 +6,14 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#version 100
+#version 310 es
 
-uniform highp vec4 color;
+precision highp float;
+uniform vec4 color;
+
+out vec4 fragColor;
+
 void main(void)
 {
-    gl_FragColor = color + vec4(0.1);
+    fragColor = color + vec4(0.1);
 }

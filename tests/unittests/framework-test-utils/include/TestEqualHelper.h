@@ -10,6 +10,7 @@
 
 #include "gtest/gtest.h"
 #include "glm/mat2x2.hpp"
+#include "internal/SceneGraph/SceneAPI/SceneId.h"
 
 namespace ramses::internal
 {
@@ -25,4 +26,7 @@ namespace ramses::internal
             }
         }
     }
+
+    bool operator==(const SceneInfo& a, const SceneInfo& b);
+    bool operator!=(const SceneInfo& a, const SceneInfo& b);
 }

@@ -28,13 +28,13 @@ namespace ramses::internal
             bool    gles = false;
         };
 
-        Context_WGL(EDepthBufferType depthStencilBufferType, HDC displayHandle, WglExtensions procs, const Config& config, uint32_t msaaSampleCount);
-        Context_WGL(Context_WGL& sharedContext, HDC displayHandle, WglExtensions procs, uint32_t msaaSampleCount);
+        Context_WGL(EDepthBufferType depthStencilBufferType, HDC displayHandle, WglExtensions& procs, const Config& config, uint32_t msaaSampleCount);
+        Context_WGL(Context_WGL& sharedContext, HDC displayHandle, WglExtensions& procs, uint32_t msaaSampleCount);
         ~Context_WGL() override;
 
         bool init();
 
-        void* getProcAddress(const char* name) const override;
+        [[nodiscard]] GlProcLoadFunc getGlProcLoadFunc() const override;
 
         // Platform stuff used by other platform modules
         HGLRC getNativeContextHandle() const;
@@ -48,7 +48,7 @@ namespace ramses::internal
         std::vector<int32_t> createContextAttributes(const Config& config);
 
         HDC m_displayHandle;
-        WglExtensions m_ext;
+        const WglExtensions& m_ext;
         // Type is broken in WGL - it has no type abstraction
         const std::vector<int32_t> m_contextAttributes;
         uint32_t m_msaaSampleCount;

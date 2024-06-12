@@ -6,7 +6,7 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //  -------------------------------------------------------------------------
 
-#include "internal/RendererLib/RendererConfig.h"
+#include "internal/RendererLib/RendererConfigData.h"
 #include "RenderBackendMock.h"
 #include "PlatformMock.h"
 #include "internal/RendererLib/RenderingContext.h"
@@ -174,7 +174,7 @@ namespace ramses::internal
 
         IScene& createScene(SceneId sceneId = SceneId())
         {
-            rendererScenes.createScene(SceneInfo(sceneId));
+            rendererScenes.createScene(SceneInfo{ sceneId });
             return rendererScenes.getScene(sceneId);
         }
 
@@ -327,7 +327,7 @@ namespace ramses::internal
         const SceneId sceneId(12u);
         createScene(sceneId);
         const DeviceResourceHandle fakeOffscreenBuffer(313u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 1u, false);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 1u, 0u, false);
         assignSceneToDisplayBuffer(sceneId, 0, fakeOffscreenBuffer);
         EXPECT_EQ(fakeOffscreenBuffer, renderer.getBufferSceneIsAssignedTo(sceneId));
         EXPECT_FALSE(renderer.isSceneAssignedToInterruptibleOffscreenBuffer(sceneId));
@@ -342,7 +342,7 @@ namespace ramses::internal
         const SceneId sceneId(12u);
         createScene(sceneId);
         const DeviceResourceHandle fakeOffscreenBuffer(313u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 1u, true);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 1u, 0u, true);
         assignSceneToDisplayBuffer(sceneId, 0, fakeOffscreenBuffer);
         EXPECT_EQ(fakeOffscreenBuffer, renderer.getBufferSceneIsAssignedTo(sceneId));
         EXPECT_TRUE(renderer.isSceneAssignedToInterruptibleOffscreenBuffer(sceneId));
@@ -358,8 +358,8 @@ namespace ramses::internal
         createScene(sceneId);
         const DeviceResourceHandle ob(313u);
         const DeviceResourceHandle obInterruptible(314u);
-        renderer.registerOffscreenBuffer(ob, 1u, 1u, false);
-        renderer.registerOffscreenBuffer(obInterruptible, 1u, 1u, true);
+        renderer.registerOffscreenBuffer(ob, 1u, 1u, 0u, false);
+        renderer.registerOffscreenBuffer(obInterruptible, 1u, 1u, 0u, true);
 
         assignSceneToDisplayBuffer(sceneId, 0, obInterruptible);
         EXPECT_EQ(obInterruptible, renderer.getBufferSceneIsAssignedTo(sceneId));
@@ -388,7 +388,7 @@ namespace ramses::internal
         createDisplayController();
 
         const DeviceResourceHandle fakeOffscreenBuffer(313u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, false);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, 0u, false);
 
         expectFrameBufferRendered(true, EClearFlag::All);
         // no offscreen buffer clear expectation
@@ -404,7 +404,7 @@ namespace ramses::internal
         createScene(sceneId);
 
         const DeviceResourceHandle fakeOffscreenBuffer(313u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, false);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, 0u, false);
         assignSceneToDisplayBuffer(sceneId, 0, fakeOffscreenBuffer);
 
         expectOffscreenBufferCleared(fakeOffscreenBuffer);
@@ -425,7 +425,7 @@ namespace ramses::internal
         createScene(sceneId);
 
         const DeviceResourceHandle fakeOffscreenBuffer(313u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, false);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, 0u, false);
         assignSceneToDisplayBuffer(sceneId, 0, fakeOffscreenBuffer);
 
         expectOffscreenBufferCleared(fakeOffscreenBuffer);
@@ -455,7 +455,7 @@ namespace ramses::internal
         createScene(sceneId);
 
         const DeviceResourceHandle fakeOffscreenBuffer(313u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, false);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, 0u, false);
         renderer.setClearColor(fakeOffscreenBuffer, obClearColor);
 
         assignSceneToDisplayBuffer(sceneId, 0, fakeOffscreenBuffer);
@@ -479,7 +479,7 @@ namespace ramses::internal
         createScene(sceneId);
 
         const DeviceResourceHandle fakeOffscreenBuffer(313u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, false);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, 0u, false);
         renderer.setClearColor(fakeOffscreenBuffer, obClearColor);
 
         assignSceneToDisplayBuffer(sceneId, 0, fakeOffscreenBuffer);
@@ -532,8 +532,8 @@ namespace ramses::internal
 
         constexpr DeviceResourceHandle fakeOffscreenBuffer1{ 313u };
         constexpr DeviceResourceHandle fakeOffscreenBuffer2{ 314u };
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer1, 1u, 2u, false);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer2, 1u, 2u, true);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer1, 1u, 2u, 0u, false);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer2, 1u, 2u, 0u, true);
 
         // use some non-default clear flags
         EXPECT_CALL(renderer, setClearFlags(fakeOffscreenBuffer1, ClearFlags(EClearFlag::Depth)));
@@ -559,8 +559,8 @@ namespace ramses::internal
 
         constexpr DeviceResourceHandle fakeOffscreenBuffer1{ 313u };
         constexpr DeviceResourceHandle fakeOffscreenBuffer2{ 314u };
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer1, 1u, 2u, false);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer2, 1u, 2u, true);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer1, 1u, 2u, 0u, false);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer2, 1u, 2u, 0u, true);
 
         // assign scene to trigger render of OB
         constexpr SceneId sceneId1{ 12u };
@@ -593,8 +593,8 @@ namespace ramses::internal
 
         DeviceResourceHandle fakeOffscreenBuffer1(313u);
         DeviceResourceHandle fakeOffscreenBuffer2(314u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer1, 1u, 2u, false);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer2, 1u, 2u, false);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer1, 1u, 2u, 0u, false);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer2, 1u, 2u, 0u, false);
 
         const SceneId sceneId1(12u);
         const SceneId sceneId2(13u);
@@ -626,7 +626,7 @@ namespace ramses::internal
         createScene(sceneId);
 
         const DeviceResourceHandle fakeOffscreenBuffer(313u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, false);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, 0u, false);
         assignSceneToDisplayBuffer(sceneId, 0, fakeOffscreenBuffer);
         showScene(sceneId);
 
@@ -666,8 +666,8 @@ namespace ramses::internal
 
         const DeviceResourceHandle fakeOffscreenBuffer1(313u);
         const DeviceResourceHandle fakeOffscreenBuffer2(314u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer1, 1u, 2u, false);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer2, 1u, 2u, false);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer1, 1u, 2u, 0u, false);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer2, 1u, 2u, 0u, false);
 
         const SceneId sceneId1(12u);
         const SceneId sceneId2(13u);
@@ -718,7 +718,7 @@ namespace ramses::internal
         createScene(sceneId);
 
         const DeviceResourceHandle fakeOffscreenBuffer(313u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 1u, false);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 1u, 0u, false);
         assignSceneToDisplayBuffer(sceneId, 0, fakeOffscreenBuffer);
         EXPECT_EQ(fakeOffscreenBuffer, renderer.getBufferSceneIsAssignedTo(sceneId));
         EXPECT_FALSE(renderer.isSceneAssignedToInterruptibleOffscreenBuffer(sceneId));
@@ -927,7 +927,7 @@ namespace ramses::internal
     {
         createDisplayController();
         const DeviceResourceHandle obDeviceHandle{ 567u };
-        renderer.registerOffscreenBuffer(obDeviceHandle, 10u, 20u, false);
+        renderer.registerOffscreenBuffer(obDeviceHandle, 10u, 20u, 0u, false);
 
         scheduleScreenshot(obDeviceHandle, 1u, 2u, 3u, 4u);
 
@@ -954,7 +954,7 @@ namespace ramses::internal
     {
         createDisplayController();
         const DeviceResourceHandle obDeviceHandle{ 567u };
-        renderer.registerOffscreenBuffer(obDeviceHandle, 10u, 20u, true);
+        renderer.registerOffscreenBuffer(obDeviceHandle, 10u, 20u, 0u, true);
 
         scheduleScreenshot(obDeviceHandle, 1u, 2u, 3u, 4u);
 
@@ -1096,7 +1096,7 @@ namespace ramses::internal
         createScene(sceneId);
 
         const DeviceResourceHandle fakeOffscreenBuffer(313u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, false);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, 0u, false);
         assignSceneToDisplayBuffer(sceneId, 0, fakeOffscreenBuffer);
         showScene(sceneId);
 
@@ -1160,7 +1160,7 @@ namespace ramses::internal
         createScene(sceneId);
 
         const DeviceResourceHandle fakeOffscreenBuffer(313u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, false);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, 0u, false);
         assignSceneToDisplayBuffer(sceneId, 0, fakeOffscreenBuffer);
         showScene(sceneId);
 
@@ -1198,7 +1198,7 @@ namespace ramses::internal
         createScene(sceneId);
 
         const DeviceResourceHandle fakeOffscreenBuffer(313u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, false);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, 0u, false);
         assignSceneToDisplayBuffer(sceneId, 0, fakeOffscreenBuffer);
         showScene(sceneId);
 
@@ -1309,7 +1309,7 @@ namespace ramses::internal
 
         const glm::vec4 obClearColor1(.1f, .2f, .3f, .4f);
         const DeviceResourceHandle fakeOffscreenBuffer(313u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, false);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, 0u, false);
         renderer.setClearColor(fakeOffscreenBuffer, obClearColor1);
         assignSceneToDisplayBuffer(sceneId, 0, fakeOffscreenBuffer);
         showScene(sceneId);
@@ -1410,7 +1410,7 @@ namespace ramses::internal
         createDisplayController();
 
         const DeviceResourceHandle fakeOffscreenBuffer(313u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, true);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, 0u, true);
 
         const SceneId sceneId(12u);
         createScene(sceneId);
@@ -1454,7 +1454,7 @@ namespace ramses::internal
         createDisplayController();
 
         const DeviceResourceHandle fakeOffscreenBuffer(313u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, true);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 2u, 0u, true);
 
         const SceneId sceneId(12u);
         createScene(sceneId);
@@ -1496,7 +1496,7 @@ namespace ramses::internal
     {
         createDisplayController();
         const DeviceResourceHandle fakeOffscreenBuffer(313u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 1u, true);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 1u, 0u, true);
 
         const SceneId sceneIdFB(12u);
         const SceneId sceneIdOB(13u);
@@ -1525,7 +1525,7 @@ namespace ramses::internal
     {
         createDisplayController();
         const DeviceResourceHandle fakeOffscreenBuffer(313u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 1u, true);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 1u, 0u, true);
 
         const SceneId sceneIdOB(13u);
         createScene(sceneIdOB);
@@ -1548,7 +1548,7 @@ namespace ramses::internal
     {
         createDisplayController();
         const DeviceResourceHandle fakeOffscreenBuffer(313u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 1u, true);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 1u, 0u, true);
 
         const SceneId sceneIdOB(13u);
         createScene(sceneIdOB);
@@ -1595,7 +1595,7 @@ namespace ramses::internal
     {
         createDisplayController();
         const DeviceResourceHandle fakeOffscreenBuffer(313u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 1u, true);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 1u, 0u, true);
 
         const SceneId sceneIdFB(12u);
         const SceneId sceneIdOB(13u);
@@ -1634,7 +1634,7 @@ namespace ramses::internal
     {
         createDisplayController();
         const DeviceResourceHandle fakeOffscreenBuffer(313u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 1u, true);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 1u, 0u, true);
 
         const SceneId sceneIdFB(12u);
         const SceneId sceneIdOB(13u);
@@ -1690,7 +1690,7 @@ namespace ramses::internal
 
         createDisplayController();
         const DeviceResourceHandle fakeOffscreenBuffer(313u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 1u, true);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 1u, 0u, true);
 
         const SceneId sceneIdFB(12u);
         const SceneId sceneIdOB(13u);
@@ -1737,7 +1737,7 @@ namespace ramses::internal
 
         createDisplayController();
         const DeviceResourceHandle fakeOffscreenBuffer(313u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 1u, true);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 1u, 0u, true);
 
         const SceneId sceneIdFB(12u);
         const SceneId sceneId1OB(13u);
@@ -1806,7 +1806,7 @@ namespace ramses::internal
 
         createDisplayController();
         const DeviceResourceHandle fakeOffscreenBuffer(313u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 1u, true);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 1u, 0u, true);
 
         const SceneId sceneIdFB(12u);
         const SceneId sceneId1OB(13u);
@@ -1869,8 +1869,8 @@ namespace ramses::internal
         createDisplayController();
         const DeviceResourceHandle fakeOffscreenBuffer1(313u);
         const DeviceResourceHandle fakeOffscreenBuffer2(314u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer1, 1u, 1u, true);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer2, 1u, 1u, true);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer1, 1u, 1u, 0u, true);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer2, 1u, 1u, 0u, true);
 
         const SceneId sceneIdFB(12u);
         const SceneId sceneIdOB1(13u);
@@ -1943,8 +1943,8 @@ namespace ramses::internal
         createDisplayController();
         const DeviceResourceHandle fakeOffscreenBuffer1(313u);
         const DeviceResourceHandle fakeOffscreenBuffer2(314u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer1, 1u, 1u, true);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer2, 1u, 1u, true);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer1, 1u, 1u, 0u, true);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer2, 1u, 1u, 0u, true);
 
         const SceneId sceneIdFB(12u);
         const SceneId sceneId1OB1(13u);
@@ -2040,7 +2040,7 @@ namespace ramses::internal
     {
         createDisplayController();
         const DeviceResourceHandle fakeOffscreenBuffer(313u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 1u, true);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 1u, 0u, true);
 
         const SceneId sceneIdFB(12u);
         const SceneId sceneId1OB(13u);
@@ -2116,8 +2116,8 @@ namespace ramses::internal
         createDisplayController();
         const DeviceResourceHandle fakeOffscreenBuffer1(313u);
         const DeviceResourceHandle fakeOffscreenBuffer2(314u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer1, 1u, 1u, true);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer2, 1u, 1u, true);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer1, 1u, 1u, 0u, true);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer2, 1u, 1u, 0u, true);
 
         const SceneId sceneIdFB(12u);
         const SceneId sceneId1OB(13u);
@@ -2197,9 +2197,9 @@ namespace ramses::internal
         DeviceResourceHandle disp1OB(313u);
         DeviceResourceHandle disp1OBint1(315u);
         DeviceResourceHandle disp1OBint2(316u);
-        renderer.registerOffscreenBuffer(disp1OB, 1u, 1u, false);
-        renderer.registerOffscreenBuffer(disp1OBint1, 1u, 1u, true);
-        renderer.registerOffscreenBuffer(disp1OBint2, 1u, 1u, true);
+        renderer.registerOffscreenBuffer(disp1OB, 1u, 1u, 0u, false);
+        renderer.registerOffscreenBuffer(disp1OBint1, 1u, 1u, 0u, true);
+        renderer.registerOffscreenBuffer(disp1OBint2, 1u, 1u, 0u, true);
 
         const SceneId sceneIdDisp1FB(12u);
         const SceneId sceneIdDisp1OBscene(14u);
@@ -2283,7 +2283,7 @@ namespace ramses::internal
     {
         createDisplayController();
         const DeviceResourceHandle fakeOffscreenBuffer(313u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 1u, true);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer, 1u, 1u, 0u, true);
 
         const SceneId sceneIdFB(12u);
         const SceneId sceneIdOB(13u);
@@ -2346,8 +2346,8 @@ namespace ramses::internal
 
         DeviceResourceHandle ob(316u);
         DeviceResourceHandle obInt(317u);
-        renderer.registerOffscreenBuffer(ob, 1u, 1u, false);
-        renderer.registerOffscreenBuffer(obInt, 1u, 1u, true);
+        renderer.registerOffscreenBuffer(ob, 1u, 1u, 0u, false);
+        renderer.registerOffscreenBuffer(obInt, 1u, 1u, 0u, true);
 
         assignSceneToDisplayBuffer(sceneIdFB, 0);
         assignSceneToDisplayBuffer(sceneIdOB, 0, ob);
@@ -2384,8 +2384,8 @@ namespace ramses::internal
 
         DeviceResourceHandle ob(316u);
         DeviceResourceHandle obInt(317u);
-        renderer.registerOffscreenBuffer(ob, 1u, 1u, false);
-        renderer.registerOffscreenBuffer(obInt, 1u, 1u, true);
+        renderer.registerOffscreenBuffer(ob, 1u, 1u, 0u, false);
+        renderer.registerOffscreenBuffer(obInt, 1u, 1u, 0u, true);
 
         assignSceneToDisplayBuffer(sceneIdFB, 0);
         assignSceneToDisplayBuffer(sceneIdOB, 0, ob);
@@ -2427,7 +2427,7 @@ namespace ramses::internal
         initiateExpirationMonitoring({ sceneIdFB, sceneIdOBint });
 
         DeviceResourceHandle obInt(317u);
-        renderer.registerOffscreenBuffer(obInt, 1u, 1u, true);
+        renderer.registerOffscreenBuffer(obInt, 1u, 1u, 0u, true);
 
         assignSceneToDisplayBuffer(sceneIdFB, 0);
         assignSceneToDisplayBuffer(sceneIdOBint, 0, obInt);
@@ -2497,7 +2497,7 @@ namespace ramses::internal
         createScene(scene2);
 
         constexpr DeviceResourceHandle ob{ 317u };
-        renderer.registerOffscreenBuffer(ob, 1u, 1u, false);
+        renderer.registerOffscreenBuffer(ob, 1u, 1u, 0u, false);
 
         assignSceneToDisplayBuffer(scene1, 0, ob);
         assignSceneToDisplayBuffer(scene2, 0, ob);
@@ -2528,7 +2528,7 @@ namespace ramses::internal
         createScene(scene2);
 
         constexpr DeviceResourceHandle ob{ 317u };
-        renderer.registerOffscreenBuffer(ob, 1u, 1u, true);
+        renderer.registerOffscreenBuffer(ob, 1u, 1u, 0u, true);
 
         assignSceneToDisplayBuffer(scene1, 0, ob);
         assignSceneToDisplayBuffer(scene2, 0, ob);
@@ -2556,7 +2556,7 @@ namespace ramses::internal
         createDisplayController();
 
         const DeviceResourceHandle fakeOffscreenBuffer1(313u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer1, 1u, 2u, false);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer1, 1u, 2u, 0u, false);
 
         const SceneId sceneId1(12u);
         const SceneId sceneId2(13u);
@@ -2591,9 +2591,9 @@ namespace ramses::internal
         const DeviceResourceHandle fakeOffscreenBuffer1(313u);
         const DeviceResourceHandle fakeOffscreenBuffer2(314u);
         const DeviceResourceHandle fakeOffscreenBuffer3(315u);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer1, 1u, 2u, false);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer2, 1u, 2u, false);
-        renderer.registerOffscreenBuffer(fakeOffscreenBuffer3, 1u, 2u, false);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer1, 1u, 2u, 0u, false);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer2, 1u, 2u, 0u, false);
+        renderer.registerOffscreenBuffer(fakeOffscreenBuffer3, 1u, 2u, 0u, false);
         EXPECT_CALL(renderer, setClearFlags(fakeOffscreenBuffer1, EClearFlag::Color | EClearFlag::Stencil));
         EXPECT_CALL(renderer, setClearFlags(fakeOffscreenBuffer2, EClearFlag::Color | EClearFlag::Depth));
         EXPECT_CALL(renderer, setClearFlags(fakeOffscreenBuffer3, EClearFlag::Depth | EClearFlag::Stencil));
@@ -2638,7 +2638,7 @@ namespace ramses::internal
         createScene(sceneIdOBint);
 
         DeviceResourceHandle obInt(317u);
-        renderer.registerOffscreenBuffer(obInt, 1u, 1u, true);
+        renderer.registerOffscreenBuffer(obInt, 1u, 1u, 0u, true);
 
         assignSceneToDisplayBuffer(sceneIdFB, 0);
         assignSceneToDisplayBuffer(sceneIdOBint, 0, obInt);

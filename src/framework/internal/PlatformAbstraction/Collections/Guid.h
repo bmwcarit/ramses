@@ -113,7 +113,7 @@ struct fmt::formatter<ramses::internal::Guid>
     }
 
     template<typename FormatContext>
-    constexpr auto format(const ramses::internal::Guid& guid, FormatContext& ctx)
+    auto format(const ramses::internal::Guid& guid, FormatContext& ctx) const
     {
         const uint64_t v = guid.get();
         if (v < 256)

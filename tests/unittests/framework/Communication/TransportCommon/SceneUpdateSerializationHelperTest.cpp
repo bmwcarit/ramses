@@ -52,7 +52,7 @@ namespace ramses::internal
         {
             const absl::Span<const std::byte> desc = ResourceSerialization::SerializeDescription(resource, workingMem);
             const absl::Span<const std::byte> data = ResourceSerialization::SerializeData(resource);
-            return ResourceSerialization::Deserialize(desc, data);
+            return ResourceSerialization::Deserialize(desc, data, EFeatureLevel_Latest);
         }
 
         std::vector<std::byte> workingMem;
@@ -112,7 +112,7 @@ namespace ramses::internal
         const absl::Span<const std::byte> data = ResourceSerialization::SerializeData(*res);
 
         ASSERT_GT(data.size(), 0u);
-        std::unique_ptr<IResource> deserRes(ResourceSerialization::Deserialize(desc, data.subspan(1)));
+        std::unique_ptr<IResource> deserRes(ResourceSerialization::Deserialize(desc, data.subspan(1), EFeatureLevel_Latest));
         ASSERT_FALSE(deserRes);
     }
 }

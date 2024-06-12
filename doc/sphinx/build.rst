@@ -133,11 +133,6 @@ Supported window types can be controlled with the cmake options below:
 
 You can use the following options to disable some of the Ramses features:
 
-* -Dramses-sdk_ENABLE_LOGIC
-    * options: ON/OFF
-    * default: ON
-    * Enables the logic subsystem of ramses alongside its dependencies (Lua, Sol, ...).
-
 * -Dramses-sdk_TEXT_SUPPORT
     * options: ON/OFF
     * default: ON

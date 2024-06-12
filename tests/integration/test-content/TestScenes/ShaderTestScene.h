@@ -28,6 +28,7 @@ namespace ramses::internal
             STRUCT_UNIFORM,
             TEXTURE_SIZE,
             BOOL_UNIFORM,
+            UNIFORM_BUFFERS_STD140,
         };
 
     private:

@@ -10,6 +10,7 @@
 
 #include "SceneViewerGui.h"
 #include "LogicViewerGui.h"
+#include "RemoteScenesGui.h"
 #include <cstdint>
 
 namespace ramses
@@ -58,6 +59,7 @@ namespace ramses::internal
 
         std::unique_ptr<SceneViewerGui> m_sceneGui;
         std::unique_ptr<LogicViewerGui> m_logicGui;
+        std::unique_ptr<RemoteScenesGui> m_remoteScenesGui;
 
         ramses::TextureSampler* m_sceneTexture = nullptr;
         ImVec2 m_sceneTextureSize;

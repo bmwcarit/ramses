@@ -83,8 +83,9 @@ namespace ramses::internal
             const uint32_t numRenderTargets = scene.getRenderTargetCount();
             const uint32_t numBlitPasses = scene.getBlitPassCount();
             const uint32_t numDataBuffers = scene.getDataBufferCount();
+            const uint32_t numUniformBuffers = scene.getUniformBufferCount();
             const uint32_t numTextureBuffers = scene.getTextureBufferCount();
-            const uint32_t numSceneResources = numRenderTargets + numRenderBuffers + numBlitPasses + numDataBuffers * 2u + numTextureBuffers * 2u;
+            const uint32_t numSceneResources = numRenderTargets + numRenderBuffers + numBlitPasses + numDataBuffers * 2u + numTextureBuffers * 2u + numUniformBuffers * 2u;
 
             actions.reserve(numSceneResources);
             usedDataByteSize = 0u;
@@ -122,6 +123,16 @@ namespace ramses::internal
                     actions.push_back({ tbHandle.asMemoryHandle(), ESceneResourceAction_CreateTextureBuffer });
                     actions.push_back({ tbHandle.asMemoryHandle(), ESceneResourceAction_UpdateTextureBuffer });
                     usedDataByteSize += TextureBuffer::GetMipMapDataSizeInBytes(scene.getTextureBuffer(tbHandle));
+                }
+            }
+
+            for (UniformBufferHandle ubHandle(0u); ubHandle < numUniformBuffers; ++ubHandle)
+            {
+                if (scene.isUniformBufferAllocated(ubHandle))
+                {
+                    actions.push_back({ ubHandle.asMemoryHandle(), ESceneResourceAction_CreateUniformBuffer });
+                    actions.push_back({ ubHandle.asMemoryHandle(), ESceneResourceAction_UpdateUniformBuffer });
+                    usedDataByteSize += uint32_t(scene.getUniformBuffer(ubHandle).data.size());
                 }
             }
         }

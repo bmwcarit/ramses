@@ -4,3 +4,10 @@ mutex:dlt_free
 # EGL de/init in mesa swrast EGL implementation causes both leak (lsan, valgrind) and data race (tsan),
 # it might be worth to check if still happening on future driver versions
 race:~Context_EGL()
+race:Context_EGL::init()
+# XauFileName in Xlib seems not thread safe, race when initialzing window from multiple ramses instances in parallel
+race:XauFileName
+# Data race of static string storage in swrast, reading via glGetString during device init (should be harmless).
+# Given the tsan suppression format and race callstack sadly it cannot be narrowed down to more concrete filter
+# than filtering the whole swrast lib
+race:swrast_dri.so

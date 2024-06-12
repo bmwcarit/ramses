@@ -45,7 +45,7 @@ namespace ramses::internal
         const SceneId sceneId(55u);
         const std::string name("sceneName");
         SceneInfoVector newScenes;
-        newScenes.push_back(SceneInfo(sceneId, name));
+        newScenes.push_back(SceneInfo{ sceneId, name });
 
         {
             PlatformGuard g(receiverExpectCallLock);
@@ -72,7 +72,7 @@ namespace ramses::internal
     {
         const SceneId sceneId(1ull << 63);
         SceneInfoVector unavailableScenes;
-        unavailableScenes.push_back(SceneInfo(sceneId));
+        unavailableScenes.push_back(SceneInfo{ sceneId });
 
         {
             PlatformGuard g(receiverExpectCallLock);
@@ -93,7 +93,7 @@ namespace ramses::internal
     TEST_P(ASceneGraphProtocolSenderAndReceiverTest, sendScenesAvailable)
     {
         SceneInfoVector newScenes;
-        newScenes.push_back(SceneInfo(SceneId(55u), "sceneName"));
+        newScenes.push_back(SceneInfo{ SceneId(55u), "sceneName" });
 
         {
             PlatformGuard g(receiverExpectCallLock);

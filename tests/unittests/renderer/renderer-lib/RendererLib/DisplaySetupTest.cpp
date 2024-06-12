@@ -49,11 +49,12 @@ namespace ramses::internal
     TEST_F(ADisplaySetup, canRegisterFramebufferInfoWithInitialValues)
     {
         const DeviceResourceHandle bufferHandle(33u);
-        displaySetup.registerDisplayBuffer(bufferHandle, viewport, clearColor, false, false);
+        displaySetup.registerDisplayBuffer(bufferHandle, viewport, clearColor, false, 4u, false);
 
         const auto& bufferInfo = displaySetup.getDisplayBuffer(bufferHandle);
         EXPECT_EQ(viewport, bufferInfo.viewport);
         EXPECT_EQ(clearColor, bufferInfo.clearColor);
+        EXPECT_EQ(4u, bufferInfo.sampleCount);
         EXPECT_TRUE(bufferInfo.scenes.empty());
         EXPECT_FALSE(bufferInfo.isInterruptible);
         EXPECT_TRUE(bufferInfo.needsRerender);
@@ -65,11 +66,12 @@ namespace ramses::internal
     TEST_F(ADisplaySetup, canRegisterNonInterruptibleOBInfoWithInitialValues)
     {
         const DeviceResourceHandle bufferHandle(33u);
-        displaySetup.registerDisplayBuffer(bufferHandle, viewport, clearColor, true, false);
+        displaySetup.registerDisplayBuffer(bufferHandle, viewport, clearColor, true, 4u, false);
 
         const auto& bufferInfo = displaySetup.getDisplayBuffer(bufferHandle);
         EXPECT_EQ(viewport, bufferInfo.viewport);
         EXPECT_EQ(clearColor, bufferInfo.clearColor);
+        EXPECT_EQ(4u, bufferInfo.sampleCount);
         EXPECT_TRUE(bufferInfo.scenes.empty());
         EXPECT_FALSE(bufferInfo.isInterruptible);
         EXPECT_TRUE(bufferInfo.needsRerender);
@@ -82,11 +84,12 @@ namespace ramses::internal
     TEST_F(ADisplaySetup, canRegisterInterruptibleOBInfoWithInitialValues)
     {
         const DeviceResourceHandle bufferHandle(33u);
-        displaySetup.registerDisplayBuffer(bufferHandle, viewport, clearColor, true, true);
+        displaySetup.registerDisplayBuffer(bufferHandle, viewport, clearColor, true, 4u, true);
 
         const auto& bufferInfo = displaySetup.getDisplayBuffer(bufferHandle);
         EXPECT_EQ(viewport, bufferInfo.viewport);
         EXPECT_EQ(clearColor, bufferInfo.clearColor);
+        EXPECT_EQ(4u, bufferInfo.sampleCount);
         EXPECT_TRUE(bufferInfo.scenes.empty());
         EXPECT_TRUE(bufferInfo.isInterruptible);
         EXPECT_TRUE(bufferInfo.needsRerender);
@@ -101,9 +104,9 @@ namespace ramses::internal
         const DeviceResourceHandle bufferHandleFB(33u);
         const DeviceResourceHandle bufferHandleOB(34u);
         const DeviceResourceHandle bufferHandleOBint(35u);
-        displaySetup.registerDisplayBuffer(bufferHandleFB, viewport, clearColor, false, false);
-        displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, false);
-        displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, true);
+        displaySetup.registerDisplayBuffer(bufferHandleFB, viewport, clearColor, false, 0u, false);
+        displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, 0u, false);
+        displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, 0u, true);
 
         EXPECT_FALSE(displaySetup.getDisplayBuffer(bufferHandleFB).isOffscreenBuffer);
         EXPECT_TRUE(displaySetup.getDisplayBuffer(bufferHandleOB).isOffscreenBuffer);
@@ -114,8 +117,8 @@ namespace ramses::internal
     {
         const DeviceResourceHandle bufferHandleOB(34u);
         const DeviceResourceHandle bufferHandleOBint(35u);
-        displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, false);
-        displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, true);
+        displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, 0u, false);
+        displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, 0u, true);
 
         displaySetup.unregisterDisplayBuffer(bufferHandleOB);
         displaySetup.unregisterDisplayBuffer(bufferHandleOBint);
@@ -130,9 +133,9 @@ namespace ramses::internal
         const DeviceResourceHandle bufferHandleFB(33u);
         const DeviceResourceHandle bufferHandleOB(34u);
         const DeviceResourceHandle bufferHandleOBint(35u);
-        displaySetup.registerDisplayBuffer(bufferHandleFB, viewport, clearColor, false, false);
-        displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, false);
-        displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, true);
+        displaySetup.registerDisplayBuffer(bufferHandleFB, viewport, clearColor, false, 0u, false);
+        displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, 0u, false);
+        displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, 0u, true);
 
         EXPECT_TRUE(displaySetup.getDisplayBuffer(bufferHandleFB).needsRerender);
         EXPECT_TRUE(displaySetup.getDisplayBuffer(bufferHandleOB).needsRerender);
@@ -147,9 +150,9 @@ namespace ramses::internal
         const DeviceResourceHandle bufferHandleFB(33u);
         const DeviceResourceHandle bufferHandleOB(34u);
         const DeviceResourceHandle bufferHandleOBint(35u);
-        displaySetup.registerDisplayBuffer(bufferHandleFB, viewport, clearColor, false, false);
-        displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, false);
-        displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, true);
+        displaySetup.registerDisplayBuffer(bufferHandleFB, viewport, clearColor, false, 0u, false);
+        displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, 0u, false);
+        displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, 0u, true);
 
         displaySetup.setDisplayBufferToBeRerendered(bufferHandleFB, false);
         displaySetup.setDisplayBufferToBeRerendered(bufferHandleOB, false);
@@ -182,9 +185,9 @@ namespace ramses::internal
         const DeviceResourceHandle bufferHandleFB(33u);
         const DeviceResourceHandle bufferHandleOB(34u);
         const DeviceResourceHandle bufferHandleOBint(35u);
-        displaySetup.registerDisplayBuffer(bufferHandleFB, viewport, clearColor, false, false);
-        displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, false);
-        displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, true);
+        displaySetup.registerDisplayBuffer(bufferHandleFB, viewport, clearColor, false, 0u, false);
+        displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, 0u, false);
+        displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, 0u, true);
 
         displaySetup.assignSceneToDisplayBuffer(scene1, bufferHandleFB, 0);
         displaySetup.assignSceneToDisplayBuffer(scene2, bufferHandleOB, 0);
@@ -212,7 +215,7 @@ namespace ramses::internal
         const SceneId scene2(13u);
         const SceneId scene3(14u);
         const DeviceResourceHandle bufferHandleOB(34u);
-        displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, false);
+        displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, 0u, false);
 
         displaySetup.assignSceneToDisplayBuffer(scene2, bufferHandleOB, 10);
         expectAssignedScenesInOrder(bufferHandleOB, { { scene2, 10, false } });
@@ -247,9 +250,9 @@ namespace ramses::internal
         const DeviceResourceHandle bufferHandleFB(33u);
         const DeviceResourceHandle bufferHandleOB(34u);
         const DeviceResourceHandle bufferHandleOBint(35u);
-        displaySetup.registerDisplayBuffer(bufferHandleFB, viewport, clearColor, false, false);
-        displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, false);
-        displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, true);
+        displaySetup.registerDisplayBuffer(bufferHandleFB, viewport, clearColor, false, 0u, false);
+        displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, 0u, false);
+        displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, 0u, true);
 
         // reset re-render state
         displaySetup.setDisplayBufferToBeRerendered(bufferHandleFB, false);
@@ -288,7 +291,7 @@ namespace ramses::internal
         const SceneId scene2(13u);
         const SceneId scene3(14u);
         const DeviceResourceHandle bufferHandleOB(34u);
-        displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, false);
+        displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, 0u, false);
 
         displaySetup.assignSceneToDisplayBuffer(scene1, bufferHandleOB, 0);
         displaySetup.assignSceneToDisplayBuffer(scene2, bufferHandleOB, 10);
@@ -318,9 +321,9 @@ namespace ramses::internal
         const DeviceResourceHandle bufferHandleFB(33u);
         const DeviceResourceHandle bufferHandleOB(34u);
         const DeviceResourceHandle bufferHandleOBint(35u);
-        displaySetup.registerDisplayBuffer(bufferHandleFB, viewport, clearColor, false, false);
-        displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, false);
-        displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, true);
+        displaySetup.registerDisplayBuffer(bufferHandleFB, viewport, clearColor, false, 0u, false);
+        displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, 0u, false);
+        displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, 0u, true);
 
         displaySetup.assignSceneToDisplayBuffer(scene1, bufferHandleFB, 0);
         displaySetup.assignSceneToDisplayBuffer(scene2, bufferHandleOB, 0);
@@ -362,9 +365,9 @@ namespace ramses::internal
         constexpr DeviceResourceHandle bufferHandleFB{ 33u };
         constexpr DeviceResourceHandle bufferHandleOB{ 34u };
         constexpr DeviceResourceHandle bufferHandleOBint{ 35u };
-        displaySetup.registerDisplayBuffer(bufferHandleFB, viewport, clearColor, false, false);
-        displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, false);
-        displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, true);
+        displaySetup.registerDisplayBuffer(bufferHandleFB, viewport, clearColor, false, 0u, false);
+        displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, 0u, false);
+        displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, 0u, true);
 
         EXPECT_EQ(EClearFlag::All, displaySetup.getDisplayBuffer(bufferHandleFB).clearFlags);
         EXPECT_EQ(EClearFlag::All, displaySetup.getDisplayBuffer(bufferHandleOB).clearFlags);
@@ -384,9 +387,9 @@ namespace ramses::internal
         const DeviceResourceHandle bufferHandleFB(33u);
         const DeviceResourceHandle bufferHandleOB(34u);
         const DeviceResourceHandle bufferHandleOBint(35u);
-        displaySetup.registerDisplayBuffer(bufferHandleFB, viewport, clearColor, false, false);
-        displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, false);
-        displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, true);
+        displaySetup.registerDisplayBuffer(bufferHandleFB, viewport, clearColor, false, 0u, false);
+        displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, 0u, false);
+        displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, 0u, true);
 
         EXPECT_EQ(clearColor, displaySetup.getDisplayBuffer(bufferHandleFB).clearColor);
         EXPECT_EQ(clearColor, displaySetup.getDisplayBuffer(bufferHandleOB).clearColor);
@@ -409,9 +412,9 @@ namespace ramses::internal
         const DeviceResourceHandle bufferHandleFB(33u);
         const DeviceResourceHandle bufferHandleOB(34u);
         const DeviceResourceHandle bufferHandleOBint(35u);
-        displaySetup.registerDisplayBuffer(bufferHandleFB, viewport, clearColor, false, false);
-        displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, false);
-        displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, true);
+        displaySetup.registerDisplayBuffer(bufferHandleFB, viewport, clearColor, false, 0u, false);
+        displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, 0u, false);
+        displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, 0u, true);
 
         // reset re-render state
         displaySetup.setDisplayBufferToBeRerendered(bufferHandleFB, false);
@@ -430,7 +433,7 @@ namespace ramses::internal
     TEST_F(ADisplaySetup, canResizeDisplayBuffer)
     {
         const DeviceResourceHandle bufferHandleFB(33u);
-        displaySetup.registerDisplayBuffer(bufferHandleFB, viewport, clearColor, false, false);
+        displaySetup.registerDisplayBuffer(bufferHandleFB, viewport, clearColor, false, 0u, false);
 
         EXPECT_EQ(viewport.width, displaySetup.getDisplayBuffer(bufferHandleFB).viewport.width);
         EXPECT_EQ(viewport.height, displaySetup.getDisplayBuffer(bufferHandleFB).viewport.height);
@@ -445,9 +448,9 @@ namespace ramses::internal
         const DeviceResourceHandle bufferHandleFB(33u);
         const DeviceResourceHandle bufferHandleOB(34u);
         const DeviceResourceHandle bufferHandleOBint(35u);
-        displaySetup.registerDisplayBuffer(bufferHandleFB, viewport, clearColor, false, false);
-        displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, false);
-        displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, true);
+        displaySetup.registerDisplayBuffer(bufferHandleFB, viewport, clearColor, false, 0u, false);
+        displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, 0u, false);
+        displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, 0u, true);
 
         // reset re-render state
         displaySetup.setDisplayBufferToBeRerendered(bufferHandleFB, false);
@@ -468,9 +471,9 @@ namespace ramses::internal
         const DeviceResourceHandle bufferHandle1(33u);
         const DeviceResourceHandle bufferHandle2(34u);
         const DeviceResourceHandle bufferHandle3(35u);
-        displaySetup.registerDisplayBuffer(bufferHandle1, viewport, clearColor, true, true);
-        displaySetup.registerDisplayBuffer(bufferHandle2, viewport, clearColor, true, true);
-        displaySetup.registerDisplayBuffer(bufferHandle3, viewport, clearColor, true, true);
+        displaySetup.registerDisplayBuffer(bufferHandle1, viewport, clearColor, true, 0u, true);
+        displaySetup.registerDisplayBuffer(bufferHandle2, viewport, clearColor, true, 0u, true);
+        displaySetup.registerDisplayBuffer(bufferHandle3, viewport, clearColor, true, 0u, true);
 
         const DeviceHandleVector expectedBuffersToRerender{ bufferHandle2, bufferHandle3 };
         EXPECT_EQ(expectedBuffersToRerender, displaySetup.getInterruptibleOffscreenBuffersToRender(bufferHandle2));
@@ -483,11 +486,11 @@ namespace ramses::internal
         const DeviceResourceHandle bufferHandle3(35u);
         const DeviceResourceHandle bufferHandle4(36u);
         const DeviceResourceHandle bufferHandle5(37u);
-        displaySetup.registerDisplayBuffer(bufferHandle1, viewport, clearColor, true, true);
-        displaySetup.registerDisplayBuffer(bufferHandle2, viewport, clearColor, true, true);
-        displaySetup.registerDisplayBuffer(bufferHandle3, viewport, clearColor, true, true);
-        displaySetup.registerDisplayBuffer(bufferHandle4, viewport, clearColor, true, true);
-        displaySetup.registerDisplayBuffer(bufferHandle5, viewport, clearColor, true, true);
+        displaySetup.registerDisplayBuffer(bufferHandle1, viewport, clearColor, true, 0u, true);
+        displaySetup.registerDisplayBuffer(bufferHandle2, viewport, clearColor, true, 0u, true);
+        displaySetup.registerDisplayBuffer(bufferHandle3, viewport, clearColor, true, 0u, true);
+        displaySetup.registerDisplayBuffer(bufferHandle4, viewport, clearColor, true, 0u, true);
+        displaySetup.registerDisplayBuffer(bufferHandle5, viewport, clearColor, true, 0u, true);
 
         displaySetup.setDisplayBufferToBeRerendered(bufferHandle2, false);
         displaySetup.setDisplayBufferToBeRerendered(bufferHandle4, false);
@@ -507,9 +510,9 @@ namespace ramses::internal
         const DeviceResourceHandle bufferHandleFB(33u);
         const DeviceResourceHandle bufferHandleOB(34u);
         const DeviceResourceHandle bufferHandleOBint(35u);
-        displaySetup.registerDisplayBuffer(bufferHandleFB, viewport, clearColor, false, false);
-        displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, false);
-        displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, true);
+        displaySetup.registerDisplayBuffer(bufferHandleFB, viewport, clearColor, false, 0u, false);
+        displaySetup.registerDisplayBuffer(bufferHandleOB, viewport, clearColor, true, 0u, false);
+        displaySetup.registerDisplayBuffer(bufferHandleOBint, viewport, clearColor, true, 0u, true);
 
         displaySetup.assignSceneToDisplayBuffer(scene1, bufferHandleFB, 1);
         displaySetup.assignSceneToDisplayBuffer(scene2, bufferHandleOB, 2);

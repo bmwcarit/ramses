@@ -21,6 +21,7 @@
 #include "ResourceMock.h"
 #include "InputStreamMock.h"
 #include "UnsafeTestMemoryHelpers.h"
+#include "ResourceSerializationTestHelper.h"
 #include <cstring>
 
 using namespace testing;
@@ -35,7 +36,7 @@ namespace ramses::internal
         {
         }
 
-        static std::unique_ptr<IResource> ReadWriteResource(const ManagedResource& inResource)
+        static std::unique_ptr<IResource> ReadWriteResource(const ManagedResource& inResource, EFeatureLevel featureLevel = EFeatureLevel_Latest)
         {
             std::unique_ptr<IResource> loaded;
 
@@ -48,7 +49,7 @@ namespace ramses::internal
             {
                 File file("filename");
                 BinaryFileInputStream stream(file);
-                loaded = ResourcePersistation::ReadOneResourceFromStream(stream, inResource->getHash());
+                loaded = ResourcePersistation::ReadOneResourceFromStream(stream, inResource->getHash(), featureLevel);
             }
 
             EXPECT_TRUE(loaded);
@@ -57,15 +58,71 @@ namespace ramses::internal
         }
 
         template <typename ResourceType>
-        std::unique_ptr<const ResourceType> createLoadedResource(const IResource& res, const EResourceType resourceType)
+        std::unique_ptr<const ResourceType> createLoadedResource(const IResource& res, const EResourceType resourceType, EFeatureLevel featureLevel = EFeatureLevel_Latest)
         {
             ManagedResource managedRes{ &res, m_deleterMock };
-            std::unique_ptr<IResource> loadedResource = ReadWriteResource(managedRes);
+            std::unique_ptr<IResource> loadedResource = ReadWriteResource(managedRes, featureLevel);
             EXPECT_EQ(res.getResourceData().span(), loadedResource->getResourceData().span());
-
             EXPECT_EQ(resourceType, loadedResource->getTypeID());
 
-            return std::unique_ptr<ResourceType>(static_cast<ResourceType*>(loadedResource.release()));
+            // save and load resource second time - this can reveal discrepencies between deserialize and serialize code (in this order)
+            ManagedResource managedRes2{ loadedResource.get(), m_deleterMock };
+            std::unique_ptr<IResource> loadedResource2 = ReadWriteResource(managedRes2, featureLevel);
+            EXPECT_EQ(res.getResourceData().span(), loadedResource2->getResourceData().span());
+            EXPECT_EQ(resourceType, loadedResource2->getTypeID());
+
+            return std::unique_ptr<ResourceType>(static_cast<ResourceType*>(loadedResource2.release()));
+        }
+
+        static EffectResource CreateTestEffect(EFeatureLevel featureLevel)
+        {
+            const std::string customVertexShader(R"SHADER(
+                #version 310 es
+                layout(location=11) uniform vec2 u_myVec2;
+                layout(location=5) uniform sampler2D u_mySampler1;
+                layout(std140,binding=1) uniform MyUbo_t
+                {
+                    vec2 u_myVec2;
+                } myUbo;
+                layout(location=23) uniform vec3 u_myVec3;
+                layout(location=7) uniform sampler2D u_mySampler2;
+
+                void main(void)
+                {
+                    gl_Position = texture(u_mySampler1, u_myVec2)+ texture(u_mySampler2, myUbo.u_myVec2) * u_myVec3.x;
+                }
+                )SHADER");
+            const std::string customFragmentShader(R"SHADER(
+                #version 310 es
+                out highp vec4 fragColor;
+                void main(void)
+                {
+                    fragColor = vec4(1.0);
+                }
+                )SHADER");
+
+            EffectInputInformationVector uniformInputs;
+            uniformInputs.push_back(EffectInputInformation("u_myVec2", 1, EDataType::Vector2F, EFixedSemantics::Invalid));
+            uniformInputs.push_back(EffectInputInformation("u_mySampler1", 1, EDataType::TextureSampler2D, EFixedSemantics::Invalid));
+            uniformInputs.push_back(EffectInputInformation("myUbo", 1, EDataType::UniformBuffer, EFixedSemantics::Invalid, UniformBufferBinding{ 1u }));
+            uniformInputs.push_back(EffectInputInformation("myUbo.u_myVec2", 1, EDataType::Vector2F, EFixedSemantics::Invalid, UniformBufferBinding{ 1u }, UniformBufferElementSize{ 8u }, UniformBufferFieldOffset{ 0u }));
+            uniformInputs.push_back(EffectInputInformation("u_myVec3", 1, EDataType::Vector3F, EFixedSemantics::Invalid));
+            uniformInputs.push_back(EffectInputInformation("u_mySampler2", 1, EDataType::TextureSampler2D, EFixedSemantics::Invalid));
+
+            SPIRVShaders dummySpirvShaders{
+                SPIRVShaderBlob{ 1u, 2u, 3u, 4u },
+                SPIRVShaderBlob{ 5u, 6u, 7u, 8u, 9u },
+                SPIRVShaderBlob{ 10u, 11u, 12u} };
+
+            return EffectResource(
+                customVertexShader,
+                customFragmentShader,
+                "geometryFoo",
+                featureLevel >= EFeatureLevel_02 ? dummySpirvShaders : SPIRVShaders{},
+                EDrawMode::Lines,
+                uniformInputs,
+                {},
+                "test effect", featureLevel);
         }
 
     private:
@@ -183,15 +240,28 @@ namespace ramses::internal
 
     TEST_F(AResourcePersistation, WriteRead_EffectResource)
     {
-        EffectResource effectResource("vertexBla", "fragmentFoo", "geometryFoo", EDrawMode::Lines, EffectInputInformationVector(), EffectInputInformationVector(), "effect name");
+        const auto effectResource = CreateTestEffect(EFeatureLevel_Latest);
 
         auto loadedEffectResource = createLoadedResource<EffectResource>(effectResource, EResourceType::Effect);
+        ResourceSerializationTestHelper::CompareTypedResources<EffectResource>(effectResource, *loadedEffectResource);
+    }
+
+    TEST_F(AResourcePersistation, WriteRead_EffectResource_FL01)
+    {
+        static_assert(EFeatureLevel_Latest != EFeatureLevel_01, "Remove test when feature levels flattened");
+        const auto effectResource = CreateTestEffect(EFeatureLevel_01);
+
+        auto loadedEffectResource = createLoadedResource<EffectResource>(effectResource, EResourceType::Effect, EFeatureLevel_01);
 
         EXPECT_STREQ(effectResource.getVertexShader(), loadedEffectResource->getVertexShader());
         EXPECT_STREQ(effectResource.getFragmentShader(), loadedEffectResource->getFragmentShader());
         EXPECT_STREQ(effectResource.getGeometryShader(), loadedEffectResource->getGeometryShader());
-        EXPECT_EQ(std::string("effect name"), loadedEffectResource->getName());
+        EXPECT_EQ(std::string("test effect"), loadedEffectResource->getName());
         EXPECT_EQ(EDrawMode::Lines, loadedEffectResource->getGeometryShaderInputType());
+
+        EXPECT_EQ(0u, loadedEffectResource->getVertexShaderSPIRVSize());
+        EXPECT_EQ(0u, loadedEffectResource->getFragmentShaderSPIRVSize());
+        EXPECT_EQ(0u, loadedEffectResource->getGeometryShaderSPIRVSize());
     }
 
     TEST(ResourcePersistation, sandwich_writeThreeResources_ReadOneBackBasedTableOfContentsInformation)
@@ -217,7 +287,7 @@ namespace ramses::internal
         ManagedResource managedRes2{ &res2, dummyManagedResourceCallback };
         const ResourceContentHash hash2 = managedRes2->getHash();
 
-        EffectResource res3("foo", "bar", "qux", EDrawMode::Lines, EffectInputInformationVector(), EffectInputInformationVector(), "Some effect with a name");
+        EffectResource res3("foo", "bar", "qux", {}, EDrawMode::Lines, EffectInputInformationVector(), EffectInputInformationVector(), "Some effect with a name", EFeatureLevel_Latest);
         ManagedResource managedRes3{ &res3, dummyManagedResourceCallback };
         const ResourceContentHash hash3 = managedRes3->getHash();
 
@@ -237,21 +307,21 @@ namespace ramses::internal
 
         {
             ASSERT_TRUE(loadedTOC.containsResource(hash));
-            auto loadedResource = ResourcePersistation::RetrieveResourceFromStream(instream, loadedTOC.getEntryForHash(hash));
+            auto loadedResource = ResourcePersistation::RetrieveResourceFromStream(instream, loadedTOC.getEntryForHash(hash), EFeatureLevel_Latest);
             ASSERT_TRUE(UnsafeTestMemoryHelpers::CompareMemoryBlobToSpan(dataA, sizeof(dataA), loadedResource->getResourceData().span()));
             EXPECT_EQ(std::string("res1"), loadedResource->getName());
         }
 
         {
             ASSERT_TRUE(loadedTOC.containsResource(hash2));
-            auto loadedResource = ResourcePersistation::RetrieveResourceFromStream(instream, loadedTOC.getEntryForHash(hash2));
+            auto loadedResource = ResourcePersistation::RetrieveResourceFromStream(instream, loadedTOC.getEntryForHash(hash2), EFeatureLevel_Latest);
             ASSERT_TRUE(UnsafeTestMemoryHelpers::CompareMemoryBlobToSpan(dataB, sizeof(dataB), loadedResource->getResourceData().span()));
             EXPECT_EQ(std::string("res2"), loadedResource->getName());
         }
 
         {
             ASSERT_TRUE(loadedTOC.containsResource(hash3));
-            auto loadedResource = ResourcePersistation::RetrieveResourceFromStream(instream, loadedTOC.getEntryForHash(hash3));
+            auto loadedResource = ResourcePersistation::RetrieveResourceFromStream(instream, loadedTOC.getEntryForHash(hash3), EFeatureLevel_Latest);
             EXPECT_STREQ(res3.getVertexShader(), loadedResource->convertTo<EffectResource>()->getVertexShader());
             EXPECT_STREQ(res3.getFragmentShader(), loadedResource->convertTo<EffectResource>()->getFragmentShader());
             EXPECT_EQ(std::string("Some effect with a name"), loadedResource->getName());
@@ -261,7 +331,7 @@ namespace ramses::internal
     static std::pair<std::vector<std::byte>, ResourceFileEntry> getDummyResourceData()
     {
         BinaryOutputStream outStream;
-        EffectResource res("foo", "bar", "qux", EDrawMode::Lines, EffectInputInformationVector(), EffectInputInformationVector(), "Some effect with a name");
+        EffectResource res("foo", "bar", "qux", {}, EDrawMode::Lines, EffectInputInformationVector(), EffectInputInformationVector(), "Some effect with a name", EFeatureLevel_Latest);
         NiceMock<ManagedResourceDeleterCallbackMock> managedResourceDeleter;
         ResourceDeleterCallingCallback dummyManagedResourceCallback(managedResourceDeleter);
         ManagedResource managedRes{ &res, dummyManagedResourceCallback };
@@ -292,7 +362,7 @@ namespace ramses::internal
             resStream.read(data, size);
             return stream;
         });
-        EXPECT_TRUE(ResourcePersistation::RetrieveResourceFromStream(stream, dummyResource.second));
+        EXPECT_TRUE(ResourcePersistation::RetrieveResourceFromStream(stream, dummyResource.second, EFeatureLevel_Latest));
     }
 
     TEST(ResourcePersistation, retrieveResourceFromStreamCanHandleSeekErrors)
@@ -301,7 +371,7 @@ namespace ramses::internal
         InputStreamMock stream;
         BinaryInputStream resStream(dummyResource.first.data());
         EXPECT_CALL(stream, seek(_, _)).WillRepeatedly(Return(EStatus::Error));
-        EXPECT_FALSE(ResourcePersistation::RetrieveResourceFromStream(stream, dummyResource.second));
+        EXPECT_FALSE(ResourcePersistation::RetrieveResourceFromStream(stream, dummyResource.second, EFeatureLevel_Latest));
     }
 
     TEST(ResourcePersistation, retrieveResourceFromStreamCanHandleGetPosErrors)
@@ -320,7 +390,7 @@ namespace ramses::internal
             resStream.read(data, size);
             return stream;
         });
-        EXPECT_FALSE(ResourcePersistation::RetrieveResourceFromStream(stream, dummyResource.second));
+        EXPECT_FALSE(ResourcePersistation::RetrieveResourceFromStream(stream, dummyResource.second, EFeatureLevel_Latest));
     }
 
     TEST(ResourcePersistation, retrieveResourceFromStreamCanHandleGetPosWrongData)
@@ -343,7 +413,7 @@ namespace ramses::internal
             resStream.read(data, size);
             return stream;
         });
-        EXPECT_FALSE(ResourcePersistation::RetrieveResourceFromStream(stream, dummyResource.second));
+        EXPECT_FALSE(ResourcePersistation::RetrieveResourceFromStream(stream, dummyResource.second, EFeatureLevel_Latest));
     }
 
     TEST(ResourcePersistation, retrieveResourceFromStreamCanHandleGetStateErrors)
@@ -359,7 +429,7 @@ namespace ramses::internal
             resStream.read(data, size);
             return stream;
         });
-        EXPECT_FALSE(ResourcePersistation::RetrieveResourceFromStream(stream, dummyResource.second));
+        EXPECT_FALSE(ResourcePersistation::RetrieveResourceFromStream(stream, dummyResource.second, EFeatureLevel_Latest));
     }
 
     TEST(ResourcePersistation, retrieveResourceFromStreamCanHandleZeroReader)
@@ -375,6 +445,6 @@ namespace ramses::internal
             std::memset(data, 0, size);
             return stream;
         });
-        EXPECT_FALSE(ResourcePersistation::RetrieveResourceFromStream(stream, dummyResource.second));
+        EXPECT_FALSE(ResourcePersistation::RetrieveResourceFromStream(stream, dummyResource.second, EFeatureLevel_Latest));
     }
 }

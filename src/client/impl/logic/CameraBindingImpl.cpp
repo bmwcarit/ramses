@@ -27,7 +27,7 @@
 namespace ramses::internal
 {
     CameraBindingImpl::CameraBindingImpl(SceneImpl& scene, ramses::Camera& ramsesCamera, bool withFrustumPlanes, std::string_view name, sceneObjectId_t id)
-        : RamsesBindingImpl{ scene, name, id }
+        : RamsesBindingImpl{ scene, name, id, ramsesCamera }
         , m_ramsesCamera(ramsesCamera)
         , m_hasFrustumPlanesProperties{ ramsesCamera.isOfType(ramses::ERamsesObjectType::OrthographicCamera) || withFrustumPlanes }
     {

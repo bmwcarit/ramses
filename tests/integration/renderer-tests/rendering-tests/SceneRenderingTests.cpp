@@ -26,6 +26,7 @@
 #include "TestScenes/ArrayBufferScene.h"
 #include "TestScenes/GeometryShaderScene.h"
 #include "TestScenes/ArrayResourceScene.h"
+#include "TestScenes/MultipleTexturesScene.h"
 
 namespace ramses::internal
 {
@@ -40,7 +41,7 @@ namespace ramses::internal
         testFramework.createTestCaseWithDefaultDisplay(RenderStateTest_StencilTest3, *this, "RenderStateTest_StencilTest3");
         testFramework.createTestCaseWithDefaultDisplay(RenderStateTest_ScissorTest, *this, "RenderStateTest_ScissorTest");
 
-        testFramework.createTestCaseWithDefaultDisplay(AppearanceTest_RedTriangles, *this, "AppearanceTest_RedTriangles");
+        testFramework.createTestCaseWithDefaultDisplay(AppearanceTest_RedTriangles, *this, "AppearanceTest_RedTriangles").enableForAllFeatureLevels();
         testFramework.createTestCaseWithDefaultDisplay(AppearanceTest_GreenTriangles, *this, "AppearanceTest_GreenTriangles");
         testFramework.createTestCaseWithDefaultDisplay(AppearanceTest_ChangeAppearance, *this, "AppearanceTest_ChangeAppearance");
         testFramework.createTestCaseWithDefaultDisplay(AppearanceTest_TrianglesWithSharedColor, *this, "AppearanceTest_TrianglesWithSharedColor");
@@ -56,6 +57,8 @@ namespace ramses::internal
         testFramework.createTestCaseWithDefaultDisplay(CameraTest_Perspective, *this, "CameraTest_Perspective");
         testFramework.createTestCaseWithDefaultDisplay(CameraTest_Orthographic, *this, "CameraTest_Orthographic");
         testFramework.createTestCaseWithDefaultDisplay(CameraTest_Viewport, *this, "CameraTest_Viewport");
+        testFramework.createTestCaseWithDefaultDisplay(CameraTest_Perspective_UBO, *this, "CameraTest_Perspective_UBO");
+        testFramework.createTestCaseWithDefaultDisplay(CameraTest_Orthographic_UBO, *this, "CameraTest_Orthographic_UBO");
 
         testFramework.createTestCaseWithDefaultDisplay(SceneModificationTest_DeleteMeshNode, *this, "SceneModificationTest_DeleteMeshNode");
         testFramework.createTestCaseWithDefaultDisplay(SceneModificationTest_Invisible, *this, "SceneModificationTest_NoVisibility");
@@ -64,6 +67,10 @@ namespace ramses::internal
         testFramework.createTestCaseWithDefaultDisplay(SceneModificationTest_RotateAndScale, *this, "SceneModificationTest_RotateAndScale");
         testFramework.createTestCaseWithDefaultDisplay(SceneModificationTest_CameraTransformation, *this, "SceneModificationTest_CameraTransformation");
         testFramework.createTestCaseWithDefaultDisplay(SceneModificationTest_MeshRenderOrder, *this, "SceneModificationTest_MeshRenderOrder");
+        testFramework.createTestCaseWithDefaultDisplay(SceneModificationTest_RotateAndScale_UBO1, *this, "SceneModificationTest_RotateAndScale_UBO1");
+        testFramework.createTestCaseWithDefaultDisplay(SceneModificationTest_RotateAndScale_UBO2, *this, "SceneModificationTest_RotateAndScale_UBO2");
+        testFramework.createTestCaseWithDefaultDisplay(SceneModificationTest_RotateAndScale_UBO3, *this, "SceneModificationTest_RotateAndScale_UBO3");
+        testFramework.createTestCaseWithDefaultDisplay(SceneModificationTest_CameraTransformation_UBO, *this, "SceneModificationTest_CameraTransformation_UBO");
 
         testFramework.createTestCaseWithDefaultDisplay(GeometryTest_SharedAppearance, *this, "GeometryTest_SharedAppearance");
         testFramework.createTestCaseWithDefaultDisplay(GeometryTest_TriangleListWithoutIndexArray, *this, "GeometryTest_TriangleListWithoutIndexArray");
@@ -135,7 +142,7 @@ namespace ramses::internal
         testFramework.createTestCaseWithDefaultDisplay(ArrayResource_InterleavedVertexAttribute_SingleAttrib, *this, "ArrayResource_InterleavedVertexAttribute_SingleAttrib");
         testFramework.createTestCaseWithDefaultDisplay(ArrayResource_InterleavedVertexAttribute_StartVertexOffset, *this, "ArrayResource_InterleavedVertexAttribute_StartVertexOffset");
 
-        testFramework.createTestCaseWithDefaultDisplay(GeometryShaderGlslV320_PointsInTriangleStripOut, *this, "GeometryShaderGlslV320_PointsInTriangleStripOut");
+        testFramework.createTestCaseWithDefaultDisplay(GeometryShaderGlslV320_PointsInTriangleStripOut, *this, "GeometryShaderGlslV320_PointsInTriangleStripOut").enableForAllFeatureLevels();
         testFramework.createTestCaseWithDefaultDisplay(GeometryShaderGlslV320_PointsInLineStripOut, *this, "GeometryShaderGlslV320_PointsInLineStripOut");
         testFramework.createTestCaseWithDefaultDisplay(GeometryShaderGlslV320_PointsInPointsOut, *this, "GeometryShaderGlslV320_PointsInPointsOut");
         testFramework.createTestCaseWithDefaultDisplay(GeometryShaderGlslV320_TrianglesInTriangleStripOut, *this, "GeometryShaderGlslV320_TrianglesInTriangleStripOut");
@@ -147,6 +154,8 @@ namespace ramses::internal
         testFramework.createTestCaseWithDefaultDisplay(GeometryShaderGlslV310Extension_TrianglesInPointsOut, *this, "GeometryShaderGlslV310Extension_TrianglesInPointsOut");
 
         testFramework.createTestCaseWithDefaultDisplay(EulerRotationConventions, *this, "EulerRotationConventions");
+        testFramework.createTestCaseWithDefaultDisplay(MultipleTextures_ThreeMultiplexedTextures, *this, "MultipleTextures_ThreeMultiplexedTextures");
+        testFramework.createTestCaseWithDefaultDisplay(MultipleTextures_ThreeMultiplexedTextures_UBO, *this, "MultipleTextures_ThreeMultiplexedTextures_UBO");
 
         testFramework.createTestCaseWithDefaultDisplay(Display_SetClearColor, *this, "Display_SetClearColor").m_displayConfigs.front().setClearColor({0.5f, 0.25f, 0.75f, 1.f});
 
@@ -204,6 +213,10 @@ namespace ramses::internal
             return runBasicTest<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::ORTHOGRAPHIC_CAMERA, "MultipleTrianglesScene_OrthographicCamera");
         case CameraTest_Viewport:
             return runBasicTest<RenderPassScene>(testFramework, RenderPassScene::PASSES_WITH_LEFT_AND_RIGHT_VIEWPORT, "RenderPassScene_LeftRightViewport");
+        case CameraTest_Perspective_UBO:
+            return runBasicTest<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::PERSPECTIVE_CAMERA_UBO, "MultipleTrianglesScene_PerspectiveCamera");
+        case CameraTest_Orthographic_UBO:
+            return runBasicTest<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::ORTHOGRAPHIC_CAMERA_UBO, "MultipleTrianglesScene_OrthographicCamera");
 
         case SceneModificationTest_DeleteMeshNode:
             return runBasicTest<HierarchicalRedTrianglesScene>(testFramework, HierarchicalRedTrianglesScene::DELETE_MESHNODE, "HierarchicalRedTrianglesScene_DeleteMeshNode");
@@ -219,6 +232,14 @@ namespace ramses::internal
             return runBasicTest<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::CAMERA_TRANSFORMATION, "MultipleTrianglesScene_CameraTransformation");
         case SceneModificationTest_MeshRenderOrder:
             return runBasicTest<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::TRIANGLES_REORDERED, "MultipleTrianglesScene_RenderingOrderChanged");
+        case SceneModificationTest_RotateAndScale_UBO1:
+            return runBasicTest<HierarchicalRedTrianglesScene>(testFramework, HierarchicalRedTrianglesScene::ROTATE_AND_SCALE_UBO1, "HierarchicalRedTrianglesScene_RotateAndScale");
+        case SceneModificationTest_RotateAndScale_UBO2:
+            return runBasicTest<HierarchicalRedTrianglesScene>(testFramework, HierarchicalRedTrianglesScene::ROTATE_AND_SCALE_UBO2, "HierarchicalRedTrianglesScene_RotateAndScale");
+        case SceneModificationTest_RotateAndScale_UBO3:
+            return runBasicTest<HierarchicalRedTrianglesScene>(testFramework, HierarchicalRedTrianglesScene::ROTATE_AND_SCALE_UBO3, "HierarchicalRedTrianglesScene_RotateAndScale");
+        case SceneModificationTest_CameraTransformation_UBO:
+            return runBasicTest<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::CAMERA_TRANSFORMATION_UBO, "MultipleTrianglesScene_CameraTransformation");
 
         case GeometryTest_SharedAppearance:
             return runBasicTest<MultipleGeometryScene>(testFramework, MultipleGeometryScene::MULTI_TRIANGLE_LIST_GEOMETRY_WITH_INDEX_ARRAY, "MultipleGeometryScene_MultipleGeometry");
@@ -396,6 +417,10 @@ namespace ramses::internal
 
         case EulerRotationConventions:
             return runBasicTest<MultipleTrianglesScene>(testFramework, MultipleTrianglesScene::EULER_ROTATION_CONVENTIONS, "MultipleTriangleScene_EulerRotationConventions");
+        case MultipleTextures_ThreeMultiplexedTextures:
+            return runBasicTest<MultipleTexturesScene>(testFramework, MultipleTexturesScene::THREE_MULTIPLEXED_TEXTURES, "MultipleTextures_ThreeTextures");
+        case MultipleTextures_ThreeMultiplexedTextures_UBO:
+            return runBasicTest<MultipleTexturesScene>(testFramework, MultipleTexturesScene::THREE_MULTIPLEXED_TEXTURES_UBO, "MultipleTextures_ThreeTextures");
 
         default:
             assert(!"Invalid renderer test ID!");

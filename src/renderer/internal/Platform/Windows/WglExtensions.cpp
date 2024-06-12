@@ -13,6 +13,8 @@
 
 namespace ramses::internal
 {
+    std::mutex WglExtensions::wglMutex;
+
     Procs::Procs()
         : wglChoosePixelFormatARB(0)
         , wglGetPixelFormatAttribivARB(0)
@@ -25,6 +27,11 @@ namespace ramses::internal
     WglExtensions::WglExtensions()
         : m_loaded(false)
     {
+        // Following process of creating dummy window to get extensions seems to cause race if it happens to be executed in parallel,
+        // this is workaround making the whole extensions init a critical section but could possibly be narrowed down to HiddenWindow init,
+        // also a solution with non-static mutex would be better. However this is WGL specific and not performance critical code.
+        std::lock_guard<std::mutex> lock{ wglMutex };
+
         HiddenWindow hiddenWindow;
 
         // Create a temporary hidden window to query extensions - setPixelFormat can't be called more than once on same HDC
@@ -112,13 +119,13 @@ namespace ramses::internal
         return m_loaded;
     }
 
-    bool WglExtensions::isExtensionAvailable(const std::string& extensionName)
+    bool WglExtensions::isExtensionAvailable(const std::string& extensionName) const
     {
         // try out various prefixes; add more if required
         std::string nameEXT = "WGL_EXT_" + extensionName;
         std::string nameARB = "WGL_ARB_" + extensionName;
 
-        return  m_extensionNames.contains(nameEXT) ||
+        return m_extensionNames.contains(nameEXT) ||
             m_extensionNames.contains(nameARB);
     }
 

@@ -26,7 +26,7 @@ namespace ramses::internal {
         APendingSceneResourcesUtils()
             : rendererScenes(rendererEventCollector)
             , sceneLinksManager(rendererScenes, rendererEventCollector)
-            , scene(sceneLinksManager, SceneInfo(sceneID))
+            , scene(sceneLinksManager, SceneInfo{ sceneID })
             , allocateHelper(scene)
         {
             allocateHelper.allocateRenderTarget(renderTargetHandle);
@@ -34,6 +34,7 @@ namespace ramses::internal {
             allocateHelper.allocateBlitPass(RenderBufferHandle(81u), RenderBufferHandle(82u), blitPassHandle);
             allocateHelper.allocateDataBuffer(EDataBufferType::IndexBuffer, EDataType::UInt32, 10u, dataBufferHandle);
             allocateHelper.allocateTextureBuffer(EPixelStorageFormat::R8, { { 32, 32 },{ 16, 16 },{ 8, 8 } }, textureBufferHandle);
+            allocateHelper.allocateUniformBuffer(123u, uniformBufferHandle);
         }
 
     protected:
@@ -43,6 +44,7 @@ namespace ramses::internal {
         const BlitPassHandle        blitPassHandle = BlitPassHandle(8u);
         const DataBufferHandle      dataBufferHandle = DataBufferHandle(9u);
         const TextureBufferHandle   textureBufferHandle = TextureBufferHandle(10u);
+        const UniformBufferHandle   uniformBufferHandle{ 11u };
 
         const MemoryHandle dummyHandle = MemoryHandle(123u);
         const MemoryHandle dummyHandle2 = MemoryHandle(124u);
@@ -75,6 +77,7 @@ namespace ramses::internal {
     static const BasicActionSet ActionSet_BlitPass{ ESceneResourceAction_CreateBlitPass, ESceneResourceAction_DestroyBlitPass };
     static const BasicActionSet ActionSet_DataBuffer{ ESceneResourceAction_CreateDataBuffer, ESceneResourceAction_DestroyDataBuffer, ESceneResourceAction_UpdateDataBuffer };
     static const BasicActionSet ActionSet_TextureBuffer{ ESceneResourceAction_CreateTextureBuffer, ESceneResourceAction_DestroyTextureBuffer, ESceneResourceAction_UpdateTextureBuffer };
+    static const BasicActionSet ActionSet_UniformBuffer{ ESceneResourceAction_CreateUniformBuffer, ESceneResourceAction_DestroyUniformBuffer, ESceneResourceAction_UpdateUniformBuffer };
 
     static const BasicActionSet TestSceneResourceActions[] =
     {
@@ -82,14 +85,16 @@ namespace ramses::internal {
         ActionSet_RenderBuffer,
         ActionSet_BlitPass,
         ActionSet_DataBuffer,
-        ActionSet_TextureBuffer
+        ActionSet_TextureBuffer,
+        ActionSet_UniformBuffer
     };
 
     static const BasicActionSet TestSceneResourceActions_Buffers[] =
     {
         ActionSet_DataBuffer,
         ActionSet_TextureBuffer,
-        ActionSet_RenderBuffer
+        ActionSet_RenderBuffer,
+        ActionSet_UniformBuffer
     };
 
     TEST_F(APendingSceneResourcesUtils, appliesSceneResourceActions)
@@ -103,6 +108,8 @@ namespace ramses::internal {
         actions.push_back(SceneResourceAction(dataBufferHandle.asMemoryHandle(), ESceneResourceAction_UpdateDataBuffer));
         actions.push_back(SceneResourceAction(textureBufferHandle.asMemoryHandle(), ESceneResourceAction_CreateTextureBuffer));
         actions.push_back(SceneResourceAction(textureBufferHandle.asMemoryHandle(), ESceneResourceAction_UpdateTextureBuffer));
+        actions.push_back(SceneResourceAction(uniformBufferHandle.asMemoryHandle(), ESceneResourceAction_CreateUniformBuffer));
+        actions.push_back(SceneResourceAction(uniformBufferHandle.asMemoryHandle(), ESceneResourceAction_UpdateUniformBuffer));
         const std::array<std::byte, 4> data{};
         scene.updateTextureBuffer(textureBufferHandle, 0, 0, 0, 1, 1, data.data());
         scene.updateTextureBuffer(textureBufferHandle, 1, 0, 0, 1, 1, data.data());
@@ -117,6 +124,8 @@ namespace ramses::internal {
         EXPECT_CALL(resourceManager, updateDataBuffer(dataBufferHandle, _, _, sceneID));
         EXPECT_CALL(resourceManager, uploadTextureBuffer(textureBufferHandle, _, _, _, _, sceneID));
         EXPECT_CALL(resourceManager, updateTextureBuffer(textureBufferHandle, _, _, _, _, sceneID)).Times(3u); // 3 mips
+        EXPECT_CALL(resourceManager, uploadUniformBuffer(uniformBufferHandle, 123u, sceneID));
+        EXPECT_CALL(resourceManager, updateUniformBuffer(uniformBufferHandle, 123u, _, sceneID));
         PendingSceneResourcesUtils::ApplySceneResourceActions(actions, scene, resourceManager);
     }
 
@@ -128,6 +137,7 @@ namespace ramses::internal {
         actions.push_back(SceneResourceAction(blitPassHandle.asMemoryHandle(), ESceneResourceAction_DestroyBlitPass));
         actions.push_back(SceneResourceAction(dataBufferHandle.asMemoryHandle(), ESceneResourceAction_DestroyDataBuffer));
         actions.push_back(SceneResourceAction(textureBufferHandle.asMemoryHandle(), ESceneResourceAction_DestroyTextureBuffer));
+        actions.push_back(SceneResourceAction(uniformBufferHandle.asMemoryHandle(), ESceneResourceAction_DestroyUniformBuffer));
 
         InSequence seq;
         EXPECT_CALL(resourceManager, unloadRenderTarget(renderTargetHandle, sceneID));
@@ -135,6 +145,7 @@ namespace ramses::internal {
         EXPECT_CALL(resourceManager, unloadBlitPassRenderTargets(blitPassHandle, sceneID));
         EXPECT_CALL(resourceManager, unloadDataBuffer(dataBufferHandle, sceneID));
         EXPECT_CALL(resourceManager, unloadTextureBuffer(textureBufferHandle, sceneID));
+        EXPECT_CALL(resourceManager, unloadUniformBuffer(uniformBufferHandle, sceneID));
         PendingSceneResourcesUtils::ApplySceneResourceActions(actions, scene, resourceManager);
     }
 
@@ -144,7 +155,7 @@ namespace ramses::internal {
         size_t resSize = 999u;
         ResourceUtils::GetAllSceneResourcesFromScene(actions, scene, resSize);
         EXPECT_FALSE(actions.empty());
-        EXPECT_EQ(1344u, resSize);
+        EXPECT_EQ(1467u, resSize);
 
         static const std::array<std::byte, 32*32*4> data{};
         scene.updateTextureBuffer(textureBufferHandle, 0u, 0u, 0u, 32, 32, data.data());
@@ -162,6 +173,9 @@ namespace ramses::internal {
         EXPECT_CALL(resourceManager, updateTextureBuffer(textureBufferHandle, 0u, Quad{0u, 0u, 32, 32}, 32, _, sceneID));
         EXPECT_CALL(resourceManager, updateTextureBuffer(textureBufferHandle, 1u, Quad{0u, 0u, 16, 16}, 16, _, sceneID));
         EXPECT_CALL(resourceManager, updateTextureBuffer(textureBufferHandle, 2u, Quad{0u, 0u, 8, 8}, 8, _, sceneID));
+
+        EXPECT_CALL(resourceManager, uploadUniformBuffer(uniformBufferHandle, _, sceneID));
+        EXPECT_CALL(resourceManager, updateUniformBuffer(uniformBufferHandle, _, _, sceneID));
         PendingSceneResourcesUtils::ApplySceneResourceActions(actions, scene, resourceManager);
     }
 

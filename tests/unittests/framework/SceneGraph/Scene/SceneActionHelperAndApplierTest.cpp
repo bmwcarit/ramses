@@ -52,7 +52,7 @@ namespace ramses::internal
     {
     public:
         ASceneActionCreatorAndApplier()
-            : creator(collection)
+            : creator(collection, EFeatureLevel_Latest)
         {}
 
         StrictMock<SceneForSceneActionApplierTesting> scene;
@@ -84,7 +84,8 @@ namespace ramses::internal
                                     + sizeof(uint32_t)
                                     + sizeof(uint32_t)
                                     + sizeof(DataInstanceHandle)
-                                    + sizeof(DataInstanceHandle));
+                                    + sizeof(DataInstanceHandle)
+        );
 
         creator.compoundRenderable(renderableHandle, renderable);
 
@@ -100,7 +101,7 @@ namespace ramses::internal
         EXPECT_CALL(scene, setRenderableDataInstance(renderableHandle, ERenderableDataSlotType_Geometry, renderable.dataInstances[ERenderableDataSlotType_Geometry]));
         EXPECT_CALL(scene, setRenderableDataInstance(renderableHandle, ERenderableDataSlotType_Uniforms, renderable.dataInstances[ERenderableDataSlotType_Uniforms]));
 
-        SceneActionApplier::ApplyActionsOnScene(scene, collection);
+        SceneActionApplier::ApplyActionsOnScene(scene, collection, EFeatureLevel_Latest);
     }
 
 
@@ -127,13 +128,14 @@ namespace ramses::internal
                                     + sizeof(uint32_t)
                                     + sizeof(uint32_t)
                                     + sizeof(DataInstanceHandle)
-                                    + sizeof(DataInstanceHandle));
+                                    + sizeof(DataInstanceHandle)
+        );
 
         creator.compoundRenderable(renderableHandle, renderable);
 
         ASSERT_EQ(sizeOfActionData, collection.collectionData().size());
 
-        // default values will not be serialized
+        // default values will not be applied
         EXPECT_CALL(scene, allocateRenderable(renderable.node, renderableHandle)).WillOnce(Return(renderableHandle));
         EXPECT_CALL(scene, setRenderableStartIndex(renderableHandle, _)).Times(0);
         EXPECT_CALL(scene, setRenderableIndexCount(renderableHandle, renderable.indexCount));
@@ -144,7 +146,7 @@ namespace ramses::internal
         EXPECT_CALL(scene, setRenderableDataInstance(renderableHandle, ERenderableDataSlotType_Geometry, renderable.dataInstances[ERenderableDataSlotType_Geometry]));
         EXPECT_CALL(scene, setRenderableDataInstance(renderableHandle, ERenderableDataSlotType_Uniforms, renderable.dataInstances[ERenderableDataSlotType_Uniforms]));
 
-        SceneActionApplier::ApplyActionsOnScene(scene, collection);
+        SceneActionApplier::ApplyActionsOnScene(scene, collection, EFeatureLevel_Latest);
     }
 
     TEST_F(ASceneActionCreatorAndApplier, CanSerializeCompoundRenderableEffectDataWithDefaultValues)
@@ -164,7 +166,7 @@ namespace ramses::internal
         EXPECT_CALL(scene, setRenderableDataInstance(renderable, ERenderableDataSlotType_Uniforms, uniformInstanceHandle));
         EXPECT_CALL(scene, setRenderableRenderState(renderable, stateHandle));
 
-        SceneActionApplier::ApplyActionsOnScene(scene, collection);
+        SceneActionApplier::ApplyActionsOnScene(scene, collection, EFeatureLevel_Latest);
     }
 
     TEST_F(ASceneActionCreatorAndApplier, CanSerializeCompoundState)
@@ -210,6 +212,6 @@ namespace ramses::internal
         EXPECT_CALL(scene, setRenderStateStencilOps(state, rs.stencilOpFail, rs.stencilOpDepthFail, rs.stencilOpDepthPass));
         EXPECT_CALL(scene, setRenderStateColorWriteMask(state, rs.colorWriteMask));
 
-        SceneActionApplier::ApplyActionsOnScene(scene, collection);
+        SceneActionApplier::ApplyActionsOnScene(scene, collection, EFeatureLevel_Latest);
     }
 }

@@ -8,6 +8,7 @@
 
 add_subdirectory(framework-test-utils)
 add_subdirectory(framework)
+add_subdirectory(glslang-init-gtest-env)
 add_subdirectory(client)
 
 if(ANY_WINDOW_TYPE_ENABLED)

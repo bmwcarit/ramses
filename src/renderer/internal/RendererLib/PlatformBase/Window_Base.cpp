@@ -8,15 +8,15 @@
 
 #include "internal/RendererLib/PlatformBase/Window_Base.h"
 #include "internal/PlatformAbstraction/Collections/StringOutputStream.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "internal/RendererLib/PlatformInterface/IWindowEventHandler.h"
 #include "internal/Core/Utils/LogMacros.h"
 #include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {
-    Window_Base::Window_Base(const DisplayConfig& displayConfig, IWindowEventHandler& eventHandler, uint32_t id)
-        : m_windowName((StringOutputStream() << "RAMSES Renderer " << id).release())
+    Window_Base::Window_Base(const DisplayConfigData& displayConfig, IWindowEventHandler& eventHandler, uint32_t id)
+        : m_windowName(displayConfig.getWindowTitle().empty() ? fmt::format("RAMSES Renderer {}", id) : displayConfig.getWindowTitle())
         , m_eventHandler(eventHandler)
         , m_fullscreen(displayConfig.getFullscreenState())
         , m_msaaSampleCount(1)

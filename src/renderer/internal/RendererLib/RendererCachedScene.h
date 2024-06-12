@@ -9,7 +9,7 @@
 #pragma once
 
 #include "internal/RendererLib/ResourceCachedScene.h"
-#include "RenderingPassInfo.h"
+#include "internal/RendererLib/RenderingPassInfo.h"
 
 namespace ramses::internal
 {
@@ -17,6 +17,8 @@ namespace ramses::internal
 
     class RendererCachedScene final : public ResourceCachedScene
     {
+        using BaseT = ResourceCachedScene;
+
     public:
         explicit RendererCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo = SceneInfo());
 

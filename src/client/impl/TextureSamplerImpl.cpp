@@ -24,6 +24,7 @@
 #include "impl/TextureUtils.h"
 #include "impl/SceneObjectRegistryIterator.h"
 #include "impl/ErrorReporting.h"
+#include "impl/SerializationContext.h"
 #include "internal/SceneGraph/Scene/ClientScene.h"
 #include "internal/DataSlotUtils.h"
 
@@ -230,7 +231,7 @@ namespace ramses::internal
         inStream >> value;
         m_textureType = static_cast<ERamsesObjectType>(value);
 
-        inStream >> m_textureSamplerHandle;
+        serializationContext.deserializeAndMap(inStream, m_textureSamplerHandle);
 
         return true;
     }

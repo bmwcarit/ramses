@@ -18,7 +18,7 @@ namespace ramses::internal
     public:
         ARendererCachedScene()
             : rendererScenes(rendererEventCollector)
-            , scene(rendererScenes.createScene(SceneInfo()))
+            , scene(rendererScenes.createScene(SceneInfo{}))
             , sceneAllocator(scene)
             , sceneHelper(scene)
         {

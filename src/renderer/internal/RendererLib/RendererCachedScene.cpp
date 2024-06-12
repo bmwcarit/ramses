@@ -14,51 +14,51 @@
 namespace ramses::internal
 {
     RendererCachedScene::RendererCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo)
-        : ResourceCachedScene(sceneLinksManager, sceneInfo)
+        : BaseT(sceneLinksManager, sceneInfo)
         , m_renderableOrderingDirty(true)
     {
     }
 
     void RendererCachedScene::setRenderableVisibility(RenderableHandle renderableHandle, EVisibilityMode visible)
     {
-        ResourceCachedScene::setRenderableVisibility(renderableHandle, visible);
+        BaseT::setRenderableVisibility(renderableHandle, visible);
         m_renderableOrderingDirty = true;
     }
 
     void RendererCachedScene::releaseRenderGroup(RenderGroupHandle groupHandle)
     {
-        ResourceCachedScene::releaseRenderGroup(groupHandle);
+        BaseT::releaseRenderGroup(groupHandle);
         m_renderableOrderingDirty = true;
     }
 
     void RendererCachedScene::addRenderableToRenderGroup(RenderGroupHandle groupHandle, RenderableHandle renderableHandle, int32_t order)
     {
-        ResourceCachedScene::addRenderableToRenderGroup(groupHandle, renderableHandle, order);
+        BaseT::addRenderableToRenderGroup(groupHandle, renderableHandle, order);
         m_renderableOrderingDirty = true;
     }
 
     void RendererCachedScene::removeRenderableFromRenderGroup(RenderGroupHandle groupHandle, RenderableHandle renderableHandle)
     {
-        ResourceCachedScene::removeRenderableFromRenderGroup(groupHandle, renderableHandle);
+        BaseT::removeRenderableFromRenderGroup(groupHandle, renderableHandle);
         m_renderableOrderingDirty = true;
     }
 
     void RendererCachedScene::releaseRenderPass(RenderPassHandle passHandle)
     {
         m_renderOncePassesToRender.remove(passHandle);
-        ResourceCachedScene::releaseRenderPass(passHandle);
+        BaseT::releaseRenderPass(passHandle);
         m_renderableOrderingDirty = true;
     }
 
     void RendererCachedScene::setRenderPassRenderOrder(RenderPassHandle passHandle, int32_t renderOrder)
     {
-        ResourceCachedScene::setRenderPassRenderOrder(passHandle, renderOrder);
+        BaseT::setRenderPassRenderOrder(passHandle, renderOrder);
         m_renderableOrderingDirty = true;
     }
 
     BlitPassHandle RendererCachedScene::allocateBlitPass(RenderBufferHandle sourceRenderBufferHandle, RenderBufferHandle destinationRenderBufferHandle, BlitPassHandle passHandle)
     {
-        const BlitPassHandle blitPass = ResourceCachedScene::allocateBlitPass(sourceRenderBufferHandle, destinationRenderBufferHandle, passHandle);
+        const BlitPassHandle blitPass = BaseT::allocateBlitPass(sourceRenderBufferHandle, destinationRenderBufferHandle, passHandle);
         m_renderableOrderingDirty = true;
 
         return blitPass;
@@ -66,25 +66,25 @@ namespace ramses::internal
 
     void RendererCachedScene::releaseBlitPass(BlitPassHandle passHandle)
     {
-        ResourceCachedScene::releaseBlitPass(passHandle);
+        BaseT::releaseBlitPass(passHandle);
         m_renderableOrderingDirty = true;
     }
 
     void RendererCachedScene::setBlitPassRenderOrder(BlitPassHandle passHandle, int32_t renderOrder)
     {
-        ResourceCachedScene::setBlitPassRenderOrder(passHandle, renderOrder);
+        BaseT::setBlitPassRenderOrder(passHandle, renderOrder);
         m_renderableOrderingDirty = true;
     }
 
     void RendererCachedScene::setBlitPassEnabled(BlitPassHandle passHandle, bool isEnabled)
     {
-        ResourceCachedScene::setBlitPassEnabled(passHandle, isEnabled);
+        BaseT::setBlitPassEnabled(passHandle, isEnabled);
         m_renderableOrderingDirty = true;
     }
 
     TextureBufferHandle RendererCachedScene::allocateTextureBuffer(EPixelStorageFormat textureFormat, const MipMapDimensions& mipMapDimensions, TextureBufferHandle handle)
     {
-        auto resultHandle = TextureLinkCachedScene::allocateTextureBuffer(textureFormat, mipMapDimensions, handle);
+        auto resultHandle = BaseT::allocateTextureBuffer(textureFormat, mipMapDimensions, handle);
         m_textureBufferUpdates.resize(getTextureBufferCount());
         auto& update = m_textureBufferUpdates[resultHandle.asMemoryHandle()];
         update.resize(mipMapDimensions.size());
@@ -99,7 +99,7 @@ namespace ramses::internal
 
     void RendererCachedScene::updateTextureBuffer(TextureBufferHandle handle, uint32_t mipLevel, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const std::byte* data)
     {
-        TextureLinkCachedScene::updateTextureBuffer(handle, mipLevel, x, y, width, height, data);
+        BaseT::updateTextureBuffer(handle, mipLevel, x, y, width, height, data);
         assert(handle.asMemoryHandle() < m_textureBufferUpdates.size());
         auto& update = m_textureBufferUpdates[handle.asMemoryHandle()];
         assert(mipLevel < update.size());
@@ -109,8 +109,8 @@ namespace ramses::internal
 
     void RendererCachedScene::setRenderPassEnabled(RenderPassHandle passHandle, bool isEnabled)
     {
-        ResourceCachedScene::setRenderPassEnabled(passHandle, isEnabled);
-        if (isEnabled && ResourceCachedScene::getRenderPass(passHandle).isRenderOnce)
+        BaseT::setRenderPassEnabled(passHandle, isEnabled);
+        if (isEnabled && BaseT::getRenderPass(passHandle).isRenderOnce)
         {
             m_renderOncePassesToRender.put(passHandle);
         }
@@ -123,8 +123,8 @@ namespace ramses::internal
 
     void RendererCachedScene::setRenderPassRenderOnce(RenderPassHandle passHandle, bool enable)
     {
-        ResourceCachedScene::setRenderPassRenderOnce(passHandle, enable);
-        if (enable && ResourceCachedScene::getRenderPass(passHandle).isEnabled)
+        BaseT::setRenderPassRenderOnce(passHandle, enable);
+        if (enable && BaseT::getRenderPass(passHandle).isEnabled)
         {
             m_renderOncePassesToRender.put(passHandle);
         }
@@ -137,8 +137,8 @@ namespace ramses::internal
 
     void RendererCachedScene::retriggerRenderPassRenderOnce(RenderPassHandle passHandle)
     {
-        ResourceCachedScene::retriggerRenderPassRenderOnce(passHandle);
-        if (ResourceCachedScene::getRenderPass(passHandle).isEnabled)
+        BaseT::retriggerRenderPassRenderOnce(passHandle);
+        if (BaseT::getRenderPass(passHandle).isEnabled)
         {
             m_renderOncePassesToRender.put(passHandle);
             m_renderableOrderingDirty = true;
@@ -147,25 +147,25 @@ namespace ramses::internal
 
     void RendererCachedScene::addRenderGroupToRenderPass(RenderPassHandle passHandle, RenderGroupHandle groupHandle, int32_t order)
     {
-        ResourceCachedScene::addRenderGroupToRenderPass(passHandle, groupHandle, order);
+        BaseT::addRenderGroupToRenderPass(passHandle, groupHandle, order);
         m_renderableOrderingDirty = true;
     }
 
     void RendererCachedScene::removeRenderGroupFromRenderPass(RenderPassHandle passHandle, RenderGroupHandle groupHandle)
     {
-        ResourceCachedScene::removeRenderGroupFromRenderPass(passHandle, groupHandle);
+        BaseT::removeRenderGroupFromRenderPass(passHandle, groupHandle);
         m_renderableOrderingDirty = true;
     }
 
     void RendererCachedScene::addRenderGroupToRenderGroup(RenderGroupHandle groupHandleParent, RenderGroupHandle groupHandleChild, int32_t order)
     {
-        ResourceCachedScene::addRenderGroupToRenderGroup(groupHandleParent, groupHandleChild, order);
+        BaseT::addRenderGroupToRenderGroup(groupHandleParent, groupHandleChild, order);
         m_renderableOrderingDirty = true;
     }
 
     void RendererCachedScene::removeRenderGroupFromRenderGroup(RenderGroupHandle groupHandleParent, RenderGroupHandle groupHandleChild)
     {
-        ResourceCachedScene::removeRenderGroupFromRenderGroup(groupHandleParent, groupHandleChild);
+        BaseT::removeRenderGroupFromRenderGroup(groupHandleParent, groupHandleChild);
         m_renderableOrderingDirty = true;
     }
 
@@ -192,8 +192,8 @@ namespace ramses::internal
         {
             m_sortedRenderingPasses.clear();
 
-            const uint32_t totalNumberOfRenderPasses = ResourceCachedScene::getRenderPassCount();
-            const uint32_t totalNumberOfBlitPasses = ResourceCachedScene::getBlitPassCount();
+            const uint32_t totalNumberOfRenderPasses = BaseT::getRenderPassCount();
+            const uint32_t totalNumberOfBlitPasses = BaseT::getBlitPassCount();
 
             //add render passes
             m_passRenderableOrder.resize(totalNumberOfRenderPasses);
@@ -207,9 +207,9 @@ namespace ramses::internal
             //add blit passes
             for (BlitPassHandle passHandle(0); passHandle < totalNumberOfBlitPasses; ++passHandle)
             {
-                if (ResourceCachedScene::isBlitPassAllocated(passHandle))
+                if (BaseT::isBlitPassAllocated(passHandle))
                 {
-                    const BlitPass& blitPass = ResourceCachedScene::getBlitPass(passHandle);
+                    const BlitPass& blitPass = BaseT::getBlitPass(passHandle);
                     if (blitPass.isEnabled)
                     {
                         assert(blitPass.sourceRenderBuffer.isValid());
@@ -309,7 +309,7 @@ namespace ramses::internal
 
     void RendererCachedScene::updateRenderableWorldMatrices()
     {
-        m_renderableMatrices.resize(ResourceCachedScene::getRenderableCount());
+        m_renderableMatrices.resize(BaseT::getRenderableCount());
         for (const auto& renderables : m_passRenderableOrder)
         {
             for (const auto renderable : renderables)
@@ -324,13 +324,13 @@ namespace ramses::internal
 
     void RendererCachedScene::updateRenderableWorldMatricesWithLinks()
     {
-        m_renderableMatrices.resize(ResourceCachedScene::getRenderableCount());
+        m_renderableMatrices.resize(BaseT::getRenderableCount());
         for (const auto& renderables : m_passRenderableOrder)
         {
             for (const auto renderable : renderables)
             {
                 assert(renderable.isValid());
-                const NodeHandle node = ResourceCachedScene::getRenderable(renderable).node;
+                const NodeHandle node = BaseT::getRenderable(renderable).node;
                 assert(node.isValid());
                 m_renderableMatrices[renderable.asMemoryHandle()] = updateMatrixCacheWithLinks(ETransformationMatrixType_World, node);
             }
@@ -339,12 +339,12 @@ namespace ramses::internal
 
     bool RendererCachedScene::shouldRenderPassBeRendered(RenderPassHandle handle) const
     {
-        if (!ResourceCachedScene::isRenderPassAllocated(handle))
+        if (!BaseT::isRenderPassAllocated(handle))
         {
             return false;
         }
 
-        const RenderPass& rp = ResourceCachedScene::getRenderPass(handle);
+        const RenderPass& rp = BaseT::getRenderPass(handle);
         if (!rp.camera.isValid() || !rp.isEnabled)
         {
             return false;
@@ -355,10 +355,10 @@ namespace ramses::internal
 
     void RendererCachedScene::retriggerAllRenderOncePasses()
     {
-        const uint32_t numRPs = ResourceCachedScene::getRenderPassCount();
+        const uint32_t numRPs = BaseT::getRenderPassCount();
         for (RenderPassHandle handle(0u); handle < numRPs; ++handle)
         {
-            if (ResourceCachedScene::isRenderPassAllocated(handle))
+            if (BaseT::isRenderPassAllocated(handle))
             {
                 const auto& rp = getRenderPass(handle);
                 if (rp.isEnabled && rp.isRenderOnce)

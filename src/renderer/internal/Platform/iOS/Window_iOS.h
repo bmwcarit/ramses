@@ -15,7 +15,7 @@ namespace ramses::internal
     class Window_iOS : public Window_Base
     {
     public:
-        Window_iOS(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, uint32_t id);
+        Window_iOS(const DisplayConfigData& displayConfig, IWindowEventHandler& windowEventHandler, uint32_t id);
         ~Window_iOS() override;
 
         bool init() override;

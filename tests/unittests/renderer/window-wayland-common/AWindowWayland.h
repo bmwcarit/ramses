@@ -10,7 +10,7 @@
 
 #include "WindowEventHandlerMock.h"
 #include "TestWithWaylandEnvironment.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "internal/Platform/Wayland/UnixDomainSocket.h"
 #include <chrono>
 
@@ -45,7 +45,7 @@ namespace ramses::internal
         }
 
         ::testing::StrictMock<WindowEventHandlerMock>   m_eventHandlerMock;
-        ramses::internal::DisplayConfig                  m_config;
+        ramses::internal::DisplayConfigData             m_config;
         WINDOWTYPE*                                     m_window = nullptr;
     };
 }

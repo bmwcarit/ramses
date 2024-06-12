@@ -30,6 +30,7 @@ namespace ramses::internal
     {
         bool           isOffscreenBuffer{false};
         bool           isInterruptible{false};
+        uint32_t       sampleCount{0u};
         Viewport       viewport;
         ClearFlags     clearFlags;
         glm::vec4      clearColor;
@@ -41,7 +42,7 @@ namespace ramses::internal
     class DisplaySetup
     {
     public:
-        void registerDisplayBuffer(DeviceResourceHandle displayBuffer, const Viewport& viewport, const glm::vec4& clearColor, bool isOffscreenBuffer, bool isInterruptible);
+        void registerDisplayBuffer(DeviceResourceHandle displayBuffer, const Viewport& viewport, const glm::vec4& clearColor, bool isOffscreenBuffer, uint32_t sampleCount, bool isInterruptible);
         void unregisterDisplayBuffer(DeviceResourceHandle displayBuffer);
 
         [[nodiscard]] const DisplayBufferInfo& getDisplayBuffer(DeviceResourceHandle displayBuffer) const;

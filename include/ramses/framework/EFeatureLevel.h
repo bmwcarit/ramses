@@ -49,7 +49,12 @@ namespace ramses
         /// Base level of features released with version 28.0
         EFeatureLevel_01 = 1,
 
+        /// Added features: Uniform buffer objects
+        EFeatureLevel_02 = 2,
+
         /// Equals to the latest feature level
-        EFeatureLevel_Latest = EFeatureLevel_01
+        /// Avoid using this enum in application code because it will change also in minor releases when new feature level is added!
+        /// Use concrete feature level when instantiating Ramses framework, level which matches desired use case or supports certain asset.
+        EFeatureLevel_Latest = EFeatureLevel_02
     };
 }

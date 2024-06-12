@@ -22,10 +22,13 @@ namespace ramses::internal
     class ActionTestScene : public IScene
     {
     public:
-        explicit ActionTestScene(const SceneInfo& sceneInfo = SceneInfo());
+        explicit ActionTestScene(const SceneInfo& sceneInfo = SceneInfo(), EFeatureLevel featureLevel = EFeatureLevel_Latest);
 
         [[nodiscard]] const std::string&          getName                         () const override;
         [[nodiscard]] SceneId                     getSceneId                      () const override;
+        [[nodiscard]] ERenderBackendCompatibility getRenderBackendCompatibility   () const override;
+        [[nodiscard]] EVulkanAPIVersion           getVulkanAPIVersion             () const override;
+        [[nodiscard]] ESPIRVVersion               getSPIRVVersion                 () const override;
 
         void   setEffectTimeSync(FlushTime::Clock::time_point t) override;
         [[nodiscard]] FlushTime::Clock::time_point getEffectTimeSync() const override;
@@ -42,7 +45,7 @@ namespace ramses::internal
         void                        setRenderableVisibility         (RenderableHandle renderableHandle, EVisibilityMode visible) override;
         void                        setRenderableInstanceCount      (RenderableHandle renderableHandle, uint32_t instanceCount) override;
         void                        setRenderableStartVertex        (RenderableHandle renderableHandle, uint32_t startVertex) override;
-        [[nodiscard]] const Renderable&           getRenderable                   (RenderableHandle renderableHandle) const override;
+        [[nodiscard]] const Renderable& getRenderable               (RenderableHandle renderableHandle) const override;
 
         // Render state
         RenderStateHandle           allocateRenderState             (RenderStateHandle stateHandle) override;
@@ -125,6 +128,7 @@ namespace ramses::internal
         [[nodiscard]] const ResourceField&      getDataResource             (DataInstanceHandle containerHandle, DataFieldHandle field) const override;
         [[nodiscard]] TextureSamplerHandle      getDataTextureSamplerHandle (DataInstanceHandle containerHandle, DataFieldHandle field) const override;
         [[nodiscard]] DataInstanceHandle        getDataReference            (DataInstanceHandle containerHandle, DataFieldHandle field) const override;
+        [[nodiscard]] UniformBufferHandle       getDataUniformBuffer        (DataInstanceHandle containerHandle, DataFieldHandle field) const override;
 
         void setDataFloatArray           (DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const float* data) override;
         void setDataVector2fArray        (DataInstanceHandle containerHandle, DataFieldHandle field, uint32_t elementCount, const glm::vec2* data) override;
@@ -141,6 +145,7 @@ namespace ramses::internal
         void setDataResource             (DataInstanceHandle containerHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, uint32_t instancingDivisor, uint16_t offsetWithinElementInBytes, uint16_t stride) override;
         void setDataTextureSamplerHandle (DataInstanceHandle containerHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle) override;
         void setDataReference            (DataInstanceHandle containerHandle, DataFieldHandle field, DataInstanceHandle dataRef) override;
+        void setDataUniformBuffer        (DataInstanceHandle containerHandle, DataFieldHandle field, UniformBufferHandle uniformBufferHandle) override;
 
         // get/setData*Array wrappers for elementCount == 1
         [[nodiscard]] float             getDataSingleFloat     (DataInstanceHandle containerHandle, DataFieldHandle field) const override;
@@ -249,6 +254,14 @@ namespace ramses::internal
         [[nodiscard]] bool                        isDataBufferAllocated           (DataBufferHandle handle) const override;
         [[nodiscard]] const GeometryDataBuffer&   getDataBuffer                   (DataBufferHandle handle) const override;
 
+        // Uniform buffers
+        UniformBufferHandle     allocateUniformBuffer(uint32_t size, UniformBufferHandle handle) override;
+        void                    releaseUniformBuffer(UniformBufferHandle uniformBufferHandle) override;
+        void                    updateUniformBuffer(UniformBufferHandle uniformBufferHandle, uint32_t offset, uint32_t size, const std::byte* data) override;
+        [[nodiscard]] bool      isUniformBufferAllocated(UniformBufferHandle uniformBufferHandle) const override;
+        [[nodiscard]] uint32_t  getUniformBufferCount() const override;
+        [[nodiscard]] const UniformBuffer& getUniformBuffer(UniformBufferHandle uniformBufferHandle) const override;
+
         //Texture buffers
         TextureBufferHandle         allocateTextureBuffer           (EPixelStorageFormat textureFormat, const MipMapDimensions& mipMapDimensions, TextureBufferHandle handle) override;
         void                        releaseTextureBuffer            (TextureBufferHandle handle) override;
@@ -283,6 +296,8 @@ namespace ramses::internal
         const Scene m_scene;
         // Converts IScene calls to actions, collects them and applies to m_actionApplier, which applies them on m_scene
         ActionCollectingScene m_actionCollector;
+
+        EFeatureLevel m_featureLevel = EFeatureLevel_Latest;
     };
 
 }

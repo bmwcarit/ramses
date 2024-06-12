@@ -273,9 +273,7 @@ namespace ramses::internal
         // if a default value is set, return a string representation, else the argument is mandatory
         if(m_defaultValue)
         {
-            StringOutputStream s;
-            s << *static_cast<T*>(m_defaultValue);
-            return s.c_str();
+            return fmt::format("{}", *static_cast<T*>(m_defaultValue));
         }
         return "required";
     }

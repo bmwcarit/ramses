@@ -27,7 +27,7 @@ namespace ramses::internal
     class IDisplayController;
     class RendererCachedScene;
     class ISystemCompositorController;
-    class DisplayConfig;
+    class DisplayConfigData;
     class IPlatform;
     class RendererScenes;
     class RendererEventCollector;
@@ -49,7 +49,7 @@ namespace ramses::internal
             RendererStatistics& rendererStatistics);
         virtual ~Renderer();
 
-        void                        registerOffscreenBuffer    (DeviceResourceHandle bufferDeviceHandle, uint32_t width, uint32_t height, bool isInterruptible);
+        void                        registerOffscreenBuffer    (DeviceResourceHandle bufferDeviceHandle, uint32_t width, uint32_t height, uint32_t sampleCount, bool isInterruptible);
         void                        unregisterOffscreenBuffer  (DeviceResourceHandle bufferDeviceHandle);
 
         void                        doOneRenderLoop();
@@ -67,7 +67,7 @@ namespace ramses::internal
         IDisplayController&         getDisplayController();
         [[nodiscard]] bool                        hasDisplayController() const;
         [[nodiscard]] const DisplaySetup&         getDisplaySetup() const;
-        void                        createDisplayContext(const DisplayConfig& displayConfig);
+        void                        createDisplayContext(const DisplayConfigData& displayConfig);
         void                        destroyDisplayContext();
 
         DisplayEventHandler&        getDisplayEventHandler();
@@ -103,7 +103,7 @@ namespace ramses::internal
         std::atomic_int m_traceId{ 0 };
 
     protected:
-        virtual IDisplayController* createDisplayControllerFromConfig(const DisplayConfig& config);
+        virtual IDisplayController* createDisplayControllerFromConfig(const DisplayConfigData& config);
 
     private:
         void handleDisplayEvents();

@@ -18,7 +18,7 @@ namespace ramses::internal
     class Window_Android : public Window_Base
     {
     public:
-        Window_Android(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, uint32_t id);
+        Window_Android(const DisplayConfigData& displayConfig, IWindowEventHandler& windowEventHandler, uint32_t id);
         ~Window_Android() override;
 
         bool init() override;

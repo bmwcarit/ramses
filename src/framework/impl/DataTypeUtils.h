@@ -52,6 +52,8 @@ namespace ramses
                 return EDataType::Matrix44F;
             case ramses::internal::EDataType::ByteBlob:
                 return EDataType::ByteBlob;
+            case ramses::internal::EDataType::UniformBuffer:
+                return EDataType::UniformBuffer;
 
             // internal attribure array types are converted back to their element type on public API
             case ramses::internal::EDataType::UInt16Buffer:
@@ -116,6 +118,8 @@ namespace ramses
                 return ramses::internal::EDataType::Matrix44F;
             case EDataType::ByteBlob:
                 return ramses::internal::EDataType::ByteBlob;
+            case EDataType::UniformBuffer:
+                return ramses::internal::EDataType::UniformBuffer;
             case EDataType::TextureSampler2D:
                 return ramses::internal::EDataType::TextureSampler2D;
             case EDataType::TextureSampler2DMS:

@@ -29,7 +29,7 @@ namespace ramses::internal
             : dummyGuid(555)
             , logic(dummyGuid, frameworkLock)
             , sceneId(44u)
-            , dummyScene(SceneInfo(sceneId))
+            , dummyScene(SceneInfo{ sceneId })
         {
             logic.init(resourceComponent, scenegraphProviderComponent);
         }
@@ -181,8 +181,8 @@ namespace ramses::internal
     {
     public:
         AClientApplicationLogicWithRealComponents()
-            : resComp(stats, fwlock)
-            , sceneComp(clientId, commSystem, connStatusUpdateNotifier, resComp, fwlock, ramses::EFeatureLevel_Latest)
+            : resComp(stats, fwlock, EFeatureLevel_Latest)
+            , sceneComp(clientId, commSystem, connStatusUpdateNotifier, resComp, fwlock, EFeatureLevel_Latest)
             , logic(clientId, fwlock)
         {
             logic.init(resComp, sceneComp);
@@ -206,7 +206,7 @@ namespace ramses::internal
 
     TEST_F(AClientApplicationLogicWithRealComponents, keepsResourcesAliveForNewSubscriberForShadowCopyScene)
     {
-        ClientScene clientScene{ SceneInfo(sceneId) };
+        ClientScene clientScene{ SceneInfo{sceneId} };
         logic.createScene(clientScene, false);
         logic.publishScene(sceneId, EScenePublicationMode::LocalAndRemote);
         auto res = new TextureResource(EResourceType::Texture2D, TextureMetaInfo(1u, 1u, 1u, EPixelStorageFormat::R8, false, {}, { 1u }), {});
@@ -234,7 +234,7 @@ namespace ramses::internal
 
     TEST_F(AClientApplicationLogicWithRealComponents, keepsAlsoOldResourcesAliveForNewSubscriberForShadowCopyScene)
     {
-        ClientScene clientScene{ SceneInfo(sceneId) };
+        ClientScene clientScene{ SceneInfo{sceneId} };
         logic.createScene(clientScene, false);
         logic.publishScene(sceneId, EScenePublicationMode::LocalAndRemote);
         auto res = new TextureResource(EResourceType::Texture2D, TextureMetaInfo(1u, 1u, 1u, EPixelStorageFormat::R8, false, {}, { 1u }), {});

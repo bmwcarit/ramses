@@ -7,6 +7,7 @@
 //  -------------------------------------------------------------------------
 
 #include "ViewerGuiApp.h"
+#include "fmt/format.h"
 #include "ramses-cli.h"
 #include "ramses/client/ramses-client.h"
 #include "ramses/client/ramses-utils.h"
@@ -22,9 +23,11 @@ namespace ramses::internal
 {
     namespace
     {
-        void SetPreferredSize(ramses::DisplayConfig& cfg, const ramses::Scene& scene)
+        void SetPreferredSize(ramses::DisplayConfig& cfg, const ramses::Scene* scene)
         {
-            ramses::SceneObjectIterator it(scene, ramses::ERamsesObjectType::RenderPass);
+            if (!scene)
+                return;
+            ramses::SceneObjectIterator it(*scene, ramses::ERamsesObjectType::RenderPass);
             ramses::RamsesObject*       obj = nullptr;
             while (nullptr != (obj = it.getNext()))
             {
@@ -46,6 +49,7 @@ namespace ramses::internal
     ViewerGuiApp::ViewerGuiApp()
     {
         m_displayConfig.setResizable(true);
+        m_displayConfig.setWindowTitle("RAMSES Viewer");
 
         auto* fontAtlas = ImGui::GetIO().Fonts;
         fontAtlas->AddFontDefault();
@@ -86,10 +90,20 @@ namespace ramses::internal
         if (exitCode != ExitCode::Ok)
             return exitCode;
 
+        if (!getSceneFiles().empty())
+        {
+            const auto& sceneFile = getSceneFile();
+            if (!sceneFile.empty())
+            {
+
+                m_displayConfig.setWindowTitle(fmt::format("{} - RAMSES Viewer", fmt::join(getSceneFiles(), " + ")));
+            }
+        }
+
         const bool customWidth = m_width ? (m_width->count() > 0) : false;
         const bool customHeight = m_height ? (m_height->count() > 0) : false;
         if (!customHeight && !customWidth)
-            SetPreferredSize(m_displayConfig, *getScene());
+            SetPreferredSize(m_displayConfig, getScene());
         int32_t winX = 0;
         int32_t winY = 0;
         uint32_t winWidth = 0u;
@@ -97,7 +111,7 @@ namespace ramses::internal
         m_displayConfig.getWindowRectangle(winX, winY, winWidth, winHeight);
 
         // avoid sceneId collision
-        const auto imguiSceneId = ramses::sceneId_t(getScene()->getSceneId().getValue() + 1);
+        const auto imguiSceneId = getScene() ? ramses::sceneId_t(getScene()->getSceneId().getValue() + 1) : ramses::sceneId_t(std::numeric_limits<sceneId_t::BaseType>::max() - 1);
         m_imguiHelper = std::make_unique<ImguiClientHelper>(*getClient(), winWidth, winHeight, imguiSceneId);
 
         if (m_headless)
@@ -117,51 +131,57 @@ namespace ramses::internal
         const ramses::displayId_t displayId = renderer->createDisplay(m_displayConfig);
         renderer->flush();
 
+        m_streamViewer = std::make_unique<StreamViewer>(*m_imguiHelper, *renderer, displayId);
+        m_streamViewer->setAutoShow(getScene() == nullptr);
+        m_rendererControl = std::make_unique<RendererControl>(renderer, displayId, winWidth, winHeight, m_imguiHelper.get(), m_streamViewer.get());
+        m_rendererControl->setAutoShow(getScene() == nullptr);
         m_imguiHelper->setDisplayId(displayId);
-        m_imguiHelper->setRenderer(renderer);
 
-        if (!m_imguiHelper->waitForDisplay(displayId))
+        switch (getScene() ? m_guiMode : GuiMode::Only)
+        {
+        case GuiMode::On:
+            m_sceneSetup = std::make_unique<OffscreenSetup>(*m_rendererControl, m_imguiHelper->getScene(), getScene());
+            break;
+        case GuiMode::Only:
+            m_sceneSetup = std::make_unique<FramebufferSetup>(*m_rendererControl, m_imguiHelper->getScene(), nullptr);
+            break;
+        case GuiMode::Overlay:
+        case GuiMode::Off:
+            m_sceneSetup = std::make_unique<FramebufferSetup>(*m_rendererControl, m_imguiHelper->getScene(), getScene());
+            break;
+        }
+
+        if (!m_rendererControl->waitForDisplay(displayId))
         {
             return ExitCode::ErrorDisplay;
         }
 
-        switch (m_guiMode)
-        {
-        case GuiMode::On:
-            m_sceneSetup = std::make_unique<OffscreenSetup>(*m_imguiHelper, renderer, getScene(), displayId, winWidth, winHeight);
-            break;
-        case GuiMode::Only:
-            m_sceneSetup = std::make_unique<FramebufferSetup>(*m_imguiHelper, renderer, nullptr, displayId);
-            break;
-        case GuiMode::Overlay:
-        case GuiMode::Off:
-            m_sceneSetup = std::make_unique<FramebufferSetup>(*m_imguiHelper, renderer, getScene(), displayId);
-            break;
-        }
-        getScene()->flush();
         getSettings()->clearColor = m_displayConfig.impl().getInternalDisplayConfig().getClearColor();
         renderer->setDisplayBufferClearColor(displayId, m_sceneSetup->getOffscreenBuffer(), getSettings()->clearColor);
         m_sceneSetup->apply();
 
-        auto takeScreenshot = [&](const std::string& filename) {
-            static ramses::sceneVersionTag_t ver = 42;
-            ++ver;
-            getScene()->flush(ver);
-            if (m_imguiHelper->waitForSceneVersion(getScene()->getSceneId(), ver))
-            {
-                if (m_imguiHelper->saveScreenshot(filename, m_sceneSetup->getOffscreenBuffer(), 0, 0, m_sceneSetup->getWidth(), m_sceneSetup->getHeight()))
+        if (getScene())
+        {
+            auto takeScreenshot = [&](const std::string& filename) {
+                static ramses::sceneVersionTag_t ver = 42;
+                ++ver;
+                getScene()->flush(ver);
+                if (m_rendererControl->waitForSceneVersion(getScene()->getSceneId(), ver))
                 {
-                    if (m_imguiHelper->waitForScreenshot())
+                    if (m_rendererControl->saveScreenshot(filename, m_sceneSetup->getOffscreenBuffer(), 0, 0, m_sceneSetup->getWidth(), m_sceneSetup->getHeight()))
                     {
-                        return true;
+                        if (m_rendererControl->waitForScreenshot())
+                        {
+                            return true;
+                        }
                     }
                 }
-            }
-            return false;
-        };
-        exitCode = createLogicViewer(takeScreenshot);
-        if (exitCode != ExitCode::Ok)
-            return exitCode;
+                return false;
+            };
+            exitCode = createLogicViewer(takeScreenshot);
+            if (exitCode != ExitCode::Ok)
+                return exitCode;
+        }
 
         m_gui = std::make_unique<ViewerGui>(*this);
         m_gui->setSceneTexture(m_sceneSetup->getTextureSampler(), winWidth, winHeight);
@@ -169,12 +189,12 @@ namespace ramses::internal
 
         if (!m_screenshotFile.empty())
         {
-            if (!m_imguiHelper->saveScreenshot(m_screenshotFile, m_sceneSetup->getOffscreenBuffer(), 0, 0, winWidth, winHeight))
+            if (!m_rendererControl->saveScreenshot(m_screenshotFile, m_sceneSetup->getOffscreenBuffer(), 0, 0, winWidth, winHeight))
             {
                 LOG_ERROR(CONTEXT_CLIENT, "Failure when saving screenshot");
                 return ExitCode::ErrorScreenshot;
             }
-            if (!m_imguiHelper->waitForScreenshot())
+            if (!m_rendererControl->waitForScreenshot())
             {
                 LOG_ERROR(CONTEXT_CLIENT, "Screenshot not saved");
                 return ExitCode::ErrorScreenshot;
@@ -200,15 +220,16 @@ namespace ramses::internal
 
     bool ViewerGuiApp::doOneLoop()
     {
-        const bool isRunning = isInteractive() && m_imguiHelper->isRunning();
+        const bool isRunning = isInteractive() && m_rendererControl->isRunning();
         if (!isRunning)
             return false;
 
         Result updateStatus;
         if (getLogicViewer())
             updateStatus = getLogicViewer()->update();
-        getScene()->flush();
-        m_imguiHelper->dispatchEvents();
+        if (getScene())
+            getScene()->flush();
+        m_rendererControl->dispatchEvents();
         if (m_guiMode != GuiMode::Off)
         {
             ImGui::NewFrame();

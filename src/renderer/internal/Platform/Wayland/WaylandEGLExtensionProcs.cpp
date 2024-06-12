@@ -23,7 +23,6 @@ namespace ramses::internal
         : m_eglDisplay(eglGetDisplay(waylandWindowDisplay))
         , m_eglCreateImageKHR(nullptr)
         , m_eglDestroyImageKHR(nullptr)
-        , m_glEGLImageTargetTexture2DOES(nullptr)
         , m_eglBindWaylandDisplayWL(nullptr)
         , m_eglUnbindWaylandDisplayWL(nullptr)
         , m_eglQueryWaylandBufferWL(nullptr)
@@ -37,7 +36,6 @@ namespace ramses::internal
         : m_eglDisplay(eglDisplay)
         , m_eglCreateImageKHR(nullptr)
         , m_eglDestroyImageKHR(nullptr)
-        , m_glEGLImageTargetTexture2DOES(nullptr)
         , m_eglBindWaylandDisplayWL(nullptr)
         , m_eglUnbindWaylandDisplayWL(nullptr)
         , m_eglQueryWaylandBufferWL(nullptr)
@@ -53,39 +51,47 @@ namespace ramses::internal
         {
             LOG_ERROR(CONTEXT_RENDERER, "WaylandEGLExtensionProcs::Init EGL_NO_DISPLAY");
         }
+        if (!glGetString)
+        {
+            LOG_ERROR(CONTEXT_RENDERER, "WaylandEGLExtensionProcs::Init glGetString is not available (context not initialized)");
+            return;
+        }
+
         const auto eglExtensionsString = getString(eglQueryString(m_eglDisplay, EGL_EXTENSIONS));
         const auto glExtensionsString = getString(reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)));
 
         const auto eglExtensions = StringUtils::TokenizeToSet(eglExtensionsString);
         const auto glExtensions = StringUtils::TokenizeToSet(glExtensionsString);
 
-        if (CheckExtensionAvailable(glExtensions, "GL_OES_EGL_image") &&
-            CheckExtensionAvailable(eglExtensions, "EGL_KHR_image_base") &&
-            CheckExtensionAvailable(eglExtensions, "EGL_WL_bind_wayland_display"))
+        if (CheckExtensionAvailable(eglExtensions, "EGL_WL_bind_wayland_display"))
         {
-            m_glEGLImageTargetTexture2DOES = reinterpret_cast<PFNGLEGLIMAGETARGETTEXTURE2DOESPROC>(eglGetProcAddress("glEGLImageTargetTexture2DOES"));
-            assert(m_glEGLImageTargetTexture2DOES != nullptr);
-
-            m_eglCreateImageKHR = reinterpret_cast<PFNEGLCREATEIMAGEKHRPROC>(eglGetProcAddress("eglCreateImageKHR"));
-            assert(m_eglCreateImageKHR != nullptr);
-
-            m_eglDestroyImageKHR = reinterpret_cast<PFNEGLDESTROYIMAGEKHRPROC>(eglGetProcAddress("eglDestroyImageKHR"));
-            assert(m_eglDestroyImageKHR != nullptr);
-
             m_eglBindWaylandDisplayWL = reinterpret_cast<PFNEGLBINDWAYLANDDISPLAYWL>(eglGetProcAddress("eglBindWaylandDisplayWL"));
+            LOG_INFO(CONTEXT_RENDERER, "WaylandEGLExtensionProcs::Init: loaded proc eglBindWaylandDisplayWL :{}", reinterpret_cast<void*>(m_eglBindWaylandDisplayWL));
             assert(m_eglBindWaylandDisplayWL != nullptr);
 
             m_eglUnbindWaylandDisplayWL = reinterpret_cast<PFNEGLBINDWAYLANDDISPLAYWL>(eglGetProcAddress("eglUnbindWaylandDisplayWL"));
+            LOG_INFO(CONTEXT_RENDERER, "WaylandEGLExtensionProcs::Init: loaded proc eglUnbindWaylandDisplayWL :{}", reinterpret_cast<void*>(m_eglUnbindWaylandDisplayWL));
             assert(m_eglUnbindWaylandDisplayWL != nullptr);
+        }
+
+        if (CheckExtensionAvailable(eglExtensions, "EGL_KHR_image_base"))
+        {
+            m_eglCreateImageKHR = reinterpret_cast<PFNEGLCREATEIMAGEKHRPROC>(eglGetProcAddress("eglCreateImageKHR"));
+            LOG_INFO(CONTEXT_RENDERER, "WaylandEGLExtensionProcs::Init: loaded proc eglCreateImageKHR :{}", reinterpret_cast<void*>(m_eglCreateImageKHR));
+            assert(m_eglCreateImageKHR != nullptr);
+
+            m_eglDestroyImageKHR = reinterpret_cast<PFNEGLDESTROYIMAGEKHRPROC>(eglGetProcAddress("eglDestroyImageKHR"));
+            LOG_INFO(CONTEXT_RENDERER, "WaylandEGLExtensionProcs::Init: loaded proc eglDestroyImageKHR :{}", reinterpret_cast<void*>(m_eglDestroyImageKHR));
+            assert(m_eglDestroyImageKHR != nullptr);
 
             m_eglQueryWaylandBufferWL = reinterpret_cast<PFNEGLQUERYWAYLANDBUFFERWL>(eglGetProcAddress("eglQueryWaylandBufferWL"));
+            LOG_INFO(CONTEXT_RENDERER, "WaylandEGLExtensionProcs::Init: loaded proc eglQueryWaylandBufferWL :{}", reinterpret_cast<void*>(m_eglQueryWaylandBufferWL));
             assert(m_eglQueryWaylandBufferWL != nullptr);
 
             m_extensionsSupported = true;
         }
 
-        if (CheckExtensionAvailable(glExtensions, "GL_OES_EGL_image") &&
-            CheckExtensionAvailable(eglExtensions, "EGL_KHR_image_base") &&
+        if (CheckExtensionAvailable(eglExtensions, "EGL_KHR_image_base") &&
             CheckExtensionAvailable(eglExtensions, "EGL_EXT_image_dma_buf_import"))
         {
             m_dmabufExtensionsSupported = true;
@@ -96,9 +102,10 @@ namespace ramses::internal
     {
         if (eglExtensions.contains(extensionName))
         {
+            LOG_INFO(CONTEXT_RENDERER, "WaylandEGLExtensionProcs::CheckExtensionAvailable Extension {} is supported!", extensionName);
             return true;
         }
-        LOG_INFO(CONTEXT_RENDERER, "WaylandEGLExtensionProcs::CheckExtensionAvailable Extension {} not supported!", extensionName);
+        LOG_WARN(CONTEXT_RENDERER, "WaylandEGLExtensionProcs::CheckExtensionAvailable Extension {} not supported!", extensionName);
         return false;
     }
 
@@ -109,7 +116,6 @@ namespace ramses::internal
             return m_eglCreateImageKHR(m_eglDisplay, context, target, buffer, attributeList);
         }
         LOG_ERROR(CONTEXT_RENDERER, "WaylandEGLExtensionProcs::eglCreateImageKHR Extension not bound!");
-        assert(false);
         return EGL_NO_IMAGE;
     }
 
@@ -120,18 +126,17 @@ namespace ramses::internal
             return m_eglDestroyImageKHR(m_eglDisplay, image);
         }
         LOG_ERROR(CONTEXT_RENDERER, "WaylandEGLExtensionProcs::eglDestroyImageKHR Extension not bound!");
-        assert(false);
         return EGL_FALSE;
     }
 
+    // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
     void WaylandEGLExtensionProcs::glEGLImageTargetTexture2DOES(GLenum target, GLeglImageOES image) const
     {
-        if (m_glEGLImageTargetTexture2DOES)
+        if (::glEGLImageTargetTexture2DOES)
         {
-            return m_glEGLImageTargetTexture2DOES(target, image);
+            return ::glEGLImageTargetTexture2DOES(target, image);
         }
         LOG_ERROR(CONTEXT_RENDERER, "WaylandEGLExtensionProcs::glEGLImageTargetTexture2DOES Extension not bound!");
-        assert(false);
     }
 
     EGLBoolean WaylandEGLExtensionProcs::eglBindWaylandDisplayWL(wl_display* waylandDisplay) const
@@ -141,7 +146,6 @@ namespace ramses::internal
             return m_eglBindWaylandDisplayWL(m_eglDisplay, waylandDisplay);
         }
         LOG_ERROR(CONTEXT_RENDERER, "WaylandEGLExtensionProcs::eglBindWaylandDisplayWL Extension not bound!");
-        assert(false);
         return EGL_FALSE;
     }
 
@@ -152,7 +156,6 @@ namespace ramses::internal
             return m_eglUnbindWaylandDisplayWL(m_eglDisplay, waylandDisplay);
         }
         LOG_ERROR(CONTEXT_RENDERER, "WaylandEGLExtensionProcs::eglUnbindWaylandDisplayWL Extension not bound!");
-        assert(false);
         return EGL_FALSE;
     }
 
@@ -163,7 +166,6 @@ namespace ramses::internal
             return m_eglQueryWaylandBufferWL(m_eglDisplay, buffer, attribute, value);
         }
         LOG_ERROR(CONTEXT_RENDERER, "WaylandEGLExtensionProcs::eglQueryWaylandBufferWL Extension not bound!");
-        assert(false);
         return EGL_FALSE;
     }
 

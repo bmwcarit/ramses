@@ -7,10 +7,12 @@
 //  -------------------------------------------------------------------------
 
 #include "internal/glslEffectBlock/GlslParser.h"
+#include "internal/SceneGraph/SceneAPI/EVulkanVersion.h"
 #include "GlslLimits.h"
 #include "fmt/format.h"
 #include "internal/PlatformAbstraction/FmtBase.h"
 #include "impl/EffectDescriptionImpl.h"
+#include "SPIRV/GlslangToSpv.h"
 
 template <> struct fmt::formatter<glslang::TIntermSymbol> : public ramses::internal::SimpleFormatterBase
 {
@@ -171,7 +173,7 @@ namespace
 
 namespace ramses::internal
 {
-    GlslParser::GlslParser(const std::string& vertexShader, const std::string& fragmentShader, const std::string& geometryShader, const std::vector<std::string>& compilerDefines)
+    GlslParser::GlslParser(const std::string& vertexShader, const std::string& fragmentShader, const std::string& geometryShader, const std::vector<std::string>& compilerDefines, ERenderBackendCompatibility compatibility)
     {
         m_vertexShader   = std::make_unique<glslang::TShader>(EShLangVertex);
         m_fragmentShader = std::make_unique<glslang::TShader>(EShLangFragment);
@@ -179,6 +181,7 @@ namespace ramses::internal
         {
             m_geometryShader = std::make_unique<glslang::TShader>(EShLangGeometry);
         }
+        setShadersCompatibility(compatibility);
 
         const auto defineString      = CreateDefineString(compilerDefines);
         const bool hasGeometryShader = (m_geometryShader != nullptr);
@@ -215,6 +218,7 @@ namespace ramses::internal
             m_fragmentShaderFromParts = MergeShaderParts(fragmentShaderParts);
             m_geometryShaderFromParts = MergeShaderParts(geometryShaderParts);
         }
+        generateSPIRV(compatibility);
     }
 
     bool GlslParser::linkProgram()
@@ -238,6 +242,17 @@ namespace ramses::internal
         }
         m_program = std::move(program);
         return true;
+    }
+
+    void GlslParser::generateSPIRV(ERenderBackendCompatibility compatibility)
+    {
+        if (compatibility == ERenderBackendCompatibility::VulkanAndOpenGL)
+        {
+            glslang::GlslangToSpv(*m_program->getIntermediate(EShLangVertex), m_spirvShaders.m_vertexSPIRVBlob);
+            glslang::GlslangToSpv(*m_program->getIntermediate(EShLangFragment), m_spirvShaders.m_fragmentSPIRVBlob);
+            if (m_geometryShader)
+                glslang::GlslangToSpv(*m_program->getIntermediate(EShLangGeometry), m_spirvShaders.m_geometrySPIRVBlob);
+        }
     }
 
     std::string GlslParser::getErrors() const
@@ -327,6 +342,29 @@ namespace ramses::internal
         return std::string(result.release());
     }
 
+    void GlslParser::setShadersCompatibility(ERenderBackendCompatibility compatibility)
+    {
+        auto setShaderTargetVulkan = [](glslang::TShader& shader)
+        {
+            static_assert(TargetVulkanApiVersion == EVulkanAPIVersion::Version_1_0, "Update target Vulkan API version passed to glslang");
+            static_assert(TargetSPIRVVersion == ESPIRVVersion::Version_1_0, "Update target SPIRV version passed to glslang");
+            shader.setEnvTarget(glslang::EShTargetLanguage::EShTargetSpv, glslang::EShTargetLanguageVersion::EShTargetSpv_1_0);
+            shader.setEnvClient(glslang::EShClient::EShClientVulkan, glslang::EshTargetClientVersion::EShTargetVulkan_1_0);
+        };
+
+        switch (compatibility)
+        {
+        case ramses::ERenderBackendCompatibility::OpenGL:
+            break;
+        case ramses::ERenderBackendCompatibility::VulkanAndOpenGL:
+            setShaderTargetVulkan(*m_vertexShader);
+            setShaderTargetVulkan(*m_fragmentShader);
+            if (m_geometryShader)
+                setShaderTargetVulkan(*m_geometryShader);
+            break;
+        }
+    }
+
     bool GlslParser::createShaderParts(ShaderParts& outParts, const std::string& defineString, const std::string& userShader, const std::string& shaderName) const
     {
         size_t      versionStringStart = 0;
@@ -381,10 +419,13 @@ namespace ramses::internal
         return m_geometryShaderFromParts;
     }
 
+    const SPIRVShaders& GlslParser::getSPIRVShaders() const
+    {
+        return m_spirvShaders;
+    }
+
     std::string GlslParser::MergeShaderParts(const ShaderParts& shaderParts)
     {
-        StringOutputStream str;
-        str << shaderParts.version << shaderParts.defines << shaderParts.userCode;
-        return str.release();
+        return fmt::format("{}{}{}", shaderParts.version, shaderParts.defines, shaderParts.userCode);
     }
 }

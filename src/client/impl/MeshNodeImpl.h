@@ -69,9 +69,9 @@ namespace ramses::internal
     private:
         static bool AreGeometryAndAppearanceCompatible(const GeometryImpl& geometry, const AppearanceImpl& appearance);
 
-        ramses::internal::RenderableHandle       m_renderableHandle;
+        RenderableHandle        m_renderableHandle;
 
-        const AppearanceImpl*      m_appearanceImpl;
-        const GeometryImpl* m_geometryImpl;
+        const AppearanceImpl*   m_appearanceImpl;
+        const GeometryImpl*     m_geometryImpl;
     };
 }

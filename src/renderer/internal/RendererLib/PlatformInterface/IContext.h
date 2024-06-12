@@ -24,7 +24,9 @@ namespace ramses::internal
         virtual bool disable() = 0;
         virtual DeviceResourceMapper& getResources() = 0;
 
-        // TODO Violin this should be removed - provides access to platform-specific data
-        virtual void* getProcAddress(const char* name) const = 0;
+        using ApiProc = void (*)();
+        using GlProcLoadFunc = ApiProc (*)(const char*);
+
+        [[nodiscard]] virtual GlProcLoadFunc getGlProcLoadFunc() const = 0;
     };
 }

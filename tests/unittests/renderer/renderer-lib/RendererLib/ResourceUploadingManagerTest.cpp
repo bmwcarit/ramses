@@ -10,7 +10,7 @@
 #include "internal/RendererLib/RendererResourceRegistry.h"
 #include "internal/RendererLib/FrameTimer.h"
 #include "internal/RendererLib/RendererStatistics.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "internal/SceneGraph/Resource/ArrayResource.h"
 #include "internal/SceneGraph/Resource/EffectResource.h"
 #include "ResourceUploaderMock.h"
@@ -26,9 +26,9 @@ namespace ramses::internal
 
     namespace
     {
-        DisplayConfig makeConfig(uint64_t resourceCacheSize, SceneId preferredScene, SceneId deprivedScene)
+        DisplayConfigData makeConfig(uint64_t resourceCacheSize, SceneId preferredScene, SceneId deprivedScene)
         {
-            DisplayConfig cfg;
+            DisplayConfigData cfg;
             cfg.setGPUMemoryCacheSize(resourceCacheSize);
             if (preferredScene.isValid())
             {
@@ -45,14 +45,14 @@ namespace ramses::internal
     class AResourceUploadingManager : public ::testing::Test
     {
     public:
-        explicit AResourceUploadingManager(const DisplayConfig& cfg = DisplayConfig())
+        explicit AResourceUploadingManager(const DisplayConfigData& cfg = DisplayConfigData())
             : dummyResource(EResourceType::IndexArray, 5, EDataType::UInt16, reinterpret_cast<const std::byte*>(m_dummyData), {})
-            , dummyEffectResource("", "", "", {}, EffectInputInformationVector(), EffectInputInformationVector(), "")
+            , dummyEffectResource("", "", "", {}, {}, EffectInputInformationVector(), EffectInputInformationVector(), "", EFeatureLevel_Latest)
             , dummyManagedResourceCallback(managedResourceDeleter)
             , sceneId(66u)
             , uploader(new StrictMock<ResourceUploaderMock>)
             , asyncEffectUploader(platformMock, platformMock.renderBackendMock, notifier, DisplayHandle{ 1 })
-            , rendererResourceUploader(resourceRegistry, std::unique_ptr<IResourceUploader>{ uploader }, platformMock.renderBackendMock, asyncEffectUploader, cfg, frameTimer, stats)
+            , rendererResourceUploader(resourceRegistry, std::unique_ptr<IResourceUploader>{ uploader }, platformMock.renderBackendMock, &asyncEffectUploader, cfg, frameTimer, stats)
         {
             InSequence s;
             EXPECT_CALL(platformMock.renderBackendMock.contextMock, disable()).WillOnce(Return(true));

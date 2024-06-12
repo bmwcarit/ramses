@@ -211,8 +211,6 @@ namespace ramses::internal
 
     void RamsesFrameworkConfigImpl::setFeatureLevelNoCheck(EFeatureLevel featureLevel)
     {
-        static_assert(EFeatureLevel_Latest == EFeatureLevel_01,
-            "remove this method which is used only for testing while there is no valid mismatching feature level yet");
         m_featureLevel = featureLevel;
     }
 }

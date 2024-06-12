@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "ImguiClientHelper.h"
+#include "RendererControl.h"
 
 #include "ramses/client/ramses-client.h"
 
@@ -37,53 +37,44 @@ public:
 class OffscreenSetup : public ISceneSetup
 {
 public:
-    OffscreenSetup(ramses::internal::ImguiClientHelper& imguiHelper, ramses::RamsesRenderer* renderer, ramses::Scene* scene, ramses::displayId_t display, uint32_t width, uint32_t height)
-        : m_imguiHelper(imguiHelper)
-        , m_sceneControl(renderer->getSceneControlAPI())
+    OffscreenSetup(ramses::internal::RendererControl& rendererControl, ramses::Scene* imguiScene, ramses::Scene* scene)
+        : m_rendererControl(rendererControl)
+        , m_sceneControl(rendererControl.getRenderer()->getSceneControlAPI())
+        , m_imguiScene(imguiScene)
         , m_scene(scene)
-        , m_width(width)
-        , m_height(height)
+        , m_width(rendererControl.getDisplayWidth())
+        , m_height(rendererControl.getDisplayHeight())
     {
-        m_ob = renderer->createOffscreenBuffer(display, width, height);
-        renderer->flush();
+        m_ob = rendererControl.getRenderer()->createOffscreenBuffer(rendererControl.getDisplayId(), m_width, m_height);
+        rendererControl.getRenderer()->flush();
 
         static const std::vector<std::byte> imgbuf(4, std::byte{ 255 });
         const std::vector<ramses::MipLevelData> mipLevelData = { imgbuf };
-        auto* texture = imguiHelper.getScene()->createTexture2D(ramses::ETextureFormat::RGBA8, 1, 1, mipLevelData);
-        m_sampler = imguiHelper.getScene()->createTextureSampler(
+        auto* texture = imguiScene->createTexture2D(ramses::ETextureFormat::RGBA8, 1, 1, mipLevelData);
+        m_sampler = imguiScene->createTextureSampler(
             ramses::ETextureAddressMode::Clamp, ramses::ETextureAddressMode::Clamp, ramses::ETextureSamplingMethod::Linear, ramses::ETextureSamplingMethod::Linear, *texture);
+        imguiScene->createTextureConsumer(*m_sampler, consumerId);
 
-        const auto guiSceneId = imguiHelper.getScene()->getSceneId();
-        m_sceneControl->setSceneMapping(scene->getSceneId(), display);
-        m_sceneControl->setSceneMapping(guiSceneId, display);
-        m_sceneControl->setSceneState(scene->getSceneId(), ramses::RendererSceneState::Ready);
-        m_sceneControl->setSceneState(guiSceneId, ramses::RendererSceneState::Ready);
-        m_sceneControl->flush();
+        rendererControl.setupSceneState(scene->getSceneId(), ramses::RendererSceneState::Ready, m_ob, 0);
+        rendererControl.setupSceneState(imguiScene->getSceneId(), ramses::RendererSceneState::Ready, {}, 256);
     }
 
     void apply() override
     {
-        const auto guiSceneId = m_imguiHelper.getScene()->getSceneId();
-        const ramses::dataConsumerId_t consumerId(519);
+        m_rendererControl.waitForSceneState(*m_imguiScene, ramses::RendererSceneState::Ready);
+        m_rendererControl.waitForSceneState(*m_scene, ramses::RendererSceneState::Ready);
+        m_rendererControl.waitForOffscreenBufferCreated(m_ob);
 
-        m_imguiHelper.waitForSceneState(*m_imguiHelper.getScene(), ramses::RendererSceneState::Ready);
-        m_imguiHelper.waitForSceneState(*m_scene, ramses::RendererSceneState::Ready);
-
-        m_imguiHelper.getScene()->createTextureConsumer(*m_sampler, consumerId);
-        m_imguiHelper.getScene()->flush(42);
-        m_imguiHelper.waitForSceneVersion(guiSceneId, 42);
-        m_imguiHelper.waitForOffscreenBufferCreated(m_ob);
-
-        m_sceneControl->setSceneDisplayBufferAssignment(m_scene->getSceneId(), m_ob);
+        const auto guiSceneId = m_imguiScene->getSceneId();
         m_sceneControl->linkOffscreenBuffer(m_ob, guiSceneId, consumerId);
         m_sceneControl->flush();
-        m_imguiHelper.waitForOffscreenBufferLinked(guiSceneId);
+        m_rendererControl.waitForOffscreenBufferLinked(guiSceneId);
         m_sceneControl->setSceneState(guiSceneId, ramses::RendererSceneState::Rendered);
         m_sceneControl->setSceneState(m_scene->getSceneId(), ramses::RendererSceneState::Rendered);
         m_sceneControl->flush();
 
-        m_imguiHelper.waitForSceneState(*m_scene, ramses::RendererSceneState::Rendered);
-        m_imguiHelper.waitForSceneState(*m_imguiHelper.getScene(), ramses::RendererSceneState::Rendered);
+        m_rendererControl.waitForSceneState(*m_scene, ramses::RendererSceneState::Rendered);
+        m_rendererControl.waitForSceneState(*m_imguiScene, ramses::RendererSceneState::Rendered);
     }
 
     [[nodiscard]] uint32_t getWidth() const override
@@ -107,8 +98,10 @@ public:
     }
 
 private:
-    ramses::internal::ImguiClientHelper&    m_imguiHelper;
+    const ramses::dataConsumerId_t     consumerId{519};
+    ramses::internal::RendererControl&    m_rendererControl;
     ramses::RendererSceneControl* m_sceneControl;
+    ramses::Scene*                m_imguiScene;
     ramses::Scene*                m_scene;
     uint32_t m_width;
     uint32_t m_height;
@@ -119,45 +112,35 @@ private:
 class FramebufferSetup : public ISceneSetup
 {
 public:
-    FramebufferSetup(ramses::internal::ImguiClientHelper& imguiHelper, ramses::RamsesRenderer* renderer, ramses::Scene* scene, ramses::displayId_t display)
-        : m_imguiHelper(imguiHelper)
-        , m_sceneControl(renderer->getSceneControlAPI())
+    FramebufferSetup(ramses::internal::RendererControl& rendererControl, ramses::Scene* imguiScene, ramses::Scene* scene)
+        : m_rendererControl(rendererControl)
+        , m_imguiScene(imguiScene)
         , m_scene(scene)
     {
-        const auto guiSceneId = imguiHelper.getScene()->getSceneId();
         if (scene)
         {
-            m_sceneControl->setSceneMapping(scene->getSceneId(), display);
+            rendererControl.setupSceneState(scene->getSceneId(), ramses::RendererSceneState::Rendered, 0);
         }
-        m_sceneControl->setSceneMapping(guiSceneId, display);
-        // inspection gui must be drawn on top
-        m_sceneControl->setSceneDisplayBufferAssignment(guiSceneId, ramses::displayBufferId_t(), 255);
-        if (scene)
-        {
-            m_sceneControl->setSceneState(scene->getSceneId(), ramses::RendererSceneState::Rendered);
-        }
-        m_sceneControl->flush();
+        rendererControl.setupSceneState(imguiScene->getSceneId(), ramses::RendererSceneState::Rendered, 256);
     }
 
     void apply() override
     {
+        m_rendererControl.waitForSceneState(*m_imguiScene, ramses::RendererSceneState::Rendered);
         if (m_scene)
         {
-            m_imguiHelper.waitForSceneState(*m_scene, ramses::RendererSceneState::Rendered);
+            m_rendererControl.waitForSceneState(*m_scene, ramses::RendererSceneState::Rendered);
         }
-        const auto guiSceneId = m_imguiHelper.getScene()->getSceneId();
-        m_sceneControl->setSceneState(guiSceneId, ramses::RendererSceneState::Rendered);
-        m_sceneControl->flush();
     }
 
     [[nodiscard]] uint32_t getWidth() const override
     {
-        return m_imguiHelper.getViewportWidth();
+        return m_rendererControl.getDisplayWidth();
     }
 
     [[nodiscard]] uint32_t getHeight() const override
     {
-        return m_imguiHelper.getViewportHeight();
+        return m_rendererControl.getDisplayHeight();
     }
 
     [[nodiscard]] ramses::displayBufferId_t getOffscreenBuffer() const override
@@ -171,8 +154,8 @@ public:
     }
 
 private:
-    ramses::internal::ImguiClientHelper&    m_imguiHelper;
-    ramses::RendererSceneControl* m_sceneControl;
+    ramses::internal::RendererControl&    m_rendererControl;
+    ramses::Scene*                m_imguiScene;
     ramses::Scene*                m_scene;
 };
 

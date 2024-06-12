@@ -96,6 +96,7 @@ namespace ramses
         case EDataType::TextureSampler3D:
         case EDataType::TextureSamplerCube:
         case EDataType::TextureSamplerExternal:
+        case EDataType::UniformBuffer:
             return false;
         }
 
@@ -133,6 +134,7 @@ namespace ramses
         case EDataType::TextureSampler3D:
         case EDataType::TextureSamplerCube:
         case EDataType::TextureSamplerExternal:
+        case EDataType::UniformBuffer:
             return false;
         }
 

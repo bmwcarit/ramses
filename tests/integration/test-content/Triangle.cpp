@@ -27,6 +27,11 @@ namespace ramses::internal
     {
     }
 
+    void Triangle::setColor(TriangleAppearance::EColor color, float alpha)
+    {
+        m_appearance.setColor(color, alpha);
+    }
+
     void Triangle::bindColor(const DataObject& colorDataObject)
     {
         m_appearance.bindColor(colorDataObject);

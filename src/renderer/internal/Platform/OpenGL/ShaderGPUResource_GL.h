@@ -36,11 +36,12 @@ namespace ramses::internal
         [[nodiscard]] GLInputLocation     getUniformLocation(DataFieldHandle field) const;
         [[nodiscard]] GLInputLocation     getAttributeLocation(DataFieldHandle field) const;
         [[nodiscard]] TextureSlotInfo     getTextureSlot(DataFieldHandle field) const;
+        [[nodiscard]] UniformBufferBinding getUniformBufferBinding(DataFieldHandle field) const;
 
-        bool                getBinaryInfo(std::vector<std::byte>& binaryShader, BinaryShaderFormatID& binaryShaderFormat) const;
+        [[nodiscard]] bool                getBinaryInfo(std::vector<std::byte>& binaryShader, BinaryShaderFormatID& binaryShaderFormat) const;
 
     private:
-        void                preloadVariableLocations(const EffectResource& effect);
+        void                              init(const EffectResource& effect);
         [[nodiscard]] GLInputLocation     loadUniformLocation(const EffectResource& effect, const EffectInputInformation& input) const;
         [[nodiscard]] GLInputLocation     loadAttributeLocation(const EffectResource& effect, const EffectInputInformation& input) const;
 
@@ -52,5 +53,6 @@ namespace ramses::internal
         BufferSlotMap    m_bufferSlots;
         InputLocationMap m_uniformLocationMap;
         InputLocationMap m_attributeLocationMap;
+        std::vector<UniformBufferBinding> m_uniformBufferBindings;
     };
 }

@@ -13,13 +13,15 @@
 #include "ramses/client/OrthographicCamera.h"
 #include "ramses/client/Appearance.h"
 #include "ramses/client/DataObject.h"
+#include "ramses/client/Appearance.h"
+#include "ramses/client/Effect.h"
 #include <cassert>
 
 namespace ramses::internal
 {
     MultipleTrianglesScene::MultipleTrianglesScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition, uint32_t vpWidth, uint32_t vpHeight)
         : IntegrationScene(scene, cameraPosition, vpWidth, vpHeight)
-        , m_Effect(getTestEffect("ramses-test-client-basic"))
+        , m_Effect(createTestEffect(state))
         , m_meshNode1(nullptr)
         , m_meshNode2(nullptr)
         , m_meshNode3(nullptr)
@@ -27,24 +29,24 @@ namespace ramses::internal
         , m_meshNode5(nullptr)
         , m_meshNode6(nullptr)
         , m_meshNode7(nullptr)
-        , m_whiteTriangle(scene, *m_Effect, TriangleAppearance::EColor_White)
-        , m_redTriangle(scene, *m_Effect, TriangleAppearance::EColor_Red)
-        , m_greenTriangle(scene, *m_Effect, TriangleAppearance::EColor_Green)
-        , m_blueTriangle(scene, *m_Effect, TriangleAppearance::EColor_Blue)
+        , m_whiteTriangle(scene, *m_Effect, TriangleAppearance::EColor::White)
+        , m_redTriangle(scene, *m_Effect, TriangleAppearance::EColor::Red)
+        , m_greenTriangle(scene, *m_Effect, TriangleAppearance::EColor::Green)
+        , m_blueTriangle(scene, *m_Effect, TriangleAppearance::EColor::Blue)
         , m_yellowLine(scene, *m_Effect, Line::EColor_Yellow, ramses::EDrawMode::Lines)
         , m_whiteQuad(scene, *m_Effect, MultiTriangleGeometry::EColor_White)
         , m_triangleFan(scene, *m_Effect, MultiTriangleGeometry::EColor_Red, 1.f, MultiTriangleGeometry::EGeometryType_TriangleFan)
         , m_lineStrip               (scene, *m_Effect, Line::EColor_Red, ramses::EDrawMode::LineStrip)
         , m_linePoints              (scene, *m_Effect, Line::EColor_White, ramses::EDrawMode::Points)
-        , m_redTransparentTriangle  (scene, *m_Effect, TriangleAppearance::EColor_Red, 0.6f)
-        , m_greenTransparentTriangle(scene, *m_Effect, TriangleAppearance::EColor_Green, 0.6f)
-        , m_blueTransparentTriangle (scene, *m_Effect, TriangleAppearance::EColor_Blue, 0.6f)
-        , m_colorMaskRedTriangle    (scene, *m_Effect, TriangleAppearance::EColor_White)
-        , m_colorMaskGreenTriangle  (scene, *m_Effect, TriangleAppearance::EColor_White)
-        , m_colorMaskBlueTriangle   (scene, *m_Effect, TriangleAppearance::EColor_White)
-        , m_CCWTriangle             (scene, *m_Effect, TriangleAppearance::EColor_White, 1.f, TriangleGeometry::EVerticesOrder_CCW)
-        , m_CWTriangle              (scene, *m_Effect, TriangleAppearance::EColor_White, 1.f, TriangleGeometry::EVerticesOrder_CW)
-        , m_CWTriangleCCWIndices    (scene, *m_Effect, TriangleAppearance::EColor_White, 1.f, TriangleGeometry::EVerticesOrder_CW)
+        , m_redTransparentTriangle  (scene, *m_Effect, TriangleAppearance::EColor::Red, 0.6f)
+        , m_greenTransparentTriangle(scene, *m_Effect, TriangleAppearance::EColor::Green, 0.6f)
+        , m_blueTransparentTriangle (scene, *m_Effect, TriangleAppearance::EColor::Blue, 0.6f)
+        , m_colorMaskRedTriangle    (scene, *m_Effect, TriangleAppearance::EColor::White)
+        , m_colorMaskGreenTriangle  (scene, *m_Effect, TriangleAppearance::EColor::White)
+        , m_colorMaskBlueTriangle   (scene, *m_Effect, TriangleAppearance::EColor::White)
+        , m_CCWTriangle             (scene, *m_Effect, TriangleAppearance::EColor::White, 1.f, TriangleGeometry::EVerticesOrder_CCW)
+        , m_CWTriangle              (scene, *m_Effect, TriangleAppearance::EColor::White, 1.f, TriangleGeometry::EVerticesOrder_CW)
+        , m_CWTriangleCCWIndices    (scene, *m_Effect, TriangleAppearance::EColor::White, 1.f, TriangleGeometry::EVerticesOrder_CW)
     {
         m_colorMaskRedTriangle.GetAppearance().setColorWriteMask(false, true, true, true);
         m_colorMaskGreenTriangle.GetAppearance().setColorWriteMask(true, false, true, true);
@@ -65,6 +67,13 @@ namespace ramses::internal
         setGeometries(state);
         setTransformations(state);
         setState(state);
+    }
+
+    Effect* MultipleTrianglesScene::createTestEffect(uint32_t state)
+    {
+        if(state == PERSPECTIVE_CAMERA_UBO || state == ORTHOGRAPHIC_CAMERA_UBO || state == CAMERA_TRANSFORMATION_UBO)
+            return getTestEffect("ramses-test-client-basic-ubo");
+        return getTestEffect("ramses-test-client-basic");
     }
 
     void MultipleTrianglesScene::setState(uint32_t state)
@@ -176,6 +185,7 @@ namespace ramses::internal
             addMeshNodeToDefaultRenderGroup(*m_meshNode3, 0);
             break;
         case CAMERA_TRANSFORMATION:
+        case CAMERA_TRANSFORMATION_UBO:
             m_meshNode1->setAppearance(m_redTriangle.GetAppearance());
             m_meshNode2->setAppearance(m_greenTriangle.GetAppearance());
             m_meshNode3->setAppearance(m_blueTriangle.GetAppearance());
@@ -285,6 +295,7 @@ namespace ramses::internal
             addMeshNodeToDefaultRenderGroup(*m_meshNode3, 2);
             break;
         case PERSPECTIVE_CAMERA:
+        case PERSPECTIVE_CAMERA_UBO:
         {
             m_meshNode1->setAppearance(m_redTriangle.GetAppearance());
             m_meshNode2->setAppearance(m_greenTriangle.GetAppearance());
@@ -296,6 +307,7 @@ namespace ramses::internal
         }
             break;
         case ORTHOGRAPHIC_CAMERA:
+        case ORTHOGRAPHIC_CAMERA_UBO:
         {
             m_meshNode1->setAppearance(m_redTriangle.GetAppearance());
             m_meshNode2->setAppearance(m_greenTriangle.GetAppearance());
@@ -352,6 +364,15 @@ namespace ramses::internal
             break;
         default:
             break;
+        }
+
+        if (state == ORTHOGRAPHIC_CAMERA_UBO || state == PERSPECTIVE_CAMERA_UBO || state == CAMERA_TRANSFORMATION_UBO)
+        {
+            const auto uniform = m_redTriangle.GetAppearance().getEffect().findUniformInput("generalUbo.variant");
+            assert(uniform);
+            m_redTriangle.GetAppearance().setInputValue(*uniform, 1);
+            m_greenTriangle.GetAppearance().setInputValue(*uniform, 2);
+            m_blueTriangle.GetAppearance().setInputValue(*uniform, 3);
         }
     }
 

@@ -83,6 +83,21 @@ else()
     endif()
 endif()
 
+add_library(ramses-glad
+    glad/src/gles2.c
+)
+target_include_directories(ramses-glad PUBLIC
+    glad/include/
+)
+folderizeTarget(ramses-glad)
+
+if(WIN32)
+    target_include_directories(ramses-glad PUBLIC
+        khronos # find wgl.h/wglext.h
+    )
+    target_link_libraries(ramses-glad PUBLIC opengl32)
+endif()
+
 # abseil library
 function(add_abseil_scope)
     set(BUILD_TESTING OFF)
@@ -131,7 +146,63 @@ foreach(lib
     target_link_libraries(ramses-abseil INTERFACE absl::${lib})
 endforeach()
 
+# glslang
+macro(configureGlslangGeneratedBuildHeader)
+    # This block is originally taken and adapted from glslang's CMakeLists.txt
+    # and licensed as follows:
+    # Copyright (C) 2020-2023 The Khronos Group Inc.
+    #
+    # All rights reserved.
+    #
+    # Redistribution and use in source and binary forms, with or without
+    # modification, are permitted provided that the following conditions
+    # are met:
+    #
+    #    Redistributions of source code must retain the above copyright
+    #    notice, this list of conditions and the following disclaimer.
+    #
+    #    Redistributions in binary form must reproduce the above
+    #    copyright notice, this list of conditions and the following
+    #    disclaimer in the documentation and/or other materials provided
+    #    with the distribution.
+    #
+    #    Neither the name of The Khronos Group Inc. nor the names of its
+    #    contributors may be used to endorse or promote products derived
+    #    from this software without specific prior written permission.
+    #
+    # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+    # "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+    # LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+    # FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+    # COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+    # INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+    # BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    # LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+    # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+    # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+    # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    # POSSIBILITY OF SUCH DAMAGE.
 
+    set(GLSLANG_CHANGES_FILE      "${CMAKE_CURRENT_SOURCE_DIR}/glslang/CHANGES.md")
+    set(GLSLANG_BUILD_INFO_H_TMPL "${CMAKE_CURRENT_SOURCE_DIR}/glslang/build_info.h.tmpl")
+    set(GLSLANG_GENERATED_INCLUDEDIR "${CMAKE_BINARY_DIR}/include/glslang")
+    set(GLSLANG_BUILD_INFO_H      "${GLSLANG_GENERATED_INCLUDEDIR}/glslang/build_info.h")
+
+    include(glslang/parse_version.cmake)
+    parse_version(${GLSLANG_CHANGES_FILE} GLSLANG)
+
+    function(configurate_version)
+        set(major ${GLSLANG_VERSION_MAJOR})
+        set(minor ${GLSLANG_VERSION_MINOR})
+        set(patch ${GLSLANG_VERSION_PATCH})
+        set(flavor ${GLSLANG_VERSION_FLAVOR})
+        configure_file(${GLSLANG_BUILD_INFO_H_TMPL} ${GLSLANG_BUILD_INFO_H} @ONLY)
+    endfunction()
+
+    configurate_version()
+endmacro()
+
+configureGlslangGeneratedBuildHeader()
 createModule(
     NAME                    ramses-glslang
     TYPE                    STATIC_LIBRARY
@@ -139,17 +210,26 @@ createModule(
     INCLUDE_PATHS           glslang/glslang
                             glslang/glslang/MachineIndependent
                             glslang
+                            ${GLSLANG_GENERATED_INCLUDEDIR}
     SRC_FILES               glslang/glslang/Include/*.h
                             glslang/glslang/Public/*.h
                             glslang/glslang/OSDependent/*.h
                             glslang/glslang/MachineIndependent/*.h
                             glslang/OGLCompilersDLL/*.h
+                            glslang/SPIRV/*.h
+                            glslang/SPIRV*.hpp
                             glslang/glslang/MachineIndependent/*.cpp
                             glslang/glslang/MachineIndependent/preprocessor/*.cpp
                             glslang/glslang/GenericCodeGen/*.cpp
                             glslang/OGLCompilersDLL/*.cpp
-                            glslang-os-dep/GenericSingleThreaded/ossource.cpp
+                            glslang/SPIRV/*.cpp
                             )
+
+if(WIN32)
+    target_sources(ramses-glslang PRIVATE glslang/glslang/OSDependent/Windows/ossource.cpp)
+else()
+    target_sources(ramses-glslang PRIVATE glslang/glslang/OSDependent/Unix/ossource.cpp)
+endif()
 
 createModule(
     NAME                    lodepng
@@ -171,10 +251,12 @@ createModule(
 
 if(ramses-sdk_TEXT_SUPPORT)
     # find freetype with harfbuzz support
-    if (ramses-sdk_ALLOW_PLATFORM_FREETYPE)
-        find_package(FreetypeAndHarfbuzz QUIET)
-    endif()
-    if (ramses-sdk_ALLOW_CUSTOM_FREETYPE AND NOT freetype_FOUND)
+    if (ramses-sdk_USE_PLATFORM_FREETYPE)
+        find_package(FreetypeAndHarfbuzz REQUIRED)
+        if (NOT freetype_FOUND)
+            message(FATAL_ERROR "Freetype package is not found on the system. Please make sure it is available or use bundled package instead.")
+        endif()
+    else()
         set(SKIP_INSTALL_ALL ON)
 
         # no 'd' suffix on debug libs
@@ -202,6 +284,11 @@ if(ramses-sdk_TEXT_SUPPORT)
         endif()
     endif()
 else()
+    if (ramses-sdk_USE_PLATFORM_FREETYPE)
+        message(WARNING "ramses-sdk_USE_PLATFORM_FREETYPE is set to ${ramses-sdk_USE_PLATFORM_FREETYPE} but ramses-sdk_TEXT_SUPPORT is ${ramses-sdk_TEXT_SUPPORT}. ramses-sdk_USE_PLATFORM_FREETYPE will not take effect. Please set it to OFF or check the configuration.")
+        set(ramses-sdk_USE_PLATFORM_FREETYPE OFF)
+        message(VERBOSE "ramses-sdk_USE_PLATFORM_FREETYPE is now ${ramses-sdk_USE_PLATFORM_FREETYPE}.")
+    endif()
     message(STATUS "- harfbuzz/freetype (text support disabled)")
 endif()
 
@@ -237,6 +324,8 @@ ELSEIF (wayland-client_FOUND AND wayland-server_FOUND)
         )
 ENDIF()
 
+find_package(OpenGL QUIET)
+
 importDependenciesAndCheckMissing(WAYLAND_IVI_EXT_MISSING wayland-ivi-extension)
 if (ramses-sdk_BUILD_TOOLS AND (NOT WAYLAND_IVI_EXT_MISSING))
     # wayland ivi example/test application
@@ -246,7 +335,7 @@ if (ramses-sdk_BUILD_TOOLS AND (NOT WAYLAND_IVI_EXT_MISSING))
         ENABLE_INSTALL          ON
         SRC_FILES               wayland-ivi-example-client/gears.c
         DEPENDENCIES            EGL
-                                OpenGL
+                                OpenGL::GLES3
                                 wayland-client
                                 wayland-egl
                                 wayland-ivi-extension
@@ -279,7 +368,7 @@ if (ramses-sdk_BUILD_TOOLS AND (NOT MISSING_DEPENDENCY))
         ENABLE_INSTALL          ON
         SRC_FILES            wayland-ivi-example-client/simple-dmabuf-egl.c
         DEPENDENCIES            EGL
-                                OpenGL
+                                OpenGL::GLES3
                                 wayland-client
                                 wayland-egl
                                 wayland-ivi-extension
@@ -346,138 +435,136 @@ ELSE()
 ENDIF()
 
 # Ramses logic specific dependencies
-if(ramses-sdk_ENABLE_LOGIC)
-    ################################################
-    ################   Google Benchmark  ###########
-    ################################################
+################################################
+################   Google Benchmark  ###########
+################################################
 
-    #project specific setup for google benchmark
-    if(ramses-sdk_BUILD_TESTS AND NOT TARGET benchmark::benchmark)
-        set(BENCHMARK_ENABLE_TESTING OFF CACHE INTERNAL "")
-        set(BENCHMARK_ENABLE_GTEST_TESTS OFF CACHE INTERNAL "")
-        set(BENCHMARK_ENABLE_INSTALL OFF CACHE INTERNAL "")
+#project specific setup for google benchmark
+if(ramses-sdk_BUILD_TESTS AND NOT TARGET benchmark::benchmark)
+	set(BENCHMARK_ENABLE_TESTING OFF CACHE INTERNAL "")
+	set(BENCHMARK_ENABLE_GTEST_TESTS OFF CACHE INTERNAL "")
+	set(BENCHMARK_ENABLE_INSTALL OFF CACHE INTERNAL "")
 
-        ensureSubmoduleExists(google-benchmark)
+	ensureSubmoduleExists(google-benchmark)
 
-        add_subdirectory(google-benchmark)
+	add_subdirectory(google-benchmark)
 
-        folderizeTarget(benchmark)
-        folderizeTarget(benchmark_main)
-    endif()
+	folderizeTarget(benchmark)
+	folderizeTarget(benchmark_main)
+endif()
 
-    add_library(ramses-google-benchmark-main INTERFACE)
-    target_link_libraries(ramses-google-benchmark-main INTERFACE benchmark_main)
-    add_library(ramses::google-benchmark-main ALIAS ramses-google-benchmark-main)
+add_library(ramses-google-benchmark-main INTERFACE)
+target_link_libraries(ramses-google-benchmark-main INTERFACE benchmark_main)
+add_library(ramses::google-benchmark-main ALIAS ramses-google-benchmark-main)
 
-    ################################################
-    ################     Lua      ##################
-    ################################################
+################################################
+################     Lua      ##################
+################################################
 
-    if(NOT TARGET lua::lua)
-        message(STATUS "+ lua (internal) (STATIC_LIBRARY)")
-        ensureSubmoduleExists(lua)
+if(NOT TARGET lua::lua)
+	message(STATUS "+ lua (internal) (STATIC_LIBRARY)")
+	ensureSubmoduleExists(lua)
 
-        # Collect all source and header files
-        file(GLOB LUA_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/lua/*.c)
-        file(GLOB LUA_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/lua/*.h)
+	# Collect all source and header files
+	file(GLOB LUA_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/lua/*.c)
+	file(GLOB LUA_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/lua/*.h)
 
-        # Remove luac from the list, because it contains a main function
-        list(REMOVE_ITEM LUA_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/lua/lua.c)
+	# Remove luac from the list, because it contains a main function
+	list(REMOVE_ITEM LUA_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/lua/lua.c)
 
-        set_source_files_properties(${LUA_SOURCE} PROPERTIES LANGUAGE CXX)
+	set_source_files_properties(${LUA_SOURCE} PROPERTIES LANGUAGE CXX)
 
-        # Create library for lua
-        add_library(lua STATIC ${LUA_SOURCE} ${LUA_HEADER})
+	# Create library for lua
+	add_library(lua STATIC ${LUA_SOURCE} ${LUA_HEADER})
 
-        # This is required for Lua on Android to suppress a false-positive fortification trigger when
-        # the garbage collector is invoked
-        if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
-            target_compile_options(lua PRIVATE -fno-stack-protector -U_FORTIFY_SOURCE -Wno-deprecated-declarations)
-        endif()
+	# This is required for Lua on Android to suppress a false-positive fortification trigger when
+	# the garbage collector is invoked
+	if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+		target_compile_options(lua PRIVATE -fno-stack-protector -U_FORTIFY_SOURCE -Wno-deprecated-declarations)
+	endif()
 
-        if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-            # We compile lua as c++ even though it has .c files. convince clang to just do it without complaining
-            target_compile_options(lua PRIVATE -x c++)
-        endif()
+	if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+		# We compile lua as c++ even though it has .c files. convince clang to just do it without complaining
+		target_compile_options(lua PRIVATE -x c++)
+	endif()
 
-        target_include_directories(lua
-            PUBLIC
-                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lua>
-        )
+	target_include_directories(lua
+		PUBLIC
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lua>
+	)
 
-        folderizeTarget(lua)
-        add_library(lua::lua ALIAS lua)
-    endif()
+	folderizeTarget(lua)
+	add_library(lua::lua ALIAS lua)
+endif()
 
-    ################################################
-    ################     Sol      ##################
-    ################################################
+################################################
+################     Sol      ##################
+################################################
 
-    if(NOT TARGET sol2)
-        set(SOL2_LUA_VERSION "5.1.1" CACHE STRING "" FORCE)
-        set(INSTALL_SOL2 OFF CACHE INTERNAL "")
+if(NOT TARGET sol2)
+	set(SOL2_LUA_VERSION "5.1.1" CACHE STRING "" FORCE)
+	set(INSTALL_SOL2 OFF CACHE INTERNAL "")
 
-        ensureSubmoduleExists(sol)
+	ensureSubmoduleExists(sol)
 
-        # TODO Violin remove EXCLUDE_FROM_ALL when upgrading to the next official sol version
-        # Currently its's needed because otherwise sol is installed automatically and also
-        # lands in the packaged version of ramses
-        add_subdirectory(sol EXCLUDE_FROM_ALL)
+	# TODO Violin remove EXCLUDE_FROM_ALL when upgrading to the next official sol version
+	# Currently its's needed because otherwise sol is installed automatically and also
+	# lands in the packaged version of ramses
+	add_subdirectory(sol EXCLUDE_FROM_ALL)
 
-        # Ensure sol is expecting c++ compiled lua
-        target_compile_definitions(sol2 INTERFACE
-            # catch and redirect exception to user handler func instead of
-            # prapagating them directly through lua
-            SOL_EXCEPTIONS_ALWAYS_UNSAFE=1
-            # check if types are numbers before using them as numbers
-            SOL_SAFE_NUMERICS=1
-            # ensure sol calls luaL_checkstack to avoid stack overflows
-            SOL_SAFE_STACK_CHECK=1
-            # Make sure Debug flags are equivalent to Release flags in terms of behavior
-            SOL_IN_DEBUG_DETECTED=0
-        )
+	# Ensure sol is expecting c++ compiled lua
+	target_compile_definitions(sol2 INTERFACE
+		# catch and redirect exception to user handler func instead of
+		# prapagating them directly through lua
+		SOL_EXCEPTIONS_ALWAYS_UNSAFE=1
+		# check if types are numbers before using them as numbers
+		SOL_SAFE_NUMERICS=1
+		# ensure sol calls luaL_checkstack to avoid stack overflows
+		SOL_SAFE_STACK_CHECK=1
+		# Make sure Debug flags are equivalent to Release flags in terms of behavior
+		SOL_IN_DEBUG_DETECTED=0
+	)
 
-        if(NOT ramses-sdk_USE_PLATFORM_LUAJIT)
-            target_compile_definitions(sol2 INTERFACE
-                # we compile lua with c++, make sol not use extern C etc
-                SOL_USING_CXX_LUA=1
-                )
-        endif()
-    endif()
+	if(NOT ramses-sdk_USE_PLATFORM_LUAJIT)
+		target_compile_definitions(sol2 INTERFACE
+			# we compile lua with c++, make sol not use extern C etc
+			SOL_USING_CXX_LUA=1
+			)
+	endif()
+endif()
 
-    ################################################
-    ################ Flatbuffers  ##################
-    ################################################
+################################################
+################ Flatbuffers  ##################
+################################################
 
-    if(NOT TARGET flatbuffers)
-        # Don't build flatbuf targets we don't need
-        set(FLATBUFFERS_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-        set(FLATBUFFERS_INSTALL OFF CACHE BOOL "" FORCE)
-        set(FLATBUFFERS_BUILD_FLATHASH OFF CACHE BOOL "" FORCE)
+if(NOT TARGET flatbuffers)
+	# Don't build flatbuf targets we don't need
+	set(FLATBUFFERS_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+	set(FLATBUFFERS_INSTALL OFF CACHE BOOL "" FORCE)
+	set(FLATBUFFERS_BUILD_FLATHASH OFF CACHE BOOL "" FORCE)
 
-        # Only add flatc target if flatbuffers header generation needed
-        if(ramses-sdk_ENABLE_FLATBUFFERS_GENERATION)
-            set(FLATBUFFERS_BUILD_FLATC ON CACHE BOOL "Build flatbuffers compiler" FORCE)
-        else()
-            set(FLATBUFFERS_BUILD_FLATC OFF CACHE BOOL "Build flatbuffers compiler" FORCE)
-        endif()
+	# Only add flatc target if flatbuffers header generation needed
+	if(ramses-sdk_ENABLE_FLATBUFFERS_GENERATION)
+		set(FLATBUFFERS_BUILD_FLATC ON CACHE BOOL "Build flatbuffers compiler" FORCE)
+	else()
+		set(FLATBUFFERS_BUILD_FLATC OFF CACHE BOOL "Build flatbuffers compiler" FORCE)
+	endif()
 
-        ensureSubmoduleExists(flatbuffers)
+	ensureSubmoduleExists(flatbuffers)
 
-        add_subdirectory(flatbuffers)
-        folderizeTarget(flatbuffers)
-    endif()
+	add_subdirectory(flatbuffers)
+	folderizeTarget(flatbuffers)
+endif()
 
-    add_library(ramses::flatbuffers ALIAS flatbuffers)
+add_library(ramses::flatbuffers ALIAS flatbuffers)
 
-    if(ramses-sdk_ENABLE_FLATBUFFERS_GENERATION)
-        folderizeTarget(flatc)
-    endif()
+if(ramses-sdk_ENABLE_FLATBUFFERS_GENERATION)
+	folderizeTarget(flatc)
 endif()
 
 
 # ANGLE - Build for iOS support only
-IF((${CMAKE_SYSTEM_NAME} MATCHES "iOS"))
+if((${CMAKE_SYSTEM_NAME} MATCHES "iOS"))
     # Define File Copy Function that WebKit ANGLE build expects to be there
     function(WEBKIT_COPY_FILES target_name)
         # This CMake macro is from the WebKit Repository and licensed as follows:
@@ -587,5 +674,20 @@ IF((${CMAKE_SYSTEM_NAME} MATCHES "iOS"))
     target_include_directories(EGL INTERFACE ANGLE/include)
 
     # Alias ANGLE as OpenGL, so it is a drop in replacement.
-    add_library(OpenGL ALIAS GLESv2)
-ENDIF()
+    target_link_libraries(ramses-glad PUBLIC GLESv2)
+endif()
+
+
+if(ramses-sdk_ENABLE_DEVICE_TYPE_VULKAN)
+    message(STATUS "Environment VULKAN_SDK: $ENV{VULKAN_SDK}")
+
+    find_package(Vulkan REQUIRED)
+    message(STATUS "+ Vulkan ${Vulkan_VERSION}")
+    add_library(ramses-vulkan INTERFACE)
+    target_link_libraries(ramses-vulkan INTERFACE ${Vulkan_LIBRARIES})
+    target_include_directories(ramses-vulkan INTERFACE ${Vulkan_INCLUDE_DIR})
+
+    # add headers as sources to enable IntelliSense and other code completion features
+    file(GLOB VULKAN_HEADERS ${Vulkan_INCLUDE_DIR}/vulkan/*.h)
+    target_sources(ramses-vulkan INTERFACE ${VULKAN_HEADERS})
+endif()

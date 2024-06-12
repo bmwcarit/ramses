@@ -11,9 +11,11 @@
 #include "internal/PlatformAbstraction/Collections/Vector.h"
 #include "internal/SceneGraph/SceneAPI/EDataType.h"
 #include "internal/SceneGraph/SceneAPI/EFixedSemantics.h"
+#include "internal/SceneGraph/SceneAPI/SceneTypes.h"
 
 #include <string>
 #include <string_view>
+#include <optional>
 
 namespace ramses::internal
 {
@@ -45,24 +47,48 @@ namespace ramses::internal
     struct EffectInputInformation
     {
         EffectInputInformation() = default;
-        inline EffectInputInformation(std::string_view inputName_, uint32_t elementCount_, EDataType dataType_, EFixedSemantics semantics_);
+        inline EffectInputInformation(std::string_view inputName_,
+            uint32_t elementCount_,
+            EDataType dataType_,
+            EFixedSemantics semantics_,
+            UniformBufferBinding uniformBufferBinding_ = {},
+            UniformBufferElementSize uniformBufferElementSize_= {},
+            UniformBufferFieldOffset uniformBufferFieldOffset_ = {}
+        );
 
         inline friend bool operator==(const EffectInputInformation& a, const EffectInputInformation& b);
         inline friend bool operator!=(const EffectInputInformation& a, const EffectInputInformation& b);
+        static inline bool IsUniformBuffer(const EffectInputInformation& input);
+        static inline bool IsUniformBufferField(const EffectInputInformation& input);
 
-        std::string inputName;
-        uint32_t        elementCount{1u};
-        EDataType       dataType{EDataType::Invalid};
-        EFixedSemantics semantics{EFixedSemantics::Invalid};
+        std::string             inputName;
+        uint32_t                elementCount{ std::numeric_limits<uint32_t>::max() };
+        EDataType               dataType{EDataType::Invalid};
+        EFixedSemantics         semantics{EFixedSemantics::Invalid};
+
+        UniformBufferBinding     uniformBufferBinding;
+        UniformBufferElementSize uniformBufferElementSize;
+        UniformBufferFieldOffset uniformBufferFieldOffset;
+
+        DataFieldHandle dataFieldHandle{};
     };
 
     using EffectInputInformationVector = std::vector<EffectInputInformation>;
 
-    EffectInputInformation::EffectInputInformation(std::string_view inputName_, uint32_t elementCount_, EDataType dataType_, EFixedSemantics semantics_)
+    EffectInputInformation::EffectInputInformation(std::string_view inputName_,
+        uint32_t elementCount_,
+        EDataType dataType_,
+        EFixedSemantics semantics_,
+        UniformBufferBinding uniformBufferBinding_,
+        UniformBufferElementSize uniformBufferElementSize_,
+        UniformBufferFieldOffset uniformBufferFieldOffset_ )
         : inputName(inputName_)
         , elementCount(elementCount_)
         , dataType(dataType_)
         , semantics(semantics_)
+        , uniformBufferBinding(uniformBufferBinding_)
+        , uniformBufferElementSize(uniformBufferElementSize_)
+        , uniformBufferFieldOffset(uniformBufferFieldOffset_)
     {
     }
 
@@ -71,11 +97,24 @@ namespace ramses::internal
         return a.inputName == b.inputName &&
             a.elementCount == b.elementCount &&
             a.dataType == b.dataType &&
-            a.semantics == b.semantics;
+            a.semantics == b.semantics &&
+            a.uniformBufferBinding == b.uniformBufferBinding &&
+            a.uniformBufferElementSize == b.uniformBufferElementSize &&
+            a.uniformBufferFieldOffset == b.uniformBufferFieldOffset;
     }
 
     inline bool operator!=(const EffectInputInformation& a, const EffectInputInformation& b)
     {
         return !(a == b);
+    }
+
+    inline bool EffectInputInformation::IsUniformBuffer(const EffectInputInformation& input)
+    {
+        return input.dataType == EDataType::UniformBuffer;
+    }
+
+    inline bool EffectInputInformation::IsUniformBufferField(const EffectInputInformation& input)
+    {
+        return input.uniformBufferBinding.isValid() && input.dataType != EDataType::UniformBuffer;
     }
 }

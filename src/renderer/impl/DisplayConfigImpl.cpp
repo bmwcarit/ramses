@@ -36,6 +36,17 @@ namespace ramses::internal
         return m_internalConfig.getWindowType();
     }
 
+    bool DisplayConfigImpl::setWindowTitle(std::string_view windowTitle)
+    {
+        m_internalConfig.setWindowTitle(windowTitle);
+        return true;
+    }
+
+    std::string_view DisplayConfigImpl::getWindowTitle() const
+    {
+        return m_internalConfig.getWindowTitle();
+    }
+
     bool DisplayConfigImpl::setWindowRectangle(int32_t x, int32_t y, uint32_t width, uint32_t height)
     {
         if (width == 0u || height == 0u)
@@ -72,7 +83,7 @@ namespace ramses::internal
         return m_internalConfig.getFullscreenState();
     }
 
-    const ramses::internal::DisplayConfig& DisplayConfigImpl::getInternalDisplayConfig() const
+    const ramses::internal::DisplayConfigData& DisplayConfigImpl::getInternalDisplayConfig() const
     {
         return m_internalConfig;
     }
@@ -316,8 +327,22 @@ namespace ramses::internal
             report.add(EIssueType::Warning, "Competing settings for EmbeddedCompositor are set (file descriptor and file name). File descriptor setting will be preferred.", nullptr);
         }
 
-        if (m_internalConfig.getWindowType() != EWindowType::Windows && m_internalConfig.getDeviceType() != EDeviceType::GLES_3_0)
-            report.add(EIssueType::Error, "Selected window type supports only GL ES 3.0 device type", nullptr);
+        const auto requestedWindow = m_internalConfig.getWindowType();
+        const auto requestedDevice = m_internalConfig.getDeviceType();
+
+        const std::vector<std::pair<EWindowType, EDeviceType>> supportedDeviceWindowCombinations {{
+            {EWindowType::Windows, EDeviceType::GLES_3_0} , {EWindowType::Windows, EDeviceType::GL_4_2}, {EWindowType::Windows, EDeviceType::GL_4_5}, {EWindowType::Windows, EDeviceType::Vulkan},
+            {EWindowType::X11, EDeviceType::GLES_3_0}, {EWindowType::X11, EDeviceType::Vulkan},
+            {EWindowType::Wayland_IVI, EDeviceType::GLES_3_0},
+            {EWindowType::Wayland_Shell, EDeviceType::GLES_3_0},
+            {EWindowType::Android, EDeviceType::GLES_3_0},
+            {EWindowType::iOS, EDeviceType::GLES_3_0},
+            }};
+
+        const bool supported = std::any_of(supportedDeviceWindowCombinations.cbegin(), supportedDeviceWindowCombinations.cend(),
+                                                    [requestedWindow, requestedDevice](const auto& e){ return e.first == requestedWindow && e.second == requestedDevice; });
+        if (!supported)
+            report.add(EIssueType::Error, "Selected window type does not support device type", nullptr);
 
         if(m_internalConfig.getWindowsWindowHandle().isValid() && m_internalConfig.getWindowType() != EWindowType::Windows)
             report.add(EIssueType::Error, "External Windows window handle is set and selected window type is not Windows", nullptr);
@@ -330,5 +355,8 @@ namespace ramses::internal
 
         if (m_internalConfig.getIOSNativeWindow().isValid() && m_internalConfig.getWindowType() != EWindowType::iOS)
             report.add(EIssueType::Error, "External iOS window handle is set and selected window type is not iOS", nullptr);
+
+        if(requestedDevice == EDeviceType::Vulkan && m_internalConfig.isAsyncEffectUploadEnabled())
+            report.add(EIssueType::Error, "Vulkan does not support async shader upload", nullptr);
     }
 }

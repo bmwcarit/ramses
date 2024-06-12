@@ -29,13 +29,14 @@ namespace ramses::internal
     class TriangleAppearance
     {
     public:
-        enum EColor
+        enum class EColor
         {
-            EColor_Red = 0,
-            EColor_Blue,
-            EColor_Green,
-            EColor_White,
-            EColor_Grey
+            Red,
+            Blue,
+            Green,
+            White,
+            Grey,
+            None // won't set any color
         };
 
         TriangleAppearance(ramses::Scene& scene, const Effect& effect, enum EColor color, float alpha = 1.f);

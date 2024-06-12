@@ -11,11 +11,13 @@
 #include "internal/SceneGraph/Scene/SceneActionApplier.h"
 #include "internal/SceneGraph/Scene/SceneDescriber.h"
 #include "internal/SceneGraph/Scene/SceneActionCollectionCreator.h"
+#include "internal/SceneGraph/Scene/SceneMergeHandleMapping.h"
 #include "internal/Core/Utils/File.h"
 #include "internal/Core/Utils/BinaryFileOutputStream.h"
 #include "internal/Core/Utils/BinaryFileInputStream.h"
 #include "internal/Core/Utils/LogMacros.h"
 #include "internal/SceneGraph/Scene/ClientScene.h"
+#include "internal/SceneGraph/Scene/MergeScene.h"
 
 #include <array>
 
@@ -23,11 +25,11 @@ namespace ramses::internal
 {
     static const uint32_t gSceneMarker = 0x534d4152;  // {'R', 'A', 'M', 'S'}
 
-    void ScenePersistation::ReadSceneMetadataFromStream(IInputStream& inStream, SceneCreationInformation& createInfo)
+    void ScenePersistation::ReadSceneMetadataFromStream(IInputStream& inStream, SceneCreationInformation& createInfo, EFeatureLevel featureLevel)
     {
         SceneId::BaseType sceneIdBaseType{};
         inStream >> sceneIdBaseType;
-        createInfo.m_id = SceneId(sceneIdBaseType);
+        createInfo.m_sceneInfo.sceneID = SceneId(sceneIdBaseType);
 
         SceneSizeInformation sizeInfo;
         inStream >> sizeInfo.nodeCount;
@@ -37,6 +39,8 @@ namespace ramses::internal
         inStream >> sizeInfo.renderStateCount;
         inStream >> sizeInfo.datalayoutCount;
         inStream >> sizeInfo.datainstanceCount;
+        if (featureLevel >= EFeatureLevel_02)
+            inStream >> sizeInfo.uniformBufferCount;
         inStream >> sizeInfo.renderGroupCount;
         inStream >> sizeInfo.renderPassCount;
         inStream >> sizeInfo.renderTargetCount;
@@ -46,10 +50,17 @@ namespace ramses::internal
         inStream >> sizeInfo.textureBufferCount;
         createInfo.m_sizeInfo = sizeInfo;
 
-        inStream >> createInfo.m_name;
+        inStream >> createInfo.m_sceneInfo.friendlyName;
+
+        if (featureLevel >= EFeatureLevel_02)
+        {
+            inStream >> createInfo.m_sceneInfo.renderBackendCompatibility;
+            inStream >> createInfo.m_sceneInfo.vulkanAPIVersion;
+            inStream >> createInfo.m_sceneInfo.spirvVersion;
+        }
     }
 
-    void ScenePersistation::WriteSceneMetadataToStream(IOutputStream& outStream, const IScene& scene)
+    void ScenePersistation::WriteSceneMetadataToStream(IOutputStream& outStream, const IScene& scene, EFeatureLevel featureLevel)
     {
         outStream << scene.getSceneId().getValue();
 
@@ -61,6 +72,8 @@ namespace ramses::internal
         outStream << sizeInfo.renderStateCount;
         outStream << sizeInfo.datalayoutCount;
         outStream << sizeInfo.datainstanceCount;
+        if (featureLevel >= EFeatureLevel_02)
+            outStream << sizeInfo.uniformBufferCount;
         outStream << sizeInfo.renderGroupCount;
         outStream << sizeInfo.renderPassCount;
         outStream << sizeInfo.renderTargetCount;
@@ -70,12 +83,19 @@ namespace ramses::internal
         outStream << sizeInfo.textureBufferCount;
 
         outStream << scene.getName();
+
+        if (featureLevel >= EFeatureLevel_02)
+        {
+            outStream << scene.getRenderBackendCompatibility();
+            outStream << scene.getVulkanAPIVersion();
+            outStream << scene.getSPIRVVersion();
+        }
     }
 
-    void ScenePersistation::WriteSceneToStream(IOutputStream& outStream, const ClientScene& scene)
+    void ScenePersistation::WriteSceneToStream(IOutputStream& outStream, const ClientScene& scene, EFeatureLevel featureLevel)
     {
         SceneActionCollection collection;
-        SceneActionCollectionCreator creator(collection);
+        SceneActionCollectionCreator creator(collection, featureLevel);
         creator.preallocateSceneSize(scene.getSceneSizeInformation());
         SceneDescriber::describeScene<ClientScene>(scene, creator);
 
@@ -96,14 +116,14 @@ namespace ramses::internal
         }
     }
 
-    void ScenePersistation::WriteSceneToFile(std::string_view filename, const ClientScene& scene)
+    void ScenePersistation::WriteSceneToFile(std::string_view filename, const ClientScene& scene, EFeatureLevel featureLevel)
     {
         File f(filename);
         BinaryFileOutputStream stream(f);
 
         if (stream.getState() == EStatus::Ok)
         {
-            ScenePersistation::WriteSceneToStream(stream, scene);
+            ScenePersistation::WriteSceneToStream(stream, scene, featureLevel);
         }
         else
         {
@@ -111,7 +131,7 @@ namespace ramses::internal
         }
     }
 
-    void ScenePersistation::ReadSceneFromStream(IInputStream& inStream, IScene& scene)
+    void ScenePersistation::ReadSceneFromStream(IInputStream& inStream, IScene& scene, EFeatureLevel featureLevel, SceneMergeHandleMapping* mapping)
     {
         uint32_t sceneMarker = 0;
         inStream >> sceneMarker;
@@ -157,10 +177,18 @@ namespace ramses::internal
                     }
                 }));
 
-        SceneActionApplier::ApplyActionsOnScene(scene, actions);
+        if (mapping)
+        {
+            MergeScene mergeScene(scene, *mapping);
+            SceneActionApplier::ApplyActionsOnScene(mergeScene, actions, featureLevel);
+        }
+        else
+        {
+            SceneActionApplier::ApplyActionsOnScene(scene, actions, featureLevel);
+        }
     }
 
-    void ScenePersistation::ReadSceneFromFile(std::string_view filename, IScene& scene)
+    void ScenePersistation::ReadSceneFromFile(std::string_view filename, IScene& scene, EFeatureLevel featureLevel, SceneMergeHandleMapping* mapping)
     {
         File f(filename);
         if (!f.exists())
@@ -173,7 +201,7 @@ namespace ramses::internal
         const EStatus state = stream.getState();
         if (EStatus::Ok == state)
         {
-            ScenePersistation::ReadSceneFromStream(stream, scene);
+            ScenePersistation::ReadSceneFromStream(stream, scene, featureLevel, mapping);
         }
         else
         {

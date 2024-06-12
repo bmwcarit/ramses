@@ -11,7 +11,7 @@
 #include "gmock/gmock.h"
 #include "internal/RendererLib/IRendererSceneUpdater.h"
 #include "internal/Components/SceneUpdate.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "internal/RendererLib/PlatformInterface/IBinaryShaderCache.h"
 
 namespace ramses::internal
@@ -23,7 +23,7 @@ namespace ramses::internal
         ~RendererSceneUpdaterMock() override;
 
         MOCK_METHOD(void, handleSceneUpdate, (SceneId sceneId, SceneUpdate&& sceneUpdate), (override));
-        MOCK_METHOD(void, createDisplayContext, (const DisplayConfig& displayConfig, IBinaryShaderCache*), (override));
+        MOCK_METHOD(void, createDisplayContext, (const DisplayConfigData& displayConfig, IBinaryShaderCache*), (override));
         MOCK_METHOD(void, destroyDisplayContext, (), (override));
         MOCK_METHOD(void, handleScenePublished, (SceneId sceneId, EScenePublicationMode mode), (override));
         MOCK_METHOD(void, handleSceneUnpublished, (SceneId sceneId), (override));

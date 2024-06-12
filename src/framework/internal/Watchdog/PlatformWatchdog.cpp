@@ -15,7 +15,7 @@ namespace ramses::internal
 {
 
     PlatformWatchdog::PlatformWatchdog(std::chrono::milliseconds notificationInterval, ERamsesThreadIdentifier thread, IThreadWatchdogNotification* callback)
-        : m_interval(notificationInterval / 2)
+        : m_interval{ std::max(notificationInterval / 2, 1ms) }
         , m_thread(thread)
         , m_watchdogCallback(callback)
         , m_lastNotificationTime(0ms)
@@ -56,6 +56,8 @@ namespace ramses::internal
         {
             timeToNext += m_interval;
         }
+        if (timeToNext > m_interval)
+            timeToNext = m_interval; // protection against non-steady clock values (should never happen)
         return timeToNext;
     }
 }

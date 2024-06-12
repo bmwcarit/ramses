@@ -27,9 +27,9 @@ namespace ramses::internal
     RenderPassClearScene::RenderPassClearScene(ramses::Scene& scene, uint32_t state, const glm::vec3& cameraPosition)
         : IntegrationScene(scene, cameraPosition)
         , m_effect(*getTestEffect("ramses-test-client-basic"))
-        , m_blueTriangle(scene, m_effect, TriangleAppearance::EColor_Blue)
-        , m_redTriangle(scene, m_effect, TriangleAppearance::EColor_Red)
-        , m_greenTriangle(scene, m_effect, TriangleAppearance::EColor_Green)
+        , m_blueTriangle(scene, m_effect, TriangleAppearance::EColor::Blue)
+        , m_redTriangle(scene, m_effect, TriangleAppearance::EColor::Red)
+        , m_greenTriangle(scene, m_effect, TriangleAppearance::EColor::Green)
         , m_colorBuffer(*m_scene.createRenderBuffer(200u, 200u, ramses::ERenderBufferFormat::RGBA8, ramses::ERenderBufferAccessMode::ReadWrite))
         , m_depthStencilBuffer(*m_scene.createRenderBuffer(200u, 200u, ramses::ERenderBufferFormat::Depth24_Stencil8, ramses::ERenderBufferAccessMode::ReadWrite))
     {

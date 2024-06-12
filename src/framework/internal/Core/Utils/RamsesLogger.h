@@ -76,8 +76,6 @@ namespace ramses::internal
         void setLogHandler(const LogHandlerFunc& logHandlerFunc);
 
         static const char* GetLogLevelText(ELogLevel logLevel);
-        static void SetPrefixes(std::string_view instance, std::string_view thread, std::string_view additional = {});
-        static void SetPrefixAdditional(std::string_view additional);
         static const std::string& GetPrefixInstance();
 
     private:
@@ -88,6 +86,8 @@ namespace ramses::internal
         static thread_local std::string PrefixThread;
         static thread_local std::string PrefixAdditional;
         static thread_local std::string PrefixCombined;
+        static void SetPrefixes(std::string_view instance, std::string_view thread, std::string_view additional = {});
+        static void SetPrefixAdditional(std::string_view additional);
 
         void applyContextFilter(const std::string& context, ELogLevel logLevel);
 
@@ -103,5 +103,8 @@ namespace ramses::internal
         std::map<std::string, std::unique_ptr<LogContext>> m_logContexts;
         std::vector<LogAppenderBase*> m_logAppenders;
         LogContext& m_fileTransferContext;
+
+        friend class RamsesLoggerPrefixes;
+        friend class RamsesLoggerPrefixesExported;
     };
 }

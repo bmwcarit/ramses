@@ -12,14 +12,14 @@
 namespace ramses::internal
 {
     SceneLinkScene::SceneLinkScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo)
-        : TransformationCachedSceneWithExplicitMemory(sceneInfo)
+        : BaseT(sceneInfo)
         , m_sceneLinksManager(sceneLinksManager)
     {
     }
 
     DataSlotHandle SceneLinkScene::allocateDataSlot(const DataSlot& dataSlot, DataSlotHandle handle)
     {
-        const DataSlotHandle dataSlotHandle = TransformationCachedSceneWithExplicitMemory::allocateDataSlot(dataSlot, handle);
+        const DataSlotHandle dataSlotHandle = BaseT::allocateDataSlot(dataSlot, handle);
         m_sceneLinksManager.handleDataSlotCreated(getSceneId(), dataSlotHandle);
 
         return dataSlotHandle;
@@ -28,6 +28,6 @@ namespace ramses::internal
     void SceneLinkScene::releaseDataSlot(DataSlotHandle handle)
     {
         m_sceneLinksManager.handleDataSlotDestroyed(getSceneId(), handle);
-        TransformationCachedSceneWithExplicitMemory::releaseDataSlot(handle);
+        BaseT::releaseDataSlot(handle);
     }
 }

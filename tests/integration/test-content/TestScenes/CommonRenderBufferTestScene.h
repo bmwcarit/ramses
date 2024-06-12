@@ -32,7 +32,7 @@ namespace ramses::internal
         const ramses::Effect&       getEffectRenderTwoBuffers();
         ramses::PerspectiveCamera&  createCamera(float nearPlane = 1.0f, float farPlane = 100.0f);
         const ramses::MeshNode&     createQuadWithTexture(const ramses::RenderBuffer& renderBuffer);
-        ramses::MeshNode&           createMesh(const ramses::Effect& effect, TriangleAppearance::EColor color = TriangleAppearance::EColor_Red);
+        ramses::MeshNode&           createMesh(const ramses::Effect& effect, TriangleAppearance::EColor color = TriangleAppearance::EColor::Red);
         ramses::RenderPass*         addRenderPassUsingRenderBufferAsQuadTexture(const ramses::MeshNode& quad);
 
     };

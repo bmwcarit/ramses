@@ -20,7 +20,10 @@ namespace ramses::internal
     {
         auto* scene = app.getScene();
         if (scene)
+        {
             m_sceneGui = std::make_unique<SceneViewerGui>(app, *app.getScene(), m_lastErrorMessage, m_progress);
+        }
+        m_remoteScenesGui = std::make_unique<RemoteScenesGui>(app);
 
         if (app.getLogicViewer())
             m_logicGui = std::make_unique<LogicViewerGui>(app, m_lastErrorMessage);
@@ -85,11 +88,18 @@ namespace ramses::internal
 
     void ViewerGui::drawWindow()
     {
-        const auto featureLevel = m_app.getScene()->getRamsesClient().getRamsesFramework().getFeatureLevel();
-        const std::string windowTitle =
-            m_app.getScene()->getName().empty()
-                ? fmt::format("Scene[{}] (FeatureLevel 0{})", m_app.getScene()->getSceneId().getValue(), featureLevel)
-                : fmt::format("Scene[{}]: {} (FeatureLevel 0{})", m_app.getScene()->getSceneId().getValue(), m_app.getScene()->getName(), featureLevel);
+        std::string windowTitle;
+        if (m_app.getScene())
+        {
+            const auto        featureLevel = m_app.getScene()->getRamsesClient().getRamsesFramework().getFeatureLevel();
+            windowTitle = m_app.getScene()->getName().empty()
+                    ? fmt::format("Scene[{}] (FeatureLevel 0{})", m_app.getScene()->getSceneId().getValue(), featureLevel)
+                    : fmt::format("Scene[{}]: {} (FeatureLevel 0{})", m_app.getScene()->getSceneId().getValue(), m_app.getScene()->getName(), featureLevel);
+        }
+        else
+        {
+            windowTitle = "Ramses Viewer";
+        }
 
         if (!ImGui::Begin(windowTitle.c_str(), &m_settings.showWindow, ImGuiWindowFlags_MenuBar))
         {
@@ -109,6 +119,10 @@ namespace ramses::internal
 
         if (m_sceneGui)
             m_sceneGui->drawContents();
+
+        if (m_remoteScenesGui)
+            m_remoteScenesGui->drawContents(m_sceneGui == nullptr);
+        m_app.getStreamViewer()->draw(m_sceneGui == nullptr);
         ImGui::End();
     }
 
@@ -123,17 +137,20 @@ namespace ramses::internal
     {
         if (ImGui::BeginMenuBar())
         {
-            if (ImGui::BeginMenu("File"))
+            if (m_sceneGui || m_logicGui)
             {
-                if (m_sceneGui)
-                    m_sceneGui->drawFileMenuItems();
-                if (m_logicGui)
+                if (ImGui::BeginMenu("File"))
                 {
-                    ImGui::Separator();
-                    m_logicGui->drawMenuItemReload();
-                    m_logicGui->drawMenuItemSaveDefaultLua();
+                    if (m_sceneGui)
+                        m_sceneGui->drawFileMenuItems();
+                    if (m_logicGui)
+                    {
+                        ImGui::Separator();
+                        m_logicGui->drawMenuItemReload();
+                        m_logicGui->drawMenuItemSaveDefaultLua();
+                    }
+                    ImGui::EndMenu();
                 }
-                ImGui::EndMenu();
             }
             if (ImGui::BeginMenu("Settings"))
             {

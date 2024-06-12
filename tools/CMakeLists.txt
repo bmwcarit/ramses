@@ -8,10 +8,8 @@
 
 add_subdirectory(ramses-daemon)
 
-if(ramses-sdk_ENABLE_LOGIC)
-    add_subdirectory(test-asset-producer)
-    add_subdirectory(ramses-viewer)
-endif()
+add_subdirectory(test-asset-producer)
+add_subdirectory(ramses-viewer)
 
 if(TARGET ramses-renderer)
     add_subdirectory(ramses-renderer-standalone)

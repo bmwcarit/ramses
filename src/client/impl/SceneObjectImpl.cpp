@@ -67,13 +67,27 @@ namespace ramses::internal
     bool SceneObjectImpl::deserialize(ramses::internal::IInputStream& inStream, DeserializationContext& serializationContext)
     {
         if (!RamsesObjectImpl::deserialize(inStream, serializationContext))
-            return true;
+            return false;
 
         sceneObjectId_t id;
         inStream >> id.getReference();
 
-        if (id.isValid())
+        if (!id.isValid())
+        {
+            LOG_ERROR(CONTEXT_CLIENT, "Fatal: deserialized invalid scene object ID.");
+            return false;
+        }
+
+        auto* mapping = serializationContext.getSceneMergeHandleMapping();
+        if (mapping)
+        {
+            mapping->addMapping(id, m_sceneObjectId);
+            // we keep the generated id
+        }
+        else
+        {
             m_sceneObjectId = std::move(id);
+        }
 
         return true;
     }

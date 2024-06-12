@@ -8,8 +8,8 @@
 
 #include "internal/Platform/Wayland/Platform_Wayland_EGL.h"
 #include "internal/Platform/Wayland/Logger_Wayland.h"
-#include "internal/RendererLib/DisplayConfig.h"
-#include "internal/RendererLib/RendererConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
+#include "internal/RendererLib/RendererConfigData.h"
 #include "internal/RendererLib/PlatformBase/EmbeddedCompositor_Dummy.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/EmbeddedCompositor_Wayland.h"
 #include "internal/Platform/Wayland/EmbeddedCompositor/TextureUploadingAdapter_Wayland.h"
@@ -17,7 +17,7 @@
 
 namespace ramses::internal
 {
-    Platform_Wayland_EGL::Platform_Wayland_EGL(const RendererConfig& rendererConfig)
+    Platform_Wayland_EGL::Platform_Wayland_EGL(const RendererConfigData& rendererConfig)
         : Platform_EGL<Window_Wayland>(rendererConfig)
         , m_frameCallbackMaxPollTime(m_rendererConfig.getFrameCallbackMaxPollTime())
     {
@@ -26,7 +26,7 @@ namespace ramses::internal
 
     Platform_Wayland_EGL::~Platform_Wayland_EGL() = default;
 
-    bool Platform_Wayland_EGL::IsCreatingWaylandEmbeddedCompositorRequired(const DisplayConfig& displayConfig)
+    bool Platform_Wayland_EGL::IsCreatingWaylandEmbeddedCompositorRequired(const DisplayConfigData& displayConfig)
     {
         //EC should be created if (any of) display config params are set
         const bool areConfigParametersForEmbeddedCompositorSet = !displayConfig.getWaylandSocketEmbedded().empty()
@@ -35,12 +35,12 @@ namespace ramses::internal
         return areConfigParametersForEmbeddedCompositorSet;
     }
 
-    bool Platform_Wayland_EGL::createEmbeddedCompositor(const DisplayConfig& displayConfig)
+    bool Platform_Wayland_EGL::createEmbeddedCompositor(const DisplayConfigData& displayConfig)
     {
         //TODO Mohamed: remove use of EC dummy as soon as it is possible to create multiple displays on wayland
         if (!IsCreatingWaylandEmbeddedCompositorRequired(displayConfig))
         {
-            LOG_INFO(CONTEXT_RENDERER, "Embedded compositor not created because RendererConfig parameters were not set");
+            LOG_INFO(CONTEXT_RENDERER, "Embedded compositor not created because RendererConfigData parameters were not set");
             return Platform_EGL<Window_Wayland>::createEmbeddedCompositor(displayConfig);
         }
         auto compositor = std::make_unique<EmbeddedCompositor_Wayland>(displayConfig, static_cast<Context_EGL&>(*m_context));
@@ -50,7 +50,7 @@ namespace ramses::internal
         return m_embeddedCompositor != nullptr;
     }
 
-    void Platform_Wayland_EGL::createTextureUploadingAdapter(const DisplayConfig& displayConfig)
+    void Platform_Wayland_EGL::createTextureUploadingAdapter(const DisplayConfigData& displayConfig)
     {
         assert(m_device);
         //TODO Mohamed: remove use of EC dummy as soon as it is possible to create multiple displays on wayland

@@ -13,13 +13,13 @@
 
 namespace ramses::internal
 {
-    class RendererConfig;
-    class DisplayConfig;
+    class RendererConfigData;
+    class DisplayConfigData;
 
     class IPlatformFactory
     {
     public:
         virtual ~IPlatformFactory() = default;
-        virtual std::unique_ptr<IPlatform> createPlatform(const RendererConfig& rendererConfig, const DisplayConfig& displayConfig) = 0;
+        virtual std::unique_ptr<IPlatform> createPlatform(const RendererConfigData& rendererConfig, const DisplayConfigData& displayConfig) = 0;
     };
 }

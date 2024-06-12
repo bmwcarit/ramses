@@ -15,6 +15,11 @@
 
 using namespace testing;
 
+#ifndef _MSC_VER
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 namespace ramses::internal
 {
     class ASceneReference : public LocalTestClientWithScene, public ::testing::Test
@@ -249,3 +254,7 @@ namespace ramses::internal
         EXPECT_EQ(consumerId.getValue(), actions[1].consumerId.getValue());
     }
 }
+
+#ifndef _MSC_VER
+#pragma GCC diagnostic pop
+#endif

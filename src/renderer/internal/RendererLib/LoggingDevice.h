@@ -48,6 +48,11 @@ namespace ramses::internal
         void drawMode(EDrawMode mode) override;
         void setViewport(int32_t x, int32_t y, uint32_t width, uint32_t height) override;
 
+        DeviceResourceHandle    allocateUniformBuffer(uint32_t totalSizeInBytes) override;
+        void                    uploadUniformBufferData(DeviceResourceHandle handle, const std::byte* data, uint32_t dataSize) override;
+        void                    activateUniformBuffer(DeviceResourceHandle handle, DataFieldHandle field) override;
+        void                    deleteUniformBuffer(DeviceResourceHandle handle) override;
+
         DeviceResourceHandle allocateVertexBuffer(uint32_t totalSizeInBytes) override;
         void uploadVertexBufferData(DeviceResourceHandle handle, const std::byte* data, uint32_t dataSize) override;
         void deleteVertexBuffer(DeviceResourceHandle handle) override;

@@ -119,7 +119,7 @@ namespace ramses::internal
         if (!SceneObjectImpl::deserialize(inStream, serializationContext))
             return false;
 
-        inStream >> m_blitPassHandle;
+        serializationContext.deserializeAndMap(inStream, m_blitPassHandle);
 
         DeserializationContext::ReadDependentPointerAndStoreAsID(inStream, m_sourceRenderBufferImpl);
         DeserializationContext::ReadDependentPointerAndStoreAsID(inStream, m_destinationRenderBufferImpl);

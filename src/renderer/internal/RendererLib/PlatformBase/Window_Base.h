@@ -12,13 +12,13 @@
 
 namespace ramses::internal
 {
-    class DisplayConfig;
+    class DisplayConfigData;
     class IWindowEventHandler;
 
     class Window_Base : public IWindow
     {
     public:
-        Window_Base(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, uint32_t id);
+        Window_Base(const DisplayConfigData& displayConfig, IWindowEventHandler& windowEventHandler, uint32_t id);
 
         [[nodiscard]] bool canRenderNewFrame() const override;
         void frameRendered() override;

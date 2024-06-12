@@ -8,7 +8,7 @@
 
 #include "MultiSceneStreamTextureTests.h"
 #include "TestScenes/EmbeddedCompositorScene.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "internal/Core/Utils/LogMacros.h"
 #include "ETriangleColor.h"
 #include "impl/DisplayConfigImpl.h"

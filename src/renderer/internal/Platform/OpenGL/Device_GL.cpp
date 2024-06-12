@@ -34,6 +34,8 @@
 
 namespace ramses::internal
 {
+    std::mutex Device_GL::s_gladMutex;
+
     static constexpr GLboolean ToGLboolean(bool b)
     {
         return b ? GL_TRUE : GL_FALSE;
@@ -69,8 +71,16 @@ namespace ramses::internal
         , m_deviceExtension(deviceExtension)
         , m_emptyExternalTextureResource(m_resourceMapper.registerResource(std::make_unique<GPUResource>(0u, 0u)))
     {
+        {
+            std::lock_guard<std::mutex> lock{s_gladMutex};
+            // initialize GLES3.2 API + extensions
+            if (GLAD_GL_ES_VERSION_2_0 == 0)
+            {
+                gladLoadGLES2(m_context.getGlProcLoadFunc());
+            }
+        }
 #if defined _DEBUG
-        m_debugOutput.enable(context);
+        m_debugOutput.enable();
 #endif
 
         m_limits.addTextureFormat(EPixelStorageFormat::Depth16);
@@ -110,8 +120,6 @@ namespace ramses::internal
 
     bool Device_GL::init()
     {
-        LOAD_ALL_API_PROCS(m_context);
-
         const char* tmp = nullptr;
 
         tmp = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
@@ -126,7 +134,7 @@ namespace ramses::internal
         tmp = reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION));
         LOG_INFO(CONTEXT_RENDERER, "     GLSL version {}", tmp);
 
-        loadOpenGLExtensions();
+        PrintOpenGLExtensions();
         queryDeviceDependentFeatures();
 
         m_framebufferRenderTarget = m_resourceMapper.registerResource(std::make_unique<RenderTargetGPUResource>(0));
@@ -1108,6 +1116,38 @@ namespace ramses::internal
         return texID;
     }
 
+    DeviceResourceHandle Device_GL::allocateUniformBuffer(uint32_t totalSizeInBytes)
+    {
+        GLHandle glAddress = InvalidGLHandle;
+        glGenBuffers(1, &glAddress);
+        assert(glAddress != InvalidGLHandle);
+
+        return m_resourceMapper.registerResource(std::make_unique<GPUResource>(glAddress, totalSizeInBytes));
+    }
+
+    void Device_GL::uploadUniformBufferData(DeviceResourceHandle handle, const std::byte* data, uint32_t dataSize)
+    {
+        const auto& uniformBuffer = m_resourceMapper.getResource(handle);
+        assert(dataSize <= uniformBuffer.getTotalSizeInBytes());
+
+        glBindBuffer(GL_UNIFORM_BUFFER, uniformBuffer.getGPUAddress());
+        glBufferData(GL_UNIFORM_BUFFER, dataSize, data, GL_DYNAMIC_DRAW);
+    }
+
+    void Device_GL::activateUniformBuffer(DeviceResourceHandle handle, DataFieldHandle field)
+    {
+        const auto& uniformBufferResource = m_resourceMapper.getResourceAs<const GPUResource>(handle);
+        const auto uniformBufferBinding = m_activeShader->getUniformBufferBinding(field);
+        glBindBufferBase(GL_UNIFORM_BUFFER, uniformBufferBinding.getValue(), uniformBufferResource.getGPUAddress());
+    }
+
+    void Device_GL::deleteUniformBuffer(DeviceResourceHandle handle)
+    {
+        const GLHandle resourceAddress = m_resourceMapper.getResource(handle).getGPUAddress();
+        glDeleteBuffers(1, &resourceAddress);
+        m_resourceMapper.deleteResource(handle);
+    }
+
     DeviceResourceHandle Device_GL::allocateVertexBuffer(uint32_t totalSizeInBytes)
     {
         GLHandle glAddress = InvalidGLHandle;
@@ -1378,31 +1418,22 @@ namespace ramses::internal
             GL_NEAREST);
     }
 
-    bool Device_GL::isApiExtensionAvailable(const std::string& extensionName) const
-    {
-        return m_apiExtensions.contains(extensionName);
-    }
 
-    void Device_GL::loadOpenGLExtensions()
+    void Device_GL::PrintOpenGLExtensions()
     {
         GLint numExtensions = 0;
         glGetIntegerv(GL_NUM_EXTENSIONS, &numExtensions);
         if (numExtensions > 0)
         {
-            m_apiExtensions.reserve(numExtensions);
-            size_t sumExtensionStringLength = 0;
-            for (auto i = 0; i < numExtensions; i++)
-            {
-                const auto tmp = reinterpret_cast<const char*>(glGetStringi(GL_EXTENSIONS, i));
-                sumExtensionStringLength += std::strlen(tmp);
-                m_apiExtensions.put(tmp);
-            }
-
             LOG_INFO_F(CONTEXT_RENDERER, ([&](StringOutputStream& sos) {
                 sos << "Device_GL::init: OpenGL extensions: ";
-                sos.reserve(sos.capacity() + sumExtensionStringLength + numExtensions);
-                for (const auto& extensionString : m_apiExtensions)
-                    sos << extensionString << " ";
+                constexpr std::size_t estimatedLength = 30;
+                sos.reserve(sos.size() + numExtensions * estimatedLength);
+                for (auto i = 0; i < numExtensions; i++)
+                {
+                    const auto tmp = reinterpret_cast<const char*>(glGetStringi(GL_EXTENSIONS, i));
+                    sos << tmp << " ";
+                }
             }));
         }
         else
@@ -1471,7 +1502,7 @@ namespace ramses::internal
             }));
         }
 
-        if (isApiExtensionAvailable("GL_EXT_texture_filter_anisotropic"))
+        if (GLAD_GL_EXT_texture_filter_anisotropic != 0)
         {
             GLint anisotropy = 0;
             glGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &anisotropy);
@@ -1488,7 +1519,7 @@ namespace ramses::internal
 
         // There are 2 extensions for external texture, one for using external texture sampler in ES2 shader and one for using it in ES3+ shader.
         // Either of them can be used on client side and therefore we require both.
-        const bool externalTexturesSupported = isApiExtensionAvailable("GL_OES_EGL_image_external") && isApiExtensionAvailable("GL_OES_EGL_image_external_essl3");
+        const bool externalTexturesSupported = (GLAD_GL_OES_EGL_image_external != 0) && (GLAD_GL_OES_EGL_image_external_essl3 != 0);
         LOG_INFO(CONTEXT_RENDERER, fmt::format("Device_GL::queryDeviceDependentFeatures: External textures support = {}", externalTexturesSupported));
 
         m_limits.setExternalTextureExtensionSupported(externalTexturesSupported);
@@ -1506,7 +1537,7 @@ namespace ramses::internal
 
     bool Device_GL::isDeviceStatusHealthy() const
     {
-        if (m_debugOutput.isAvailable())
+        if (DebugOutput::IsAvailable())
         {
             return !m_debugOutput.checkAndResetError();
         }

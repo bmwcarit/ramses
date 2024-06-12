@@ -39,7 +39,7 @@ namespace ramses::internal
             return static_cast<uint32_t>(stream.getSize());
         }
 
-        DeserializedResourceHeader ResourceFromMetadataStream(IInputStream& input)
+        DeserializedResourceHeader ResourceFromMetadataStream(IInputStream& input, EFeatureLevel featureLevel)
         {
             uint32_t resourceTypeValue = 0;
             std::string name;
@@ -69,7 +69,7 @@ namespace ramses::internal
                 resource = ArrayResource::CreateResourceFromMetadataStream(input, resourceType, name);
                 break;
             case EResourceType::Effect:
-                resource = EffectResource::CreateResourceFromMetadataStream(input, name);
+                resource = EffectResource::CreateResourceFromMetadataStream(input, name, featureLevel);
                 break;
             default:
                 LOG_ERROR(CONTEXT_FRAMEWORK, "ResourceSerializationHelper::ResourceFromMetadataStream: Failed for unknown resource type {}", resourceType);

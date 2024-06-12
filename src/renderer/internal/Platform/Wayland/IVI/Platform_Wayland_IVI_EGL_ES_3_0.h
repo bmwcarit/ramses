@@ -15,11 +15,11 @@ namespace ramses::internal
     class Platform_Wayland_IVI_EGL_ES_3_0 : public Platform_Wayland_EGL
     {
     public:
-        explicit Platform_Wayland_IVI_EGL_ES_3_0(const RendererConfig& rendererConfig);
+        explicit Platform_Wayland_IVI_EGL_ES_3_0(const RendererConfigData& rendererConfig);
 
     protected:
         bool createSystemCompositorController() override;
-        bool createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override;
+        bool createWindow(const DisplayConfigData& displayConfig, IWindowEventHandler& windowEventHandler) override;
     };
 }
 

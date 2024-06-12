@@ -42,6 +42,7 @@ namespace ramses::internal
             return m_geometry.GetGeometry();
         }
 
+        void setColor(TriangleAppearance::EColor color, float alpha = 1.f);
         void bindColor(const DataObject& colorDataObject);
         void unbindColor();
 

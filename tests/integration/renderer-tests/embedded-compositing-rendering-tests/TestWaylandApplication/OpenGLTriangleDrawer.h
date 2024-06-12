@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <GLES3/gl3.h>
+#include "internal/Platform/OpenGL/Device_GL_platform.h"
 #include "ETriangleColor.h"
 
 namespace ramses::internal

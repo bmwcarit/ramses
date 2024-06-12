@@ -10,7 +10,7 @@
 #include "internal/RendererLib/IntersectionUtils.h"
 #include "internal/RendererLib/RendererEventCollector.h"
 #include "internal/RendererLib/RendererScenes.h"
-#include "SceneAllocateHelper.h"
+#include "TestSceneHelper.h"
 #include "internal/Core/Math3d/ProjectionParams.h"
 #include "internal/Core/Math3d/CameraMatrixHelper.h"
 #include "glm/gtx/transform.hpp"
@@ -27,28 +27,12 @@ namespace ramses::internal
 
     static CameraHandle preparePickableCamera(TransformationLinkCachedScene& scene, SceneAllocateHelper& sceneAllocator, const glm::ivec2 viewportOffset, const glm::ivec2 viewportSize, const glm::vec3 translation, const glm::vec3 rotation, const glm::vec3 scale)
     {
-        NodeHandle cameraNodeHandle = sceneAllocator.allocateNode();
-        const auto dataLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference} }, {});
-        const auto dataInstance = sceneAllocator.allocateDataInstance(dataLayout);
-        const auto vpDataRefLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::Vector2I} }, {});
-        const auto vpOffsetInstance = sceneAllocator.allocateDataInstance(vpDataRefLayout);
-        const auto vpSizeInstance = sceneAllocator.allocateDataInstance(vpDataRefLayout);
-        const auto frustumPlanesLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::Vector4F} }, {});
-        const auto frustumPlanes = sceneAllocator.allocateDataInstance(frustumPlanesLayout);
-        const auto frustumNearFarLayout = sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::Vector2F} }, {});
-        const auto frustumNearFar = sceneAllocator.allocateDataInstance(frustumNearFarLayout);
-        scene.setDataReference(dataInstance, Camera::ViewportOffsetField, vpOffsetInstance);
-        scene.setDataReference(dataInstance, Camera::ViewportSizeField, vpSizeInstance);
-        scene.setDataReference(dataInstance, Camera::FrustumPlanesField, frustumPlanes);
-        scene.setDataReference(dataInstance, Camera::FrustumNearFarPlanesField, frustumNearFar);
-        const CameraHandle cameraHandle = sceneAllocator.allocateCamera(ECameraProjectionType::Perspective, cameraNodeHandle, dataInstance);
-        scene.setDataSingleVector2i(vpOffsetInstance, DataFieldHandle{ 0 }, viewportOffset);
-        scene.setDataSingleVector2i(vpSizeInstance, DataFieldHandle{ 0 }, viewportSize);
         const ProjectionParams params = ProjectionParams::Perspective(19.f, static_cast<float>(viewportSize.x) / static_cast<float>(viewportSize.y), 0.1f, 100.f);
-        scene.setDataSingleVector4f(frustumPlanes, DataFieldHandle{ 0 }, { params.leftPlane, params.rightPlane, params.bottomPlane, params.topPlane });
-        scene.setDataSingleVector2f(frustumNearFar, DataFieldHandle{ 0 }, { params.nearPlane, params.farPlane });
+        TestSceneHelper sceneHelper(scene, false, false);
+        const CameraHandle cameraHandle = sceneHelper.createCamera(params, viewportOffset, viewportSize);
+        const auto& camera = scene.getCamera(cameraHandle);
 
-        TransformHandle cameraTransformation = sceneAllocator.allocateTransform(cameraNodeHandle);
+        TransformHandle cameraTransformation = sceneAllocator.allocateTransform(camera.node);
         scene.setTranslation(cameraTransformation, translation);
         scene.setRotation(cameraTransformation, glm::vec4(rotation, 1.f), ERotationType::Euler_XYZ);
         scene.setScaling(cameraTransformation, scale);

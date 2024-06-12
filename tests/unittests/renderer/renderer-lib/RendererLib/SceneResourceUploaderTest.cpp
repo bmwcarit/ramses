@@ -20,7 +20,7 @@ namespace ramses::internal {
     {
     public:
         ASceneResourceUploader()
-            : scene(SceneInfo(sceneID))
+            : scene(SceneInfo{ sceneID })
             , allocateHelper(scene)
         {
         }

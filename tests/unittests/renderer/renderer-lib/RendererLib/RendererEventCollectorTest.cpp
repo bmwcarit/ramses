@@ -75,7 +75,7 @@ namespace ramses::internal
 
     TEST_F(ARendererEventCollector, CanAddRendererEventWithDisplayConfig)
     {
-        DisplayConfig config;
+        DisplayConfigData config;
         config.setClearColor({1, 0, 0, 1});
         config.setResizable(true);
         config.setSwapInterval(2);

@@ -8,13 +8,13 @@
 
 #include "internal/RendererLib/ResourceCachedScene.h"
 #include "internal/RendererLib/IResourceDeviceHandleAccessor.h"
-#include "internal/RendererLib/TextureLinkCachedScene.h"
 #include "internal/Core/Utils/LogMacros.h"
+#include "ramses/framework/EFeatureLevel.h"
 
 namespace ramses::internal
 {
     ResourceCachedScene::ResourceCachedScene(SceneLinksManager& sceneLinksManager, const SceneInfo& sceneInfo)
-        : TextureLinkCachedScene(sceneLinksManager, sceneInfo)
+        : BaseT(sceneLinksManager, sceneInfo)
     {
     }
 
@@ -29,7 +29,7 @@ namespace ramses::internal
 
     void ResourceCachedScene::preallocateSceneSize(const SceneSizeInformation& sizeInfo)
     {
-        TextureLinkCachedScene::preallocateSceneSize(sizeInfo);
+        BaseT::preallocateSceneSize(sizeInfo);
 
         resizeContainerIfSmaller(m_renderableResourcesDirty, sizeInfo.renderableCount);
         resizeContainerIfSmaller(m_dataInstancesDirty, sizeInfo.datainstanceCount);
@@ -40,11 +40,12 @@ namespace ramses::internal
         resizeContainerIfSmaller(m_deviceHandleCacheForTextures, sizeInfo.textureSamplerCount);
         resizeContainerIfSmaller(m_renderTargetCache, sizeInfo.renderTargetCount);
         resizeContainerIfSmaller(m_blitPassCache, sizeInfo.blitPassCount * 2u);
+        resizeContainerIfSmaller(m_uniformBuffersCache, sizeInfo.renderableCount);
     }
 
     RenderableHandle ResourceCachedScene::allocateRenderable(NodeHandle nodeHandle, RenderableHandle handle)
     {
-        const RenderableHandle renderable = TextureLinkCachedScene::allocateRenderable(nodeHandle, handle);
+        const RenderableHandle renderable = BaseT::allocateRenderable(nodeHandle, handle);
 
         const uint32_t indexIntoCache = renderable.asMemoryHandle();
         assert(indexIntoCache < m_effectDeviceHandleCache.size());
@@ -56,7 +57,7 @@ namespace ramses::internal
 
     void ResourceCachedScene::releaseRenderable(RenderableHandle renderableHandle)
     {
-        TextureLinkCachedScene::releaseRenderable(renderableHandle);
+        BaseT::releaseRenderable(renderableHandle);
         setRenderableResourcesDirtyFlag(renderableHandle, false);
         setRenderableVertexArrayDirtyFlag(renderableHandle, true);
     }
@@ -69,18 +70,18 @@ namespace ramses::internal
             setRenderableResourcesDirtyFlag(renderableHandle, true);
             setRenderableVertexArrayDirtyFlag(renderableHandle, true);
         }
-        TextureLinkCachedScene::setRenderableVisibility(renderableHandle, visibility);
+        BaseT::setRenderableVisibility(renderableHandle, visibility);
     }
 
     void ResourceCachedScene::setRenderableStartVertex(RenderableHandle renderableHandle, uint32_t startVertex)
     {
-        TextureLinkCachedScene::setRenderableStartVertex(renderableHandle, startVertex);
+        BaseT::setRenderableStartVertex(renderableHandle, startVertex);
         setRenderableVertexArrayDirtyFlag(renderableHandle, true);
     }
 
     DataInstanceHandle ResourceCachedScene::allocateDataInstance(DataLayoutHandle handle, DataInstanceHandle instanceHandle)
     {
-        const DataInstanceHandle dataInstance = TextureLinkCachedScene::allocateDataInstance(handle, instanceHandle);
+        const DataInstanceHandle dataInstance = BaseT::allocateDataInstance(handle, instanceHandle);
         setDataInstanceDirtyFlag(dataInstance, true);
 
         return dataInstance;
@@ -88,13 +89,13 @@ namespace ramses::internal
 
     void ResourceCachedScene::releaseDataInstance(DataInstanceHandle dataInstanceHandle)
     {
-        TextureLinkCachedScene::releaseDataInstance(dataInstanceHandle);
+        BaseT::releaseDataInstance(dataInstanceHandle);
         setDataInstanceDirtyFlag(dataInstanceHandle, true);
     }
 
     TextureSamplerHandle ResourceCachedScene::allocateTextureSampler(const TextureSampler& sampler, TextureSamplerHandle handle)
     {
-        const TextureSamplerHandle actualHandle = TextureLinkCachedScene::allocateTextureSampler(sampler, handle);
+        const TextureSamplerHandle actualHandle = BaseT::allocateTextureSampler(sampler, handle);
 
         const uint32_t indexIntoCache = actualHandle.asMemoryHandle();
         assert(indexIntoCache < m_deviceHandleCacheForTextures.size());
@@ -107,12 +108,12 @@ namespace ramses::internal
     void ResourceCachedScene::releaseTextureSampler(TextureSamplerHandle handle)
     {
         setTextureSamplerDirtyFlag(handle, true);
-        TextureLinkCachedScene::releaseTextureSampler(handle);
+        BaseT::releaseTextureSampler(handle);
     }
 
     void ResourceCachedScene::setRenderableDataInstance(RenderableHandle renderableHandle, ERenderableDataSlotType slot, DataInstanceHandle newDataInstance)
     {
-        TextureLinkCachedScene::setRenderableDataInstance(renderableHandle, slot, newDataInstance);
+        BaseT::setRenderableDataInstance(renderableHandle, slot, newDataInstance);
 
         const uint32_t indexIntoCache = renderableHandle.asMemoryHandle();
         assert(indexIntoCache < m_effectDeviceHandleCache.size());
@@ -124,19 +125,19 @@ namespace ramses::internal
 
     void ResourceCachedScene::setDataResource(DataInstanceHandle dataInstanceHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, uint32_t instancingDivisor, uint16_t offsetWithinElementInBytes, uint16_t stride)
     {
-        TextureLinkCachedScene::setDataResource(dataInstanceHandle, field, hash, dataBuffer, instancingDivisor, offsetWithinElementInBytes, stride);
+        BaseT::setDataResource(dataInstanceHandle, field, hash, dataBuffer, instancingDivisor, offsetWithinElementInBytes, stride);
         setDataInstanceDirtyFlag(dataInstanceHandle, true);
     }
 
     void ResourceCachedScene::setDataTextureSamplerHandle(DataInstanceHandle dataInstanceHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle)
     {
-        TextureLinkCachedScene::setDataTextureSamplerHandle(dataInstanceHandle, field, samplerHandle);
+        BaseT::setDataTextureSamplerHandle(dataInstanceHandle, field, samplerHandle);
         setDataInstanceDirtyFlag(dataInstanceHandle, true);
     }
 
     RenderTargetHandle ResourceCachedScene::allocateRenderTarget(RenderTargetHandle targetHandle)
     {
-        const RenderTargetHandle rtHandle = TextureLinkCachedScene::allocateRenderTarget(targetHandle);
+        const RenderTargetHandle rtHandle = BaseT::allocateRenderTarget(targetHandle);
 
         const uint32_t indexIntoCache = rtHandle.asMemoryHandle();
         assert(indexIntoCache < m_renderTargetCache.size());
@@ -148,7 +149,7 @@ namespace ramses::internal
 
     BlitPassHandle ResourceCachedScene::allocateBlitPass(RenderBufferHandle sourceRenderBufferHandle, RenderBufferHandle destinationRenderBufferHandle, BlitPassHandle passHandle)
     {
-        const BlitPassHandle blitPassHandle = TextureLinkCachedScene::allocateBlitPass(sourceRenderBufferHandle, destinationRenderBufferHandle, passHandle);
+        const BlitPassHandle blitPassHandle = BaseT::allocateBlitPass(sourceRenderBufferHandle, destinationRenderBufferHandle, passHandle);
 
         const uint32_t indexIntoCache = blitPassHandle.asMemoryHandle() * 2u;
         assert(indexIntoCache + 1u < m_blitPassCache.size());
@@ -206,6 +207,11 @@ namespace ramses::internal
     const BoolVector& ResourceCachedScene::getVertexArraysDirtinessFlags() const
     {
         return m_renderableVertexArrayDirty;
+    }
+
+    const UniformBuffersCache& ResourceCachedScene::getCachedHandlesForUniformInstancesBuffers() const
+    {
+        return m_uniformBuffersCache;
     }
 
     bool ResourceCachedScene::CheckAndUpdateDeviceHandle(const IResourceDeviceHandleAccessor& resourceAccessor, DeviceResourceHandle& deviceHandleInOut, const ResourceContentHash& resourceHash)
@@ -301,6 +307,31 @@ namespace ramses::internal
 
             if (!deviceHandle.isValid())
                 return false;
+        }
+
+        return true;
+    }
+
+    bool ResourceCachedScene::checkAndUpdateUniformBuffers(const IResourceDeviceHandleAccessor& resourceAccessor, RenderableHandle renderable)
+    {
+        const DataInstanceHandle dataInstance = getRenderable(renderable).dataInstances[ERenderableDataSlotType_Uniforms];
+        if (!dataInstance.isValid())
+            return false;
+
+        const auto& fields = getDataLayout(getLayoutOfDataInstance(dataInstance)).getDataFields();
+
+        auto& uniformBuffersEntry = m_uniformBuffersCache[renderable.asMemoryHandle()];
+        uniformBuffersEntry.resize(fields.size(), DeviceResourceHandle::Invalid());
+
+        for (DataFieldHandle fieldHandle{ 0u }; fieldHandle < fields.size(); ++fieldHandle)
+        {
+            const auto& field = fields[fieldHandle.asMemoryHandle()];
+            if (field.dataType == EDataType::UniformBuffer && field.semantics == EFixedSemantics::Invalid)
+            {
+                const auto ubHandle = getDataUniformBuffer(dataInstance, fieldHandle);
+                const auto deviceHandle = resourceAccessor.getUniformBufferDeviceHandle(ubHandle, getSceneId());
+                uniformBuffersEntry[fieldHandle.asMemoryHandle()] = deviceHandle;
+            }
         }
 
         return true;
@@ -459,7 +490,8 @@ namespace ramses::internal
             {
                 if (checkAndUpdateEffectResource(resourceAccessor, renderable) &&
                     checkAndUpdateTextureResources(resourceAccessor, renderable) &&
-                    checkGeometryResources(resourceAccessor, renderable))
+                    checkGeometryResources(resourceAccessor, renderable) &&
+                    checkAndUpdateUniformBuffers(resourceAccessor, renderable))
                 {
                     setRenderableResourcesDirtyFlag(renderable, false);
                 }
@@ -677,9 +709,9 @@ namespace ramses::internal
         std::fill(m_deviceHandleCacheForTextures.begin(), m_deviceHandleCacheForTextures.end(), DeviceResourceHandle::Invalid());
         std::fill(m_renderTargetCache.begin(), m_renderTargetCache.end(), DeviceResourceHandle::Invalid());
         std::fill(m_blitPassCache.begin(), m_blitPassCache.end(), DeviceResourceHandle::Invalid());
+        std::fill(m_uniformBuffersCache.begin(), m_uniformBuffersCache.end(), UniformBuffersCacheEntry{});
 
         m_renderTargetsDirty = !m_renderTargetCache.empty();
         m_blitPassesDirty = !m_blitPassCache.empty();
     }
-
 }

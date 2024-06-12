@@ -11,18 +11,18 @@
 #include "internal/Platform/OpenGL/Device_GL.h"
 #include "internal/Platform/Windows/Window_Windows.h"
 #include "internal/RendererLib/PlatformBase/EmbeddedCompositor_Dummy.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {
-    Platform_Windows_WGL::Platform_Windows_WGL(const RendererConfig& rendererConfig)
+    Platform_Windows_WGL::Platform_Windows_WGL(const RendererConfigData& rendererConfig)
         : Platform_Base(rendererConfig)
         , m_wglExtensions()
     {
     }
 
-    bool Platform_Windows_WGL::createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler)
+    bool Platform_Windows_WGL::createWindow(const DisplayConfigData& displayConfig, IWindowEventHandler& windowEventHandler)
     {
         auto window = std::make_unique<Window_Windows>(displayConfig, windowEventHandler, 0u);
         if (window->init())
@@ -34,7 +34,7 @@ namespace ramses::internal
         return false;
     }
 
-    bool Platform_Windows_WGL::createContext(const DisplayConfig& displayConfig)
+    bool Platform_Windows_WGL::createContext(const DisplayConfigData& displayConfig)
     {
         if (m_contextConfig.has_value())
         {
@@ -118,7 +118,7 @@ namespace ramses::internal
         return m_deviceUploading.get() != nullptr;
     }
 
-    std::unique_ptr<IContext> Platform_Windows_WGL::createContextInternal(const DisplayConfig& displayConfig, const Context_WGL::Config& contextConfig)
+    std::unique_ptr<IContext> Platform_Windows_WGL::createContextInternal(const DisplayConfigData& displayConfig, const Context_WGL::Config& contextConfig)
     {
         assert(m_window);
         Window_Windows* platformWindow = static_cast<Window_Windows*>(m_window.get());

@@ -57,8 +57,9 @@ namespace ramses::internal
 
     TEST_F(ARendererFrameworkLogic, generatesPublishedRendererCommand)
     {
-        fixture.handleNewSceneAvailable(SceneInfo(sceneId, sceneName, EScenePublicationMode::LocalAndRemote), providerID);
-        EXPECT_CALL(cmdVisitor, handleScenePublished(sceneId, EScenePublicationMode::LocalAndRemote));
+        const SceneInfo sceneInfo{ sceneId, sceneName, EScenePublicationMode::LocalAndRemote, ERenderBackendCompatibility::VulkanAndOpenGL, EVulkanAPIVersion::Version_1_1, ESPIRVVersion::Version_1_3 };
+        fixture.handleNewSceneAvailable(sceneInfo, providerID);
+        EXPECT_CALL(cmdVisitor, handleScenePublished(sceneId, EScenePublicationMode::LocalAndRemote, ERenderBackendCompatibility::VulkanAndOpenGL, EVulkanAPIVersion::Version_1_1, ESPIRVVersion::Version_1_3));
         visitPendingCommands();
     }
 
@@ -69,35 +70,35 @@ namespace ramses::internal
         fixture.handleInitializeScene(sceneInfo, providerID);
 
         InSequence seq;
-        EXPECT_CALL(cmdVisitor, handleScenePublished(sceneId, EScenePublicationMode::LocalAndRemote));
+        EXPECT_CALL(cmdVisitor, handleScenePublished(sceneId, EScenePublicationMode::LocalAndRemote, ERenderBackendCompatibility::OpenGL, EVulkanAPIVersion::Invalid, ESPIRVVersion::Invalid));
         EXPECT_CALL(cmdVisitor, handleSceneReceived(sceneInfo));
         visitPendingCommands();
     }
 
     TEST_F(ARendererFrameworkLogic, generatesUnpublishRendererCommand)
     {
-        fixture.handleNewSceneAvailable(SceneInfo(sceneId, "", EScenePublicationMode::LocalAndRemote), providerID);
+        fixture.handleNewSceneAvailable(SceneInfo{ sceneId, "", EScenePublicationMode::LocalAndRemote }, providerID);
         fixture.handleSceneBecameUnavailable(sceneId, providerID);
 
         InSequence seq;
-        EXPECT_CALL(cmdVisitor, handleScenePublished(sceneId, EScenePublicationMode::LocalAndRemote));
+        EXPECT_CALL(cmdVisitor, handleScenePublished(sceneId, EScenePublicationMode::LocalAndRemote, ERenderBackendCompatibility::OpenGL, EVulkanAPIVersion::Invalid, ESPIRVVersion::Invalid));
         EXPECT_CALL(cmdVisitor, handleSceneUnpublished(sceneId));
         visitPendingCommands();
     }
 
     TEST_F(ARendererFrameworkLogic, ignoresSecondPublishFromDifferentProvider)
     {
-        fixture.handleNewSceneAvailable(SceneInfo(sceneId, sceneName, EScenePublicationMode::LocalAndRemote), providerID);
-        fixture.handleNewSceneAvailable(SceneInfo(sceneId, sceneName, EScenePublicationMode::LocalAndRemote), Guid(30));
+        fixture.handleNewSceneAvailable(SceneInfo{ sceneId, sceneName, EScenePublicationMode::LocalAndRemote }, providerID);
+        fixture.handleNewSceneAvailable(SceneInfo{ sceneId, sceneName, EScenePublicationMode::LocalAndRemote }, Guid(30));
 
-        EXPECT_CALL(cmdVisitor, handleScenePublished(sceneId, EScenePublicationMode::LocalAndRemote));
+        EXPECT_CALL(cmdVisitor, handleScenePublished(sceneId, EScenePublicationMode::LocalAndRemote, ERenderBackendCompatibility::OpenGL, EVulkanAPIVersion::Invalid, ESPIRVVersion::Invalid));
         visitPendingCommands();
     }
 
     TEST_F(ARendererFrameworkLogic, handlesSceneUpdateWithFlush)
     {
-        fixture.handleNewSceneAvailable(SceneInfo(sceneId, "", EScenePublicationMode::LocalAndRemote), providerID);
-        EXPECT_CALL(cmdVisitor, handleScenePublished(sceneId, EScenePublicationMode::LocalAndRemote));
+        fixture.handleNewSceneAvailable(SceneInfo{ sceneId, "", EScenePublicationMode::LocalAndRemote }, providerID);
+        EXPECT_CALL(cmdVisitor, handleScenePublished(sceneId, EScenePublicationMode::LocalAndRemote, ERenderBackendCompatibility::OpenGL, EVulkanAPIVersion::Invalid, ESPIRVVersion::Invalid));
         visitPendingCommands();
 
         SceneUpdate sceneUpdate;
@@ -127,8 +128,8 @@ namespace ramses::internal
 
     TEST_F(ARendererFrameworkLogic, willSendSubscribeMessageToCorrectProvider)
     {
-        fixture.handleNewSceneAvailable(SceneInfo(sceneId, sceneName, EScenePublicationMode::LocalAndRemote), providerID);
-        fixture.handleNewSceneAvailable(SceneInfo(SceneId{123}, "foo", EScenePublicationMode::LocalAndRemote), Guid{456});
+        fixture.handleNewSceneAvailable(SceneInfo{ sceneId, sceneName, EScenePublicationMode::LocalAndRemote }, providerID);
+        fixture.handleNewSceneAvailable(SceneInfo{ SceneId{123}, "foo", EScenePublicationMode::LocalAndRemote }, Guid{ 456 });
 
         EXPECT_CALL(sceneGraphConsumerComponent, subscribeScene(providerID, sceneId));
         fixture.sendSubscribeScene(sceneId);
@@ -141,8 +142,8 @@ namespace ramses::internal
 
     TEST_F(ARendererFrameworkLogic, willSendUnsubscribeMessageToCorrectProvider)
     {
-        fixture.handleNewSceneAvailable(SceneInfo(sceneId, sceneName, EScenePublicationMode::LocalAndRemote), providerID);
-        fixture.handleNewSceneAvailable(SceneInfo(SceneId{ 123 }, "foo", EScenePublicationMode::LocalAndRemote), Guid{ 456 });
+        fixture.handleNewSceneAvailable(SceneInfo{ sceneId, sceneName, EScenePublicationMode::LocalAndRemote }, providerID);
+        fixture.handleNewSceneAvailable(SceneInfo{ SceneId{ 123 }, "foo", EScenePublicationMode::LocalAndRemote }, Guid{ 456 });
 
         EXPECT_CALL(sceneGraphConsumerComponent, unsubscribeScene(providerID, sceneId));
         fixture.sendUnsubscribeScene(sceneId);
@@ -155,8 +156,8 @@ namespace ramses::internal
 
     TEST_F(ARendererFrameworkLogic, willSendCorrectSceneStateChangedMessageToCorrectProvider)
     {
-        fixture.handleNewSceneAvailable(SceneInfo(sceneId, sceneName, EScenePublicationMode::LocalAndRemote), providerID);
-        fixture.handleNewSceneAvailable(SceneInfo(SceneId{ 123 }, "foo", EScenePublicationMode::LocalAndRemote), Guid{ 456 });
+        fixture.handleNewSceneAvailable(SceneInfo{ sceneId, sceneName, EScenePublicationMode::LocalAndRemote }, providerID);
+        fixture.handleNewSceneAvailable(SceneInfo{ SceneId{ 123 }, "foo", EScenePublicationMode::LocalAndRemote }, Guid{ 456 });
 
         EXPECT_CALL(sceneGraphConsumerComponent, sendSceneReferenceEvent(providerID, _)).WillOnce([this](Guid const& /*unused*/, SceneReferenceEvent const& event)
             {
@@ -175,8 +176,8 @@ namespace ramses::internal
 
     TEST_F(ARendererFrameworkLogic, willSendCorrectSceneFlushedMessageToCorrectProvider)
     {
-        fixture.handleNewSceneAvailable(SceneInfo(sceneId, sceneName, EScenePublicationMode::LocalAndRemote), providerID);
-        fixture.handleNewSceneAvailable(SceneInfo(SceneId{ 123 }, "foo", EScenePublicationMode::LocalAndRemote), Guid{ 456 });
+        fixture.handleNewSceneAvailable(SceneInfo{ sceneId, sceneName, EScenePublicationMode::LocalAndRemote }, providerID);
+        fixture.handleNewSceneAvailable(SceneInfo{ SceneId{ 123 }, "foo", EScenePublicationMode::LocalAndRemote }, Guid{ 456 });
 
         EXPECT_CALL(sceneGraphConsumerComponent, sendSceneReferenceEvent(providerID, _)).WillOnce([this](Guid const& /*unused*/, SceneReferenceEvent const& event)
             {
@@ -195,8 +196,8 @@ namespace ramses::internal
 
     TEST_F(ARendererFrameworkLogic, willSendCorrectDataLinkedMessageToCorrectProvider)
     {
-        fixture.handleNewSceneAvailable(SceneInfo(sceneId, sceneName, EScenePublicationMode::LocalAndRemote), providerID);
-        fixture.handleNewSceneAvailable(SceneInfo(SceneId{ 123 }, "foo", EScenePublicationMode::LocalAndRemote), Guid{ 456 });
+        fixture.handleNewSceneAvailable(SceneInfo{ sceneId, sceneName, EScenePublicationMode::LocalAndRemote }, providerID);
+        fixture.handleNewSceneAvailable(SceneInfo{ SceneId{ 123 }, "foo", EScenePublicationMode::LocalAndRemote }, Guid{ 456 });
 
         EXPECT_CALL(sceneGraphConsumerComponent, sendSceneReferenceEvent(providerID, _)).WillOnce([this](Guid const& /*unused*/, SceneReferenceEvent const& event)
             {
@@ -218,8 +219,8 @@ namespace ramses::internal
 
     TEST_F(ARendererFrameworkLogic, willSendCorrectDataUnlinkedMessageToCorrectProvider)
     {
-        fixture.handleNewSceneAvailable(SceneInfo(sceneId, sceneName, EScenePublicationMode::LocalAndRemote), providerID);
-        fixture.handleNewSceneAvailable(SceneInfo(SceneId{ 123 }, "foo", EScenePublicationMode::LocalAndRemote), Guid{ 456 });
+        fixture.handleNewSceneAvailable(SceneInfo{ sceneId, sceneName, EScenePublicationMode::LocalAndRemote }, providerID);
+        fixture.handleNewSceneAvailable(SceneInfo{ SceneId{ 123 }, "foo", EScenePublicationMode::LocalAndRemote }, Guid{ 456 });
 
         EXPECT_CALL(sceneGraphConsumerComponent, sendSceneReferenceEvent(providerID, _)).WillOnce([this](Guid const& /*unused*/, SceneReferenceEvent const& event)
             {

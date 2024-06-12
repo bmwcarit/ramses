@@ -62,10 +62,7 @@ namespace ramses::internal
         DeserializationMap m_deserializationMap{ m_ramses.createScene()->impl() };
     };
 
-    INSTANTIATE_TEST_SUITE_P(
-        ALuaScript_SerializationTests,
-        ALuaScript_Serialization,
-        GetFeatureLevelTestValues());
+    RAMSES_INSTANTIATE_LATEST_FEATURELEVEL_ONLY_TEST_SUITE(ALuaScript_Serialization);
 
     // More unit tests with inputs/outputs declared in LogicNode (base class) serialization tests
     TEST_P(ALuaScript_Serialization, RemembersBaseClassData)

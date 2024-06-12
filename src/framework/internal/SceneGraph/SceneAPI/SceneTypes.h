@@ -38,8 +38,18 @@ namespace ramses::internal
     using DataBufferHandleVector     =  std::vector<DataBufferHandle>;
     using TextureBufferHandleVector  =  std::vector<TextureBufferHandle>;
     using TextureSamplerHandleVector =  std::vector<TextureSamplerHandle>;
+    using UniformBufferHandleVector  =  std::vector<UniformBufferHandle>;
+    using DataFieldHandleVector      =  std::vector<DataFieldHandle>;
+    using CameraHandleVector         =  std::vector<CameraHandle>;
 
     struct PickableObjectIdTag {};
     using PickableObjectId = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), PickableObjectIdTag>;
     using PickableObjectIds = std::vector<PickableObjectId>;
+
+    struct UniformBufferBindingTag {};
+    using UniformBufferBinding = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), UniformBufferBindingTag>;
+    struct UniformBufferElementSizeTag {};
+    using UniformBufferElementSize = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), UniformBufferElementSizeTag>;
+    struct UniformBufferFieldOffsetTag {};
+    using UniformBufferFieldOffset = StronglyTypedValue<uint32_t, std::numeric_limits<uint32_t>::max(), UniformBufferFieldOffsetTag>;
 }

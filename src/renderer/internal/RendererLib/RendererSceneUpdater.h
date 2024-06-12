@@ -10,15 +10,16 @@
 
 #include "internal/RendererLib/Types.h"
 #include "internal/RendererLib/PlatformInterface/IEmbeddedCompositingManager.h"
-#include "internal/SceneGraph/SceneAPI/SceneId.h"
 #include "internal/RendererLib/StagingInfo.h"
 #include "internal/RendererLib/BufferLinks.h"
 #include "internal/RendererLib/FrameTimer.h"
 #include "internal/RendererLib/IRendererSceneStateControl.h"
 #include "internal/RendererLib/IRendererSceneUpdater.h"
 #include "internal/RendererLib/IRendererResourceManager.h"
+#include "internal/RendererLib/AsyncEffectUploader.h"
 #include "internal/SceneGraph/Scene/EScenePublicationMode.h"
-#include "AsyncEffectUploader.h"
+#include "internal/SceneGraph/SceneAPI/SceneId.h"
+#include "ramses/framework/EFeatureLevel.h"
 #include <unordered_map>
 
 namespace ramses::internal
@@ -29,7 +30,7 @@ namespace ramses::internal
     class IBinaryShaderCache;
     class RendererEventCollector;
     class RendererScenes;
-    class DisplayConfig;
+    class DisplayConfigData;
     class SceneExpirationMonitor;
     struct SceneUpdate;
     class DataReferenceLinkManager;
@@ -54,12 +55,13 @@ namespace ramses::internal
             RendererEventCollector& eventCollector,
             FrameTimer& frameTimer,
             SceneExpirationMonitor& expirationMonitor,
-            IThreadAliveNotifier& notifier);
+            IThreadAliveNotifier& notifier,
+            EFeatureLevel featureLevel);
         ~RendererSceneUpdater() override;
 
         // IRendererSceneUpdater
         void handleSceneUpdate(SceneId sceneId, SceneUpdate&& sceneUpdate) override;
-        void createDisplayContext(const DisplayConfig& displayConfig, IBinaryShaderCache* binaryShaderCache) override;
+        void createDisplayContext(const DisplayConfigData& displayConfig, IBinaryShaderCache* binaryShaderCache) override;
         void destroyDisplayContext() final override;
         void handleScenePublished(SceneId sceneId, EScenePublicationMode mode) override;
         void handleSceneUnpublished(SceneId sceneId) override;
@@ -105,7 +107,7 @@ namespace ramses::internal
         virtual std::unique_ptr<IRendererResourceManager> createResourceManager(
             IRenderBackend& renderBackend,
             IEmbeddedCompositingManager& embeddedCompositingManager,
-            const DisplayConfig& displayConfig,
+            const DisplayConfigData& displayConfig,
             IBinaryShaderCache* binaryShaderCache);
 
         [[nodiscard]] bool hasResourceManager() const;
@@ -118,7 +120,7 @@ namespace ramses::internal
         bool markClientAndSceneResourcesForReupload(SceneId sceneId);
 
         void updateScenePendingFlushes(SceneId sceneID, StagingInfo& stagingInfo);
-        static void ApplySceneActions(RendererCachedScene& scene, PendingFlush& flushInfo);
+        void applySceneActions(RendererCachedScene& scene, PendingFlush& flushInfo);
         void applyPendingFlushes(SceneId sceneID, StagingInfo& stagingInfo);
         void processStagedResourceChanges(SceneId sceneID, StagingInfo& stagingInfo);
 
@@ -130,6 +132,7 @@ namespace ramses::internal
         void requestAndUploadAndUnloadResources();
         void uploadUpdatedECStreams();
         void tryToApplyPendingFlushes();
+        void collectDirtySemanticUniformBuffers();
         void processStagedResourceChangesFromAppliedFlushes();
         void handleECStreamAvailabilityChanges();
         void uploadAndUnloadVertexArrays();
@@ -137,6 +140,7 @@ namespace ramses::internal
         void updateScenesShaderAnimations();
         void updateScenesTransformationCache();
         void updateScenesDataLinks();
+        void updateAndUploadSemanticUniformBuffers();
         void updateScenesStates();
 
         void resolveDataLinksForConsumerScenes(const DataReferenceLinkManager& dataRefLinkManager);
@@ -183,6 +187,8 @@ namespace ramses::internal
         size_t m_maximumPendingFlushesToKillScene = 5 * m_maximumPendingFlushes;
 
         IThreadAliveNotifier& m_notifier;
+
+        EFeatureLevel m_featureLevel = EFeatureLevel_Latest;
 
         // keep as members to avoid runtime re-allocs
         StreamSourceUpdates m_streamUpdates;

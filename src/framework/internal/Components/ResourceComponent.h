@@ -20,7 +20,7 @@ namespace ramses::internal
     class ResourceComponent : public IResourceProviderComponent
     {
     public:
-        ResourceComponent(StatisticCollectionFramework& statistics, PlatformLock& frameworkLock);
+        ResourceComponent(StatisticCollectionFramework& statistics, PlatformLock& frameworkLock, EFeatureLevel featureLevel);
         ~ResourceComponent() override;
 
         // implement IResourceProviderComponent
@@ -49,5 +49,6 @@ namespace ramses::internal
         ResourceFilesRegistry m_resourceFiles;
 
         StatisticCollectionFramework& m_statistics;
+        EFeatureLevel m_featureLevel = EFeatureLevel_Latest;
     };
 }

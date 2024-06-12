@@ -14,7 +14,7 @@
 #include "TestEqualHelper.h"
 #include "ResourceDeviceHandleAccessorMock.h"
 #include "internal/RendererLib/RendererEventCollector.h"
-#include "SceneAllocateHelper.h"
+#include "TestSceneHelper.h"
 #include <limits>
 
 namespace ramses::internal
@@ -45,7 +45,7 @@ namespace ramses::internal
             , m_rendererScenes(m_rendererEventCollector)
             , m_sceneLinksManager(m_rendererScenes.getSceneLinksManager())
             , m_sceneId(666u)
-            , m_scene(m_rendererScenes.createScene(SceneInfo(m_sceneId)))
+            , m_scene(m_rendererScenes.createScene(SceneInfo{ m_sceneId }))
             , m_sceneAllocator(m_scene)
         {
             m_executorState.setScene(m_scene);
@@ -67,31 +67,12 @@ namespace ramses::internal
 
         CameraHandle createTestCamera(const glm::vec3& translation = glm::vec3(0.0f), ECameraProjectionType camProjType = ECameraProjectionType::Perspective)
         {
-            const NodeHandle cameraNode = m_sceneAllocator.allocateNode();
-            const auto dataLayout = m_sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference}, DataFieldInfo{EDataType::DataReference} }, {});
-            const auto dataInstance = m_sceneAllocator.allocateDataInstance(dataLayout);
-            const auto vpDataRefLayout = m_sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::Vector2I} }, {});
-            const auto vpOffsetInstance = m_sceneAllocator.allocateDataInstance(vpDataRefLayout);
-            const auto vpSizeInstance = m_sceneAllocator.allocateDataInstance(vpDataRefLayout);
-            const auto frustumPlanesLayout = m_sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::Vector4F} }, {});
-            const auto frustumPlanes = m_sceneAllocator.allocateDataInstance(frustumPlanesLayout);
-            const auto frustumNearFarLayout = m_sceneAllocator.allocateDataLayout({ DataFieldInfo{EDataType::Vector2F} }, {});
-            const auto frustumNearFar = m_sceneAllocator.allocateDataInstance(frustumNearFarLayout);
-            m_scene.setDataReference(dataInstance, Camera::ViewportOffsetField, vpOffsetInstance);
-            m_scene.setDataReference(dataInstance, Camera::ViewportSizeField, vpSizeInstance);
-            m_scene.setDataReference(dataInstance, Camera::FrustumPlanesField, frustumPlanes);
-            m_scene.setDataReference(dataInstance, Camera::FrustumNearFarPlanesField, frustumNearFar);
-            const CameraHandle camera = m_sceneAllocator.allocateCamera(camProjType, cameraNode, dataInstance);
-
+            TestSceneHelper sceneHelper(m_scene, false, false);
             ProjectionParams params = ProjectionParams::Frustum(ECameraProjectionType::Orthographic, FakeLeftPlane, FakeRightPlane, FakeBottomPlane, FakeTopPlane, FakeNearPlane, FakeFarPlane);
             if (camProjType == ECameraProjectionType::Perspective)
                 params = ProjectionParams::Perspective(FakeFoV, FakeAspectRatio, FakeNearPlane, FakeFarPlane);
-            m_scene.setDataSingleVector4f(frustumPlanes, DataFieldHandle{ 0 }, { params.leftPlane, params.rightPlane, params.bottomPlane, params.topPlane });
-            m_scene.setDataSingleVector2f(frustumNearFar, DataFieldHandle{ 0 }, { params.nearPlane, params.farPlane });
-
-            m_scene.setDataSingleVector2i(vpOffsetInstance, DataFieldHandle{ 0 }, { 0, 0 });
-            m_scene.setDataSingleVector2i(vpSizeInstance, DataFieldHandle{ 0 }, { int32_t(FakeVpWidth), int32_t(FakeVpHeight) });
-
+            const CameraHandle camera = sceneHelper.createCamera(params, { 0.f, 0.f }, { int32_t(FakeVpWidth), int32_t(FakeVpHeight) });
+            const NodeHandle cameraNode = m_scene.getCamera(camera).node;
             const TransformHandle cameraTransform = m_sceneAllocator.allocateTransform(cameraNode);
             m_scene.setTranslation(cameraTransform, translation);
 
@@ -119,7 +100,7 @@ namespace ramses::internal
     {
         ASSERT_EQ(&m_scene, &m_executorState.getScene());
 
-        RendererCachedScene otherScene(m_sceneLinksManager, SceneInfo(SceneId(33u)));
+        RendererCachedScene otherScene(m_sceneLinksManager, SceneInfo{ SceneId(33u) });
         m_executorState.setScene(otherScene);
         ASSERT_EQ(&otherScene, &m_executorState.getScene());
     }

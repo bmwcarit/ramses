@@ -81,7 +81,8 @@ int main()
     ramses::EffectDescription effectDesc;
     effectDesc.setVertexShaderFromFile("res/ramses-local-client-test.vert");
     effectDesc.setFragmentShaderFromFile("res/ramses-local-client-test.frag");
-    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
+    // tell Ramses that the shader uniform block is meant to be automatically filled with model/camera matrices
+    effectDesc.setUniformSemantic("modelCameraBlock", ramses::EEffectUniformSemantic::ModelCameraBlock);
 
     ramses::Effect* effect = clientScene->createEffect(effectDesc, "glsl shader");
     ramses::Appearance* appearance = clientScene->createAppearance(*effect, "triangle appearance");
@@ -124,5 +125,7 @@ int main()
         meshNode->setRotation(glm::mix(q1, q2, factor));
         clientScene->flush();
         if (factor >= 1.f || factor <= 0.f) step = -step;
+
+        renderer.dispatchEvents(eventHandler);
     }
 }

@@ -149,13 +149,13 @@ namespace ramses::internal
         ramses::MeshNode* meshNode = m_scene.createMeshNode();
         if (state == PERSPECTIVE_PROJECTION || state == ORTHOGRAPHIC_PROJECTION)
         {
-            Triangle blueTriangle(m_scene, *getTestEffect("ramses-test-client-basic"), TriangleAppearance::EColor_Blue);
+            Triangle blueTriangle(m_scene, *getTestEffect("ramses-test-client-basic"), TriangleAppearance::EColor::Blue);
             meshNode->setAppearance(blueTriangle.GetAppearance());
             meshNode->setGeometry(blueTriangle.GetGeometry());
         }
         else
         {
-            Triangle greyTriangle(m_scene, *getTestEffect("ramses-test-client-basic"), TriangleAppearance::EColor_Grey);
+            Triangle greyTriangle(m_scene, *getTestEffect("ramses-test-client-basic"), TriangleAppearance::EColor::Grey);
             meshNode->setAppearance(greyTriangle.GetAppearance());
             meshNode->setGeometry(greyTriangle.GetGeometry());
         }

@@ -54,7 +54,8 @@ namespace ramses
         "TextureSampler3D",
         "TextureSamplerCube",
         "TextureSamplerExternal",
+        "UniformBuffer",
     };
 }
 
-MAKE_ENUM_CLASS_PRINTABLE(ramses::EDataType, "EDataType", ramses::DataTypeNames, ramses::EDataType::TextureSamplerExternal);
+MAKE_ENUM_CLASS_PRINTABLE(ramses::EDataType, "EDataType", ramses::DataTypeNames, ramses::EDataType::UniformBuffer);

@@ -41,6 +41,8 @@ namespace ramses
         TextureSampler3D,       ///< 3D Texture sampler data type
         TextureSamplerCube,     ///< Cube Texture sampler data type
         TextureSamplerExternal, ///< External Texture sampler data type
+
+        UniformBuffer, ///< Uniform buffer object data type
     };
 
     /**
@@ -80,6 +82,7 @@ namespace ramses
         case EDataType::TextureSampler3D:
         case EDataType::TextureSamplerCube:
         case EDataType::TextureSamplerExternal:
+        case EDataType::UniformBuffer:
             return 0u;
         }
 
@@ -126,6 +129,7 @@ namespace ramses
         case EDataType::TextureSampler3D:
         case EDataType::TextureSamplerCube:
         case EDataType::TextureSamplerExternal:
+        case EDataType::UniformBuffer:
             return 0u;
         }
 

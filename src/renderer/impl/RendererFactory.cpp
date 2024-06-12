@@ -12,8 +12,14 @@
 
 namespace ramses::internal
 {
-    RendererUniquePtr RendererFactory::createRenderer(RamsesFrameworkImpl& framework, const ramses::RendererConfig& config) const
+    RendererUniquePtr RendererFactory::createRenderer(RamsesFrameworkImpl& framework, const ramses::RendererConfig& config, std::string_view loggingInstanceName) const
     {
+        // Some platforms manage thread local storage in shared library as copy which is initialized with program default
+        // instead of what was set in runtime, this is a workaround to make sure logging prefix stored as thread local
+        // will be set to current framework value if renderer loaded from shared library.
+        // Renderer instantiation will already generate logs so this should be done before, ideally as first code executed from renderer library.
+        RamsesLoggerPrefixes::SetRamsesLoggerPrefixes(loggingInstanceName, "main");
+
         auto impl = std::make_unique<RamsesRendererImpl>(framework, config);
         RendererUniquePtr renderer{ new RamsesRenderer{ std::move(impl) },
             [](RamsesRenderer* renderer_) { delete renderer_; } };

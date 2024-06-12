@@ -9,6 +9,7 @@
 #pragma once
 
 #include "internal/SceneGraph/SceneAPI/IScene.h"
+#include "ramses/framework/EFeatureLevel.h"
 #include <unordered_map>
 
 namespace ramses::internal
@@ -19,7 +20,7 @@ namespace ramses::internal
     class SceneFactory
     {
     public:
-        ClientScene* createScene(const SceneInfo& sceneInfo);
+        ClientScene* createScene(const SceneInfo& sceneInfo, EFeatureLevel featureLevel);
         InternalSceneOwningPtr releaseScene(SceneId id);
 
     private:

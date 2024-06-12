@@ -9,7 +9,9 @@
 if(ramses-sdk_ENABLE_WINDOW_TYPE_WINDOWS)
     list(APPEND PLATFORM_SOURCES    Windows/*.h
                                     Windows/*.cpp)
-    message("+ Windows Window")
+    list(APPEND VULKAN_SOURCES      Vulkan/Windows/*.h
+                                    Vulkan/Windows/*.cpp)
+    message(STATUS "+ Window Type: Windows Window")
 endif()
 
 if(ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_IVI OR ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_WL_SHELL OR ramses-sdk_ENABLE_WINDOW_TYPE_X11 OR ramses-sdk_ENABLE_WINDOW_TYPE_ANDROID OR ramses-sdk_ENABLE_WINDOW_TYPE_IOS)
@@ -21,15 +23,17 @@ endif()
 if(ramses-sdk_ENABLE_WINDOW_TYPE_X11)
     list(APPEND PLATFORM_SOURCES    X11/*.h
                                     X11/*.cpp)
+    list(APPEND VULKAN_SOURCES      Vulkan/X11/*.h
+                                    Vulkan/X11/*.cpp)
     list(APPEND PLATFORM_LIBS       X11)
-    message("+ X11 Window")
+    message(STATUS "+ Window Type: X11 Window")
 endif()
 
 if(ramses-sdk_ENABLE_WINDOW_TYPE_ANDROID)
     list(APPEND PLATFORM_SOURCES    Android/*.h
                                     Android/*.cpp)
     list(APPEND PLATFORM_LIBS       AndroidSDK)
-    message("+ Android Window")
+    message(STATUS "+ Window Type: Android Window")
 endif()
 
 if(ramses-sdk_ENABLE_WINDOW_TYPE_IOS)
@@ -37,7 +41,7 @@ if(ramses-sdk_ENABLE_WINDOW_TYPE_IOS)
                                     iOS/*.cpp
                                     iOS/*.mm)
     list(APPEND PLATFORM_LIBS       QuartzCore)
-    message("+ iOS Window")
+    message(STATUS "+ Window Type: iOS Window")
 endif()
 
 if(ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_IVI OR ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_WL_SHELL)
@@ -65,7 +69,7 @@ endif()
 if(ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_WL_SHELL)
     list(APPEND PLATFORM_SOURCES    Wayland/WlShell/*.h
                                     Wayland/WlShell/*.cpp)
-    message("+ Wayland wl_shell Window")
+    message(STATUS "+ Window Type: Wayland wl_shell Window")
 endif()
 
 if(ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_IVI)
@@ -75,7 +79,15 @@ if(ramses-sdk_ENABLE_WINDOW_TYPE_WAYLAND_IVI)
                                     Wayland/IVI/SystemCompositorController/*.cpp)
     list(APPEND PLATFORM_LIBS       libdrm
                                     wayland-ivi-extension)
-    message("+ Wayland ivi Window")
+    message(STATUS "+ Window Type: Wayland ivi Window")
+endif()
+
+if(ramses-sdk_ENABLE_DEVICE_TYPE_VULKAN)
+    list(APPEND PLATFORM_SOURCES    Vulkan/*.h
+                                    Vulkan/*.cpp
+                                    ${VULKAN_SOURCES})
+    list(APPEND PLATFORM_LIBS       ramses-vulkan)
+    message(STATUS "+ Device Type: Vulkan")
 endif()
 
 createModule(
@@ -88,7 +100,7 @@ createModule(
                             OpenGL/*.cpp
                             ${PLATFORM_SOURCES}
     DEPENDENCIES            ramses-renderer-internal
-                            OpenGL
+                            ramses-glad
                             ${PLATFORM_LIBS}
 
     # TODO move this to the OpenGL target where it belongs

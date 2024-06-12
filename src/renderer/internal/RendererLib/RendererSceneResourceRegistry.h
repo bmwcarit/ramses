@@ -9,6 +9,7 @@
 #pragma once
 
 #include "internal/RendererLib/Types.h"
+#include "internal/RendererLib/SemanticUniformBufferHandle.h"
 #include "internal/SceneGraph/SceneAPI/Handles.h"
 #include "internal/SceneGraph/SceneAPI/SceneTypes.h"
 #include "internal/SceneGraph/SceneAPI/TextureEnums.h"
@@ -33,49 +34,55 @@ namespace ramses::internal
         RendererSceneResourceRegistry();
         ~RendererSceneResourceRegistry();
 
-        void                               addRenderBuffer             (RenderBufferHandle handle, DeviceResourceHandle deviceHandle, uint32_t size, const RenderBuffer& properties);
-        void                               removeRenderBuffer          (RenderBufferHandle handle);
-        [[nodiscard]] DeviceResourceHandle getRenderBufferDeviceHandle (RenderBufferHandle handle) const;
-        [[nodiscard]] uint32_t             getRenderBufferByteSize     (RenderBufferHandle handle) const;
-        [[nodiscard]] const RenderBuffer&  getRenderBufferProperties   (RenderBufferHandle handle) const;
-        void                               getAllRenderBuffers         (RenderBufferHandleVector& renderBuffers) const;
+        template<typename HandleType, typename... ParamsT>
+        void add(HandleType handle, const ParamsT&... params)
+        {
+            auto& infoStorage = getInternalStorage<HandleType>();
 
-        void                               addRenderTarget             (RenderTargetHandle handle, DeviceResourceHandle deviceHandle);
-        void                               removeRenderTarget          (RenderTargetHandle handle);
-        [[nodiscard]] DeviceResourceHandle getRenderTargetDeviceHandle (RenderTargetHandle handle) const;
-        void                               getAllRenderTargets         (RenderTargetHandleVector& renderTargets) const;
+            assert(!infoStorage.contains(handle));
+            infoStorage.put(handle, { params... });
+        }
 
-        void                               addBlitPass                 (BlitPassHandle handle, DeviceResourceHandle srcRenderTargetDeviceHandle, DeviceResourceHandle dstRenderTargetDeviceHandle);
-        void                               removeBlitPass              (BlitPassHandle handle);
-        void                               getBlitPassDeviceHandles    (BlitPassHandle handle, DeviceResourceHandle& srcRenderTargetDeviceHandle, DeviceResourceHandle& dstRenderTargetDeviceHandle) const;
-        void                               getAllBlitPasses            (BlitPassHandleVector& blitPasses) const;
+        template<typename HandleType>
+        void remove(HandleType handle)
+        {
+            auto& infoStorage = getInternalStorage<HandleType>();
 
-        void                               addDataBuffer               (DataBufferHandle handle, DeviceResourceHandle deviceHandle, EDataBufferType dataBufferType, uint32_t size);
-        void                               removeDataBuffer            (DataBufferHandle handle);
-        [[nodiscard]] DeviceResourceHandle getDataBufferDeviceHandle   (DataBufferHandle handle) const;
-        [[nodiscard]] EDataBufferType      getDataBufferType           (DataBufferHandle handle) const;
-        void                               getAllDataBuffers           (DataBufferHandleVector& dataBuffers) const;
+            assert(infoStorage.contains(handle));
+            infoStorage.remove(handle);
+        }
 
-        void                               addTextureBuffer            (TextureBufferHandle handle, DeviceResourceHandle deviceHandle, EPixelStorageFormat format, uint32_t size);
-        void                               removeTextureBuffer         (TextureBufferHandle handle);
-        [[nodiscard]] DeviceResourceHandle getTextureBufferDeviceHandle(TextureBufferHandle handle) const;
-        [[nodiscard]] EPixelStorageFormat  getTextureBufferFormat      (TextureBufferHandle handle) const;
-        [[nodiscard]] uint32_t             getTextureBufferByteSize    (TextureBufferHandle handle) const;
-        void                               getAllTextureBuffers        (TextureBufferHandleVector& textureBuffers) const;
+        template<typename HandleType>
+        [[nodiscard]] const auto& get(HandleType handle) const
+        {
+            const auto& internalStorage = getConstInternalStorage<HandleType>();
+            assert(internalStorage.contains(handle));
+            return *internalStorage.get(handle);
+        }
 
-        void                               addVertexArray(RenderableHandle renderableHandle, DeviceResourceHandle deviceHandle);
-        void                               removeVertexArray(RenderableHandle renderableHandle);
-        [[nodiscard]] DeviceResourceHandle getVertexArrayDeviceHandle(RenderableHandle renderableHandle) const;
-        void                               getAllVertexArrayRenderables(RenderableVector& vertexArrayRenderables) const;
+        template<typename HandleType>
+        [[nodiscard]] std::vector<HandleType> getAll() const
+        {
+            const auto& internalStorage = getConstInternalStorage<HandleType>();
+            std::vector<HandleType> resultStorage;
+            resultStorage.reserve(internalStorage.size());
+            for (const auto& e : internalStorage)
+            {
+                resultStorage.push_back(e.key);
+            }
 
-        [[nodiscard]] uint32_t getSceneResourceMemoryUsage(ESceneResourceType resourceType) const;
+            return resultStorage;
+        }
+
+        void                    getBlitPassDeviceHandles    (BlitPassHandle handle, DeviceResourceHandle& srcRenderTargetDeviceHandle, DeviceResourceHandle& dstRenderTargetDeviceHandle) const;
+        [[nodiscard]] uint32_t  getSceneResourceMemoryUsage (ESceneResourceType resourceType) const;
 
     private:
         struct TextureBufferEntry
         {
             DeviceResourceHandle deviceHandle;
-            uint32_t size = 0u;
             EPixelStorageFormat format = EPixelStorageFormat::Invalid;
+            uint32_t size = 0u;
         };
 
         struct RenderBufferEntry
@@ -94,8 +101,8 @@ namespace ramses::internal
         struct DataBufferEntry
         {
             DeviceResourceHandle deviceHandle;
-            uint32_t size = 0u;
             EDataBufferType dataBufferType = EDataBufferType::Invalid;
+            uint32_t size = 0u;
         };
 
         using RenderBufferMap        = HashMap<RenderBufferHandle,   RenderBufferEntry>;
@@ -103,8 +110,56 @@ namespace ramses::internal
         using BlitPassMap            = HashMap<BlitPassHandle,       BlitPassEntry>;
         using DataBufferMap          = HashMap<DataBufferHandle,     DataBufferEntry>;
         using TextureBufferMap       = HashMap<TextureBufferHandle,  TextureBufferEntry>;
-        using TextureSamplerMap      = HashMap<TextureSamplerHandle, DeviceResourceHandle>;
         using VertexArrayMap         = HashMap<RenderableHandle,     DeviceResourceHandle>;
+        using UniformBufferMap       = HashMap<UniformBufferHandle,  DeviceResourceHandle>;
+        using SemanticUniformBufferMap = HashMap<SemanticUniformBufferHandle, DeviceResourceHandle>;
+
+        template<typename T, typename = std::enable_if_t<std::is_same_v<T, RenderBufferHandle>>>
+        RenderBufferMap& getInternalStorage()
+        {
+            return m_renderBuffers;
+        }
+        template<typename T, typename = std::enable_if_t<std::is_same_v<T, RenderTargetHandle>>>
+        RenderTargetMap& getInternalStorage()
+        {
+            return m_renderTargets;
+        }
+        template<typename T, typename = std::enable_if_t<std::is_same_v<T, BlitPassHandle>>>
+        BlitPassMap& getInternalStorage()
+        {
+            return m_blitPasses;
+        }
+        template<typename T, typename = std::enable_if_t<std::is_same_v<T, DataBufferHandle>>>
+        DataBufferMap& getInternalStorage()
+        {
+            return m_dataBuffers;
+        }
+        template<typename T, typename = std::enable_if_t<std::is_same_v<T, TextureBufferHandle>>>
+        TextureBufferMap& getInternalStorage()
+        {
+            return m_textureBuffers;
+        }
+        template<typename T, typename = std::enable_if_t<std::is_same_v<T, RenderableHandle>>>
+        VertexArrayMap& getInternalStorage()
+        {
+            return m_vertexArrays;
+        }
+        template<typename T, typename = std::enable_if_t<std::is_same_v<T, UniformBufferHandle>>>
+        UniformBufferMap& getInternalStorage()
+        {
+            return m_uniformBuffers;
+        }
+        template<typename T, typename = std::enable_if_t<std::is_same_v<T, SemanticUniformBufferHandle>>>
+        SemanticUniformBufferMap& getInternalStorage()
+        {
+            return m_semanticUniformBuffers;
+        }
+
+        template<typename T>
+        [[nodiscard]] const auto& getConstInternalStorage() const// -> const decltype(getInternalStorage<T>())&
+        {
+            return const_cast<RendererSceneResourceRegistry&>(*this).getInternalStorage<T>();
+        }
 
         RenderBufferMap        m_renderBuffers;
         RenderTargetMap        m_renderTargets;
@@ -112,5 +167,7 @@ namespace ramses::internal
         DataBufferMap          m_dataBuffers;
         TextureBufferMap       m_textureBuffers;
         VertexArrayMap         m_vertexArrays;
+        UniformBufferMap       m_uniformBuffers;
+        SemanticUniformBufferMap m_semanticUniformBuffers;
     };
 }

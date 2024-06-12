@@ -125,7 +125,7 @@ namespace ramses::internal
     ramses::MeshNode& MsaaRenderBufferScene::createMesh()
     {
         const ramses::Effect& effect = getEffectRenderOneBuffer();
-        ramses::MeshNode& meshNode = CommonRenderBufferTestScene::createMesh(effect, TriangleAppearance::EColor_White);
+        ramses::MeshNode& meshNode = CommonRenderBufferTestScene::createMesh(effect, TriangleAppearance::EColor::White);
 
         const std::array<ramses::vec3f, 3u> vertexPositionsData{
             ramses::vec3f{ -1.f, -1.f, 0.f },

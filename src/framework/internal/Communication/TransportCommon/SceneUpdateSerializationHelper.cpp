@@ -96,7 +96,7 @@ namespace ramses::internal
             HasEffectTimeSync = 2u
         };
 
-        absl::Span<const std::byte> SerializeInfos(const FlushInformation& flushInfos, std::vector<std::byte>& workingMemory)
+        absl::Span<const std::byte> SerializeInfos(const FlushInformation& flushInfos, std::vector<std::byte>& workingMemory, EFeatureLevel featureLevel)
         {
             const size_t estimatedDataSize =
                 sizeof(flushInfos.containsValidInformation) +
@@ -132,6 +132,8 @@ namespace ramses::internal
                 os << flushInfos.sizeInfo.renderStateCount;
                 os << flushInfos.sizeInfo.datalayoutCount;
                 os << flushInfos.sizeInfo.datainstanceCount;
+                if (featureLevel >= EFeatureLevel_02)
+                    os << flushInfos.sizeInfo.uniformBufferCount;
                 os << flushInfos.sizeInfo.renderGroupCount;
                 os << flushInfos.sizeInfo.renderPassCount;
                 os << flushInfos.sizeInfo.blitPassCount;
@@ -167,7 +169,7 @@ namespace ramses::internal
             return workingMemory;
         }
 
-        FlushInformation Deserialize(absl::Span<const std::byte> flushInfoBlob)
+        FlushInformation Deserialize(absl::Span<const std::byte> flushInfoBlob, EFeatureLevel featureLevel)
         {
             assert(flushInfoBlob.size() >= FlushInformation::getMinimumSize());
             BinaryInputStream is(flushInfoBlob.data());
@@ -188,6 +190,8 @@ namespace ramses::internal
                 is >> infos.sizeInfo.renderStateCount;
                 is >> infos.sizeInfo.datalayoutCount;
                 is >> infos.sizeInfo.datainstanceCount;
+                if (featureLevel >= EFeatureLevel_02)
+                    is >> infos.sizeInfo.uniformBufferCount;
                 is >> infos.sizeInfo.renderGroupCount;
                 is >> infos.sizeInfo.renderPassCount;
                 is >> infos.sizeInfo.blitPassCount;
@@ -251,13 +255,13 @@ namespace ramses::internal
             return {};
         }
 
-        std::unique_ptr<IResource> Deserialize(absl::Span<const std::byte> description, absl::Span<const std::byte> data)
+        std::unique_ptr<IResource> Deserialize(absl::Span<const std::byte> description, absl::Span<const std::byte> data, EFeatureLevel featureLevel)
         {
             BinaryInputStream is(description.data());
             ResourceContentHash hash;
             is >> hash;
             ResourceSerializationHelper::DeserializedResourceHeader header =
-                ResourceSerializationHelper::ResourceFromMetadataStream(is);
+                ResourceSerializationHelper::ResourceFromMetadataStream(is, featureLevel);
 
             const size_t expectedDataSize = header.compressionStatus == EResourceCompressionStatus::Compressed ?
                 header.compressedSize : header.decompressedSize;

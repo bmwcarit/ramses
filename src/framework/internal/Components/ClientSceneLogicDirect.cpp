@@ -21,8 +21,8 @@
 
 namespace ramses::internal
 {
-    ClientSceneLogicDirect::ClientSceneLogicDirect(ISceneGraphSender& sceneGraphSender, ClientScene& scene, IResourceProviderComponent& res, const Guid& clientAddress)
-        : ClientSceneLogicBase(sceneGraphSender, scene, res, clientAddress)
+    ClientSceneLogicDirect::ClientSceneLogicDirect(ISceneGraphSender& sceneGraphSender, ClientScene& scene, IResourceProviderComponent& res, const Guid& clientAddress, EFeatureLevel featureLevel)
+        : ClientSceneLogicBase(sceneGraphSender, scene, res, clientAddress, featureLevel)
         , m_previousSceneSizes(m_scene.getSceneSizeInformation())
     {
     }
@@ -48,18 +48,14 @@ namespace ramses::internal
 
         if (m_flushCounter == 0)
         {
-            LOG_INFO_F(CONTEXT_CLIENT, ([&](StringOutputStream& sos) {
-                            sos << "ClientSceneLogicDirect::flushSceneActions: first flush, sceneId " << m_sceneId
-                                << ", numActions " << sceneUpdate.actions.numberOfActions() << ", published " << isPublished()
-                                << ", numResources " << sceneUpdate.resources.size()
-                                << ", subsActive [";
-                            for (const auto& sub : m_subscribersActive)
-                                sos << sub << " ";
-                            sos << "], subsWaiting [";
-                            for (const auto& sub : m_subscribersWaitingForScene)
-                                sos << sub << " ";
-                            sos << "]";
-                        }));
+            LOG_INFO(CONTEXT_CLIENT,
+                "ClientSceneLogicDirect::flushSceneActions: first flush, sceneId {}, numActions {}, published {}, numResources {}, subsActive [{}], subsWaiting [{}]",
+                m_sceneId,
+                sceneUpdate.actions.numberOfActions(),
+                isPublished(),
+                sceneUpdate.resources.size(),
+                fmt::join(m_subscribersActive, " "),
+                fmt::join(m_subscribersWaitingForScene, " "));
         }
 
         const bool expirationChanged = updateExpirationAndCheckIfChanged(flushTimeInfo);

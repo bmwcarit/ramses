@@ -30,10 +30,18 @@ namespace ramses::internal
         {
         }
 
+        void enableForAllFeatureLevels(EFeatureLevel startingFrom = EFeatureLevel_01)
+        {
+            m_featureLevelsToTest.clear();
+            for (EFeatureLevel fl = startingFrom; fl <= EFeatureLevel_Latest; fl = EFeatureLevel{ fl + 1 })
+                m_featureLevelsToTest.push_back(fl);
+        }
+
         const uint32_t      m_id;
         const std::string   m_name;
         DisplayConfigVector m_displayConfigs;
         IRendererTest&      m_rendererTest;
         bool                m_defaultRendererRequired;
+        std::vector<EFeatureLevel> m_featureLevelsToTest{ EFeatureLevel_Latest };
     };
 }

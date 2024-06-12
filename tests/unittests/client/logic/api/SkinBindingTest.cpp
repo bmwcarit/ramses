@@ -27,7 +27,7 @@ namespace ramses::internal
     {
     public:
         ASkinBinding()
-            : m_appearance{ m_scene->createAppearance(createTestEffect()) }
+            : m_appearance{ m_scene->createAppearance(createTestEffect(), "skinAppearance") }
         {
             m_uniform = m_appearance->getEffect().findUniformInput("jointMat");
 
@@ -95,6 +95,7 @@ namespace ramses::internal
         EXPECT_EQ(m_appearanceBinding, &skinConst.getAppearanceBinding());
         const auto& skinImplConst = m_skin->impl();
         EXPECT_EQ(&m_appearanceBinding->impl(), &skinImplConst.getAppearanceBinding());
+        EXPECT_EQ(&m_appearanceBinding->impl().getBoundObject(), &skinImplConst.getBoundObject());
 
         EXPECT_EQ(EDataType::Matrix44F, m_skin->getAppearanceUniformInput().getDataType());
         EXPECT_EQ(2u, m_skin->getAppearanceUniformInput().getElementCount());
@@ -160,6 +161,105 @@ namespace ramses::internal
 
         for (glm::length_t i = 0u; i < 16; ++i)
             EXPECT_NEAR(expectedMat2[i/4][i%4], mat2[i/4][i%4], 1e-4f) << i;
+    }
+
+    TEST_F(ASkinBinding, UpdatesBoundUniformOnNodeBindingChange)
+    {
+        // This is the same setup as regular tests, only recreated locally, since with the regular setup (by chance) the nodes are ordered differently.
+        // If there is no binding dependency between node binding and skin binding, node binding created after skin binding might appear after skin binding
+        // in update list, resulting in the changes to node binding not being propagated to skin binding and skin binding using old values during update.
+        auto appearance = m_scene->createAppearance(createTestEffect(), "skinAppearance2");
+        auto uniform = appearance->getEffect().findUniformInput("jointMat");
+        std::vector<Node*> jointNodes{ m_scene->createNode(), m_scene->createNode() };
+        AppearanceBinding* appearanceBinding{ m_logicEngine->createAppearanceBinding(*appearance) };
+        std::vector<const NodeBinding*> joints{ m_logicEngine->createNodeBinding(*jointNodes[0]), m_logicEngine->createNodeBinding(*jointNodes[1]) };
+
+        // add some transformations to the joints before calculating inverse mats and creating skin
+        jointNodes[0]->setTranslation({1.f, 2.f, 3.f});
+        jointNodes[1]->setRotation({10.f, 20.f, 30.f}, ERotationType::Euler_XYZ);
+
+        std::vector<matrix44f> inverseMats;
+        inverseMats.resize(2u);
+
+        jointNodes[0]->getInverseModelMatrix(inverseMats[0]);
+        jointNodes[1]->getInverseModelMatrix(inverseMats[1]);
+
+        auto skin = m_logicEngine->createSkinBinding(joints, inverseMats, *appearanceBinding, *uniform, "skin2");
+
+        jointNodes[0]->setRotation({-1.f, -2.f, -3.f}, ERotationType::Euler_XYZ);
+        jointNodes[1]->setTranslation({-1.f, -2.f, -3.f});
+
+        // The crutial part of this test is having this binding created after other logic nodes to make it appear last in node update topology.
+        NodeBinding& nodeBinding = *m_logicEngine->createNodeBinding(*jointNodes[0], ERotationType::Euler_XYZ, "NodeBinding");
+        auto inputs = nodeBinding.getInputs();
+        inputs->getChild("translation")->set<vec3f>(vec3f{2.1f, 2.2f, 2.3f});
+
+        EXPECT_TRUE(m_logicEngine->update());
+
+        const matrix44f expectedMat1 = {
+            0.998f, -0.0523f, 0.0349f, 0.f,
+            0.0529f, 0.9984f, -0.0174f, 0.f,
+            -0.0339f, 0.01925f, 0.9992f, 0.f,
+            1.0979, 0.1976f, -0.6977f, 1.f
+        };
+        const matrix44f expectedMat2 = {
+            1.f, 0.f, 0.f, 0.f,
+            0.f, 1.f, 0.f, 0.f,
+            0.f, 0.f, 1.f, 0.f,
+            -1.f, -2.f, -3.f, 1.f
+        };
+
+        std::array<matrix44f, 2u> uniformData{};
+        appearance->getInputValue(skin->getAppearanceUniformInput(), 2u, uniformData.data());
+        const matrix44f mat1 = uniformData[0];
+        const matrix44f mat2 = uniformData[1];
+
+        for (glm::length_t i = 0u; i < 16; ++i)
+            EXPECT_NEAR(expectedMat1[i/4][i%4], mat1[i/4][i%4], 1e-4f) << i;
+
+        for (glm::length_t i = 0u; i < 16; ++i)
+            EXPECT_NEAR(expectedMat2[i/4][i%4], mat2[i/4][i%4], 1e-4f) << i;
+    }
+
+    TEST_F(ASkinBinding, CalculatesSameValuesAfterLoadingFromFile)
+    {
+        withTempDirectory();
+
+        m_jointNodes[0]->setRotation({ -1.f, -2.f, -3.f }, ERotationType::Euler_XYZ);
+        m_jointNodes[1]->setTranslation({ -1.f, -2.f, -3.f });
+        EXPECT_TRUE(m_logicEngine->update());
+        EXPECT_TRUE(m_scene->saveToFile("tmp.ramses"));
+
+        ASSERT_TRUE(recreateFromFile("tmp.ramses"));
+        m_appearance = m_scene->findObject<Appearance>("skinAppearance");
+        ASSERT_TRUE(m_appearance);
+        m_uniform = m_appearance->getEffect().findUniformInput("jointMat");
+        ASSERT_TRUE(m_uniform);
+        EXPECT_TRUE(m_logicEngine->update());
+
+        const matrix44f expectedMat1 = {
+            0.998f, -0.0523f, 0.0349f, 0.f,
+            0.0529f, 0.9984f, -0.0174f, 0.f,
+            -0.0339f, 0.01925f, 0.9992f, 0.f,
+            -0.00209f, -0.00235f, 0.00227f, 1.f
+        };
+        const matrix44f expectedMat2 = {
+            1.f, 0.f, 0.f, 0.f,
+            0.f, 1.f, 0.f, 0.f,
+            0.f, 0.f, 1.f, 0.f,
+            -1.f, -2.f, -3.f, 1.f
+        };
+
+        std::array<matrix44f, 2u> uniformData{};
+        m_appearance->getInputValue(*m_uniform, 2u, uniformData.data());
+        const matrix44f mat1 = uniformData[0];
+        const matrix44f mat2 = uniformData[1];
+
+        for (glm::length_t i = 0u; i < 16; ++i)
+            EXPECT_NEAR(expectedMat1[i / 4][i % 4], mat1[i / 4][i % 4], 1e-4f) << i;
+
+        for (glm::length_t i = 0u; i < 16; ++i)
+            EXPECT_NEAR(expectedMat2[i / 4][i % 4], mat2[i / 4][i % 4], 1e-4f) << i;
     }
 
     class ASkinBinding_SerializationLifecycle : public ASkinBinding

@@ -157,7 +157,7 @@ namespace ramses::internal {
 
         EXPECT_CALL(sceneEventSender, sendSubscribeScene(getSceneId()));
         rendererSceneUpdater->handleSceneSubscriptionRequest(getSceneId());
-        rendererSceneUpdater->handleSceneReceived(SceneInfo(getSceneId()));
+        rendererSceneUpdater->handleSceneReceived(SceneInfo{ getSceneId() });
 
         // named flush ignored
         expectNoEvent();
@@ -282,8 +282,7 @@ namespace ramses::internal {
 
         auto& stageScene = *stagingScene[0];
         const RenderPassHandle pass = stageScene.allocateRenderPass(0, {});
-        const auto dataLayout = stageScene.allocateDataLayout({DataFieldInfo{EDataType::Vector2I}, DataFieldInfo{EDataType::Vector2I}}, ResourceContentHash::Invalid(), {});
-        const CameraHandle camera = stageScene.allocateCamera(ECameraProjectionType::Orthographic, stageScene.allocateNode(0, {}), stageScene.allocateDataInstance(dataLayout, {}), {});
+        const CameraHandle camera = createCamera();
         stageScene.setRenderPassCamera(pass, camera);
         stageScene.setRenderPassRenderOnce(pass, true);
         performFlush();
@@ -877,7 +876,7 @@ namespace ramses::internal {
     {
         const auto displayWidth = WindowMock::FakeWidth;
         const auto displayHeight = WindowMock::FakeHeight;
-        DisplayConfig dispConfig;
+        DisplayConfigData dispConfig;
         dispConfig.setDesiredWindowWidth(displayWidth);
         dispConfig.setDesiredWindowHeight(displayHeight);
         createDisplayAndExpectSuccess(dispConfig);
@@ -939,6 +938,31 @@ namespace ramses::internal {
         destroyDisplay();
     }
 
+    TEST_F(ARendererSceneUpdater, createsReadPixelsFailedEventIfOffscreenBufferMultisampled)
+    {
+        createDisplayAndExpectSuccess();
+
+        const OffscreenBufferHandle buffer(1u);
+        expectOffscreenBufferUploaded(buffer);
+        EXPECT_TRUE(rendererSceneUpdater->handleBufferCreateRequest(buffer, 10u, 10u, 8u, false, EDepthBufferType::DepthStencil));
+        expectEvent(ERendererEventType::OffscreenBufferCreated);
+
+        const bool fullScreen = false;
+        const bool sendViaDLT = false;
+        const std::string_view filename;
+        readPixels(buffer, 0u, 0u, 10u, 10u, fullScreen, sendViaDLT, filename);
+
+        EXPECT_CALL(*renderer.m_displayController, readPixels(_, _, _, _, _, _)).Times(0);
+        doRenderLoop();
+
+        expectReadPixelsEvents({ { buffer, false } });
+
+        rendererSceneUpdater->processScreenshotResults();
+        expectNoEvent();
+
+        destroyDisplay();
+    }
+
     TEST_F(ARendererSceneUpdater, readPixelsFromDisplayAndSaveToFileWithoutGeneratingEvent)
     {
         createDisplayAndExpectSuccess();
@@ -966,7 +990,7 @@ namespace ramses::internal {
     {
         const auto displayWidth = WindowMock::FakeWidth;
         const auto displayHeight = WindowMock::FakeHeight;
-        DisplayConfig dispConfig;
+        DisplayConfigData dispConfig;
         dispConfig.setDesiredWindowWidth(displayWidth);
         dispConfig.setDesiredWindowHeight(displayHeight);
         createDisplayAndExpectSuccess(dispConfig);
@@ -5018,7 +5042,7 @@ namespace ramses::internal {
 
     TEST_F(ARendererSceneUpdater, reportsPickedObjects)
     {
-        DisplayConfig config;
+        DisplayConfigData config;
         config.setDesiredWindowWidth(1280u);
         config.setDesiredWindowHeight(480u);
         createDisplayAndExpectSuccess(config);
@@ -5242,4 +5266,228 @@ namespace ramses::internal {
         update();
     }
 
+    TEST_F(ARendererSceneUpdater, updatesSemanticUbos_UpdatesModelUbo)
+    {
+        createDisplayAndExpectSuccess();
+        createPublishAndSubscribeScene();
+        mapScene();
+        showScene();
+
+        expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+        expectVertexArrayUploaded();
+        createRenderable(0u, false, false, EVisibilityMode::Visible, true);
+        setRenderableResources();
+        expectSemanticCameraUniformBufferUploaded();
+        expectSemanticCameraUniformBufferUpdated();
+
+        auto& scene = *stagingScene[0];
+        const auto& renderable = scene.getRenderable(renderableHandle);
+        const auto transformHandle = scene.allocateTransform(renderable.node, {});
+
+        expectSemanticModelUniformBufferUploaded();
+        expectSemanticModelUniformBufferUpdated();
+        performFlush();
+        update();
+
+        scene.setTranslation(transformHandle, { 1.f, 2.f, 3.f });
+        expectSemanticModelUniformBufferUpdated();
+        performFlush();
+        update();
+
+        //update without changing transform leads to no UBO update
+        update();
+
+        hideScene();
+        unmapScene();
+        destroyDisplay();
+    }
+
+    TEST_F(ARendererSceneUpdater, updatesSemanticUbos_UpdatesModelUbo_TransformationLinking)
+    {
+        createDisplayAndExpectSuccess();
+
+        const uint32_t providerScene = createPublishAndSubscribeScene();
+        const uint32_t consumerScene = createPublishAndSubscribeScene();
+        mapScene(providerScene);
+        mapScene(consumerScene);
+        showScene(providerScene);
+        showScene(consumerScene);
+
+        //create a renderable in each scene
+        expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash }, consumerScene);
+        expectVertexArrayUploaded(consumerScene);
+        createRenderable(consumerScene, false, false, EVisibilityMode::Visible, true);
+        setRenderableResources(consumerScene);
+        expectSemanticCameraUniformBufferUploaded(consumerScene);
+        expectSemanticCameraUniformBufferUpdated(consumerScene);
+        expectSemanticModelUniformBufferUploaded(consumerScene);
+        expectSemanticModelUniformBufferUpdated(consumerScene);
+        update();
+
+        expectResourcesReferenced({ MockResourceHash::EffectHash}, providerScene);
+        expectResourcesReferenced({ MockResourceHash::IndexArrayHash }, providerScene);
+        expectResourcesProvided(2u);
+        expectVertexArrayUploaded(providerScene);
+        createRenderable(providerScene, false, false, EVisibilityMode::Visible, true);
+        setRenderableResources(providerScene);
+        expectSemanticCameraUniformBufferUploaded(providerScene);
+        expectSemanticCameraUniformBufferUpdated(providerScene);
+        expectSemanticModelUniformBufferUploaded(providerScene);
+        expectSemanticModelUniformBufferUpdated(providerScene);
+        update();
+
+        //link scenes
+        TransformHandle providerTransform{};
+        TransformHandle consumerTransform{};
+        const auto providerConsumer = createTransformationSlots(&providerTransform, providerScene, consumerScene, &consumerTransform);
+        linkProviderToConsumer(getSceneId(providerScene), providerConsumer.first, getSceneId(consumerScene), providerConsumer.second);
+
+        //add renderable to each scene as child to the node with the linked transform
+        const auto& providerRenderable = stagingScene[providerScene]->getRenderable(renderableHandle);
+        const auto& consumerRenderable = stagingScene[consumerScene]->getRenderable(renderableHandle);
+        const auto providerNode = stagingScene[providerScene]->getTransformNode(providerTransform);
+        const auto consumerNode = stagingScene[consumerScene]->getTransformNode(consumerTransform);
+
+        stagingScene[providerScene]->addChildToNode(providerNode, providerRenderable.node);
+        stagingScene[consumerScene]->addChildToNode(consumerNode, consumerRenderable.node);
+        performFlush(providerScene);
+        performFlush(consumerScene);
+        // reparenting already triggers UBO updates
+        expectSemanticModelUniformBufferUpdated(consumerScene);
+        expectSemanticModelUniformBufferUpdated(providerScene);
+        update();
+
+        //update provider transform and expect both provider and consumer renderables' model UBOs get updated
+        stagingScene[providerScene]->setTranslation(providerTransform, { 1.f, 2.f, 3.f });
+        performFlush(providerScene);
+        expectSemanticModelUniformBufferUpdated(consumerScene);
+        expectSemanticModelUniformBufferUpdated(providerScene);
+        update();
+
+        //update without changing transform leads to no UBO update
+        update();
+
+        hideScene(providerScene);
+        hideScene(consumerScene);
+        unmapScene(providerScene);
+        unmapScene(consumerScene);
+        destroyDisplay();
+    }
+
+    TEST_F(ARendererSceneUpdater, noSemanticUbosUpdateIfSceneNotRendered)
+    {
+        createDisplayAndExpectSuccess();
+        createPublishAndSubscribeScene();
+        mapScene();
+
+        expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+        createRenderable(0u, false, false, EVisibilityMode::Visible, true);
+        setRenderableResources();
+        // no initial update of UBOs
+
+        auto& scene = *stagingScene[0];
+        const auto& renderable = scene.getRenderable(renderableHandle);
+        const auto transformHandle = scene.allocateTransform(renderable.node, {});
+
+        performFlush();
+        update();
+
+        scene.setTranslation(transformHandle, { 1.f, 2.f, 3.f });
+        performFlush();
+        // no UBO update expected
+        update();
+
+        unmapScene();
+        destroyDisplay();
+    }
+
+    TEST_F(ARendererSceneUpdater, updatesSemanticUbos_onlyOnceIfRenderableInTwoRenderPasses)
+    {
+        createDisplayAndExpectSuccess();
+        createPublishAndSubscribeScene();
+        mapScene();
+        showScene();
+
+        expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+        expectVertexArrayUploaded();
+        createRenderable(0u, false, false, EVisibilityMode::Visible, true);
+        setRenderableResources();
+        expectSemanticCameraUniformBufferUploaded();
+        expectSemanticModelUniformBufferUploaded();
+        expectSemanticCameraUniformBufferUpdated();
+        expectSemanticModelUniformBufferUpdated();
+
+        auto& scene = *stagingScene[0];
+        SceneAllocateHelper sceneAllocator(scene);
+        const auto& renderable = scene.getRenderable(renderableHandle);
+        const auto transformHandle = sceneAllocator.allocateTransform(renderable.node, {});
+
+        //add to 2nd render pass
+        const auto renderPassHandle2 = sceneAllocator.allocateRenderPass();
+        const auto cameraHandle2 = createCamera(0u, ECameraProjectionType::Perspective);
+        const auto rgHandle2 = sceneAllocator.allocateRenderGroup();
+        scene.addRenderableToRenderGroup(rgHandle2, renderableHandle, 0u);
+        scene.addRenderGroupToRenderPass(renderPassHandle2, rgHandle2, 0u);
+        scene.setRenderPassCamera(renderPassHandle2, cameraHandle2);
+        scene.setRenderPassEnabled(renderPassHandle2, true);
+        expectSemanticCameraUniformBufferUploaded();
+        expectSemanticModelUniformBufferUploaded();
+
+        performFlush();
+        update();
+
+        scene.setTranslation(transformHandle, { 1.f, 2.f, 3.f });
+        performFlush();
+        // only one update
+        expectSemanticModelUniformBufferUpdated();
+        update();
+
+        //update without changing transform leads to no UBO update
+        update();
+
+        hideScene();
+        unmapScene();
+        destroyDisplay();
+    }
+
+    TEST_F(ARendererSceneUpdater, noSemanticUbosUpdateIfRenderableNotInRenderPass)
+    {
+        createDisplayAndExpectSuccess();
+        createPublishAndSubscribeScene();
+        mapScene();
+        showScene();
+
+        expectResourcesReferencedAndProvided({ MockResourceHash::EffectHash, MockResourceHash::IndexArrayHash });
+        expectVertexArrayUploaded();
+        createRenderable(0u, false, false, EVisibilityMode::Visible, true);
+        setRenderableResources();
+        expectSemanticCameraUniformBufferUploaded();
+        expectSemanticCameraUniformBufferUpdated();
+        expectSemanticModelUniformBufferUploaded();
+        expectSemanticModelUniformBufferUpdated();
+
+        auto& scene = *stagingScene[0];
+        SceneAllocateHelper sceneAllocator(scene);
+        const auto& renderable = scene.getRenderable(renderableHandle);
+        const auto transformHandle = sceneAllocator.allocateTransform(renderable.node, {});
+
+        performFlush();
+        update();
+
+        // remove renderable from group/pass
+        scene.removeRenderableFromRenderGroup(renderGroupHandle, renderableHandle);
+        performFlush();
+        update();
+
+        // trigger change
+        scene.setTranslation(transformHandle, { 1.f, 2.f, 3.f });
+        performFlush();
+
+        // no UBO update
+        update();
+
+        hideScene();
+        unmapScene();
+        destroyDisplay();
+    }
 }

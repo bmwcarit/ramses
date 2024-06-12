@@ -36,7 +36,7 @@ namespace ramses::internal
         return m_sceneControlEvents;
     }
 
-    void RendererEventCollector::addDisplayEvent(ERendererEventType eventType, DisplayHandle displayHandle, const DisplayConfig& config)
+    void RendererEventCollector::addDisplayEvent(ERendererEventType eventType, DisplayHandle displayHandle, const DisplayConfigData& config)
     {
         LOG_INFO(CONTEXT_RENDERER, "{} display={}", eventType, displayHandle);
 

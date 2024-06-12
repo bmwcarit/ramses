@@ -21,8 +21,8 @@ namespace ramses::internal
         : IntegrationScene(scene, cameraPosition)
     {
         ramses::Effect* effect = getTestEffect("ramses-test-client-basic");
-        Triangle triangle1(scene, *effect, TriangleAppearance::EColor_Red);
-        Triangle triangle2(scene, *effect, TriangleAppearance::EColor_Green);
+        Triangle triangle1(scene, *effect, TriangleAppearance::EColor::Red);
+        Triangle triangle2(scene, *effect, TriangleAppearance::EColor::Green);
 
         ramses::DataObject* colorData = scene.createDataObject(ramses::EDataType::Vector4F, "dataLinkColorData");
 

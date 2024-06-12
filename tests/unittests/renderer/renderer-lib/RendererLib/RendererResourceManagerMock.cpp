@@ -53,6 +53,8 @@ namespace ramses::internal {
         ON_CALL(*this, getVertexArrayDeviceHandle(_, _)).WillByDefault(Return(DeviceMock::FakeVertexArrayDeviceHandle));
         ON_CALL(*this, getExternalBufferDeviceHandle(Ne(ExternalBufferHandle::Invalid()))).WillByDefault(Return(DeviceMock::FakeExternalTextureDeviceHandle));
         ON_CALL(*this, getEmptyExternalBufferDeviceHandle()).WillByDefault(Return(DeviceMock::FakeEmptyExternalTextureDeviceHandle));
+        ON_CALL(*this, getUniformBufferDeviceHandle(Matcher<UniformBufferHandle>(_), _)).WillByDefault(Return(DeviceMock::FakeUniformBufferDeviceHandle));
+        ON_CALL(*this, getUniformBufferDeviceHandle(Matcher<SemanticUniformBufferHandle>(_), _)).WillByDefault(Return(DeviceMock::FakeUniformBufferDeviceHandle));
 
         ON_CALL(*this, getBlitPassRenderTargetsDeviceHandle(_, _, _, _)).WillByDefault(DoAll(SetArgReferee<2>(DeviceMock::FakeBlitPassRenderTargetDeviceHandle), SetArgReferee<3>(DeviceMock::FakeBlitPassRenderTargetDeviceHandle)));
 
@@ -69,6 +71,8 @@ namespace ramses::internal {
         EXPECT_CALL(*this, getResourcesInUseByScene(_)).Times(AnyNumber());
         EXPECT_CALL(*this, getExternalBufferDeviceHandle(_)).Times(AnyNumber());
         EXPECT_CALL(*this, getEmptyExternalBufferDeviceHandle()).Times(AnyNumber());
+        EXPECT_CALL(*this, getUniformBufferDeviceHandle(Matcher<UniformBufferHandle>(_), _)).Times(AnyNumber());
+        EXPECT_CALL(*this, getUniformBufferDeviceHandle(Matcher<SemanticUniformBufferHandle>(_), _)).Times(AnyNumber());
     }
 
     RendererResourceManagerRefCountMock::~RendererResourceManagerRefCountMock()

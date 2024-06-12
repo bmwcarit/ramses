@@ -49,6 +49,7 @@ namespace ramses::internal
         case ramses::EDataType::TextureSampler2DMS:
         case ramses::EDataType::TextureSamplerExternal:
         case ramses::EDataType::ByteBlob:
+        case ramses::EDataType::UniformBuffer:
             return std::nullopt;
         }
 

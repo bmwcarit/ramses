@@ -14,6 +14,11 @@
 
 namespace ramses::internal
 {
+    SceneUpdateStreamDeserializer::SceneUpdateStreamDeserializer(EFeatureLevel featureLevel)
+        : m_featureLevel{ featureLevel }
+    {
+    }
+
     SceneUpdateStreamDeserializer::Result SceneUpdateStreamDeserializer::processData(absl::Span<const std::byte> data)
     {
         // check state + input
@@ -200,7 +205,7 @@ namespace ramses::internal
            >> dataSize;
 
         m_currentResult.resources.push_back(ResourceSerialization::Deserialize(absl::Span<const std::byte>(is.readPosition(), descSize),
-                                                                               absl::Span<const std::byte>(is.readPosition() + descSize, dataSize)));
+                                                                               absl::Span<const std::byte>(is.readPosition() + descSize, dataSize), m_featureLevel));
         return true;
 
     }
@@ -223,7 +228,7 @@ namespace ramses::internal
             return false;
         }
 
-        m_currentResult.flushInfos = FlushInformationSerialization::Deserialize(absl::Span<const std::byte>(is.readPosition(), dataSize));
+        m_currentResult.flushInfos = FlushInformationSerialization::Deserialize(absl::Span<const std::byte>(is.readPosition(), dataSize), m_featureLevel);
         return true;
 
     }

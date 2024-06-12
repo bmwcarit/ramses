@@ -174,7 +174,7 @@ namespace ramses::internal
         void SetUp() override
         {
             const ramses::internal::IScene& iscene = this->m_scene.impl().getIScene();
-            ramses::internal::SceneInfo info(iscene.getSceneId(), iscene.getName());
+            ramses::internal::SceneInfo info{ iscene.getSceneId(), iscene.getName() };
             EXPECT_CALL(this->sceneActionsCollector, handleNewSceneAvailable(info, _));
             EXPECT_CALL(this->sceneActionsCollector, handleInitializeScene(info, _));
             EXPECT_TRUE(m_scene.publish(EScenePublicationMode::LocalOnly));

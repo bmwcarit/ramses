@@ -9,7 +9,7 @@
 #pragma once
 
 #include "internal/SceneGraph/SceneAPI/ResourceContentHash.h"
-
+#include "ramses/framework/EFeatureLevel.h"
 #include <cstdint>
 #include <memory>
 
@@ -25,6 +25,6 @@ namespace ramses::internal
         static uint32_t SizeOfSerializedResource(const IResource& resource);
         static void SerializeResource(IOutputStream& output, const IResource& resource);
 
-        static std::unique_ptr<IResource> DeserializeResource(IInputStream& input, ResourceContentHash hash);
+        static std::unique_ptr<IResource> DeserializeResource(IInputStream& input, ResourceContentHash hash, EFeatureLevel featureLevel);
     };
 }

@@ -102,10 +102,7 @@ namespace ramses::internal
 
     static constexpr size_t EmptySerializedSizeTotal{ 172u };
 
-    INSTANTIATE_TEST_SUITE_P(
-        ALogicEngine_SerializedSizeTests,
-        ALogicEngine_SerializedSize,
-        ramses::internal::GetFeatureLevelTestValues());
+    RAMSES_INSTANTIATE_LATEST_FEATURELEVEL_ONLY_TEST_SUITE(ALogicEngine_SerializedSize);
 
     TEST_P(ALogicEngine_SerializedSize, ChecksSerializedSizeWithoutContent)
     {

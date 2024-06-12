@@ -57,7 +57,7 @@ namespace ramses::internal
         return m_internalConfig.getRenderThreadLoopTimingReportingPeriod();
     }
 
-    const ramses::internal::RendererConfig& RendererConfigImpl::getInternalRendererConfig() const
+    const ramses::internal::RendererConfigData& RendererConfigImpl::getInternalRendererConfig() const
     {
         return m_internalConfig;
     }

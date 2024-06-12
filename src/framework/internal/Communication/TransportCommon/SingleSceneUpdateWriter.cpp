@@ -15,12 +15,18 @@
 
 namespace ramses::internal
 {
-    SingleSceneUpdateWriter::SingleSceneUpdateWriter(const SceneUpdate& update, absl::Span<std::byte> packetMem, const std::function<bool(size_t)>& writeDoneFunc, StatisticCollectionScene& sceneStatistics)
+    SingleSceneUpdateWriter::SingleSceneUpdateWriter(
+        const SceneUpdate& update,
+        absl::Span<std::byte> packetMem,
+        const std::function<bool(size_t)>& writeDoneFunc,
+        StatisticCollectionScene& sceneStatistics,
+        EFeatureLevel featureLevel)
         : m_update(update)
         , m_packetMem(packetMem)
         , m_writeDoneFunc(writeDoneFunc)
         , m_packetWriter(m_packetMem.data(), static_cast<uint32_t>(m_packetMem.size()))
         , m_sceneStatistics(sceneStatistics)
+        , m_featureLevel{ featureLevel }
     {
         /*
           Packet format
@@ -114,7 +120,7 @@ namespace ramses::internal
     bool SingleSceneUpdateWriter::writeFlushInfos(const FlushInformation& infos)
     {
         m_temporaryMemToSerializeDescription.clear();
-        const auto descSpan = FlushInformationSerialization::SerializeInfos(infos, m_temporaryMemToSerializeDescription);
+        const auto descSpan = FlushInformationSerialization::SerializeInfos(infos, m_temporaryMemToSerializeDescription, m_featureLevel);
 
         std::array<std::byte, sizeof(uint32_t)> header{};
         RawBinaryOutputStream os(header.data(), header.size());

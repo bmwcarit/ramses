@@ -7,9 +7,9 @@
 //  -------------------------------------------------------------------------
 
 #include "gmock/gmock.h"
-#include "internal/RendererLib/RendererConfig.h"
+#include "internal/RendererLib/RendererConfigData.h"
 #include "WindowEventHandlerMock.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "internal/RendererLib/RenderBackend.h"
 #include "internal/RendererLib/ResourceUploadRenderBackend.h"
 #include "internal/RendererLib/PlatformInterface/IContext.h"
@@ -42,7 +42,7 @@ namespace ramses::internal
         APlatform()
         {
             PlatformFactory platformFactory;
-            auto dispConfig = RendererTestUtils::CreateTestDisplayConfig(0u);
+            dispConfig = RendererTestUtils::CreateTestDisplayConfig(0u);
             platform = platformFactory.createPlatform(rendererConfig, dispConfig.impl().getInternalDisplayConfig());
             assert(platform);
         }
@@ -53,7 +53,7 @@ namespace ramses::internal
             EXPECT_CALL(eventHandlerMock, onResize(_, _)).Times(AnyNumber());
             EXPECT_CALL(eventHandlerMock, onWindowMove(_, _)).Times(AnyNumber());
 
-            DisplayConfig displayConfig;
+            DisplayConfigData displayConfig;
 
             if (multisampling)
                 displayConfig.setAntialiasingSampleCount(4);
@@ -89,7 +89,7 @@ namespace ramses::internal
                     }
             )SHADER";
 
-            EffectResource effect(vertexShader, fragmentShader, "", {}, {}, {}, "");
+            EffectResource effect(vertexShader, fragmentShader, "", SPIRVShaders{}, {}, {}, {}, "", EFeatureLevel_Latest);
             EXPECT_TRUE(device.isDeviceStatusHealthy());
             auto resource = device.uploadShader(effect);
             EXPECT_NE(nullptr, resource);
@@ -104,7 +104,8 @@ namespace ramses::internal
             EXPECT_TRUE(device.isDeviceStatusHealthy());
         }
 
-        RendererConfig rendererConfig;
+        RendererConfigData rendererConfig;
+        ramses::DisplayConfig dispConfig;
         std::unique_ptr<IPlatform> platform;
         StrictMock<WindowEventHandlerMock>  eventHandlerMock;
     };
@@ -167,6 +168,9 @@ namespace ramses::internal
 
     TEST_F(APlatform, CanCreateAndInitializeResourceUploadRenderBackend)
     {
+        if (dispConfig.getDeviceType() == EDeviceType::Vulkan)
+            GTEST_SKIP() << "Test does not support device type vulkan";
+
         IRenderBackend* mainRenderBackend = createRenderBackend();
         ASSERT_NE(nullptr, mainRenderBackend);
         IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend();
@@ -175,8 +179,23 @@ namespace ramses::internal
         platform->destroyRenderBackend();
     }
 
+    TEST_F(APlatform, CanNotCreateAndInitializeResourceUploadRenderBackend)
+    {
+        if (dispConfig.getDeviceType() != EDeviceType::Vulkan)
+            GTEST_SKIP() << "Test supports only device type vulkan";
+
+        IRenderBackend* mainRenderBackend = createRenderBackend();
+        ASSERT_NE(nullptr, mainRenderBackend);
+        IResourceUploadRenderBackend* resourceUploadRenderBackend = createResourceUploadRenderBackend();
+        ASSERT_EQ(nullptr, resourceUploadRenderBackend);
+        platform->destroyRenderBackend();
+    }
+
     TEST_F(APlatform, CanRecreateRenderBackendsWithResourceUploadRenderBackends)
     {
+        if (dispConfig.getDeviceType() == EDeviceType::Vulkan)
+            GTEST_SKIP() << "Test does not support device type vulkan";
+
         {
             IRenderBackend* renderBackend = createRenderBackend();
             ASSERT_NE(nullptr, renderBackend);
@@ -201,6 +220,9 @@ namespace ramses::internal
 
     TEST_F(APlatform, ResourceUploadRenderBackendsCanBeEnabledMultipleTimes)
     {
+        if (dispConfig.getDeviceType() == EDeviceType::Vulkan)
+            GTEST_SKIP() << "Test does not support device type vulkan";
+
         IRenderBackend* renderBackend = createRenderBackend();
         ASSERT_NE(nullptr, renderBackend);
 
@@ -220,6 +242,9 @@ namespace ramses::internal
 
     TEST_F(APlatform, ResourceUploadRenderBackendCanBeDisabled)
     {
+        if (dispConfig.getDeviceType() == EDeviceType::Vulkan)
+            GTEST_SKIP() << "Test does not support device type vulkan";
+
         IRenderBackend* renderBackend = createRenderBackend();
         ASSERT_NE(nullptr, renderBackend);
 
@@ -234,6 +259,8 @@ namespace ramses::internal
 
     TEST_F(APlatform, ResourceUploadRenderBackendCanBeEnabledAndDisabledMultipleTimes)
     {
+        if (dispConfig.getDeviceType() == EDeviceType::Vulkan)
+            GTEST_SKIP() << "Test does not support device type vulkan";
 
         IRenderBackend* renderBackend = createRenderBackend();
         ASSERT_NE(nullptr, renderBackend);
@@ -251,6 +278,9 @@ namespace ramses::internal
 
     TEST_F(APlatform, CanCreateAndInitializeResourceUploadRenderBackendInOtherThreads)
     {
+        if (dispConfig.getDeviceType() == EDeviceType::Vulkan)
+            GTEST_SKIP() << "Test does not support device type vulkan";
+
         IRenderBackend* mainRenderBackend = createRenderBackend();
         ASSERT_NE(nullptr, mainRenderBackend);
         EXPECT_TRUE(mainRenderBackend->getContext().disable());
@@ -278,6 +308,9 @@ namespace ramses::internal
 
     TEST_F(APlatform, CanEnableRenderBackendsInSameTimeInDifferentThreads)
     {
+        if (dispConfig.getDeviceType() == EDeviceType::Vulkan)
+            GTEST_SKIP() << "Test does not support device type vulkan";
+
         IRenderBackend* mainRenderBackend = createRenderBackend();
         ASSERT_NE(nullptr, mainRenderBackend);
         EXPECT_TRUE(mainRenderBackend->getContext().disable());
@@ -315,6 +348,9 @@ namespace ramses::internal
 
     TEST_F(APlatform, CanUploadResourcesToRenderBackendsInDifferentThreads)
     {
+        if (dispConfig.getDeviceType() == EDeviceType::Vulkan)
+            GTEST_SKIP() << "Test does not support device type vulkan";
+
         IRenderBackend* mainRenderBackend = createRenderBackend();
         ASSERT_NE(nullptr, mainRenderBackend);
         EXPECT_TRUE(mainRenderBackend->getContext().disable());
@@ -347,6 +383,9 @@ namespace ramses::internal
 
     TEST_F(APlatform, EnableContextInMainThreadDoesNotBlockResourceUploadInOtherThread)
     {
+        if (dispConfig.getDeviceType() == EDeviceType::Vulkan)
+            GTEST_SKIP() << "Test does not support device type vulkan";
+
         IRenderBackend* mainRenderBackend = createRenderBackend();
         ASSERT_NE(nullptr, mainRenderBackend);
         EXPECT_TRUE(mainRenderBackend->getContext().disable());
@@ -391,6 +430,9 @@ namespace ramses::internal
 
     TEST_F(APlatform, CanUploadResourceInOneRenderBackendAndUseItInDifferentOneInDifferentThreads)
     {
+        if (dispConfig.getDeviceType() == EDeviceType::Vulkan)
+            GTEST_SKIP() << "Test does not support device type vulkan";
+
         IRenderBackend* mainRenderBackend = createRenderBackend();
         ASSERT_NE(nullptr, mainRenderBackend);
         EXPECT_TRUE(mainRenderBackend->getContext().disable());
@@ -435,6 +477,9 @@ namespace ramses::internal
 
     TEST_F(APlatform, CanUploadResourceInOneRenderBackendAndUseItInDifferentOneInDifferentThreads_AfterResourceUploadRenderBackendDestroyed)
     {
+        if (dispConfig.getDeviceType() == EDeviceType::Vulkan)
+            GTEST_SKIP() << "Test does not support device type vulkan";
+
         IRenderBackend* mainRenderBackend = createRenderBackend();
         ASSERT_NE(nullptr, mainRenderBackend);
         EXPECT_TRUE(mainRenderBackend->getContext().disable());

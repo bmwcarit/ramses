@@ -161,6 +161,8 @@ namespace ramses::internal
                 return "TextureSamplerCube";
             case ramses::EDataType::TextureSamplerExternal:
                 return "TextureSamplerExternal";
+            case ramses::EDataType::UniformBuffer:
+                return "UniformBuffer";
             }
             return nullptr;
         }
@@ -1460,6 +1462,7 @@ namespace ramses::internal
         case ramses::EDataType::Matrix33F:
         case ramses::EDataType::Matrix44F:
         case ramses::EDataType::ByteBlob:
+        case ramses::EDataType::UniformBuffer:
             ImGui::Text("tbd. %s", EnumToString(uniform.impl().getInternalDataType()));
             break;
         }

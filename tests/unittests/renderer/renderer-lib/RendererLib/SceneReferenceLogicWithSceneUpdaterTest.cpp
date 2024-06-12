@@ -41,7 +41,7 @@ namespace ramses::internal
             , m_expirationMonitor(m_scenes, m_eventCollector, m_rendererStatistics)
             , m_renderer(DisplayId, m_scenes, m_eventCollector, m_expirationMonitor, m_rendererStatistics)
             , m_sceneStateExecutor(m_renderer, m_sceneEventSenderFromSceneUpdater, m_eventCollector)
-            , m_sceneUpdater(DisplayId, m_platform, m_renderer, m_scenes, m_sceneStateExecutor, m_eventCollector, m_frameTimer, m_expirationMonitor, m_notifier)
+            , m_sceneUpdater(DisplayId, m_platform, m_renderer, m_scenes, m_sceneStateExecutor, m_eventCollector, m_frameTimer, m_expirationMonitor, m_notifier, EFeatureLevel_Latest)
             , m_sceneLogic(m_sceneUpdater)
             , m_sceneRefLogic(m_scenes, m_sceneLogic, m_sceneUpdater, m_sceneEventSenderFromSceneRefLogic, m_sceneRefOwnership)
         {
@@ -78,7 +78,7 @@ namespace ramses::internal
         void flushScene(SceneId sceneId)
         {
             SceneUpdate sceneUpdate;
-            SceneActionCollectionCreator creator(sceneUpdate.actions);
+            SceneActionCollectionCreator creator(sceneUpdate.actions, EFeatureLevel_Latest);
             sceneUpdate.flushInfos.flushCounter = 1u;
             sceneUpdate.flushInfos.containsValidInformation = true;
             m_sceneUpdater.handleSceneUpdate(sceneId, std::move(sceneUpdate));
@@ -87,7 +87,7 @@ namespace ramses::internal
         void flushSceneWithRefSceneStateRequest(SceneId sceneId, SceneReferenceHandle refSceneHandle, RendererSceneState refSceneState)
         {
             SceneUpdate sceneUpdate;
-            SceneActionCollectionCreator creator(sceneUpdate.actions);
+            SceneActionCollectionCreator creator(sceneUpdate.actions, EFeatureLevel_Latest);
             creator.requestSceneReferenceState(refSceneHandle, refSceneState);
             sceneUpdate.flushInfos.flushCounter = 1u;
             sceneUpdate.flushInfos.containsValidInformation = true;

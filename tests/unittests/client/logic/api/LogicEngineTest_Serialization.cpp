@@ -150,10 +150,7 @@ namespace ramses::internal
         }
     };
 
-    INSTANTIATE_TEST_SUITE_P(
-        ALogicEngine_SerializationTests,
-        ALogicEngine_Serialization,
-        GetFeatureLevelTestValues());
+    RAMSES_INSTANTIATE_LATEST_FEATURELEVEL_ONLY_TEST_SUITE(ALogicEngine_Serialization);
 
     TEST_P(ALogicEngine_Serialization, ProducesErrorWhenProvidingAFolderAsTargetForSaving)
     {

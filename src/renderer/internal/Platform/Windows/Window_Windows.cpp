@@ -8,7 +8,7 @@
 
 #include "internal/Platform/Windows/Window_Windows.h"
 #include "internal/RendererLib/PlatformInterface/IWindowEventHandler.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "internal/RendererLib/Enums/EKeyModifier.h"
 #include "internal/Core/Utils/LogMacros.h"
 #include "internal/PlatformAbstraction/Collections/Guid.h"
@@ -145,7 +145,7 @@ namespace ramses::internal
         return (TrackMouseEvent(&tme) == TRUE);
     }
 
-    Window_Windows::Window_Windows(const DisplayConfig& displayConfig, IWindowEventHandler& eventHandler, uint32_t id)
+    Window_Windows::Window_Windows(const DisplayConfigData& displayConfig, IWindowEventHandler& eventHandler, uint32_t id)
         : Window_Base(displayConfig, eventHandler, id)
         , m_displayHandle(0)
         , m_windowHandle(WindowsWindowHandleToHWND(displayConfig.getWindowsWindowHandle()))
@@ -235,7 +235,7 @@ namespace ramses::internal
         {
             m_windowHandle = CreateWindowExA(m_windowEXStyle,
                                              m_windowClass.lpszClassName,
-                                             m_classname.c_str(),
+                                             getTitle().c_str(),
                                              m_windowStyle,
                                              windowRect.left,
                                              windowRect.top,
@@ -318,6 +318,11 @@ namespace ramses::internal
     HWND Window_Windows::getNativeWindowHandle()
     {
         return m_windowHandle;
+    }
+
+    HINSTANCE Window_Windows::getModuleHandle()
+    {
+        return m_windowClass.hInstance;
     }
 
     bool Window_Windows::setFullscreen(bool fullscreen)

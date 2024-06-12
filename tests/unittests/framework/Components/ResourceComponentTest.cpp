@@ -125,7 +125,7 @@ namespace ramses::internal
         std::vector<std::vector<std::byte>> serializeResources(const ManagedResourceVector& resVec, uint32_t chunkSize = 100000)
         {
             SceneUpdate update{SceneActionCollection(), resVec, {}};
-            return TestSerializeSceneUpdateToVectorChunked(SceneUpdateSerializer(update, sceneStatistics), chunkSize);
+            return TestSerializeSceneUpdateToVectorChunked(SceneUpdateSerializer(update, sceneStatistics, EFeatureLevel_Latest), chunkSize);
         }
 
     protected:
@@ -141,7 +141,7 @@ namespace ramses::internal
     {
     public:
         AResourceComponentTest()
-            : localResourceComponent(statistics, frameworkLock)
+            : localResourceComponent(statistics, frameworkLock, EFeatureLevel_Latest)
         {}
 
         ResourceComponent& getResourceComponent() override
@@ -177,7 +177,7 @@ namespace ramses::internal
     {
     public:
         AResourceComponentWithThreadedTaskExecutorTest()
-            : localResourceComponent(statistics, frameworkLock)
+            : localResourceComponent(statistics, frameworkLock, EFeatureLevel_Latest)
         {}
 
         ResourceComponent& getResourceComponent() override

@@ -53,7 +53,7 @@ namespace ramses
         *
         * @return true on success, false if an error occurred (error is logged)
         */
-        bool enableSystemCompositorControl();
+        [[deprecated]] bool enableSystemCompositorControl();
 
         /**
          * @brief      Set the maximum time to wait for the system compositor frame callback
@@ -76,14 +76,14 @@ namespace ramses
         * @param[in] waylandDisplay Wayland display name to use for connection
         * @return true on success, false if an error occurred (error is logged)
         */
-        bool setSystemCompositorWaylandDisplay(std::string_view waylandDisplay);
+        [[deprecated]] bool setSystemCompositorWaylandDisplay(std::string_view waylandDisplay);
 
         /**
         * @brief Get the current setting of Wayland display name
         *
         * @return Wayland display name to use for connection, empty means default
         */
-        [[nodiscard]] std::string_view getSystemCompositorWaylandDisplay() const;
+        [[deprecated]] [[nodiscard]] std::string_view getSystemCompositorWaylandDisplay() const;
 
         /**
         * @brief   Set the desired reporting period for first display loop timings.

@@ -38,18 +38,20 @@ namespace ramses::internal
         initFinalRenderPass(state);
     }
 
-    const ramses::Effect& MultipleRenderTargetScene::getMRTEffect(uint32_t state)
+    const ramses::Effect& MultipleRenderTargetScene::getMRTEffect(uint32_t state, TriangleAppearance::EColor& color)
     {
         switch (state)
         {
         case TWO_COLOR_BUFFERS:
         case TWO_COLOR_BUFFERS_RGBA8_AND_RGBA4:
         case SHADER_WRITES_TWO_COLOR_BUFFERS_RT_HAS_ONE:
+            color = TriangleAppearance::EColor::None;
             return getEffectRenderTwoBuffers();
         case SHADER_WRITES_ONE_COLOR_BUFFER_RT_HAS_TWO:
         case COLOR_WRITTEN_BY_TWO_DIFFERENT_RTS:
         case DEPTH_WRITTEN_AND_USED_BY_DIFFERENT_RT:
         case DEPTH_WRITTEN_AND_READ:
+            color = TriangleAppearance::EColor::Red;
             return getEffectRenderOneBuffer();
         default:
             assert(false);
@@ -164,7 +166,9 @@ namespace ramses::internal
 
     void MultipleRenderTargetScene::initMRTPass(uint32_t state)
     {
-        ramses::MeshNode& meshNode = createMesh(getMRTEffect(state));
+        TriangleAppearance::EColor color = TriangleAppearance::EColor::None;
+        const auto& effect = getMRTEffect(state, color);
+        ramses::MeshNode& meshNode = createMesh(effect, color);
 
         ramses::Node& transNode = *m_scene.createNode();
         transNode.addChild(meshNode);
@@ -194,7 +198,7 @@ namespace ramses::internal
             camera.setViewport(0u, 0u, 8u, 16u);
             camera.setFrustum(camera.getLeftPlane() * 0.5f, camera.getRightPlane() * 0.5f, camera.getBottomPlane(), camera.getTopPlane(), camera.getNearPlane(), camera.getFarPlane());
 
-            ramses::MeshNode& meshNode2 = createMesh(getMRTEffect(state), TriangleAppearance::EColor_Blue);
+            ramses::MeshNode& meshNode2 = createMesh(getMRTEffect(state, color), TriangleAppearance::EColor::Blue);
             transNode.addChild(meshNode2);
 
             meshNode2.getAppearance()->setDepthFunction(ramses::EDepthFunc::NotEqual);

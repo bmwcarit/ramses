@@ -76,6 +76,14 @@ namespace ramses
         [[nodiscard]] EWindowType getWindowType() const;
 
         /**
+        * @brief Sets the window title
+        *
+        * @param[in] windowTitle window title.
+        * @return true on success, false if an error occurred (error is logged)
+        */
+        bool setWindowTitle(std::string_view windowTitle);
+
+        /**
         * @brief Sets the window size and position in display pixel space.
         * This is ignored if window is set fullscreen.
         *

@@ -45,6 +45,9 @@ namespace ramses::internal
         effectDesc.setUniformSemantic("modelMatrix", ramses::EEffectUniformSemantic::ModelMatrix);
         effectDesc.setUniformSemantic("cameraPosition", ramses::EEffectUniformSemantic::CameraWorldPosition);
         effectDesc.setUniformSemantic("u_customTexture", ramses::EEffectUniformSemantic::TextTexture);
+        effectDesc.setUniformSemantic("modelUbo", ramses::EEffectUniformSemantic::ModelBlock);
+        effectDesc.setUniformSemantic("cameraUbo", ramses::EEffectUniformSemantic::CameraBlock);
+        effectDesc.setUniformSemantic("modelCameraUbo", ramses::EEffectUniformSemantic::ModelCameraBlock);
         effectDesc.setAttributeSemantic("a_customPosition", ramses::EEffectAttributeSemantic::TextPositions);
         effectDesc.setAttributeSemantic("a_customTexCoord", ramses::EEffectAttributeSemantic::TextTextureCoordinates);
 

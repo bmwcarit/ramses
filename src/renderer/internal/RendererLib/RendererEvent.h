@@ -18,7 +18,7 @@
 #include "internal/RendererLib/Enums/EKeyEvent.h"
 #include "internal/RendererLib/Enums/EKeyCode.h"
 #include "internal/RendererLib/Enums/EKeyModifier.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "internal/Core/Utils/LoggingUtils.h"
 #include <chrono>
 
@@ -194,7 +194,7 @@ namespace ramses::internal
         SceneId                     sceneId;
         RendererSceneState          state = RendererSceneState::Unavailable;
         DisplayHandle               displayHandle;
-        DisplayConfig               displayConfig;
+        DisplayConfigData           displayConfig;
         std::vector<uint8_t>        pixelData;
         SceneId                     providerSceneId;
         SceneId                     consumerSceneId;

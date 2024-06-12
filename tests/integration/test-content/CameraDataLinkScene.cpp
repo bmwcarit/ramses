@@ -38,8 +38,8 @@ namespace ramses::internal
     void CameraDataLinkScene::setUpConsumerScene()
     {
         ramses::Effect* effect = getTestEffect("ramses-test-client-basic");
-        Triangle triangle1(m_scene, *effect, TriangleAppearance::EColor_Red);
-        Triangle triangle2(m_scene, *effect, TriangleAppearance::EColor_Green);
+        Triangle triangle1(m_scene, *effect, TriangleAppearance::EColor::Red);
+        Triangle triangle2(m_scene, *effect, TriangleAppearance::EColor::Green);
 
         ramses::MeshNode* mesh1 = m_scene.createMeshNode();
         ramses::MeshNode* mesh2 = m_scene.createMeshNode();

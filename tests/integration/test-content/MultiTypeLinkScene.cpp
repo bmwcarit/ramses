@@ -26,8 +26,8 @@ namespace ramses::internal
     {
         ramses::Effect* effect = getTestEffect("ramses-test-client-basic");
         ramses::Effect* effectTex = getTestEffect("ramses-test-client-textured");
-        Triangle triangle1(scene, *effect, TriangleAppearance::EColor_Blue);
-        Triangle triangle2(scene, *effectTex, TriangleAppearance::EColor_Green);
+        Triangle triangle1(scene, *effect, TriangleAppearance::EColor::Blue);
+        Triangle triangle2(scene, *effectTex, TriangleAppearance::EColor::None);
 
         ramses::DataObject* colorData = scene.createDataObject(ramses::EDataType::Vector4F);
 

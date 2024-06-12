@@ -12,6 +12,7 @@
 #include "internal/RendererLib/RendererResourceRegistry.h"
 #include "internal/RendererLib/RendererSceneResourceRegistry.h"
 #include "internal/RendererLib/ResourceUploadingManager.h"
+#include "internal/RendererLib/SemanticUniformBufferHandle.h"
 #include "internal/PlatformAbstraction/Collections/HashMap.h"
 #include "internal/PlatformAbstraction/Collections/Vector.h"
 #include "internal/Core/Utils/MemoryPool.h"
@@ -26,7 +27,7 @@ namespace ramses::internal
     class RendererStatistics;
     class IBinaryShaderCache;
     class IResourceUploader;
-    class DisplayConfig;
+    class DisplayConfigData;
 
     class RendererResourceManager final : public IRendererResourceManager
     {
@@ -34,9 +35,9 @@ namespace ramses::internal
         RendererResourceManager(
             IRenderBackend& renderBackend,
             std::unique_ptr<IResourceUploader> resourceUploader,
-            AsyncEffectUploader& asyncEffectUploader,
+            AsyncEffectUploader* asyncEffectUploader,
             IEmbeddedCompositingManager& embeddedCompositingManager,
-            const DisplayConfig& displayConfig,
+            const DisplayConfigData& displayConfig,
             const FrameTimer& frameTimer,
             RendererStatistics& stats);
         ~RendererResourceManager() override;
@@ -91,6 +92,16 @@ namespace ramses::internal
         void                 uploadVertexArray(RenderableHandle renderableHandle, const VertexArrayInfo& vertexArrayInfo, SceneId sceneId) override;
         void                 unloadVertexArray(RenderableHandle renderableHandle, SceneId sceneId) override;
         [[nodiscard]] DeviceResourceHandle getVertexArrayDeviceHandle(RenderableHandle renderableHandle, SceneId sceneId) const override;
+
+        void                 uploadUniformBuffer(UniformBufferHandle uniformBufferHandle, uint32_t size, SceneId sceneId) override;
+        void                 unloadUniformBuffer(UniformBufferHandle uniformBufferHandle, SceneId sceneId) override;
+        void                 updateUniformBuffer(UniformBufferHandle uniformBufferHandle, uint32_t dataSize, const std::byte* data, SceneId sceneId) override;
+        [[nodiscard]] DeviceResourceHandle getUniformBufferDeviceHandle(UniformBufferHandle uniformBufferHandle, SceneId sceneId) const override;
+
+        DeviceResourceHandle uploadUniformBuffer(SemanticUniformBufferHandle handle, uint32_t size, SceneId sceneId) override;
+        void                 unloadUniformBuffer(SemanticUniformBufferHandle handle, SceneId sceneId) override;
+        void                 updateUniformBuffer(SemanticUniformBufferHandle handle, uint32_t size, const std::byte* data, SceneId sceneId) override;
+        [[nodiscard]] DeviceResourceHandle getUniformBufferDeviceHandle(SemanticUniformBufferHandle handle, SceneId sceneId) const override;
 
         void                 unloadAllSceneResourcesForScene(SceneId sceneId) override;
         void                 unreferenceAllResourcesForScene(SceneId sceneId) override;

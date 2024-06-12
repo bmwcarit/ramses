@@ -27,7 +27,7 @@ namespace ramses::internal {
         const SceneId sceneId{ 12u };
         const SceneInfo sceneInfo{ sceneId, "testScene" };
         const DisplayHandle displayHandle{ 1u };
-        const DisplayConfig displayConfig{};
+        const DisplayConfigData displayConfig{};
         const OffscreenBufferHandle obHandle{ 6u };
         const SceneId providerSceneId{};
         const SceneId consumerSceneId{};
@@ -70,7 +70,7 @@ namespace ramses::internal {
     void ARendererCommandBuffer::expectFilledBufferVisits()
     {
         InSequence seq;
-        EXPECT_CALL(visitor, handleScenePublished(sceneId, EScenePublicationMode::LocalAndRemote));
+        EXPECT_CALL(visitor, handleScenePublished(sceneId, EScenePublicationMode::LocalAndRemote, ERenderBackendCompatibility::OpenGL, EVulkanAPIVersion::Invalid, ESPIRVVersion::Invalid));
         EXPECT_CALL(visitor, handleSceneUnpublished(sceneId));
         EXPECT_CALL(visitor, handleSceneReceived(sceneInfo));
         EXPECT_CALL(visitor, setSceneState(sceneId, RendererSceneState::Rendered));
@@ -226,7 +226,7 @@ namespace ramses::internal {
             Sequence s2;
             Sequence s3;
             Sequence s4;
-            EXPECT_CALL(visitor, handleScenePublished(sceneId, EScenePublicationMode::LocalAndRemote)).InSequence(s1);
+            EXPECT_CALL(visitor, handleScenePublished(sceneId, EScenePublicationMode::LocalAndRemote, ERenderBackendCompatibility::OpenGL, EVulkanAPIVersion::Invalid, ESPIRVVersion::Invalid)).InSequence(s1);
             EXPECT_CALL(visitor, handleSceneUnpublished(sceneId)).InSequence(s1);
             EXPECT_CALL(visitor, handleSceneReceived(sceneInfo)).InSequence(s2);
             EXPECT_CALL(visitor, setSceneState(sceneId, RendererSceneState::Rendered)).InSequence(s2);

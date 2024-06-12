@@ -32,7 +32,7 @@ namespace ramses::internal
             std::unique_ptr<ResourceBase> res;
             if (hash == EffectHash)
             {
-                res = std::make_unique<EffectResource>("", "", "", std::optional<EDrawMode>{}, EffectInputInformationVector(), EffectInputInformationVector(), "");
+                res = std::make_unique<EffectResource>("", "", "", SPIRVShaders{}, std::optional<EDrawMode>{}, EffectInputInformationVector(), EffectInputInformationVector(), "", EFeatureLevel_Latest);
             }
             else if (hash == VertArrayHash || hash == VertArrayHash2)
             {

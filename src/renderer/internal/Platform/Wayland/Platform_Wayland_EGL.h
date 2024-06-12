@@ -16,16 +16,16 @@ namespace ramses::internal
     class Platform_Wayland_EGL : public Platform_EGL<Window_Wayland>
     {
     protected:
-        explicit Platform_Wayland_EGL(const RendererConfig& rendererConfig);
+        explicit Platform_Wayland_EGL(const RendererConfigData& rendererConfig);
         ~Platform_Wayland_EGL() override;
 
-        bool createEmbeddedCompositor(const DisplayConfig& displayConfig) override;
-        void createTextureUploadingAdapter(const DisplayConfig& displayConfig) override;
+        bool createEmbeddedCompositor(const DisplayConfigData& displayConfig) override;
+        void createTextureUploadingAdapter(const DisplayConfigData& displayConfig) override;
 
         [[nodiscard]] uint32_t getSwapInterval() const override;
 
         //TODO Mohamed: remove use of EC dummy as soon as it is possible to create multiple displays on wayland
-        [[nodiscard]] static bool IsCreatingWaylandEmbeddedCompositorRequired(const DisplayConfig& displayConfig);
+        [[nodiscard]] static bool IsCreatingWaylandEmbeddedCompositorRequired(const DisplayConfigData& displayConfig);
 
         const std::chrono::microseconds m_frameCallbackMaxPollTime;
     };

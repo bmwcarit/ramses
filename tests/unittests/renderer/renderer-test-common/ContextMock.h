@@ -27,6 +27,6 @@ namespace ramses::internal
         MOCK_METHOD(bool,  disable, (), (override));
 
         MOCK_METHOD(DeviceResourceMapper&, getResources, (), (override));
-        MOCK_METHOD(void*, getProcAddress, (const char*), (const, override));
+        MOCK_METHOD(GlProcLoadFunc, getGlProcLoadFunc, (), (const, override));
     };
 }

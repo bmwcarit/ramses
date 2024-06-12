@@ -57,31 +57,87 @@ ramses::Appearance* createTestAppearance(ramses::Scene& scene)
     return scene.createAppearance(*scene.createEffect(effectDesc), "test appearance");
 }
 
-void createTriangle(ramses::Scene& scene)
+void createTriangle(ramses::Scene& scene, ramses::EFeatureLevel featureLevel)
 {
-    const std::string_view vertShader = R"(
-                #version 100
+    const std::string_view vertShader_FL01 = R"(
+                #version 310 es
+                precision highp float;
 
                 uniform highp mat4 mvpMatrix;
-                attribute vec3 a_position;
+                in vec3 a_position;
 
                 void main()
                 {
                     gl_Position = mvpMatrix * vec4(a_position, 1.0);
                 })";
 
-    const std::string_view fragShader = R"(
-                #version 100
+    const std::string_view vertShader_FL02 = R"(
+                #version 310 es
+                precision highp float;
+
+                layout(std140,binding=0) uniform modelCameraBlock_t
+                {
+                    mat4 mvpMat;
+                    mat4 mvMat;
+                    mat4 normalMat;
+                } modelCameraBlock;
+
+                in vec3 a_position;
+
+                void main()
+                {
+                    gl_Position = modelCameraBlock.mvpMat * vec4(a_position, 1.0);
+                })";
+
+    const std::string_view fragShader_FL01 = R"(
+                #version 310 es
+                precision highp float;
+
+                struct ColorPair{ float c1; float c2; };
+                struct colorBlock_t
+                {
+                    ColorPair color[2];
+                };
+                uniform colorBlock_t colorBlock;
+
+                out vec4 fragColor;
 
                 void main(void)
                 {
-                    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+                    fragColor = vec4(colorBlock.color[0].c1, colorBlock.color[0].c2, colorBlock.color[1].c1, colorBlock.color[1].c2);
+                })";
+
+    const std::string_view fragShader_FL02 = R"(
+                #version 310 es
+                precision highp float;
+
+                struct ColorPair{ float c1; float c2; };
+                layout(std140,binding=1) uniform colorBlock_t
+                {
+                    ColorPair color[2];
+                } colorBlock;
+
+                out vec4 fragColor;
+
+                void main(void)
+                {
+                    fragColor = vec4(colorBlock.color[0].c1, colorBlock.color[0].c2, colorBlock.color[1].c1, colorBlock.color[1].c2);
                 })";
 
     ramses::EffectDescription effectDesc;
-    effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
-    effectDesc.setVertexShader(vertShader.data());
-    effectDesc.setFragmentShader(fragShader.data());
+    switch (featureLevel)
+    {
+    case ramses::EFeatureLevel_01:
+        effectDesc.setUniformSemantic("mvpMatrix", ramses::EEffectUniformSemantic::ModelViewProjectionMatrix);
+        effectDesc.setVertexShader(vertShader_FL01.data());
+        effectDesc.setFragmentShader(fragShader_FL01.data());
+        break;
+    case ramses::EFeatureLevel_02:
+        effectDesc.setUniformSemantic("modelCameraBlock", ramses::EEffectUniformSemantic::ModelCameraBlock);
+        effectDesc.setVertexShader(vertShader_FL02.data());
+        effectDesc.setFragmentShader(fragShader_FL02.data());
+        break;
+    }
     auto effect = scene.createEffect(effectDesc);
     auto appearance = scene.createAppearance(*effect, "triangle appearance");
 
@@ -145,6 +201,14 @@ void createTriangleLogic(ramses::LogicEngine& logic, ramses::Scene& scene)
     intf->getInputs()->getChild("CraneGimbal")->getChild("Pitch")->set(0.f);
     intf->getInputs()->getChild("Viewport")->getChild("Width")->set(1280);
     intf->getInputs()->getChild("Viewport")->getChild("Height")->set(480);
+
+    // no links, only set UBO values via binding
+    auto appearance = scene.findObject<ramses::Appearance>("triangle appearance");
+    auto appearanceBinding = logic.createAppearanceBinding(*appearance, "triangle appearance binding");
+    appearanceBinding->getInputs()->getChild("colorBlock.color[0].c1")->set(1.f);
+    appearanceBinding->getInputs()->getChild("colorBlock.color[0].c2")->set(0.1f);
+    appearanceBinding->getInputs()->getChild("colorBlock.color[1].c1")->set(0.2f);
+    appearanceBinding->getInputs()->getChild("colorBlock.color[1].c2")->set(1.f);
 }
 
 int main(int argc, char* argv[])
@@ -152,29 +216,43 @@ int main(int argc, char* argv[])
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic) bounds are checked
     const std::vector<const char*> args(argv, argv + argc);
 
-    constexpr ramses::EFeatureLevel featureLevel = ramses::EFeatureLevel_Latest;
 
+    ramses::EFeatureLevel featureLevel = ramses::EFeatureLevel_Latest;
     std::string basePath {"."};
     std::string ramsesFilename = std::string("testScene_0") + std::to_string(featureLevel) + ".ramses";
 
-    if (args.size() == 2u)
-    {
+    if (args.size() >= 2u)
         basePath = args[1];
-    }
-    else if (args.size() == 3u)
-    {
-        basePath = args[1];
+
+    if (args.size() >= 3u)
         ramsesFilename = args[2];
+
+    if (args.size() == 4u)
+    {
+        auto featureLevelAsInt = std::stoi(args[3]);
+        switch (featureLevelAsInt)
+        {
+        case 1:
+            featureLevel = ramses::EFeatureLevel_01;
+            break;
+        case 2:
+            featureLevel = ramses::EFeatureLevel_02;
+            break;
+        default:
+            std::cerr << "Invalid feature level.\n\n";
+            return 1;
+        }
     }
 
-    if (args.size() > 3u)
+    if (args.size() > 4u)
     {
         std::cerr
             << "Generator of ramses and ramses logic test content.\n\n"
             << "Synopsis:\n"
             << "  test-asset-producer\n"
             << "  test-asset-producer <basePath>\n"
-            << "  test-asset-producer <basePath> <ramsesFileName>\n\n";
+            << "  test-asset-producer <basePath> <ramsesFileName>\n\n"
+            << "  test-asset-producer <basePath> <ramsesFileName> <featureLevel>\n\n";
         return 1;
     }
 
@@ -296,7 +374,7 @@ int main(int argc, char* argv[])
     auto renderBuffer = scene->createRenderBuffer(16u, 16u, ramses::ERenderBufferFormat::RGBA8, ramses::ERenderBufferAccessMode::ReadWrite, 0u, "renderBuffer");
 
     // create triangle that can actually be visible when rendered
-    createTriangle(*scene);
+    createTriangle(*scene, featureLevel);
     createTriangleLogic(logicEngine, *scene);
 
     ramses::NodeBinding* nodeBinding = logicEngine.createNodeBinding(*node, ramses::ERotationType::Euler_XYZ, "nodebinding");
@@ -346,13 +424,15 @@ int main(int argc, char* argv[])
     if (report.hasIssue())
     {
         for (const auto& issue : report.getIssues())
-            std::cout << (issue.type == ramses::EIssueType::Error ? "ERROR: " : "Warn: ") << issue.message << std::endl;
+            std::cout << (issue.type == ramses::EIssueType::Error ? "ERROR: " : "Warn: ") << (issue.object ? issue.object->getName() : "") << ": " << issue.message << std::endl;
     }
 
     ramses::SaveFileConfig saveConfig;
     saveConfig.setMetadataString("test-asset-producer");
     const auto filePath = basePath + "/" + ramsesFilename;
+    std::cout << "==============================================" << std::endl;
     std::cout << "Saving to " << filePath << std::endl;
+    std::cout << "==============================================" << std::endl;
     if (!scene->saveToFile(filePath, saveConfig))
         return EXIT_FAILURE;
 

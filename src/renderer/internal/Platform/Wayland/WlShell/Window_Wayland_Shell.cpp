@@ -11,7 +11,7 @@
 
 namespace ramses::internal
 {
-    Window_Wayland_Shell::Window_Wayland_Shell(const DisplayConfig& displayConfig,
+    Window_Wayland_Shell::Window_Wayland_Shell(const DisplayConfigData& displayConfig,
                                                IWindowEventHandler& windowEventHandler,
                                                uint32_t               id,
                                                std::chrono::microseconds frameCallbackMaxPollTime)

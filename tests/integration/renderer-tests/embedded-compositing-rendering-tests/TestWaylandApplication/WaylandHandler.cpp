@@ -10,7 +10,7 @@
 #include "SHMBuffer.h"
 #include "internal/Core/Utils/LogMacros.h"
 #include "internal/Platform/Wayland/WaylandEnvironmentUtils.h"
-#include <GLES3/gl3.h>
+#include "internal/Platform/OpenGL/Device_GL_platform.h"
 #include <cassert>
 
 namespace ramses::internal
@@ -511,6 +511,11 @@ namespace ramses::internal
             LOG_ERROR(CONTEXT_RENDERER, "WaylandHandler::createEGLWindow eglCreateContext failed !");
             return false;
         }
+
+        eglMakeCurrent(egldisplay, window.eglsurface, window.eglsurface, window.eglcontext);
+        auto version = gladLoadGLES2(eglGetProcAddress);
+        LOG_INFO(CONTEXT_RENDERER, "WaylandHandler::gladLoadGLES2 version {}", version);
+        eglMakeCurrent(egldisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 
         return true;
     }

@@ -12,7 +12,7 @@
 namespace ramses::internal
 {
     ResourceChangeCollectingScene::ResourceChangeCollectingScene(const SceneInfo& sceneInfo)
-        : TransformationCachedScene(sceneInfo)
+        : BaseT(sceneInfo)
     {
     }
 
@@ -36,14 +36,14 @@ namespace ramses::internal
     void ResourceChangeCollectingScene::releaseRenderable(RenderableHandle renderableHandle)
     {
         m_resourcesChanged = true;
-        TransformationCachedScene::releaseRenderable(renderableHandle);
+        BaseT::releaseRenderable(renderableHandle);
 
     }
 
     void ResourceChangeCollectingScene::setRenderableDataInstance(RenderableHandle renderableHandle, ERenderableDataSlotType slot, DataInstanceHandle newDataInstance)
     {
         m_resourcesChanged = true;
-        TransformationCachedScene::setRenderableDataInstance(renderableHandle, slot, newDataInstance);
+        BaseT::setRenderableDataInstance(renderableHandle, slot, newDataInstance);
     }
 
     void ResourceChangeCollectingScene::setRenderableVisibility(RenderableHandle renderableHandle, EVisibilityMode visibility)
@@ -52,19 +52,19 @@ namespace ramses::internal
         if (oldVisibility != visibility && (oldVisibility == EVisibilityMode::Off || visibility == EVisibilityMode::Off))
             m_resourcesChanged = true;
 
-        TransformationCachedScene::setRenderableVisibility(renderableHandle, visibility);
+        BaseT::setRenderableVisibility(renderableHandle, visibility);
     }
 
     void ResourceChangeCollectingScene::setDataResource(DataInstanceHandle dataInstanceHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, uint32_t instancingDivisor, uint16_t offsetWithinElementInBytes, uint16_t stride)
     {
         m_resourcesChanged = true;
-        TransformationCachedScene::setDataResource(dataInstanceHandle, field, hash, dataBuffer, instancingDivisor, offsetWithinElementInBytes, stride);
+        BaseT::setDataResource(dataInstanceHandle, field, hash, dataBuffer, instancingDivisor, offsetWithinElementInBytes, stride);
     }
 
     void ResourceChangeCollectingScene::setDataTextureSamplerHandle(DataInstanceHandle containerHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle)
     {
         m_resourcesChanged = true;
-        TransformationCachedScene::setDataTextureSamplerHandle(containerHandle, field, samplerHandle);
+        BaseT::setDataTextureSamplerHandle(containerHandle, field, samplerHandle);
     }
 
     TextureSamplerHandle ResourceChangeCollectingScene::allocateTextureSampler(const TextureSampler& sampler, TextureSamplerHandle handle /*= TextureSamplerHandle::Invalid()*/)
@@ -72,7 +72,7 @@ namespace ramses::internal
         if (sampler.textureResource.isValid())
             m_resourcesChanged = true;
 
-        return TransformationCachedScene::allocateTextureSampler(sampler, handle);
+        return BaseT::allocateTextureSampler(sampler, handle);
     }
 
     void ResourceChangeCollectingScene::releaseTextureSampler(TextureSamplerHandle handle)
@@ -80,20 +80,20 @@ namespace ramses::internal
         if (getTextureSampler(handle).textureResource.isValid())
             m_resourcesChanged = true;
 
-        TransformationCachedScene::releaseTextureSampler(handle);
+        BaseT::releaseTextureSampler(handle);
     }
 
     DataSlotHandle ResourceChangeCollectingScene::allocateDataSlot(const DataSlot& dataSlot, DataSlotHandle handle /*= DataSlotHandle::Invalid()*/)
     {
         if (dataSlot.attachedTexture.isValid())
             m_resourcesChanged = true;
-        return TransformationCachedScene::allocateDataSlot(dataSlot, handle);
+        return BaseT::allocateDataSlot(dataSlot, handle);
     }
 
     void ResourceChangeCollectingScene::setDataSlotTexture(DataSlotHandle providerHandle, const ResourceContentHash& texture)
     {
         m_resourcesChanged = true;
-        TransformationCachedScene::setDataSlotTexture(providerHandle, texture);
+        BaseT::setDataSlotTexture(providerHandle, texture);
     }
 
     void ResourceChangeCollectingScene::releaseDataSlot(DataSlotHandle handle)
@@ -102,90 +102,109 @@ namespace ramses::internal
         if (textureHash.isValid())
             m_resourcesChanged = true;
 
-        TransformationCachedScene::releaseDataSlot(handle);
+        BaseT::releaseDataSlot(handle);
+    }
+
+    UniformBufferHandle ResourceChangeCollectingScene::allocateUniformBuffer(uint32_t size, UniformBufferHandle handle)
+    {
+        const auto newHandle = BaseT::allocateUniformBuffer(size, handle);
+        m_sceneResourceActions.push_back({ newHandle.asMemoryHandle(), ESceneResourceAction_CreateUniformBuffer });
+        return newHandle;
+    }
+
+    void ResourceChangeCollectingScene::releaseUniformBuffer(UniformBufferHandle handle)
+    {
+        BaseT::releaseUniformBuffer(handle);
+        m_sceneResourceActions.push_back({ handle.asMemoryHandle(), ESceneResourceAction_DestroyUniformBuffer });
+    }
+
+    void ResourceChangeCollectingScene::updateUniformBuffer(UniformBufferHandle handle, uint32_t offset, uint32_t size, const std::byte* data)
+    {
+        BaseT::updateUniformBuffer(handle, offset, size, data);
+        m_sceneResourceActions.push_back({ handle.asMemoryHandle(), ESceneResourceAction_UpdateUniformBuffer });
     }
 
     RenderTargetHandle ResourceChangeCollectingScene::allocateRenderTarget(RenderTargetHandle handle)
     {
-        const RenderTargetHandle newHandle = TransformationCachedScene::allocateRenderTarget(handle);
+        const RenderTargetHandle newHandle = BaseT::allocateRenderTarget(handle);
         m_sceneResourceActions.push_back({ newHandle.asMemoryHandle(), ESceneResourceAction_CreateRenderTarget });
         return newHandle;
     }
 
     void ResourceChangeCollectingScene::releaseRenderTarget(RenderTargetHandle handle)
     {
-        TransformationCachedScene::releaseRenderTarget(handle);
+        BaseT::releaseRenderTarget(handle);
         m_sceneResourceActions.push_back({ handle.asMemoryHandle(), ESceneResourceAction_DestroyRenderTarget });
     }
 
     RenderBufferHandle ResourceChangeCollectingScene::allocateRenderBuffer(const RenderBuffer& renderBuffer, RenderBufferHandle handle)
     {
-        const RenderBufferHandle newHandle = TransformationCachedScene::allocateRenderBuffer(renderBuffer, handle);
+        const RenderBufferHandle newHandle = BaseT::allocateRenderBuffer(renderBuffer, handle);
         m_sceneResourceActions.push_back({ newHandle.asMemoryHandle(), ESceneResourceAction_CreateRenderBuffer });
         return newHandle;
     }
 
     void ResourceChangeCollectingScene::releaseRenderBuffer(RenderBufferHandle handle)
     {
-        TransformationCachedScene::releaseRenderBuffer(handle);
+        BaseT::releaseRenderBuffer(handle);
         m_sceneResourceActions.push_back({ handle.asMemoryHandle(), ESceneResourceAction_DestroyRenderBuffer });
     }
 
     void ResourceChangeCollectingScene::setRenderBufferProperties(RenderBufferHandle handle, uint32_t width, uint32_t height, uint32_t sampleCount)
     {
-        TransformationCachedScene::setRenderBufferProperties(handle, width, height, sampleCount);
+        BaseT::setRenderBufferProperties(handle, width, height, sampleCount);
         m_sceneResourceActions.push_back({ handle.asMemoryHandle(), ESceneResourceAction_UpdateRenderBufferProperties });
         m_resourcesChanged = true;
     }
 
     BlitPassHandle ResourceChangeCollectingScene::allocateBlitPass(RenderBufferHandle sourceRenderBufferHandle, RenderBufferHandle destinationRenderBufferHandle, BlitPassHandle passHandle /*= BlitPassHandle::Invalid()*/)
     {
-        const BlitPassHandle newHandle = TransformationCachedScene::allocateBlitPass(sourceRenderBufferHandle, destinationRenderBufferHandle, passHandle);
+        const BlitPassHandle newHandle = BaseT::allocateBlitPass(sourceRenderBufferHandle, destinationRenderBufferHandle, passHandle);
         m_sceneResourceActions.push_back({ newHandle.asMemoryHandle(), ESceneResourceAction_CreateBlitPass });
         return newHandle;
     }
 
     void ResourceChangeCollectingScene::releaseBlitPass(BlitPassHandle handle)
     {
-        TransformationCachedScene::releaseBlitPass(handle);
+        BaseT::releaseBlitPass(handle);
         m_sceneResourceActions.push_back({ handle.asMemoryHandle(), ESceneResourceAction_DestroyBlitPass });
     }
 
     DataBufferHandle ResourceChangeCollectingScene::allocateDataBuffer(EDataBufferType dataBufferType, EDataType dataType, uint32_t maximumSizeInBytes, DataBufferHandle handle)
     {
-        const DataBufferHandle newHandle = TransformationCachedScene::allocateDataBuffer(dataBufferType, dataType, maximumSizeInBytes, handle);
+        const DataBufferHandle newHandle = BaseT::allocateDataBuffer(dataBufferType, dataType, maximumSizeInBytes, handle);
         m_sceneResourceActions.push_back({ newHandle.asMemoryHandle(), ESceneResourceAction_CreateDataBuffer });
         return newHandle;
     }
 
     void ResourceChangeCollectingScene::releaseDataBuffer(DataBufferHandle handle)
     {
-        TransformationCachedScene::releaseDataBuffer(handle);
+        BaseT::releaseDataBuffer(handle);
         m_sceneResourceActions.push_back({ handle.asMemoryHandle(), ESceneResourceAction_DestroyDataBuffer });
     }
 
     void ResourceChangeCollectingScene::updateDataBuffer(DataBufferHandle handle, uint32_t offsetInBytes, uint32_t dataSizeInBytes, const std::byte* data)
     {
-        TransformationCachedScene::updateDataBuffer(handle, offsetInBytes, dataSizeInBytes, data);
+        BaseT::updateDataBuffer(handle, offsetInBytes, dataSizeInBytes, data);
         m_sceneResourceActions.push_back({ handle.asMemoryHandle(), ESceneResourceAction_UpdateDataBuffer });
     }
 
     TextureBufferHandle ResourceChangeCollectingScene::allocateTextureBuffer(EPixelStorageFormat textureFormat, const MipMapDimensions& mipMapDimensions, TextureBufferHandle handle /*= TextureBufferHandle::Invalid()*/)
     {
-        const TextureBufferHandle newHandle = TransformationCachedScene::allocateTextureBuffer(textureFormat, mipMapDimensions, handle);
+        const TextureBufferHandle newHandle = BaseT::allocateTextureBuffer(textureFormat, mipMapDimensions, handle);
         m_sceneResourceActions.push_back({ newHandle.asMemoryHandle(), ESceneResourceAction_CreateTextureBuffer});
         return newHandle;
     }
 
     void ResourceChangeCollectingScene::releaseTextureBuffer(TextureBufferHandle handle)
     {
-        TransformationCachedScene::releaseTextureBuffer(handle);
+        BaseT::releaseTextureBuffer(handle);
         m_sceneResourceActions.push_back({ handle.asMemoryHandle(), ESceneResourceAction_DestroyTextureBuffer });
     }
 
     void ResourceChangeCollectingScene::updateTextureBuffer(TextureBufferHandle handle, uint32_t mipLevel, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const std::byte* data)
     {
-        TransformationCachedScene::updateTextureBuffer(handle, mipLevel, x, y, width, height, data);
+        BaseT::updateTextureBuffer(handle, mipLevel, x, y, width, height, data);
         m_sceneResourceActions.push_back({ handle.asMemoryHandle(), ESceneResourceAction_UpdateTextureBuffer });
     }
 }

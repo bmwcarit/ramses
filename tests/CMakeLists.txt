@@ -12,6 +12,4 @@ if(ANY_WINDOW_TYPE_ENABLED)
     add_subdirectory(integration)
 endif()
 
-if(ramses-sdk_ENABLE_LOGIC)
-    add_subdirectory(benchmarks)
-endif()
+add_subdirectory(benchmarks)

@@ -57,7 +57,8 @@ namespace ramses::internal
             IRendererSceneEventSender& rendererSceneSender,
             IPlatform& platform,
             IThreadAliveNotifier& notifier,
-            std::chrono::milliseconds timingReportingPeriod);
+            std::chrono::milliseconds timingReportingPeriod,
+            EFeatureLevel featureLevel);
 
         void doOneLoop(ELoopMode loopMode, std::chrono::microseconds sleepTime) override;
 

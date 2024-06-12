@@ -1,6 +1,7 @@
 /build*/
 *~
 .vscode/
+.cache/
 *.swp
 *.orig
 *.pyc

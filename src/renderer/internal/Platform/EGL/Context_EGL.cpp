@@ -218,9 +218,9 @@ namespace ramses::internal
         return true;
     }
 
-    void* Context_EGL::getProcAddress(const char* name) const
+    IContext::GlProcLoadFunc Context_EGL::getGlProcLoadFunc() const
     {
-        return reinterpret_cast<void*>(eglGetProcAddress(name));
+        return eglGetProcAddress;
     }
 
     EGLDisplay Context_EGL::getEglDisplay() const

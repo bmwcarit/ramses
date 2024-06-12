@@ -15,14 +15,17 @@
 
 #include "impl/ValidationReportImpl.h"
 
-#include "internal/logic/StdFilesystemWrapper.h"
 #include "internal/Core/Utils/File.h"
 #include "internal/Core/Utils/LogMacros.h"
 #include "ramses-sdk-build-config.h"
 #include "ImguiWrapper.h"
+#include "ramses/framework/EFeatureLevel.h"
 
+#include <filesystem>
 #include <fstream>
+#include <optional>
 
+namespace fs = std::filesystem;
 
 namespace ramses::internal
 {
@@ -48,10 +51,10 @@ Loads and shows a ramses scene from the <ramsesfile>.
 <luafile> is auto-resolved if matching file with *.lua extension is found in the same path as <ramsesfile>. (Explicit argument overrides autodetection.)
 )");
         cli.set_version_flag("--version", ramses_sdk::RAMSES_SDK_RAMSES_VERSION);
-        cli.add_option("-s,--scene,scene", m_sceneFile, "Scene file to load")->check(CLI::ExistingFile)->required();
-        cli.add_option("luafile,--lua", m_luaFile, "Lua configuration file")->check(CLI::ExistingFile);
+        auto* cliScene = cli.add_option("-s,--scene,scene", m_sceneFiles, "Scene files to load and merge")->check(CLI::ExistingFile);
+        cli.add_option("--lua", m_luaFile, "Lua configuration file")->check(CLI::ExistingFile)->needs(cliScene);
         auto exec = cli.add_option("--exec", m_luaFunction, "Calls the given lua function and exits.");
-        cli.add_option("--exec-lua", m_luaExec, "Calls the given lua code and exits.")->excludes(exec);
+        cli.add_option("--exec-lua", m_luaExec, "Calls the given lua code and exits.")->excludes(exec)->needs(cliScene);
         auto setWriteConfig = [&](const std::string& filename) {
             m_luaFile     = filename;
             m_writeConfig = true;
@@ -59,7 +62,8 @@ Loads and shows a ramses scene from the <ramsesfile>.
         cli.add_option_function<std::string>("--write-config", setWriteConfig, "Writes the default lua configuration file and exits")
             ->expected(0, 1)
             ->type_name("[FILE]")
-            ->excludes(exec);
+            ->excludes(exec)
+            ->needs(cliScene);
         auto nv = cli.add_flag("--no-validation", m_noValidation, "Disable scene validation (faster startup for complex scenes)");
         m_report = cli.add_option("--report", m_validationReportFile, "Prints the validation report to the given file (or stdout if no filename is given)")->expected(0, 1)->excludes(nv);
 
@@ -68,11 +72,31 @@ Loads and shows a ramses scene from the <ramsesfile>.
 
     ViewerApp::ExitCode ViewerApp::loadScene()
     {
-        ramses::EFeatureLevel featureLevel = ramses::EFeatureLevel_01;
-        if (!ramses::RamsesClient::GetFeatureLevelFromFile(m_sceneFile, featureLevel))
-            return ExitCode::ErrorUsage;
+        std::optional<ramses::EFeatureLevel> featureLevel;
+        if (!m_sceneFiles.empty())
+        {
+            for (const auto& sceneFile: m_sceneFiles)
+            {
+                if (sceneFile.empty())
+                {
+                    return ExitCode::ErrorUsage;
+                }
+                ramses::EFeatureLevel fileFeatureLevel = ramses::EFeatureLevel_Latest;
+                if (!ramses::RamsesClient::GetFeatureLevelFromFile(sceneFile, fileFeatureLevel))
+                {
+                    LOG_ERROR(CONTEXT_CLIENT, "File does not exist: {}", sceneFile);
+                    return ExitCode::ErrorUsage;
+                }
+                if (featureLevel.has_value() && featureLevel.value() != fileFeatureLevel)
+                {
+                    LOG_ERROR(CONTEXT_CLIENT, "Feature Level of files to merge have to match. {} != {}", featureLevel.value(), fileFeatureLevel);
+                    return ExitCode::ErrorUsage;
+                }
+                featureLevel = fileFeatureLevel;
+            }
+        }
 
-        m_frameworkConfig.setFeatureLevel(featureLevel);
+        m_frameworkConfig.setFeatureLevel(featureLevel.value_or(EFeatureLevel::EFeatureLevel_Latest));
         m_framework = std::make_unique<ramses::RamsesFramework>(m_frameworkConfig);
 
         m_client = m_framework->createClient("ramses-viewer");
@@ -82,23 +106,40 @@ Loads and shows a ramses scene from the <ramsesfile>.
             return ExitCode::ErrorClient;
         }
 
-        // scene viewer relies on resources being kept in memory (e.g. to query size),
-        // load scene as 'remote' which uses a shadowcopy scene and guarantees to keep resources in memory
-        m_scene = m_client->loadSceneFromFile(m_sceneFile, SceneConfig({}, EScenePublicationMode::LocalAndRemote));
-        if (!m_scene)
+        if (!m_sceneFiles.empty())
         {
-            LOG_ERROR(CONTEXT_CLIENT, "Loading scene failed! ({})", m_sceneFile);
-            return ExitCode::ErrorScene;
-        }
-        m_scene->publish();
-        m_scene->flush();
+            auto sceneIt = m_sceneFiles.begin();
+            auto const & sceneFile = *sceneIt;
 
-        if (!m_noValidation)
-        {
-            m_scene->validate(m_validationReport);
-            if (m_report->count() > 0)
+            // scene viewer relies on resources being kept in memory (e.g. to query size),
+            // load scene as 'remote' which uses a shadowcopy scene and guarantees to keep resources in memory
+            m_scene = m_client->loadSceneFromFile(sceneFile, SceneConfig({}, EScenePublicationMode::LocalAndRemote));
+            if (!m_scene)
             {
-                printValidationReport();
+                LOG_ERROR(CONTEXT_CLIENT, "Loading scene failed! ({})", sceneFile);
+                return ExitCode::ErrorScene;
+            }
+
+            while ((++sceneIt) != m_sceneFiles.end())
+            {
+                auto const & sceneFileMerge = *sceneIt;
+                if (!m_client->mergeSceneFromFile(*m_scene, sceneFileMerge))
+                {
+                    LOG_ERROR(CONTEXT_CLIENT, "Merging scene failed! ({})", sceneFileMerge);
+                    return ExitCode::ErrorScene;
+                }
+            }
+
+            m_scene->publish();
+            m_scene->flush();
+
+            if (!m_noValidation)
+            {
+                m_scene->validate(m_validationReport);
+                if (m_report->count() > 0)
+                {
+                    printValidationReport();
+                }
             }
         }
 
@@ -123,7 +164,7 @@ Loads and shows a ramses scene from the <ramsesfile>.
         assert(!m_logicViewer->getLogicEngines().empty());
         if (m_luaFile.empty())
         {
-            m_luaFile = fs::path(m_sceneFile).replace_extension("lua").string();
+            m_luaFile = fs::path(getSceneFile()).replace_extension("lua").string();
         }
 
         if (m_writeConfig)

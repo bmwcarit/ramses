@@ -179,11 +179,7 @@ namespace ramses::internal
         size_t m_emptySerializedSizeTotal{164u};
     };
 
-
-    INSTANTIATE_TEST_SUITE_P(
-        AnApiObjectsTests,
-        AnApiObjects,
-        GetFeatureLevelTestValues());
+    RAMSES_INSTANTIATE_LATEST_FEATURELEVEL_ONLY_TEST_SUITE(AnApiObjects);
 
     TEST_P(AnApiObjects, CreatesScriptFromValidLuaWithoutErrors)
     {
@@ -1272,10 +1268,7 @@ namespace ramses::internal
     {
     };
 
-    INSTANTIATE_TEST_SUITE_P(
-        AnApiObjects_SerializationTests,
-        AnApiObjects_Serialization,
-        GetFeatureLevelTestValues());
+    RAMSES_INSTANTIATE_LATEST_FEATURELEVEL_ONLY_TEST_SUITE(AnApiObjects_Serialization);
 
     TEST_P(AnApiObjects_Serialization, AlwaysCreatesEmptyFlatbuffersContainers_WhenNoObjectsPresent)
     {

@@ -8,6 +8,7 @@
 
 #include "impl/RenderTargetImpl.h"
 #include "impl/RenderTargetDescriptionImpl.h"
+#include "impl/SerializationContext.h"
 #include "internal/SceneGraph/Scene/ClientScene.h"
 
 namespace ramses::internal
@@ -86,7 +87,7 @@ namespace ramses::internal
         if (!SceneObjectImpl::deserialize(inStream, serializationContext))
             return false;
 
-        inStream >> m_renderTargetHandle;
+        serializationContext.deserializeAndMap(inStream, m_renderTargetHandle);
 
         return true;
     }

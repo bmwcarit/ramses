@@ -97,6 +97,7 @@ namespace ramses::internal
             glslCompilationResources.limits.generalSamplerIndexing = true;
             glslCompilationResources.limits.generalVariableIndexing = true;
             glslCompilationResources.limits.generalConstantMatrixVectorIndexing = true;
+            glslCompilationResources.maxDualSourceDrawBuffersEXT = 1;
         }
 
         static void SetLimitsOpenGL_2_0(TBuiltInResource& glslCompilationResources)

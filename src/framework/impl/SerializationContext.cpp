@@ -9,6 +9,8 @@
 #include "impl/SerializationContext.h"
 #include "RamsesObjectImpl.h"
 #include "ramses/framework/RamsesObject.h"
+#include "ramses/framework/RamsesObjectTypes.h"
+#include <vector>
 
 namespace ramses::internal
 {
@@ -28,8 +30,9 @@ namespace ramses::internal
         return ObjectIDType(0u);
     }
 
-    DeserializationContext::DeserializationContext(const SceneConfigImpl& loadConfig)
+    DeserializationContext::DeserializationContext(const SceneConfigImpl& loadConfig, SceneMergeHandleMapping* mapping)
         : m_loadConfig(loadConfig)
+        , m_mapping(mapping)
     {
     }
 
@@ -79,10 +82,29 @@ namespace ramses::internal
 
     bool DeserializationContext::resolveDependencies()
     {
-        for (auto obj : m_dependingObjects)
+        // resolve dependencies for all object types BEFORE LogicEngine
+        std::vector<RamsesObjectImpl*> logicEngines;
+        for (auto* obj: m_dependingObjects)
+        {
+            if (obj->getType() != ERamsesObjectType::LogicEngine)
+            {
+                if (!obj->resolveDeserializationDependencies(*this))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                logicEngines.push_back(obj);
+            }
+        }
+
+        for (auto* obj: logicEngines)
         {
             if (!obj->resolveDeserializationDependencies(*this))
+            {
                 return false;
+            }
         }
 
         return true;
@@ -90,6 +112,7 @@ namespace ramses::internal
 
     void DeserializationContext::addNodeHandleToNodeImplMapping(NodeHandle nodeHandle, NodeImpl* node)
     {
+        assert(nodeHandle.isValid());
         assert(nodeHandle < m_nodeMap.size());
         m_nodeMap[nodeHandle.asMemoryHandle()] = node;
     }
@@ -110,5 +133,15 @@ namespace ramses::internal
     const SceneConfigImpl& DeserializationContext::getLoadConfig() const
     {
         return m_loadConfig;
+    }
+
+    SceneMergeHandleMapping* DeserializationContext::getSceneMergeHandleMapping()
+    {
+        return m_mapping;
+    }
+
+    const SceneMergeHandleMapping* DeserializationContext::getSceneMergeHandleMapping() const
+    {
+        return m_mapping;
     }
 }

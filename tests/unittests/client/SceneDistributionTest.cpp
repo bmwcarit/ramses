@@ -16,10 +16,10 @@
 namespace ramses::internal
 {
     using namespace testing;
-    class ADistributedScene : public LocalTestClientWithScene, public ::testing::TestWithParam<EScenePublicationMode>
+    class ADistributedScene : public LocalTestClientWithScene, public ::testing::TestWithParam<std::tuple<EScenePublicationMode, ERenderBackendCompatibility>>
     {
     public:
-        ADistributedScene() : LocalTestClientWithScene(GetParam())
+        ADistributedScene() : LocalTestClientWithScene{ ramses::EFeatureLevel_Latest, std::get<0>(GetParam()), std::get<1>(GetParam()) }
         {
             framework.connect();
         }
@@ -27,10 +27,10 @@ namespace ramses::internal
         void publishScene()
         {
             const ramses::internal::IScene& iscene = m_scene.impl().getIScene();
-            ramses::internal::SceneInfo info(iscene.getSceneId(), iscene.getName());
+            ramses::internal::SceneInfo info{ iscene.getSceneId(), iscene.getName(), EScenePublicationMode::LocalOnly, iscene.getRenderBackendCompatibility(), iscene.getVulkanAPIVersion(), iscene.getSPIRVVersion() };
             EXPECT_CALL(sceneActionsCollector, handleNewSceneAvailable(info, _));
             EXPECT_CALL(sceneActionsCollector, handleInitializeScene(info, _));
-            EXPECT_TRUE(m_scene.publish(GetParam()));
+            EXPECT_TRUE(m_scene.publish(std::get<0>(GetParam())));
         }
 
         void unpublishScene()
@@ -72,7 +72,8 @@ namespace ramses::internal
     INSTANTIATE_TEST_SUITE_P(
         ADistributedScene_Suite,
         ADistributedScene,
-        ::testing::Values(EScenePublicationMode::LocalOnly, EScenePublicationMode::LocalAndRemote));
+        ::testing::Combine(::testing::ValuesIn(std::array{EScenePublicationMode::LocalOnly, EScenePublicationMode::LocalAndRemote}),
+            ::testing::ValuesIn(std::array{ERenderBackendCompatibility::OpenGL, ERenderBackendCompatibility::VulkanAndOpenGL})));
 
     TEST_P(ADistributedScene, flushProducesSingleActionList)
     {
@@ -107,7 +108,7 @@ namespace ramses::internal
         doSceneOperations();
         publishScene();
 
-        if (GetParam() == EScenePublicationMode::LocalOnly) // in local only case scene has to be flush to send anything
+        if (std::get<0>(GetParam()) == EScenePublicationMode::LocalOnly) // in local only case scene has to be flush to send anything
             m_scene.flush();
 
         EXPECT_EQ(1u, sceneActionsCollector.getNumReceivedActionLists());
@@ -140,7 +141,7 @@ namespace ramses::internal
         ASSERT_TRUE(otherScene != nullptr);
         const ramses::internal::IScene& otherIScene = otherScene->impl().getIScene();
 
-        ramses::internal::SceneInfo sceneInfo(sceneId, otherIScene.getName());
+        ramses::internal::SceneInfo sceneInfo{ sceneId, otherIScene.getName() };
         EXPECT_CALL(sceneActionsCollector, handleNewSceneAvailable(sceneInfo, _));
         EXPECT_TRUE(otherScene->publish());
 

@@ -1,5 +1,69 @@
 # Ramses Changelog
 
+28.2.0
+-------------------
+
+### Added <a name=28.2.0.Added></a>
+- Added feature level 02
+  - Note that EFeatureLevel_Latest now points to EFeatureLevel_02
+  - New features:
+    - Added support for Uniform Buffer Objects (Uniform Blocks) in shaders
+    - Added semantics for UBO:
+      - `EEffectUniformSemantic::ModelBlock`, `EEffectUniformSemantic::CameraBlock`, `EEffectUniformSemantic::ModelCameraBlock` (fully implemented)
+      - `EEffectUniformSemantic::FramebufferBlock`, `EEffectUniformSemantic::SceneBlock` (not yet implemented on renderer side)
+    - Added support for merging content into an existing scene
+    - Added support for merging content of several files to ramses-viewer
+  - Add experimental support for Vulkan:
+    - Building vulkan device needs to be explicitly enabled using cmake option `ramses-sdk_ENABLE_DEVICE_TYPE_VULKAN`
+    - Added new enum value `EDeviceType::Vulkan`
+    - Scene can be configured to specify render backend compatibility using `SceneConfig::setRenderBackendCompatibility`
+- Added glad (OpenGL loader library)
+
+### Changed <a name=28.2.0.Changed></a>
+- Redesigned CMake build option for freetype/harfbuzz. Bundled package is used by default unless `ramses-sdk_USE_PLATFORM_FREETYPE` is ON.
+  - Removed `ramses-sdk_ALLOW_PLATFORM_FREETYPE` and `ramses-sdk_ALLOW_CUSTOM_FREETYPE`
+  - Replaced with `ramses-sdk_USE_PLATFORM_FREETYPE` for system package, and set to `OFF` by default
+- SkinBindings are now updated at the end of logic update
+- Upgraded internal abseil to 20240116.1
+- Upgraded glslang to 14.1.0
+- Allow embedded compositing using DMA buffers even if EGL extension `EGL_WL_bind_wayland_display` is not available
+- Mark APIs related to system compositor controller on renderer side as deprecated
+
+### Fixed <a name=28.2.0.Fixed></a>
+- SkinBinding update order bug where skin bindings use old values in update
+- SkinBinding serializing inverse binding matrices in wrong order
+- Fixed scene locked in subscription requested state, when
+  - Scene is created in LocalOnly mode
+  - Display is destroyed, before the scene entered Ready state
+- Can create display with wayland IVI window without setting IVI layer if system compositor controller not enabled
+- Fixed possible crash when statistics logs are enabled
+- EGLContext for async effect uploader is no longer created if feature is disabled in DisplayConfig
+- Improved validation messages for RenderBuffers
+- Removed warning for empty render group
+
+28.1.1
+-------------------
+### Added <a name=28.1.1.Added></a>
+- added ramsh commands to modify some object parameters (visibility, uniform inputs)
+
+### Fixed <a name=28.1.1.Fixed></a>
+- Attempt to read pixels from multisampled offscreen buffer no longer crashes but fails with an event
+- Removed `ramses-sdk_ENABLE_LOGIC` flag, logic cannot be excluded from build anymore
+
+28.1.0
+-------------------
+### Added <a name=28.1.0.Added></a>
+
+- Added `DisplayConfig::setWindowTitle()`
+- `ramses-viewer`: show scenes that are published remotely
+- `ramses-viewer`: show stream surfaces
+
+### Fixed <a name=28.1.0.Fixed></a>
+- Handle time overflow when calculating watchdog notification intervals (IThreadWatchdogNotification)
+- Added sanity check for display thread sleep timeout (skub mode)
+- Fixed missing watchdog callbacks if notification interval is set to 1ms (RamsesFrameworkConfig::setWatchdogNotificationInterval)
+- Instance prefix for logging (RamsesFrameworkConfig::setLoggingInstanceName) now works also for dynamically linked renderer library
+
 28.0.0
 -------------------
 ### Added <a name=28.0.0.Added></a>

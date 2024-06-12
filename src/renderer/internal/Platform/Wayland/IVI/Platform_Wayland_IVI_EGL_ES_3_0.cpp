@@ -9,14 +9,14 @@
 #include "internal/Platform/Wayland/IVI/Platform_Wayland_IVI_EGL_ES_3_0.h"
 #include "internal/Platform/Wayland/IVI/Window_Wayland_IVI.h"
 #include "internal/Platform/Wayland/IVI/SystemCompositorController/SystemCompositorController_Wayland_IVI.h"
-#include "internal/RendererLib/RendererConfig.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/RendererConfigData.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "internal/Core/Utils/LogMacros.h"
 
 namespace ramses::internal
 {
 
-    Platform_Wayland_IVI_EGL_ES_3_0::Platform_Wayland_IVI_EGL_ES_3_0(const RendererConfig& rendererConfig)
+    Platform_Wayland_IVI_EGL_ES_3_0::Platform_Wayland_IVI_EGL_ES_3_0(const RendererConfigData& rendererConfig)
         : Platform_Wayland_EGL(rendererConfig)
     {
     }
@@ -38,11 +38,11 @@ namespace ramses::internal
     }
 
 
-    bool Platform_Wayland_IVI_EGL_ES_3_0::createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler)
+    bool Platform_Wayland_IVI_EGL_ES_3_0::createWindow(const DisplayConfigData& displayConfig, IWindowEventHandler& windowEventHandler)
     {
-        if(!displayConfig.getWaylandIviLayerID().isValid())
+        if(m_systemCompositorController && !displayConfig.getWaylandIviLayerID().isValid())
         {
-            LOG_ERROR(CONTEXT_RENDERER, "Can not create Wayland IVI window because IVI layer ID was not set in display config!");
+            LOG_ERROR(CONTEXT_RENDERER, "Can not create Wayland IVI window because System compositor controller enabled while IVI layer ID was not set in display config!");
             return false;
         }
 

@@ -35,6 +35,7 @@ namespace ramses::internal
             BLENDING_DST_COLOR_AND_ALPHA,
             COLOR_MASK,
             CAMERA_TRANSFORMATION,
+            CAMERA_TRANSFORMATION_UBO,
             FACE_CULLING,
             DEPTH_FUNC,
             DRAW_MODE,
@@ -49,8 +50,11 @@ namespace ramses::internal
             THREE_TRIANGLES_WITH_SHARED_COLOR,
             THREE_TRIANGLES_WITH_UNSHARED_COLOR,
             EULER_ROTATION_CONVENTIONS,
+            PERSPECTIVE_CAMERA_UBO,
+            ORTHOGRAPHIC_CAMERA_UBO,
         };
     private:
+        Effect* createTestEffect(uint32_t state);
         void setGeometries(uint32_t state);
         void setTransformations(uint32_t state);
 

@@ -39,7 +39,7 @@ namespace ramses::internal
     class Window_X11 : public Window_Base
     {
     public:
-        Window_X11(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler, uint32_t id);
+        Window_X11(const DisplayConfigData& displayConfig, IWindowEventHandler& windowEventHandler, uint32_t id);
         ~Window_X11() override;
 
         bool init() override;

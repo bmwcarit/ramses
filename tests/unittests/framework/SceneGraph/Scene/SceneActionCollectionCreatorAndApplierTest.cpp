@@ -18,7 +18,7 @@ namespace ramses::internal
     {
     public:
         ASceneActionCollectionCreatorAndApplier()
-            : creator(collection)
+            : creator(collection, EFeatureLevel_Latest)
         {
         }
 

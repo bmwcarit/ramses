@@ -64,7 +64,7 @@ namespace ramses::internal
     void RenderPassOnceScene::initInputRenderPass()
     {
         ramses::MeshNode* meshNode = m_scene.createMeshNode();
-        Triangle blueTriangle(m_scene, *getTestEffect("ramses-test-client-basic"), TriangleAppearance::EColor_Blue);
+        Triangle blueTriangle(m_scene, *getTestEffect("ramses-test-client-basic"), TriangleAppearance::EColor::Blue);
         meshNode->setAppearance(blueTriangle.GetAppearance());
         meshNode->setGeometry(blueTriangle.GetGeometry());
 

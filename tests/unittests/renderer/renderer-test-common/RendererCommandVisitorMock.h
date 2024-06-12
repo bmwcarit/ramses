@@ -9,9 +9,10 @@
 #pragma once
 
 #include "internal/RendererLib/RendererCommands.h"
-#include "internal/RendererLib/DisplayConfig.h"
+#include "internal/RendererLib/DisplayConfigData.h"
 #include "internal/SceneGraph/SceneAPI/SceneId.h"
 #include "internal/RendererLib/Types.h"
+#include "TestEqualHelper.h"
 #include "gmock/gmock.h"
 
 namespace ramses::internal
@@ -29,7 +30,7 @@ namespace ramses::internal
 
         void operator()(const RendererCommand::ScenePublished& cmd)
         {
-            handleScenePublished(cmd.scene, cmd.publicationMode);
+            handleScenePublished(cmd.scene, cmd.publicationMode, cmd.renderBackendCompatibility, cmd.vulkanAPIVersion, cmd.spirvVersion);
         }
 
         void operator()(const RendererCommand::SceneUnpublished& cmd)
@@ -228,14 +229,14 @@ namespace ramses::internal
             assert(!"unhandled command");
         }
 
-        MOCK_METHOD(void, handleScenePublished, (SceneId, EScenePublicationMode));
+        MOCK_METHOD(void, handleScenePublished, (SceneId, EScenePublicationMode, ERenderBackendCompatibility, EVulkanAPIVersion, ESPIRVVersion));
         MOCK_METHOD(void, handleSceneUnpublished, (SceneId));
         MOCK_METHOD(void, handleSceneReceived, (const SceneInfo&));
         MOCK_METHOD(void, handleSceneUpdate, (SceneId, const SceneUpdate&));
         MOCK_METHOD(void, setSceneState, (SceneId, RendererSceneState));
         MOCK_METHOD(void, setSceneMapping, (SceneId, DisplayHandle));
         MOCK_METHOD(void, setSceneDisplayBufferAssignment, (SceneId, OffscreenBufferHandle, int32_t));
-        MOCK_METHOD(void, createDisplayContext, (const DisplayConfig&, DisplayHandle, IBinaryShaderCache*));
+        MOCK_METHOD(void, createDisplayContext, (const DisplayConfigData&, DisplayHandle, IBinaryShaderCache*));
         MOCK_METHOD(void, destroyDisplayContext, (DisplayHandle));
         MOCK_METHOD(void, handleSceneDataLinkRequest, (SceneId, DataSlotId, SceneId, DataSlotId));
         MOCK_METHOD(void, handleDataUnlinkRequest, (SceneId, DataSlotId));

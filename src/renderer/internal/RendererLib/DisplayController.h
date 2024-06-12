@@ -16,7 +16,7 @@
 
 namespace ramses::internal
 {
-    class RendererConfig;
+    class RendererConfigData;
     class IRenderBackend;
     class RendererCachedScene;
     class VirtualUpdateScene;

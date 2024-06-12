@@ -7,20 +7,10 @@
 #  -------------------------------------------------------------------------
 
 if(ramses-sdk_TEXT_SUPPORT)
-    list(APPEND CLIENT_INTERNAL_LIBS    freetype
+    list(APPEND TEXT_INTERNAL_LIBS      freetype
                                         harfbuzz)
 endif()
 
-if(ramses-sdk_ENABLE_LOGIC)
-    list(APPEND CLIENT_INTERNAL_SOURCES logic/*.h
-                                        logic/*.cpp
-                                        logic/flatbuffers/generated/*.h
-                                        logic/flatbuffers/schemas/*.fbs)
-    list(APPEND CLIENT_INTERNAL_LIBS    sol2::sol2
-                                        lua::lua
-                                        ramses::flatbuffers
-                                        fmt::fmt)
-endif()
 
 createModule(
     NAME                    ramses-client-internal
@@ -34,11 +24,18 @@ createModule(
                             glslEffectBlock/*.cpp
                             ClientCommands/*.h
                             ClientCommands/*.cpp
-                            ${CLIENT_INTERNAL_SOURCES}
+                            logic/*.h
+                            logic/*.cpp
+                            logic/flatbuffers/generated/*.h
+                            logic/flatbuffers/schemas/*.fbs
     DEPENDENCIES            ramses-api
                             ramses-framework-internal
                             ramses-glslang
-                            ${CLIENT_INTERNAL_LIBS}
+                            sol2::sol2
+                            lua::lua
+                            ramses::flatbuffers
+                            fmt::fmt
+                            ${TEXT_INTERNAL_LIBS}
 )
 
 if(TARGET FlatbufGen)

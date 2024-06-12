@@ -193,6 +193,28 @@ namespace ramses::internal
         m_logContext << "set draw mode: " << EnumToString(mode) << RendererLogContext::NewLine;
     }
 
+
+    DeviceResourceHandle LoggingDevice::allocateUniformBuffer(uint32_t totalSizeInBytes)
+    {
+        m_logContext << "allocate uniform buffer [total size: " << totalSizeInBytes << "]" << RendererLogContext::NewLine;
+        return {};
+    }
+
+    void LoggingDevice::uploadUniformBufferData(DeviceResourceHandle handle, [[maybe_unused]] const std::byte* data, uint32_t dataSize)
+    {
+        m_logContext << "upload uniform buffer data [device handle: " << handle << " size: " << dataSize << "]" << RendererLogContext::NewLine;
+    }
+
+    void LoggingDevice::activateUniformBuffer(DeviceResourceHandle handle, DataFieldHandle field)
+    {
+        m_logContext << "activate uniform buffer [device handle: " << handle << " field: " << field << "]" << RendererLogContext::NewLine;
+    }
+
+    void LoggingDevice::deleteUniformBuffer(DeviceResourceHandle handle)
+    {
+        m_logContext << "delete uniform buffer [handle: " << handle << "]" << RendererLogContext::NewLine;
+    }
+
     DeviceResourceHandle LoggingDevice::allocateVertexBuffer(uint32_t totalSizeInBytes)
     {
         m_logContext << "allocate vertex buffer [total size: " << totalSizeInBytes << "]" << RendererLogContext::NewLine;

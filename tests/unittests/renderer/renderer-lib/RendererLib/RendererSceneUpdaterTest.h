@@ -25,7 +25,7 @@
 #include "ResourceDeviceHandleAccessorMock.h"
 #include "MockResourceHash.h"
 #include "SceneReferenceLogicMock.h"
-#include "SceneAllocateHelper.h"
+#include "TestSceneHelper.h"
 #include "internal/PlatformAbstraction/PlatformThread.h"
 #include "internal/PlatformAbstraction/Collections/Pair.h"
 #include "RendererSceneEventSenderMock.h"
@@ -54,6 +54,7 @@ namespace ramses::internal {
             frameTimer.startFrame();
             rendererSceneUpdater->setLimitFlushesForceApply(ForceApplyFlushesLimit);
             rendererSceneUpdater->setLimitFlushesForceUnsubscribe(ForceUnsubscribeFlushLimit);
+            rendererSceneUpdater->setForceMapTimeout(std::chrono::seconds{ 20 }); // some tests fail if scene gets force mapped which can happen when running tests on overloaded system (esp. with valgrind)
 
             EXPECT_CALL(renderer, setClearColor(_, _)).Times(0);
             // called explicitly from tests, no sense in tracking
@@ -80,7 +81,7 @@ namespace ramses::internal {
         {
             const auto sceneIndex = static_cast<uint32_t>(stagingScene.size());
             const SceneId sceneId(sceneIndex);
-            stagingScene.emplace_back(new ActionCollectingScene(SceneInfo(sceneId)));
+            stagingScene.emplace_back(new ActionCollectingScene(SceneInfo{ sceneId }));
 
             return sceneIndex;
         }
@@ -109,7 +110,7 @@ namespace ramses::internal {
         void receiveScene(uint32_t sceneIndex = 0u)
         {
             const SceneId sceneId = getSceneId(sceneIndex);
-            rendererSceneUpdater->handleSceneReceived(SceneInfo(sceneId));
+            rendererSceneUpdater->handleSceneReceived(SceneInfo{ sceneId });
             EXPECT_TRUE(sceneStateExecutor.getSceneState(sceneId) == ESceneState::SubscriptionPending);
             EXPECT_TRUE(rendererScenes.hasScene(sceneId));
         }
@@ -372,7 +373,7 @@ namespace ramses::internal {
             SceneUpdate update;
             update.actions = (std::move(scene.getSceneActionCollection()));
 
-            SceneActionCollectionCreator creator(update.actions);
+            SceneActionCollectionCreator creator(update.actions, EFeatureLevel_Latest);
 
             ResourceContentHashVector resources;
             ResourceChanges resourceChanges;
@@ -406,7 +407,7 @@ namespace ramses::internal {
             return !rendererSceneUpdater->hasPendingFlushes(stagingScene[sceneIndex]->getSceneId());
         }
 
-        void createDisplayAndExpectSuccess(const DisplayConfig& displayConfig = DisplayConfig())
+        void createDisplayAndExpectSuccess(const DisplayConfigData& displayConfig = DisplayConfigData())
         {
             ASSERT_TRUE(rendererSceneUpdater->m_resourceManagerMock == nullptr);
             EXPECT_CALL(*rendererSceneUpdater, createResourceManager(_, _, _, _));
@@ -456,31 +457,36 @@ namespace ramses::internal {
             }
         }
 
-        void createRenderable(uint32_t sceneIndex = 0u, bool withVertexArray = false, bool withTextureSampler = false, EVisibilityMode visibility = EVisibilityMode::Visible)
+        void createRenderable(uint32_t sceneIndex = 0u, bool withVertexArray = false, bool withTextureSampler = false, EVisibilityMode visibility = EVisibilityMode::Visible, bool withModelUbo = false)
         {
-            createRenderableNoFlush(sceneIndex, withVertexArray, withTextureSampler, visibility);
+            createRenderableNoFlush(sceneIndex, withVertexArray, withTextureSampler, visibility, withModelUbo);
             performFlush(sceneIndex);
         }
 
-        void createRenderableNoFlush(uint32_t sceneIndex = 0u, bool withVertexArray = false, bool withTextureSampler = false, EVisibilityMode visibility = EVisibilityMode::Visible)
+        CameraHandle createCamera(uint32_t sceneIndex = 0u, ECameraProjectionType projectionType = ECameraProjectionType::Perspective)
         {
-            const NodeHandle renderableNode(1u);
-            const RenderPassHandle renderPassHandle(2u);
-            const RenderGroupHandle renderGroupHandle(3u);
-            const CameraHandle cameraHandle(4u);
-            const DataLayoutHandle uniformDataLayoutHandle(0u);
-            const DataLayoutHandle geometryDataLayoutHandle(1u);
-            const DataLayoutHandle camDataLayoutHandle(2u);
-            const DataInstanceHandle camDataHandle(2u);
+            IScene& scene = *stagingScene[sceneIndex];
+            TestSceneHelper sceneHelper(scene, false, false);
+            const auto cameraHandle = sceneHelper.createCamera(projectionType, { 0.1f, 1.f }, { -1.f, 1.f, -1.f, 1.f }, {}, {}, {});
 
+            // these are overridden in tests where more concrete expectations are set
+            EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, uploadUniformBuffer(SemanticUniformBufferHandle{ cameraHandle }, 140u, getSceneId(sceneIndex))).Times(AtMost(1));
+            EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, updateUniformBuffer(SemanticUniformBufferHandle{ cameraHandle }, 140u, _, getSceneId(sceneIndex))).Times(AnyNumber());
+
+            return cameraHandle;
+        }
+
+        void createRenderableNoFlush(uint32_t sceneIndex = 0u, bool withVertexArray = false, bool withTextureSampler = false, EVisibilityMode visibility = EVisibilityMode::Visible, bool withUbo = false)
+        {
             IScene& scene = *stagingScene[sceneIndex];
 
-            scene.allocateRenderPass(0u, renderPassHandle);
             scene.allocateRenderGroup(0u, 0u, renderGroupHandle);
-            scene.allocateNode(0u, renderableNode);
+
+            const RenderPassHandle renderPassHandle = scene.allocateRenderPass(0u, {});
+            const NodeHandle renderableNode = scene.allocateNode(0u, {});
             scene.allocateRenderable(renderableNode, renderableHandle);
-            scene.allocateDataLayout({ DataFieldInfo{EDataType::Vector2I}, DataFieldInfo{EDataType::Vector2I} }, MockResourceHash::EffectHash, camDataLayoutHandle);
-            scene.allocateCamera(ECameraProjectionType::Perspective, scene.allocateNode(0, {}), scene.allocateDataInstance(camDataLayoutHandle, camDataHandle), cameraHandle);
+
+            const CameraHandle cameraHandle = createCamera(sceneIndex, ECameraProjectionType::Perspective);
 
             scene.addRenderableToRenderGroup(renderGroupHandle, renderableHandle, 0u);
             scene.addRenderGroupToRenderPass(renderPassHandle, renderGroupHandle, 0u);
@@ -492,7 +498,11 @@ namespace ramses::internal {
             {
                 uniformDataFields.push_back(DataFieldInfo{ EDataType::TextureSampler2D });
             }
-            scene.allocateDataLayout(uniformDataFields, MockResourceHash::EffectHash, uniformDataLayoutHandle);
+            if (withUbo)
+            {
+                uniformDataFields.push_back(DataFieldInfo{ EDataType::Matrix44F, 1u, EFixedSemantics::ModelBlock });
+            }
+            const DataLayoutHandle uniformDataLayoutHandle = scene.allocateDataLayout(uniformDataFields, MockResourceHash::EffectHash, {});
             scene.allocateDataInstance(uniformDataLayoutHandle, uniformDataInstanceHandle);
             scene.setRenderableDataInstance(renderableHandle, ERenderableDataSlotType_Uniforms, uniformDataInstanceHandle);
 
@@ -502,7 +512,7 @@ namespace ramses::internal {
             {
                 geometryDataFields.push_back(DataFieldInfo{ EDataType::Vector3Buffer, 1u, EFixedSemantics::Invalid });
             }
-            scene.allocateDataLayout(geometryDataFields, MockResourceHash::EffectHash, geometryDataLayoutHandle);
+            const DataLayoutHandle geometryDataLayoutHandle = scene.allocateDataLayout(geometryDataFields, MockResourceHash::EffectHash, {});
             scene.allocateDataInstance(geometryDataLayoutHandle, geometryDataInstanceHandle);
             scene.setRenderableDataInstance(renderableHandle, ERenderableDataSlotType_Geometry, geometryDataInstanceHandle);
             scene.setRenderableVisibility(renderableHandle, visibility);
@@ -510,7 +520,6 @@ namespace ramses::internal {
 
         void destroyRenderable(uint32_t sceneIndex = 0u)
         {
-            const RenderGroupHandle renderGroupHandle(3u);
             IScene& scene = *stagingScene[sceneIndex];
             scene.removeRenderableFromRenderGroup(renderGroupHandle, renderableHandle);
             scene.releaseRenderable(renderableHandle);
@@ -679,6 +688,35 @@ namespace ramses::internal {
             EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, uploadVertexArray(_, _, getSceneId(sceneIdx)));
         }
 
+        void expectSemanticModelUniformBufferUploaded(uint32_t sceneIdx = 0u)
+        {
+            EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, uploadUniformBuffer(Matcher<SemanticUniformBufferHandle>(_), 64u, getSceneId(sceneIdx)))
+                .WillRepeatedly([](SemanticUniformBufferHandle handle, auto /*size*/, auto /*sceneId*/)
+                    {
+                        EXPECT_EQ(handle.getType(), SemanticUniformBufferHandle::Type::Model);
+                        return DeviceMock::FakeUniformBufferDeviceHandle;
+                    });
+        }
+        void expectSemanticCameraUniformBufferUploaded(uint32_t sceneIdx = 0u)
+        {
+            EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, uploadUniformBuffer(Matcher<SemanticUniformBufferHandle>(_), 140u, getSceneId(sceneIdx)))
+                .WillRepeatedly([](SemanticUniformBufferHandle handle, auto /*size*/, auto /*sceneId*/)
+                    {
+                        EXPECT_EQ(handle.getType(), SemanticUniformBufferHandle::Type::Camera);
+                        return DeviceMock::FakeUniformBufferDeviceHandle;
+                    });
+        }
+        void expectSemanticModelUniformBufferUpdated(uint32_t sceneIdx = 0u)
+        {
+            EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, updateUniformBuffer(Matcher<SemanticUniformBufferHandle>(_), 64u, _, getSceneId(sceneIdx)))
+                .WillOnce([](SemanticUniformBufferHandle handle, auto /*size*/, auto /*data*/, auto /*sceneId*/) { EXPECT_EQ(handle.getType(), SemanticUniformBufferHandle::Type::Model); });
+        }
+        void expectSemanticCameraUniformBufferUpdated(uint32_t sceneIdx = 0u)
+        {
+            EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, updateUniformBuffer(Matcher<SemanticUniformBufferHandle>(_), 140u, _, getSceneId(sceneIdx)))
+                .WillOnce([](SemanticUniformBufferHandle handle, auto /*size*/, auto /*data*/, auto /*sceneId*/) { EXPECT_EQ(handle.getType(), SemanticUniformBufferHandle::Type::Camera); });
+        }
+
         void expectVertexArrayUnloaded(uint32_t sceneIdx = 0u)
         {
             EXPECT_CALL(*rendererSceneUpdater->m_resourceManagerMock, unloadVertexArray(_, getSceneId(sceneIdx)));
@@ -834,7 +872,10 @@ namespace ramses::internal {
             scene.setDataSlotTexture(providerDataSlot, newProvidedValue);
         }
 
-        std::pair<DataSlotId, DataSlotId> createTransformationSlots(TransformHandle* providerTransformHandleOut = nullptr, uint32_t providerSceneIdx = 0u, uint32_t consumerSceneIdx = 1u)
+        std::pair<DataSlotId, DataSlotId> createTransformationSlots(TransformHandle* providerTransformHandleOut = nullptr,
+                                                                    uint32_t providerSceneIdx = 0u,
+                                                                    uint32_t consumerSceneIdx = 1u,
+                                                                    TransformHandle* consumerTransformHandleOut = nullptr)
         {
             IScene& scene1 = *stagingScene[providerSceneIdx];
             IScene& scene2 = *stagingScene[consumerSceneIdx];
@@ -843,9 +884,11 @@ namespace ramses::internal {
             const auto nodeHandle2 = scene2.allocateNode(0, {});
 
             const auto providerTransformHandle = scene1.allocateTransform(nodeHandle1, {});
-            scene2.allocateTransform(nodeHandle2, {});
+            const auto consumerTransformHandle = scene2.allocateTransform(nodeHandle2, {});
             if (nullptr != providerTransformHandleOut)
                 *providerTransformHandleOut = providerTransformHandle;
+            if (nullptr != consumerTransformHandleOut)
+                *consumerTransformHandleOut = consumerTransformHandle;
 
             const DataSlotId providerId(getNextFreeDataSlotIdForDataLinking());
             const DataSlotId consumerId(getNextFreeDataSlotIdForDataLinking());
@@ -1000,9 +1043,11 @@ namespace ramses::internal {
 
         static constexpr DisplayHandle Display{ 1u };
 
-        const RenderableHandle renderableHandle{ 1 };
-        const DataInstanceHandle uniformDataInstanceHandle{ 0 };
-        const DataInstanceHandle geometryDataInstanceHandle{ 1 };
+        const RenderableHandle renderableHandle{ 11 };
+        const RenderGroupHandle renderGroupHandle{ 3u };
+        const DataInstanceHandle uniformDataInstanceHandle{ 10 };
+        const DataInstanceHandle geometryDataInstanceHandle{ 11 };
+        UniformBufferHandle cameraUbo;
 
         const TextureSamplerHandle samplerHandle{ 2 };
 

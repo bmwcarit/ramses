@@ -285,6 +285,61 @@ namespace ramses::internal
         EXPECT_EQ(0u, sceneResourceActions.size());
     }
 
+    TEST_F(AResourceChangeCollectingScene, createdUniformBufferIsTracked)
+    {
+        const auto handle = scene.allocateUniformBuffer(10u, {});
+        ASSERT_EQ(1u, sceneResourceActions.size());
+        EXPECT_EQ(handle, sceneResourceActions[0].handle);
+        EXPECT_EQ(ESceneResourceAction_CreateUniformBuffer, sceneResourceActions[0].action);
+
+        scene.resetResourceChanges();
+        EXPECT_EQ(0u, sceneResourceActions.size());
+    }
+
+    TEST_F(AResourceChangeCollectingScene, createdAndUpdatedUniformBufferIsTrackedAndSameAsExtractedFromScene)
+    {
+        const auto handle = scene.allocateUniformBuffer(10u, {});
+        scene.updateUniformBuffer(handle, 0, 0, nullptr);
+        ASSERT_EQ(2u, sceneResourceActions.size());
+        EXPECT_EQ(handle, sceneResourceActions[0].handle);
+        EXPECT_EQ(ESceneResourceAction_CreateUniformBuffer, sceneResourceActions[0].action);
+        EXPECT_EQ(handle, sceneResourceActions[1].handle);
+        EXPECT_EQ(ESceneResourceAction_UpdateUniformBuffer, sceneResourceActions[1].action);
+        expectSameSceneResourceChangesWhenExtractedFromScene(10u);
+
+        scene.resetResourceChanges();
+        EXPECT_EQ(0u, sceneResourceActions.size());
+    }
+
+    TEST_F(AResourceChangeCollectingScene, destroyedUniformBufferIsTracked)
+    {
+        const auto handle = scene.allocateUniformBuffer(10u, {});
+        scene.resetResourceChanges();
+
+        scene.releaseUniformBuffer(handle);
+        ASSERT_EQ(1u, sceneResourceActions.size());
+        EXPECT_EQ(handle, sceneResourceActions[0].handle);
+        EXPECT_EQ(ESceneResourceAction_DestroyUniformBuffer, sceneResourceActions[0].action);
+
+        scene.resetResourceChanges();
+        EXPECT_EQ(0u, sceneResourceActions.size());
+    }
+
+    TEST_F(AResourceChangeCollectingScene, updatedUniformBufferIsTracked)
+    {
+        const auto handle = scene.allocateUniformBuffer(10u, {});
+        scene.resetResourceChanges();
+
+        const std::byte dummyData[2] = { std::byte{0} };
+        scene.updateUniformBuffer(handle, 2u, 2u, dummyData);
+        ASSERT_EQ(1u, sceneResourceActions.size());
+        EXPECT_EQ(handle, sceneResourceActions[0].handle);
+        EXPECT_EQ(ESceneResourceAction_UpdateUniformBuffer, sceneResourceActions[0].action);
+
+        scene.resetResourceChanges();
+        EXPECT_EQ(0u, sceneResourceActions.size());
+    }
+
     TEST_F(AResourceChangeCollectingScene, hasClientResourcesNotDirtyOnCreation)
     {
         EXPECT_FALSE(scene.haveResourcesChanged());

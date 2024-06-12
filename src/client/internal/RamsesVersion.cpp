@@ -9,7 +9,6 @@
 #include "internal/RamsesVersion.h"
 #include "internal/PlatformAbstraction/Collections/IOutputStream.h"
 #include "internal/PlatformAbstraction/Collections/IInputStream.h"
-#include "internal/PlatformAbstraction/Collections/StringOutputStream.h"
 #include "internal/PlatformAbstraction/PlatformStringUtils.h"
 #include "internal/Core/Utils/LogMacros.h"
 #include "ramses-sdk-build-config.h"
@@ -24,8 +23,7 @@ namespace ramses::internal
         void WriteToStream(IOutputStream& stream, std::string_view versionString, std::string_view gitHash, EFeatureLevel featureLevel)
         {
             LOG_INFO(CONTEXT_CLIENT, "RamsesVersion::WriteToStream: Version: {} Git Hash: {} Feature Level: {}", versionString, gitHash, featureLevel);
-            StringOutputStream out;
-            out << "[RamsesVersion:" << versionString << "]\n[GitHash:" << gitHash << "]\n[FeatureLevel:" << featureLevel << "]\n";
+            auto out = fmt::format("[RamsesVersion:{}]\n[GitHash:{}]\n[FeatureLevel:{}]\n", versionString, gitHash, featureLevel);
             stream.write(out.c_str(), out.size());
         }
 
@@ -171,14 +169,6 @@ namespace ramses::internal
                 return false;
 
             return true;
-        }
-
-        bool MatchesMajorMinor(uint32_t currentMajor, uint32_t currentMinor, const VersionInfo& in)
-        {
-            return (in.major == currentMajor &&
-                    in.minor == currentMinor) ||
-                (currentMajor == 0 &&
-                 currentMinor == 0);
         }
     }
 }

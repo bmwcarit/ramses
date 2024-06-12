@@ -82,7 +82,7 @@ namespace ramses
         bool addCompilerDefine(std::string_view define);
 
         /**
-        * @brief Sets an uniform semantic.
+        * @brief Sets a uniform semantic.
         *        Used for uniforms which are not locally available
         *        on the client, such as projection matrix, framebuffer resolution etc.
         *        Value of an uniform corresponding to the given semantic name
@@ -92,6 +92,18 @@ namespace ramses
         * @return true on success, false if an error occurred (error is logged)
         */
         bool setUniformSemantic(std::string_view inputName, EEffectUniformSemantic semanticType);
+
+        /**
+        * @brief Sets a uniform semantic on a uniform buffer using layout binding.
+        *        Used for uniform buffers that represent values that are not locally available
+        *        on the client, such as model block, camera block...etc.
+        *        Values of a uniform buffer corresponding to the given semantic
+        *        will be automatically set based on its semantic type.
+        * @param[in] uniformBufferBinding Binding specified in the shader source code in the definition of a uniform buffer's layout.
+        * @param[in] semanticType Semantic type to be used for given input.
+        * @return true on success, false if an error occurred (error is logged)
+        */
+        bool setUniformSemantic(uint32_t uniformBufferBinding, EEffectUniformSemantic semanticType);
 
         /**
         * @brief Sets an attribute semantic.

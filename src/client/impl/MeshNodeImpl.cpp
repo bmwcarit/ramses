@@ -8,6 +8,8 @@
 
 // internal
 #include "impl/MeshNodeImpl.h"
+#include "impl/RamsesClientImpl.h"
+#include "impl/RamsesFrameworkImpl.h"
 
 // API
 #include "ramses/client/Geometry.h"
@@ -43,22 +45,8 @@ namespace ramses::internal
             return false;
 
         outStream << m_renderableHandle;
-        if (m_appearanceImpl != nullptr)
-        {
-            outStream << serializationContext.getIDForObject(m_appearanceImpl);
-        }
-        else
-        {
-            outStream << SerializationContext::GetObjectIDNull();
-        }
-        if (m_geometryImpl != nullptr)
-        {
-            outStream << serializationContext.getIDForObject(m_geometryImpl);
-        }
-        else
-        {
-            outStream << SerializationContext::GetObjectIDNull();
-        }
+        outStream << (m_appearanceImpl ? serializationContext.getIDForObject(m_appearanceImpl) : SerializationContext::GetObjectIDNull());
+        outStream << (m_geometryImpl ? serializationContext.getIDForObject(m_geometryImpl) : SerializationContext::GetObjectIDNull());
 
         return true;
     }
@@ -68,7 +56,7 @@ namespace ramses::internal
         if (!NodeImpl::deserialize(inStream, serializationContext))
             return false;
 
-        inStream >> m_renderableHandle;
+        serializationContext.deserializeAndMap(inStream, m_renderableHandle);
 
         DeserializationContext::ReadDependentPointerAndStoreAsID(inStream, m_appearanceImpl);
         DeserializationContext::ReadDependentPointerAndStoreAsID(inStream, m_geometryImpl);
@@ -127,6 +115,7 @@ namespace ramses::internal
     void MeshNodeImpl::deinitializeFrameworkData()
     {
         assert(m_renderableHandle.isValid());
+
         getIScene().releaseRenderable(m_renderableHandle);
 
         NodeImpl::deinitializeFrameworkData();
@@ -194,12 +183,11 @@ namespace ramses::internal
     bool MeshNodeImpl::removeAppearanceAndGeometry()
     {
         m_appearanceImpl = nullptr;
-
         getIScene().setRenderableUniformsDataInstanceAndState(m_renderableHandle, ramses::internal::DataInstanceHandle::Invalid(), ramses::internal::RenderStateHandle::Invalid());
 
         m_geometryImpl = nullptr;
-
         getIScene().setRenderableDataInstance(m_renderableHandle, ramses::internal::ERenderableDataSlotType_Geometry, ramses::internal::DataInstanceHandle::Invalid());
+
         return setIndexCount(0u);
     }
 

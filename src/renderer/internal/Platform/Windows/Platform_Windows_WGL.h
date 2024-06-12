@@ -19,16 +19,16 @@ namespace ramses::internal
     class Platform_Windows_WGL final : public Platform_Base
     {
     public:
-        explicit Platform_Windows_WGL(const RendererConfig& rendererConfig);
+        explicit Platform_Windows_WGL(const RendererConfigData& rendererConfig);
 
     private:
-        virtual bool createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override;
-        virtual bool createContext(const DisplayConfig& displayConfig) override;
+        virtual bool createWindow(const DisplayConfigData& displayConfig, IWindowEventHandler& windowEventHandler) override;
+        virtual bool createContext(const DisplayConfigData& displayConfig) override;
         virtual bool createContextUploading() override;
         virtual bool createDevice() override;
         virtual bool createDeviceUploading() override;
 
-        std::unique_ptr<IContext> createContextInternal(const DisplayConfig& displayConfig, const Context_WGL::Config& contextConfig);
+        std::unique_ptr<IContext> createContextInternal(const DisplayConfigData& displayConfig, const Context_WGL::Config& contextConfig);
 
         static std::string GetVersionString(const Context_WGL::Config& config);
 

@@ -15,6 +15,7 @@ namespace ramses::internal
 {
     class ResourceChangeCollectingScene : public TransformationCachedScene
     {
+        using BaseT = TransformationCachedScene;
     public:
         explicit ResourceChangeCollectingScene(const SceneInfo& sceneInfo = SceneInfo());
 
@@ -27,6 +28,7 @@ namespace ramses::internal
         void                        setRenderableDataInstance(RenderableHandle renderableHandle, ERenderableDataSlotType slot, DataInstanceHandle newDataInstance) override;
         void                        setRenderableVisibility(RenderableHandle renderableHandle, EVisibilityMode visibility) override;
 
+
         void                        setDataResource(DataInstanceHandle dataInstanceHandle, DataFieldHandle field, const ResourceContentHash& hash, DataBufferHandle dataBuffer, uint32_t instancingDivisor, uint16_t offsetWithinElementInBytes, uint16_t stride) override;
         void                        setDataTextureSamplerHandle(DataInstanceHandle containerHandle, DataFieldHandle field, TextureSamplerHandle samplerHandle) override;
 
@@ -38,6 +40,10 @@ namespace ramses::internal
         void                        releaseDataSlot(DataSlotHandle handle) override;
 
         // functions which affect scene resources
+        UniformBufferHandle         allocateUniformBuffer(uint32_t size, UniformBufferHandle handle) override;
+        void                        releaseUniformBuffer(UniformBufferHandle uniformBufferHandle) override;
+        void                        updateUniformBuffer(UniformBufferHandle uniformBufferHandle, uint32_t offset, uint32_t size, const std::byte* data) override;
+
         RenderTargetHandle          allocateRenderTarget(RenderTargetHandle targetHandle) override;
         void                        releaseRenderTarget(RenderTargetHandle handle) override;
 

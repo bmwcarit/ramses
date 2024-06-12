@@ -27,7 +27,7 @@ namespace ramses::internal
             // preallocate mempools for scene with explicit mempools
             SceneSizeInformation sizeInfo{ MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed,
                 MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed,
-                MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed };
+                MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed, MaxHandlesUsed };
             scene.preallocateSceneSize(sizeInfo);
         }
 

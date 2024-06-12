@@ -43,7 +43,7 @@ namespace ramses::internal
         EXPECT_FALSE(csw->commSystem->sendSubscribeScene(to, SceneId(123)));
         EXPECT_FALSE(csw->commSystem->sendUnsubscribeScene(to, SceneId(123)));
         EXPECT_FALSE(csw->commSystem->sendInitializeScene(to, SceneId()));
-        EXPECT_FALSE(csw->commSystem->sendSceneUpdate(to, SceneId(123), SceneUpdateSerializer(SceneUpdate(), sceneStatistics)));
+        EXPECT_FALSE(csw->commSystem->sendSceneUpdate(to, SceneId(123), SceneUpdateSerializer(SceneUpdate(), sceneStatistics, EFeatureLevel_Latest)));
     }
 
     TEST_P(ACommunicationSystem, sendFunctionsFailAfterCallingDisconnect)
@@ -60,7 +60,7 @@ namespace ramses::internal
         EXPECT_FALSE(csw->commSystem->sendSubscribeScene(to, SceneId(123)));
         EXPECT_FALSE(csw->commSystem->sendUnsubscribeScene(to, SceneId(123)));
         EXPECT_FALSE(csw->commSystem->sendInitializeScene(to, SceneId()));
-        EXPECT_FALSE(csw->commSystem->sendSceneUpdate(to, SceneId(123), SceneUpdateSerializer(SceneUpdate(), sceneStatistics)));
+        EXPECT_FALSE(csw->commSystem->sendSceneUpdate(to, SceneId(123), SceneUpdateSerializer(SceneUpdate(), sceneStatistics, EFeatureLevel_Latest)));
     }
 
     TEST_P(ACommunicationSystemWithDaemon, canConnectAndDisconnectWithoutBlocking)
@@ -245,7 +245,7 @@ namespace ramses::internal
 
         SceneId sceneId;
         SceneInfoVector unavailableScenes;
-        unavailableScenes.push_back(SceneInfo(sceneId));
+        unavailableScenes.push_back(SceneInfo{ sceneId });
         EXPECT_CALL(handler_1, handleScenesBecameUnavailable(unavailableScenes, sender->id)).WillOnce(InvokeWithoutArgs([&](){ state->sendEvent(); }));
         EXPECT_CALL(handler_2, handleScenesBecameUnavailable(unavailableScenes, sender->id)).WillOnce(InvokeWithoutArgs([&](){ state->sendEvent(); }));
         sender->commSystem->broadcastScenesBecameUnavailable(unavailableScenes);

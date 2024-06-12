@@ -11,12 +11,12 @@
 
 namespace ramses::internal
 {
-    void DisplaySetup::registerDisplayBuffer(DeviceResourceHandle displayBuffer, const Viewport& viewport, const glm::vec4& clearColor, bool isOffscreenBuffer, bool isInterruptible)
+    void DisplaySetup::registerDisplayBuffer(DeviceResourceHandle displayBuffer, const Viewport& viewport, const glm::vec4& clearColor, bool isOffscreenBuffer, uint32_t sampleCount, bool isInterruptible)
     {
         assert(!isInterruptible || isOffscreenBuffer);
         assert(m_displayBuffers.find(displayBuffer) == m_displayBuffers.cend());
 
-        DisplayBufferInfo bufferInfo{ isOffscreenBuffer, isInterruptible, viewport, EClearFlag::All, clearColor, {}, true };
+        DisplayBufferInfo bufferInfo{ isOffscreenBuffer, isInterruptible, sampleCount, viewport, EClearFlag::All, clearColor, {}, true };
         m_displayBuffers.emplace(displayBuffer, std::move(bufferInfo));
     }
 

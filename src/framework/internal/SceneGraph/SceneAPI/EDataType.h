@@ -61,6 +61,8 @@ WARNING_DISABLE_GCC(-Wshadow)
 
         ByteBlob,
         TextureSamplerExternal,
+
+        UniformBuffer,
     };
 
 WARNINGS_POP
@@ -94,10 +96,11 @@ WARNINGS_POP
         "DATATYPE_VECTOR3BUFFER",
         "DATATYPE_VECTOR4BUFFER",
         "DATATYPE_BYTE_BLOB",
-        "DATATYPE_TEXTURESAMPLEREXTERNAL"
+        "DATATYPE_TEXTURESAMPLEREXTERNAL",
+        "DATATYPE_UNIFORMBUFFER"
     };
 
-    ENUM_TO_STRING(EDataType, DataTypeNames, EDataType::TextureSamplerExternal);
+    ENUM_TO_STRING(EDataType, DataTypeNames, EDataType::UniformBuffer);
 
     inline constexpr uint32_t EnumToNumComponents(EDataType type)
     {
@@ -181,6 +184,7 @@ WARNINGS_POP
         case EDataType::Vector2Buffer    : return sizeof(ResourceField);
         case EDataType::Vector3Buffer    : return sizeof(ResourceField);
         case EDataType::Vector4Buffer    : return sizeof(ResourceField);
+        case EDataType::UniformBuffer     : return sizeof(UniformBufferHandle);
 
         case EDataType::Invalid:
             break;
@@ -221,6 +225,7 @@ WARNINGS_POP
         case EDataType::Vector2Buffer    : return alignof(ResourceField);
         case EDataType::Vector3Buffer    : return alignof(ResourceField);
         case EDataType::Vector4Buffer    : return alignof(ResourceField);
+        case EDataType::UniformBuffer     : return alignof(UniformBufferHandle);
         default:
             assert(false);
             return 0;
@@ -249,6 +254,12 @@ WARNINGS_POP
     template <typename T>
     struct TypeToEDataTypeTraits
     {
+    };
+
+    template <>
+    struct TypeToEDataTypeTraits < UniformBufferHandle >
+    {
+        static const EDataType DataType = EDataType::UniformBuffer;
     };
 
     template <>

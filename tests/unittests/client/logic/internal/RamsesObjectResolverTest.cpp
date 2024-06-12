@@ -8,8 +8,10 @@
 
 #include "gtest/gtest.h"
 
+#include "internal/SceneGraph/Scene/SceneMergeHandleMapping.h"
 #include "internal/logic/RamsesObjectResolver.h"
 #include "impl/ErrorReporting.h"
+#include "impl/SceneImpl.h"
 #include "impl/logic/NodeBindingImpl.h"
 #include "RamsesTestUtils.h"
 
@@ -26,7 +28,7 @@ namespace ramses::internal
         RamsesTestSetup m_ramsesTestSetup;
         ramses::Scene* m_scene { m_ramsesTestSetup.createScene() };
         ErrorReporting m_errors;
-        RamsesObjectResolver m_resolver {m_errors, m_scene->impl() };
+        RamsesObjectResolver m_resolver {m_errors, m_scene->impl(), nullptr };
     };
 
     TEST_F(ARamsesObjectResolver, FindsSceneNodeByItsId)
@@ -63,7 +65,7 @@ namespace ramses::internal
 
         EXPECT_FALSE(m_resolver.findRamsesNodeInScene("some logic node", fakeNodeId));
         ASSERT_TRUE(m_errors.getError().has_value());
-        EXPECT_EQ("Fatal error during loading from file! Serialized Ramses Logic object 'some logic node' points to a Ramses object (id: 42) which couldn't be found in the provided scene!", m_errors.getError()->message);
+        EXPECT_EQ("Fatal error during loading from file! Serialized Ramses Logic object 'some logic node' points to a Ramses object (id: 42|42) which couldn't be found in the provided scene!", m_errors.getError()->message);
     }
 
     TEST_F(ARamsesObjectResolver, ReportsErrorWhenAppearanceWithGivenIdDoesNotExist)
@@ -72,7 +74,7 @@ namespace ramses::internal
 
         EXPECT_FALSE(m_resolver.findRamsesAppearanceInScene("some logic node", fakeAppearanceId));
         ASSERT_TRUE(m_errors.getError().has_value());
-        EXPECT_EQ("Fatal error during loading from file! Serialized Ramses Logic object 'some logic node' points to a Ramses object (id: 42) which couldn't be found in the provided scene!", m_errors.getError()->message);
+        EXPECT_EQ("Fatal error during loading from file! Serialized Ramses Logic object 'some logic node' points to a Ramses object (id: 42|42) which couldn't be found in the provided scene!", m_errors.getError()->message);
     }
 
     TEST_F(ARamsesObjectResolver, ReportsErrorWhenCameraWithGivenIdDoesNotExist)
@@ -81,7 +83,7 @@ namespace ramses::internal
 
         EXPECT_FALSE(m_resolver.findRamsesCameraInScene("some logic node", fakeCameraId));
         ASSERT_TRUE(m_errors.getError().has_value());
-        EXPECT_EQ("Fatal error during loading from file! Serialized Ramses Logic object 'some logic node' points to a Ramses object (id: 42) which couldn't be found in the provided scene!", m_errors.getError()->message);
+        EXPECT_EQ("Fatal error during loading from file! Serialized Ramses Logic object 'some logic node' points to a Ramses object (id: 42|42) which couldn't be found in the provided scene!", m_errors.getError()->message);
     }
 
     TEST_F(ARamsesObjectResolver, ReportsErrorWhenRenderPassWithGivenIdDoesNotExist)
@@ -90,7 +92,7 @@ namespace ramses::internal
 
         EXPECT_FALSE(m_resolver.findRamsesRenderPassInScene("some logic node", fakeRenderPassId));
         ASSERT_TRUE(m_errors.getError().has_value());
-        EXPECT_EQ("Fatal error during loading from file! Serialized Ramses Logic object 'some logic node' points to a Ramses object (id: 42) which couldn't be found in the provided scene!", m_errors.getError()->message);
+        EXPECT_EQ("Fatal error during loading from file! Serialized Ramses Logic object 'some logic node' points to a Ramses object (id: 42|42) which couldn't be found in the provided scene!", m_errors.getError()->message);
     }
 
     TEST_F(ARamsesObjectResolver, ReportsErrorWhenObjectWithGivenIdExists_ButIsNotANode)
@@ -99,7 +101,7 @@ namespace ramses::internal
 
         EXPECT_FALSE(m_resolver.findRamsesNodeInScene("some logic node", appearance.getSceneObjectId()));
         ASSERT_TRUE(m_errors.getError().has_value());
-        EXPECT_EQ("Fatal error during loading from file! Ramses binding 'some logic node' points to a Ramses scene object (id: 2) which is not of the same type!", m_errors.getError()->message);
+        EXPECT_EQ("Fatal error during loading from file! Ramses binding 'some logic node' points to a Ramses scene object (id: 2|2) which is not of the same type!", m_errors.getError()->message);
     }
 
     TEST_F(ARamsesObjectResolver, ReportsErrorWhenResolvedObjectExists_ButIsNotCamera)
@@ -108,7 +110,7 @@ namespace ramses::internal
 
         EXPECT_FALSE(m_resolver.findRamsesCameraInScene("some logic node", node->getSceneObjectId()));
         ASSERT_TRUE(m_errors.getError().has_value());
-        EXPECT_EQ("Fatal error during loading from file! Ramses binding 'some logic node' points to a Ramses scene object (id: 1) which is not of the same type!", m_errors.getError()->message);
+        EXPECT_EQ("Fatal error during loading from file! Ramses binding 'some logic node' points to a Ramses scene object (id: 1|1) which is not of the same type!", m_errors.getError()->message);
     }
 
     TEST_F(ARamsesObjectResolver, ReportsErrorWhenResolvedObjectExists_ButIsNotAppearance)
@@ -117,7 +119,7 @@ namespace ramses::internal
 
         EXPECT_FALSE(m_resolver.findRamsesAppearanceInScene("some logic node", node->getSceneObjectId()));
         ASSERT_TRUE(m_errors.getError().has_value());
-        EXPECT_EQ("Fatal error during loading from file! Ramses binding 'some logic node' points to a Ramses scene object (id: 1) which is not of the same type!", m_errors.getError()->message);
+        EXPECT_EQ("Fatal error during loading from file! Ramses binding 'some logic node' points to a Ramses scene object (id: 1|1) which is not of the same type!", m_errors.getError()->message);
     }
 
     TEST_F(ARamsesObjectResolver, ReportsErrorWhenResolvedObjectExists_ButIsNotRenderPass)
@@ -126,7 +128,7 @@ namespace ramses::internal
 
         EXPECT_FALSE(m_resolver.findRamsesRenderPassInScene("some logic node", node->getSceneObjectId()));
         ASSERT_TRUE(m_errors.getError().has_value());
-        EXPECT_EQ("Fatal error during loading from file! Ramses binding 'some logic node' points to a Ramses scene object (id: 1) which is not of the same type!", m_errors.getError()->message);
+        EXPECT_EQ("Fatal error during loading from file! Ramses binding 'some logic node' points to a Ramses scene object (id: 1|1) which is not of the same type!", m_errors.getError()->message);
     }
 
     // Special case (ramses Camera is also a Node) - test that it works as expected when resolved by Id
@@ -136,5 +138,51 @@ namespace ramses::internal
 
         EXPECT_EQ(camera, m_resolver.findRamsesNodeInScene("some logic node", camera->getSceneObjectId()));
         EXPECT_FALSE(m_errors.getError().has_value());
+    }
+
+
+    class ARamsesObjectResolverMapped : public ::testing::Test
+    {
+    protected:
+        RamsesTestSetup m_ramsesTestSetup;
+        ramses::Scene* m_scene { m_ramsesTestSetup.createScene() };
+        ErrorReporting m_errors;
+        SceneMergeHandleMapping m_mapping;
+        RamsesObjectResolver m_resolver {m_errors, m_scene->impl(), &m_mapping };
+    };
+
+    TEST_F(ARamsesObjectResolverMapped, FindsSceneNodeByItsId)
+    {
+        ramses::Node* node = m_scene->createNode();
+        const ramses::sceneObjectId_t mappedObjectId{ 99 };
+        EXPECT_EQ(nullptr, m_resolver.findRamsesNodeInScene("some logic node", mappedObjectId));
+        ASSERT_TRUE(m_errors.getError().has_value());
+        m_errors.reset();
+        m_mapping.addMapping(mappedObjectId, node->getSceneObjectId());
+        EXPECT_EQ(node, m_resolver.findRamsesNodeInScene("some logic node", mappedObjectId));
+        EXPECT_FALSE(m_errors.getError().has_value());
+    }
+
+    TEST_F(ARamsesObjectResolverMapped, ReportsErrorWhenNodeWithGivenIdDoesNotExist)
+    {
+        const ramses::sceneObjectId_t fakeNodeId{ 42 };
+        const ramses::sceneObjectId_t fakeMappedNodeId{ 99 };
+
+        m_mapping.addMapping(fakeNodeId, fakeMappedNodeId);
+
+        EXPECT_FALSE(m_resolver.findRamsesNodeInScene("some logic node", fakeNodeId));
+        ASSERT_TRUE(m_errors.getError().has_value());
+        EXPECT_EQ("Fatal error during loading from file! Serialized Ramses Logic object 'some logic node' points to a Ramses object (id: 42|99) which couldn't be found in the provided scene!", m_errors.getError()->message);
+    }
+
+    TEST_F(ARamsesObjectResolverMapped, ReportsErrorWhenResolvedObjectExists_ButIsNotRenderPass)
+    {
+        ramses::Node* node = m_scene->createNode();
+        const ramses::sceneObjectId_t mappedObjectId{ 99 };
+        m_mapping.addMapping(mappedObjectId, node->getSceneObjectId());
+
+        EXPECT_FALSE(m_resolver.findRamsesRenderPassInScene("some logic node", mappedObjectId));
+        ASSERT_TRUE(m_errors.getError().has_value());
+        EXPECT_EQ("Fatal error during loading from file! Ramses binding 'some logic node' points to a Ramses scene object (id: 99|1) which is not of the same type!", m_errors.getError()->message);
     }
 }

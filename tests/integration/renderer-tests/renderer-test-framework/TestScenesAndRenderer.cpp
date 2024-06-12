@@ -48,7 +48,14 @@ namespace ramses::internal
 
     void TestScenesAndRenderer::setExpirationTimestamp(ramses::sceneId_t sceneId, FlushTime::Clock::time_point expirationTS)
     {
+#ifndef _MSC_VER
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
         m_scenes.getScene(sceneId).setExpirationTimestamp(std::chrono::duration_cast<std::chrono::milliseconds>(expirationTS.time_since_epoch()).count());
+#ifndef _MSC_VER
+#pragma GCC diagnostic pop
+#endif
     }
 
     bool TestScenesAndRenderer::loopTillClientEvent(TestClientEventHandler& handlerWithCondition)
@@ -112,5 +119,10 @@ namespace ramses::internal
     ramses::internal::TestRenderer& TestScenesAndRenderer::getTestRenderer()
     {
         return m_renderer;
+    }
+
+    ramses::EFeatureLevel TestScenesAndRenderer::getFeatureLevel() const
+    {
+        return m_ramsesFramework.getFeatureLevel();
     }
 }

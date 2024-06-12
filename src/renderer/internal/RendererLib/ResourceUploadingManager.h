@@ -21,7 +21,7 @@ namespace ramses::internal
     struct RenderBuffer;
     class FrameTimer;
     class RendererStatistics;
-    class DisplayConfig;
+    class DisplayConfigData;
 
     class ResourceUploadingManager
     {
@@ -30,8 +30,8 @@ namespace ramses::internal
             RendererResourceRegistry& resources,
             std::unique_ptr<IResourceUploader> uploader,
             IRenderBackend& renderBackend,
-            AsyncEffectUploader& asyncEffectUploader,
-            const DisplayConfig& displayConfig,
+            AsyncEffectUploader* asyncEffectUploader,
+            const DisplayConfigData& displayConfig,
             const FrameTimer& frameTimer,
             RendererStatistics& stats);
         ~ResourceUploadingManager();
@@ -60,7 +60,7 @@ namespace ramses::internal
         RendererResourceRegistry& m_resources;
         std::unique_ptr<IResourceUploader> m_uploader;
         IRenderBackend&                 m_renderBackend;
-        AsyncEffectUploader&            m_asyncEffectUploader;
+        AsyncEffectUploader*            m_asyncEffectUploader;
         EffectsRawResources             m_effectsToUpload;
         EffectsGpuResources             m_effectsUploadedTemp; //to avoid re-allocation each frame
 

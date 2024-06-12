@@ -80,6 +80,8 @@ namespace ramses::internal
         Window_X11 window(dispConfigExternalWindow.impl().getInternalDisplayConfig(), dummyEventHandler, 1);
         ASSERT_TRUE(window.init());
         dispConfig.setX11WindowHandle(X11WindowHandle{window.getNativeWindowHandle()});
+#else
+        FAIL() << "Test running on unsupported platform";
 #endif
 
         const displayId_t display = testRenderer.createDisplay(dispConfig);

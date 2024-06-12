@@ -16,10 +16,10 @@ namespace ramses::internal
     class Platform_X11_EGL : public Platform_EGL<Window_X11>
     {
     public:
-        explicit Platform_X11_EGL(const RendererConfig& rendererConfig);
+        explicit Platform_X11_EGL(const RendererConfigData& rendererConfig);
 
     protected:
-        bool createWindow(const DisplayConfig& displayConfig, IWindowEventHandler& windowEventHandler) override;
+        bool createWindow(const DisplayConfigData& displayConfig, IWindowEventHandler& windowEventHandler) override;
         [[nodiscard]] uint32_t getSwapInterval() const override;
     };
 }
